@@ -30,6 +30,7 @@ const CertificationDetail = () => {
     certifications,
     deleteCertification,
     addRecentDocument,
+    currentUser,
   } = useApp()
 
   const certification = certifications.find(c => c.id === id)
@@ -46,10 +47,21 @@ const CertificationDetail = () => {
     }
   }, [id, certification, addRecentDocument])
 
-  if (!certification) {
+  const canViewCertification = () => {
+    if (!certification) return false
+    if (currentUser?.userType === 'Admin') {
+      return true
+    }
+    if (!certification.department) {
+      return true
+    }
+    return certification.department === currentUser?.department
+  }
+
+  if (!certification || !canViewCertification()) {
     return (
       <Box>
-        <Text>Certification not found</Text>
+        <Text>{certification ? 'You do not have permission to view this certification.' : 'Certification not found'}</Text>
         <Button onClick={() => navigate('/certifications')}>Back to Certifications</Button>
       </Box>
     )

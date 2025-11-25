@@ -21,16 +21,27 @@ import { FiPlus, FiSearch, FiEdit, FiTrash2, FiEye } from 'react-icons/fi'
 import { useApp } from '../context/AppContext'
 import { useNavigate } from 'react-router-dom'
 import CertificationUploadModal from '../components/CertificationUploadModal'
-import { formatDistanceToNow } from 'date-fns'
+import { formatDistanceToNow, differenceInCalendarDays } from 'date-fns'
 
 const Certifications = () => {
-  const { certifications, deleteCertification, getExpiringCertifications } = useApp()
+  const { certifications, deleteCertification, getExpiringCertifications, currentUser } = useApp()
   const { isOpen, onOpen, onClose } = useDisclosure()
   const navigate = useNavigate()
   const [searchTerm, setSearchTerm] = useState('')
-  const expiringCerts = getExpiringCertifications()
+  const canViewCertification = (cert) => {
+    if (currentUser?.userType === 'Admin') {
+      return true
+    }
+    if (!cert.department) {
+      return true
+    }
+    return cert.department === currentUser?.department
+  }
 
-  const filteredCertifications = certifications.filter(cert =>
+  const visibleCertifications = certifications.filter(canViewCertification)
+  const expiringCerts = getExpiringCertifications().filter(canViewCertification)
+
+  const filteredCertifications = visibleCertifications.filter(cert =>
     cert.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
     cert.type?.toLowerCase().includes(searchTerm.toLowerCase()) ||
     cert.issuer?.toLowerCase().includes(searchTerm.toLowerCase())
@@ -51,6 +62,13 @@ const Certifications = () => {
     } else {
       return { status: 'valid', color: 'green', text: 'Valid' }
     }
+  }
+
+  const getDaysRemaining = (expirationDate) => {
+    if (!expirationDate) return null
+    const expDate = new Date(expirationDate)
+    const diff = differenceInCalendarDays(expDate, new Date())
+    return diff
   }
 
   const handleDelete = (id) => {
@@ -100,6 +118,7 @@ const Certifications = () => {
               <Th>Type</Th>
               <Th>Issuer</Th>
               <Th>Expiration Date</Th>
+              <Th>Days Remaining</Th>
               <Th>Status</Th>
               <Th>Actions</Th>
             </Tr>
@@ -119,6 +138,7 @@ const Certifications = () => {
             ) : (
               filteredCertifications.map((cert) => {
                 const expStatus = getExpirationStatus(cert.expirationDate)
+                const daysRemaining = getDaysRemaining(cert.expirationDate)
                 return (
                   <Tr key={cert.id}>
                     <Td fontWeight="semibold">{cert.name}</Td>
@@ -128,6 +148,13 @@ const Certifications = () => {
                       {cert.expirationDate
                         ? new Date(cert.expirationDate).toLocaleDateString()
                         : 'N/A'}
+                    </Td>
+                    <Td>
+                      {daysRemaining === null
+                        ? 'N/A'
+                        : daysRemaining < 0
+                        ? 'Expired'
+                        : `${daysRemaining} day${daysRemaining === 1 ? '' : 's'}`}
                     </Td>
                     <Td>
                       <Badge colorScheme={expStatus.color}>

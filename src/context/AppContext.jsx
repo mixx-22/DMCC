@@ -274,6 +274,9 @@ export const AppProvider = ({ children }) => {
       ...certification,
       id: Date.now().toString(),
       createdAt: new Date().toISOString(),
+      department: certification.department || currentUser?.department || '',
+      requestedBy: certification.requestedBy || currentUser?.id || null,
+      requestedByName: certification.requestedByName || currentUser?.name || '',
     }
     setCertifications(prev => [...prev, newCert])
     addActivityLog('created', 'certification', newCert.id, newCert.name)
@@ -283,7 +286,13 @@ export const AppProvider = ({ children }) => {
   const updateCertification = (id, updates) => {
     setCertifications(prev =>
       prev.map(cert =>
-        cert.id === id ? { ...cert, ...updates } : cert
+        cert.id === id
+          ? {
+              ...cert,
+              ...updates,
+              department: updates.department ?? cert.department,
+            }
+          : cert
       )
     )
     addActivityLog('updated', 'certification', id, updates.name || 'Certification')

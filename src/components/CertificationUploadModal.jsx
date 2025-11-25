@@ -14,12 +14,13 @@ import {
   Textarea,
   Select,
   VStack,
+  Text,
   useToast,
 } from '@chakra-ui/react'
 import { useApp } from '../context/AppContext'
 
 const CertificationUploadModal = ({ isOpen, onClose, certification = null }) => {
-  const { addCertification, updateCertification } = useApp()
+  const { addCertification, updateCertification, currentUser } = useApp()
   const toast = useToast()
   const isEdit = !!certification
   const [formData, setFormData] = useState({
@@ -56,13 +57,16 @@ const CertificationUploadModal = ({ isOpen, onClose, certification = null }) => 
     
     // Simulate file upload
     const fileUrl = formData.file ? URL.createObjectURL(formData.file) : certification?.file
+    const fileName = formData.file ? formData.file.name : certification?.fileName
+    const fileSize = formData.file ? formData.file.size : certification?.fileSize
     
     if (isEdit) {
       updateCertification(certification.id, {
         ...formData,
         file: fileUrl,
-        fileName: formData.file ? formData.file.name : certification.fileName,
-        fileSize: formData.file ? formData.file.size : certification.fileSize,
+        fileName,
+        fileSize,
+        department: certification.department || currentUser?.department || '',
       })
       toast({
         title: 'Certification Updated',
@@ -75,8 +79,11 @@ const CertificationUploadModal = ({ isOpen, onClose, certification = null }) => 
       addCertification({
         ...formData,
         file: fileUrl,
-        fileName: formData.file.name,
-        fileSize: formData.file.size,
+        fileName: fileName || '',
+        fileSize: fileSize || 0,
+        department: currentUser?.department || '',
+        requestedBy: currentUser?.id || null,
+        requestedByName: currentUser?.name || '',
       })
       toast({
         title: 'Certification Added',
@@ -152,6 +159,16 @@ const CertificationUploadModal = ({ isOpen, onClose, certification = null }) => 
                   rows={3}
                 />
               </FormControl>
+
+              {currentUser?.department && (
+                <FormControl>
+                  <FormLabel>Department</FormLabel>
+                  <Input value={currentUser.department} isReadOnly variant="filled" />
+                  <Text fontSize="xs" color="gray.500" mt={1}>
+                    Certification will be visible to the {currentUser.department} department
+                  </Text>
+                </FormControl>
+              )}
 
               <FormControl>
                 <FormLabel>Expiration Date</FormLabel>
