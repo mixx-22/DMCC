@@ -21,7 +21,7 @@ import { FiEye, FiEyeOff, FiLock, FiUser } from 'react-icons/fi'
 import { useApp } from '../context/AppContext'
 
 const Login = () => {
-  const { accounts, login } = useApp()
+  const { accounts, login, addAccount } = useApp()
   const navigate = useNavigate()
   const toast = useToast()
   const [username, setUsername] = useState('')
@@ -46,9 +46,21 @@ const Login = () => {
     setIsLoading(true)
 
     // Find account with matching username
-    const account = accounts.find(
+    let account = accounts.find(
       acc => acc.username?.toLowerCase() === username.toLowerCase()
     )
+
+    if (!account && accounts.length === 0) {
+      // Seed a first account so users can sign in on fresh installs
+      account = addAccount({
+        name: username,
+        username,
+        password,
+        userType: 'Admin',
+        jobTitle: 'System Administrator',
+        department: 'Administration',
+      })
+    }
 
     if (!account) {
       setIsLoading(false)

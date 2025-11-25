@@ -121,6 +121,18 @@ const DocumentDetail = () => {
     }
   }
 
+  // Only the user who checked out a document should download/delete while locked
+  const userHasCheckoutAccess = React.useMemo(() => {
+    if (!document?.checkedOut) return true
+    if (!currentUser) return false
+    const checkedOutBy = document.checkedOutBy
+    // Support both legacy string values and new shape with id/name
+    if (typeof checkedOutBy === 'string') {
+      return checkedOutBy === currentUser.name
+    }
+    return checkedOutBy?.id === currentUser.id
+  }, [document, currentUser])
+
   const handleDownload = (fileUrl) => {
     const link = window.document.createElement('a')
     link.href = fileUrl
@@ -244,6 +256,7 @@ const DocumentDetail = () => {
                 colorScheme="blue"
                 w="full"
                 onClick={() => handleDownload(document.file)}
+                isDisabled={!userHasCheckoutAccess}
               >
                 {document.checkedOut ? 'Download for Revision' : 'Download Current Version'}
               </Button>
@@ -283,6 +296,7 @@ const DocumentDetail = () => {
                 colorScheme="red"
                 w="full"
                 onClick={onDeleteOpen}
+                isDisabled={!userHasCheckoutAccess}
               >
                 Delete Document
               </Button>
@@ -314,6 +328,7 @@ const DocumentDetail = () => {
                       size="sm"
                       leftIcon={<FiDownload />}
                       onClick={() => handleDownload(version.file)}
+                      isDisabled={!userHasCheckoutAccess}
                     >
                       Download
                     </Button>

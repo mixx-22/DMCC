@@ -229,7 +229,9 @@ export const AppProvider = ({ children }) => {
           ...doc, 
           checkedOut: true,
           checkedOutAt: new Date().toISOString(),
-          checkedOutBy: 'Current User' // In a real app, this would be from auth context
+          checkedOutBy: currentUser
+            ? { id: currentUser.id, name: currentUser.name }
+            : { id: 'anonymous', name: 'Current User' }, // Fallback for missing auth context
         } : doc
       )
     )

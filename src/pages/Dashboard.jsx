@@ -145,18 +145,6 @@ const Dashboard = () => {
             </HStack>
           </CardBody>
         </Card>
-
-        <Card>
-          <CardBody>
-            <HStack justify="space-between">
-              <VStack align="start" spacing={1}>
-                <Text fontSize="sm" color="gray.600">Starred Documents</Text>
-                <Text fontSize="3xl" fontWeight="bold">{starredDocs.length}</Text>
-              </VStack>
-              <Icon as={FiStar} boxSize={10} color="yellow.500" />
-            </HStack>
-          </CardBody>
-        </Card>
       </Grid>
 
       <Grid templateColumns="repeat(auto-fit, minmax(400px, 1fr))" gap={6}>
