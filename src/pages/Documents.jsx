@@ -48,6 +48,7 @@ const Documents = () => {
     addRecentFolder,
     approveDocument,
     rejectDocument,
+    currentUser,
   } = useApp()
   const { isOpen, onOpen, onClose } = useDisclosure()
   const {
@@ -63,19 +64,61 @@ const Documents = () => {
   const [selectedDoc, setSelectedDoc] = useState(null)
   const [rejectionReason, setRejectionReason] = useState('')
 
-  // Get unique categories/folders from documents
-  const folders = [...new Set(documents.map(doc => doc.category || 'Uncategorized'))]
+  // Helper function to check if user can view document
+  const canViewDocument = (doc) => {
+    // Admin can view all documents
+    if (currentUser?.userType === 'Admin') {
+      return true
+    }
+    // Users can only view documents from their department
+    return doc.department === currentUser?.department
+  }
 
-  // Filter recent documents to only show document type
-  const recentDocItems = recentDocuments.filter(doc => doc.type === 'documents')
+  // Get visible documents filtered by department
+  const visibleDocuments = documents.filter(canViewDocument)
 
-  // Get recent folders from categories
-  const recentFolderItems = recentFolders.map(folder => ({
-    ...folder,
-    count: documents.filter(doc => (doc.category || 'Uncategorized') === folder.name).length
-  }))
+  // Get unique categories/folders from visible documents only
+  const folders = [...new Set(visibleDocuments.map(doc => doc.category || 'Uncategorized'))]
+
+  // Filter recent documents to only show document type and by department
+  const recentDocItems = recentDocuments
+    .filter(doc => doc.type === 'documents')
+    .filter(recentDoc => {
+      const doc = documents.find(d => d.id === recentDoc.id)
+      return doc ? canViewDocument(doc) : false
+    })
+
+  // Get recent folders from categories - only show folders with documents from user's department
+  const recentFolderItems = recentFolders
+    .map(folder => ({
+      ...folder,
+      count: visibleDocuments.filter(doc => (doc.category || 'Uncategorized') === folder.name).length
+    }))
+    .filter(folder => folder.count > 0) // Only show folders that have visible documents
+
+  // Helper function to check if user can approve document
+  const canApproveDocument = (doc) => {
+    // Admin can approve any document
+    if (currentUser?.userType === 'Admin') {
+      return true
+    }
+    // Only Supervisor or Manager can approve
+    if (currentUser?.userType !== 'Supervisor' && currentUser?.userType !== 'Manager') {
+      return false
+    }
+    // If supervisor created the document, only manager can approve
+    if (doc.createdByUserType === 'Supervisor') {
+      return currentUser?.userType === 'Manager'
+    }
+    // Supervisor or Manager can approve documents created by others
+    return true
+  }
 
   const filteredDocuments = documents.filter(doc => {
+    // First check if user can view this document
+    if (!canViewDocument(doc)) {
+      return false
+    }
     const matchesSearch = doc.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
       doc.description?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       doc.documentId?.toLowerCase().includes(searchTerm.toLowerCase())
@@ -102,8 +145,10 @@ const Documents = () => {
     }
   }
 
-  // Get pending documents (new and revised)
-  const pendingDocuments = documents.filter(doc => doc.status === 'pending')
+  // Get pending documents (new and revised) - filtered by department and approval permissions
+  const pendingDocuments = documents.filter(doc => {
+    return doc.status === 'pending' && canViewDocument(doc) && canApproveDocument(doc)
+  })
 
   const handleApprove = (docId) => {
     approveDocument(docId)
@@ -328,29 +373,35 @@ const Documents = () => {
                     </Td>
                     <Td>
                       <Badge colorScheme="blue">
-                        v{doc.versions?.length || 1}
+                        {String(doc.versions?.length || 1).padStart(2, '0')}
                       </Badge>
                     </Td>
                     <Td>{new Date(doc.createdAt).toLocaleDateString()}</Td>
                     <Td>
-                      <HStack spacing={2} onClick={(e) => e.stopPropagation()}>
-                        <Button
-                          size="sm"
-                          colorScheme="green"
-                          leftIcon={<FiCheck />}
-                          onClick={() => handleApprove(doc.id)}
-                        >
-                          Approve
-                        </Button>
-                        <Button
-                          size="sm"
-                          colorScheme="red"
-                          leftIcon={<FiX />}
-                          onClick={() => handleRejectClick(doc)}
-                        >
-                          Reject
-                        </Button>
-                      </HStack>
+                      {canApproveDocument(doc) ? (
+                        <HStack spacing={2} onClick={(e) => e.stopPropagation()}>
+                          <Button
+                            size="sm"
+                            colorScheme="green"
+                            leftIcon={<FiCheck />}
+                            onClick={() => handleApprove(doc.id)}
+                          >
+                            Approve
+                          </Button>
+                          <Button
+                            size="sm"
+                            colorScheme="red"
+                            leftIcon={<FiX />}
+                            onClick={() => handleRejectClick(doc)}
+                          >
+                            Reject
+                          </Button>
+                        </HStack>
+                      ) : (
+                        <Text fontSize="sm" color="gray.500">
+                          No permission
+                        </Text>
+                      )}
                     </Td>
                   </Tr>
                 ))}

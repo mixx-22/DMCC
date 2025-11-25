@@ -15,11 +15,12 @@ import {
   Select,
   VStack,
   useToast,
+  Text,
 } from '@chakra-ui/react'
 import { useApp } from '../context/AppContext'
 
 const DocumentUploadModal = ({ isOpen, onClose }) => {
-  const { addDocument } = useApp()
+  const { addDocument, currentUser } = useApp()
   const toast = useToast()
   const [formData, setFormData] = useState({
     title: '',
@@ -61,6 +62,9 @@ const DocumentUploadModal = ({ isOpen, onClose }) => {
       file: fileUrl,
       fileName: formData.file.name,
       fileSize: formData.file.size,
+      department: currentUser?.department || '',
+      createdBy: currentUser?.id || null,
+      createdByUserType: currentUser?.userType || null,
     })
 
     toast({
@@ -124,6 +128,20 @@ const DocumentUploadModal = ({ isOpen, onClose }) => {
                   <option value="Other">Other</option>
                 </Select>
               </FormControl>
+
+              {currentUser?.department && (
+                <FormControl>
+                  <FormLabel>Department</FormLabel>
+                  <Input
+                    value={currentUser.department}
+                    isReadOnly
+                    variant="filled"
+                  />
+                  <Text fontSize="xs" color="gray.500" mt={1}>
+                    Document will be visible to {currentUser.department} department
+                  </Text>
+                </FormControl>
+              )}
 
               <FormControl isRequired>
                 <FormLabel>Document File</FormLabel>

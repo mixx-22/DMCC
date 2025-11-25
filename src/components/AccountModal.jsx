@@ -11,13 +11,17 @@ import {
   FormControl,
   FormLabel,
   Input,
+  InputGroup,
+  InputRightElement,
   Select,
   VStack,
   useToast,
   Avatar,
   Box,
   Text,
+  IconButton,
 } from '@chakra-ui/react'
+import { FiEye, FiEyeOff } from 'react-icons/fi'
 import { useApp } from '../context/AppContext'
 
 const AccountModal = ({ isOpen, onClose, account = null }) => {
@@ -26,6 +30,8 @@ const AccountModal = ({ isOpen, onClose, account = null }) => {
   const isEdit = !!account
   const [formData, setFormData] = useState({
     name: '',
+    username: '',
+    password: '',
     jobTitle: '',
     department: '',
     userType: '',
@@ -33,12 +39,15 @@ const AccountModal = ({ isOpen, onClose, account = null }) => {
   })
   const [profilePreview, setProfilePreview] = useState(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [showPassword, setShowPassword] = useState(false)
 
   useEffect(() => {
     if (isOpen) {
       if (account) {
         setFormData({
           name: account.name || '',
+          username: account.username || '',
+          password: '', // Don't show existing password for security
           jobTitle: account.jobTitle || '',
           department: account.department || '',
           userType: account.userType || '',
@@ -48,6 +57,8 @@ const AccountModal = ({ isOpen, onClose, account = null }) => {
       } else {
         setFormData({
           name: '',
+          username: '',
+          password: '',
           jobTitle: '',
           department: '',
           userType: '',
@@ -55,6 +66,7 @@ const AccountModal = ({ isOpen, onClose, account = null }) => {
         })
         setProfilePreview(null)
       }
+      setShowPassword(false)
     }
   }, [account, isOpen])
 
@@ -109,6 +121,18 @@ const AccountModal = ({ isOpen, onClose, account = null }) => {
       return
     }
 
+    // For new accounts, username and password are required
+    if (!isEdit && (!formData.username || !formData.password)) {
+      toast({
+        title: 'Validation Error',
+        description: 'Username and password are required for new accounts',
+        status: 'error',
+        duration: 3000,
+        isClosable: true,
+      })
+      return
+    }
+
     setIsSubmitting(true)
     
     // Handle profile picture
@@ -122,10 +146,16 @@ const AccountModal = ({ isOpen, onClose, account = null }) => {
 
     const accountData = {
       name: formData.name,
+      username: formData.username,
       jobTitle: formData.jobTitle,
       department: formData.department,
       userType: formData.userType,
       profilePicture: profilePictureUrl,
+    }
+
+    // Only include password if it's provided (for new accounts or password updates)
+    if (formData.password) {
+      accountData.password = formData.password
     }
 
     if (isEdit) {
@@ -150,12 +180,15 @@ const AccountModal = ({ isOpen, onClose, account = null }) => {
 
     setFormData({
       name: '',
+      username: '',
+      password: '',
       jobTitle: '',
       department: '',
       userType: '',
       profilePicture: null,
     })
     setProfilePreview(null)
+    setShowPassword(false)
     setIsSubmitting(false)
     onClose()
   }
@@ -211,6 +244,47 @@ const AccountModal = ({ isOpen, onClose, account = null }) => {
                 />
               </FormControl>
 
+              <FormControl isRequired={!isEdit}>
+                <FormLabel>Username</FormLabel>
+                <Input
+                  value={formData.username}
+                  onChange={(e) => setFormData(prev => ({ ...prev, username: e.target.value }))}
+                  placeholder="Enter username"
+                  isDisabled={isEdit} // Username shouldn't be changed after creation
+                />
+                {isEdit && (
+                  <Text fontSize="xs" color="gray.500" mt={1}>
+                    Username cannot be changed after account creation
+                  </Text>
+                )}
+              </FormControl>
+
+              <FormControl isRequired={!isEdit}>
+                <FormLabel>Password</FormLabel>
+                <InputGroup>
+                  <Input
+                    type={showPassword ? 'text' : 'password'}
+                    value={formData.password}
+                    onChange={(e) => setFormData(prev => ({ ...prev, password: e.target.value }))}
+                    placeholder={isEdit ? 'Leave blank to keep current password' : 'Enter password'}
+                  />
+                  <InputRightElement>
+                    <IconButton
+                      aria-label={showPassword ? 'Hide password' : 'Show password'}
+                      icon={showPassword ? <FiEyeOff /> : <FiEye />}
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setShowPassword(!showPassword)}
+                    />
+                  </InputRightElement>
+                </InputGroup>
+                {isEdit && (
+                  <Text fontSize="xs" color="gray.500" mt={1}>
+                    Leave blank to keep current password
+                  </Text>
+                )}
+              </FormControl>
+
               <FormControl>
                 <FormLabel>Job Title</FormLabel>
                 <Input
@@ -247,6 +321,7 @@ const AccountModal = ({ isOpen, onClose, account = null }) => {
                   placeholder="Select user type"
                 >
                   <option value="Admin">Admin</option>
+                  <option value="Manager">Manager</option>
                   <option value="Supervisor">Supervisor</option>
                   <option value="User">User</option>
                 </Select>

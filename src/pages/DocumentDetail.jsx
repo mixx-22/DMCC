@@ -22,31 +22,75 @@ import {
   useDisclosure,
   Grid,
 } from '@chakra-ui/react'
-import { FiArrowLeft, FiStar, FiUpload, FiDownload } from 'react-icons/fi'
+import { FiArrowLeft, FiStar, FiDownload, FiLogOut, FiLogIn, FiTrash2, FiEye } from 'react-icons/fi'
 import { useApp } from '../context/AppContext'
-import DocumentVersionModal from '../components/DocumentVersionModal'
+import CheckInModal from '../components/CheckInModal'
+import DeleteDocumentModal from '../components/DeleteDocumentModal'
 
 const DocumentDetail = () => {
   const { id } = useParams()
   const navigate = useNavigate()
   const toast = useToast()
   const { isOpen, onOpen, onClose } = useDisclosure()
+  const { isOpen: isDeleteOpen, onOpen: onDeleteOpen, onClose: onDeleteClose } = useDisclosure()
   const {
     documents,
     toggleStar,
     starredDocuments,
     addRecentDocument,
-    addDocumentVersion,
     addRecentFolder,
+    checkOutDocument,
+    checkInDocument,
+    deleteDocument,
+    currentUser,
   } = useApp()
 
   const document = documents.find(d => d.id === id)
+
+  // Check if user can view this document
+  const canViewDocument = () => {
+    if (!document) return false
+    // Admin can view all documents
+    if (currentUser?.userType === 'Admin') {
+      return true
+    }
+    // Users can only view documents from their department
+    return document.department === currentUser?.department
+  }
+
+  // Check if user can approve this document
+  const canApproveDocument = () => {
+    if (!document) return false
+    // Admin can approve any document
+    if (currentUser?.userType === 'Admin') {
+      return true
+    }
+    // Only Supervisor or Manager can approve
+    if (currentUser?.userType !== 'Supervisor' && currentUser?.userType !== 'Manager') {
+      return false
+    }
+    // If supervisor created the document, only manager can approve
+    if (document.createdByUserType === 'Supervisor') {
+      return currentUser?.userType === 'Manager'
+    }
+    // Supervisor or Manager can approve documents created by others
+    return true
+  }
 
   if (!document) {
     return (
       <Box>
         <Text>Document not found</Text>
         <Button onClick={() => navigate('/documents')}>Back to Documents</Button>
+      </Box>
+    )
+  }
+
+  if (!canViewDocument()) {
+    return (
+      <Box>
+        <Text>You do not have permission to view this document.</Text>
+        <Button onClick={() => navigate('/documents')} mt={4}>Back to Documents</Button>
       </Box>
     )
   }
@@ -82,6 +126,35 @@ const DocumentDetail = () => {
     link.href = fileUrl
     link.download = document.fileName || 'document'
     link.click()
+  }
+
+  const handleView = (fileUrl) => {
+    if (!fileUrl) {
+      toast({
+        title: 'File Not Available',
+        description: 'This document does not have an accessible file.',
+        status: 'error',
+        duration: 3000,
+        isClosable: true,
+      })
+      return
+    }
+    window.open(fileUrl, '_blank', 'noopener,noreferrer')
+  }
+
+  const handleCheckOut = () => {
+    checkOutDocument(document.id)
+    toast({
+      title: 'Document Checked Out',
+      description: 'Document is now available for revision. You can download it to make changes.',
+      status: 'info',
+      duration: 3000,
+      isClosable: true,
+    })
+  }
+
+  const handleCheckIn = () => {
+    onOpen()
   }
 
   return (
@@ -134,6 +207,19 @@ const DocumentDetail = () => {
                   <Text>{new Date(document.approvedAt).toLocaleDateString()}</Text>
                 </Box>
               )}
+              {document.checkedOut && (
+                <Box>
+                  <Text fontSize="sm" color="gray.600">Checked Out</Text>
+                  <Badge colorScheme="orange" mt={1}>
+                    For Revision
+                  </Badge>
+                  {document.checkedOutAt && (
+                    <Text fontSize="xs" color="gray.500" mt={1}>
+                      {new Date(document.checkedOutAt).toLocaleDateString()}
+                    </Text>
+                  )}
+                </Box>
+              )}
             </VStack>
           </CardBody>
         </Card>
@@ -159,15 +245,46 @@ const DocumentDetail = () => {
                 w="full"
                 onClick={() => handleDownload(document.file)}
               >
-                Download Current Version
+                {document.checkedOut ? 'Download for Revision' : 'Download Current Version'}
               </Button>
               <Button
-                leftIcon={<FiUpload />}
+                leftIcon={<FiEye />}
                 variant="outline"
+                colorScheme="blue"
                 w="full"
-                onClick={onOpen}
+                onClick={() => handleView(document.file)}
               >
-                Upload New Version
+                View Document
+              </Button>
+              {!document.checkedOut ? (
+                <Button
+                  leftIcon={<FiLogOut />}
+                  variant="outline"
+                  colorScheme="orange"
+                  w="full"
+                  onClick={handleCheckOut}
+                  isDisabled={document.status === 'pending' || document.status === 'rejected'}
+                >
+                  Check Out for Revision
+                </Button>
+              ) : (
+                <Button
+                  leftIcon={<FiLogIn />}
+                  colorScheme="green"
+                  w="full"
+                  onClick={handleCheckIn}
+                >
+                  Check In & Submit
+                </Button>
+              )}
+              <Button
+                leftIcon={<FiTrash2 />}
+                variant="outline"
+                colorScheme="red"
+                w="full"
+                onClick={onDeleteOpen}
+              >
+                Delete Document
               </Button>
             </VStack>
           </CardBody>
@@ -190,7 +307,7 @@ const DocumentDetail = () => {
             <Tbody>
               {document.versions?.map((version, index) => (
                 <Tr key={index}>
-                  <Td fontWeight="semibold">v{version.version}</Td>
+                  <Td fontWeight="semibold">{String(version.version).padStart(2, '0')}</Td>
                   <Td>{new Date(version.uploadedAt).toLocaleString()}</Td>
                   <Td>
                     <Button
@@ -219,10 +336,17 @@ const DocumentDetail = () => {
         </Card>
       )}
 
-      <DocumentVersionModal
+      <CheckInModal
         isOpen={isOpen}
         onClose={onClose}
         documentId={document.id}
+      />
+
+      <DeleteDocumentModal
+        isOpen={isDeleteOpen}
+        onClose={onDeleteClose}
+        documentId={document.id}
+        documentTitle={document.title}
       />
     </Box>
   )

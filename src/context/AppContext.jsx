@@ -46,6 +46,11 @@ export const AppProvider = ({ children }) => {
     return saved ? JSON.parse(saved) : []
   })
 
+  const [currentUser, setCurrentUser] = useState(() => {
+    const saved = localStorage.getItem('currentUser')
+    return saved ? JSON.parse(saved) : null
+  })
+
   // Save to localStorage whenever state changes
   useEffect(() => {
     localStorage.setItem('documents', JSON.stringify(documents))
@@ -74,6 +79,14 @@ export const AppProvider = ({ children }) => {
   useEffect(() => {
     localStorage.setItem('accounts', JSON.stringify(accounts))
   }, [accounts])
+
+  useEffect(() => {
+    if (currentUser) {
+      localStorage.setItem('currentUser', JSON.stringify(currentUser))
+    } else {
+      localStorage.removeItem('currentUser')
+    }
+  }, [currentUser])
 
   const addActivityLog = (action, type, itemId, itemName) => {
     const log = {
@@ -135,6 +148,9 @@ export const AppProvider = ({ children }) => {
       createdAt: new Date().toISOString(),
       status: 'pending',
       isNew: true,
+      department: document.department || '',
+      createdBy: document.createdBy || null,
+      createdByUserType: document.createdByUserType || null,
       versions: document.versions || [{ version: 1, file: document.file, uploadedAt: new Date().toISOString() }],
     }
     setDocuments(prev => [...prev, newDoc])
@@ -149,6 +165,12 @@ export const AppProvider = ({ children }) => {
       )
     )
     addActivityLog('updated', 'document', id, updates.title || 'Document')
+  }
+
+  const deleteDocument = (id) => {
+    const doc = documents.find(d => d.id === id)
+    setDocuments(prev => prev.filter(doc => doc.id !== id))
+    addActivityLog('deleted', 'document', id, doc?.title || 'Document')
   }
 
   const approveDocument = (id) => {
@@ -198,6 +220,53 @@ export const AppProvider = ({ children }) => {
       })
     )
     addActivityLog('version_added', 'document', id, 'Document')
+  }
+
+  const checkOutDocument = (id) => {
+    setDocuments(prev =>
+      prev.map(doc =>
+        doc.id === id ? { 
+          ...doc, 
+          checkedOut: true,
+          checkedOutAt: new Date().toISOString(),
+          checkedOutBy: 'Current User' // In a real app, this would be from auth context
+        } : doc
+      )
+    )
+    const doc = documents.find(d => d.id === id)
+    addActivityLog('checked_out', 'document', id, doc?.title || 'Document')
+  }
+
+  const checkInDocument = (id, file) => {
+    setDocuments(prev =>
+      prev.map(doc => {
+        if (doc.id === id) {
+          const newVersion = {
+            version: doc.versions.length + 1,
+            file,
+            uploadedAt: new Date().toISOString(),
+          }
+          return {
+            ...doc,
+            versions: [...doc.versions, newVersion],
+            checkedOut: false,
+            checkedOutAt: null,
+            checkedOutBy: null,
+            checkedInAt: new Date().toISOString(),
+            status: 'pending', // Requires approval before posting
+            isRevised: true,
+            isNew: false,
+            // Preserve department and creator info
+            department: doc.department,
+            createdBy: doc.createdBy,
+            createdByUserType: doc.createdByUserType,
+          }
+        }
+        return doc
+      })
+    )
+    const doc = documents.find(d => d.id === id)
+    addActivityLog('checked_in', 'document', id, doc?.title || 'Document')
   }
 
   const addCertification = (certification) => {
@@ -263,6 +332,18 @@ export const AppProvider = ({ children }) => {
     addActivityLog('deleted', 'account', id, account?.name || 'Account')
   }
 
+  const login = (account) => {
+    setCurrentUser(account)
+    addActivityLog('logged_in', 'account', account.id, account.name)
+  }
+
+  const logout = () => {
+    if (currentUser) {
+      addActivityLog('logged_out', 'account', currentUser.id, currentUser.name)
+    }
+    setCurrentUser(null)
+  }
+
   return (
     <AppContext.Provider
       value={{
@@ -273,11 +354,17 @@ export const AppProvider = ({ children }) => {
         recentDocuments,
         recentFolders,
         starredDocuments,
+        currentUser,
+        login,
+        logout,
         addDocument,
         updateDocument,
+        deleteDocument,
         approveDocument,
         rejectDocument,
         addDocumentVersion,
+        checkOutDocument,
+        checkInDocument,
         addCertification,
         updateCertification,
         deleteCertification,

@@ -1,15 +1,21 @@
 import { Box, VStack, Link, Text, Icon } from '@chakra-ui/react'
 import { NavLink } from 'react-router-dom'
-import { FiHome, FiFileText, FiShield, FiCheckCircle, FiUsers } from 'react-icons/fi'
+import { FiHome, FiFileText, FiShield, FiUsers } from 'react-icons/fi'
+import { useApp } from '../context/AppContext'
 
 const Sidebar = () => {
+  const { currentUser } = useApp()
+  
   const navItems = [
     { path: '/dashboard', label: 'Dashboard', icon: FiHome },
     { path: '/documents', label: 'Documents', icon: FiFileText },
     { path: '/certifications', label: 'Certifications', icon: FiShield },
-    { path: '/approvals', label: 'Approvals', icon: FiCheckCircle },
-    { path: '/accounts', label: 'Accounts', icon: FiUsers },
   ]
+
+  // Only show Accounts link for Admin
+  if (currentUser?.userType === 'Admin') {
+    navItems.push({ path: '/accounts', label: 'Accounts', icon: FiUsers })
+  }
 
   return (
     <Box

@@ -1,12 +1,17 @@
-import { Box, Flex, Text, Badge, IconButton, Menu, MenuButton, MenuList, MenuItem } from '@chakra-ui/react'
-import { FiBell, FiUser } from 'react-icons/fi'
+import { Box, Flex, Text, Badge, IconButton, Button, Menu, MenuButton, MenuList, MenuItem, Avatar, VStack, HStack } from '@chakra-ui/react'
+import { FiBell, FiUser, FiLogOut } from 'react-icons/fi'
 import { useApp } from '../context/AppContext'
 import { useNavigate } from 'react-router-dom'
 
 const Header = () => {
-  const { getExpiringCertifications } = useApp()
+  const { getExpiringCertifications, currentUser, logout } = useApp()
   const navigate = useNavigate()
   const expiringCerts = getExpiringCertifications()
+
+  const handleLogout = () => {
+    logout()
+    navigate('/login')
+  }
 
   return (
     <Box
@@ -67,13 +72,39 @@ const Header = () => {
           <Menu>
             <MenuButton
               as={IconButton}
-              icon={<FiUser />}
               variant="ghost"
+              icon={
+                <Avatar
+                  src={currentUser?.profilePicture}
+                  name={currentUser?.name || 'User'}
+                  size="sm"
+                />
+              }
+              aria-label="User menu"
             />
             <MenuList>
+              <MenuItem>
+                <HStack spacing={3}>
+                  <Avatar
+                    src={currentUser?.profilePicture}
+                    name={currentUser?.name || 'User'}
+                    size="sm"
+                  />
+                  <VStack spacing={0} align="start">
+                    <Text fontSize="sm" fontWeight="semibold">
+                      {currentUser?.name || 'User'}
+                    </Text>
+                    <Text fontSize="xs" color="gray.500">
+                      {currentUser?.userType || ''}
+                    </Text>
+                  </VStack>
+                </HStack>
+              </MenuItem>
               <MenuItem>Profile</MenuItem>
               <MenuItem>Settings</MenuItem>
-              <MenuItem>Logout</MenuItem>
+              <MenuItem icon={<FiLogOut />} onClick={handleLogout}>
+                Logout
+              </MenuItem>
             </MenuList>
           </Menu>
         </Flex>

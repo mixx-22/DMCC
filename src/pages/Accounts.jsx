@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react'
+import React, { useState, useRef } from 'react'
 import {
   Box,
   Heading,
@@ -27,10 +27,27 @@ import {
 } from '@chakra-ui/react'
 import { FiPlus, FiEdit, FiTrash2, FiSearch, FiUser } from 'react-icons/fi'
 import { useApp } from '../context/AppContext'
+import { useNavigate } from 'react-router-dom'
 import AccountModal from '../components/AccountModal'
 
 const Accounts = () => {
-  const { accounts, deleteAccount } = useApp()
+  const { accounts, deleteAccount, currentUser } = useApp()
+  const navigate = useNavigate()
+
+  // Check if user is admin
+  React.useEffect(() => {
+    if (currentUser?.userType !== 'Admin') {
+      navigate('/dashboard')
+    }
+  }, [currentUser, navigate])
+
+  if (currentUser?.userType !== 'Admin') {
+    return (
+      <Box>
+        <Text>Access Denied. Only administrators can access this page.</Text>
+      </Box>
+    )
+  }
   const { isOpen, onOpen, onClose } = useDisclosure()
   const {
     isOpen: isDeleteOpen,
@@ -84,6 +101,8 @@ const Accounts = () => {
     switch (userType?.toLowerCase()) {
       case 'admin':
         return 'red'
+      case 'manager':
+        return 'orange'
       case 'supervisor':
         return 'purple'
       case 'user':
