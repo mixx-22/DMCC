@@ -298,7 +298,7 @@ const DocumentDetail = () => {
                 onClick={onDeleteOpen}
                 isDisabled={!userHasCheckoutAccess}
               >
-                Delete Document
+                Archive Document
               </Button>
             </VStack>
           </CardBody>

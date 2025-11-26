@@ -17,46 +17,17 @@ import {
   Alert,
   AlertIcon,
 } from '@chakra-ui/react'
-import { useApp } from '../context/AppContext'
-import { useNavigate } from 'react-router-dom'
 
-const DeleteDocumentModal = ({ isOpen, onClose, documentId, documentTitle }) => {
-  const { archiveDocument } = useApp()
-  const navigate = useNavigate()
-  const toast = useToast()
+const ArchiveDeleteConfirmModal = ({ isOpen, onClose, documentTitle, onConfirm, isDeleting }) => {
   const [confirmText, setConfirmText] = useState('')
-  const [isDeleting, setIsDeleting] = useState(false)
-
   const isMatch = confirmText.trim() === documentTitle.trim()
 
-  const handleDelete = async () => {
+  const handleDelete = () => {
     if (!isMatch) {
-      toast({
-        title: 'Validation Error',
-        description: 'Document title does not match',
-        status: 'error',
-        duration: 3000,
-        isClosable: true,
-      })
       return
     }
-
-    setIsDeleting(true)
-
-    archiveDocument(documentId)
-
-    toast({
-      title: 'Document Archived',
-      description: 'Document has been moved to Archive',
-      status: 'success',
-      duration: 3000,
-      isClosable: true,
-    })
-
-    setIsDeleting(false)
+    onConfirm()
     setConfirmText('')
-    onClose()
-    navigate('/archive')
   }
 
   const handleClose = () => {
@@ -68,20 +39,20 @@ const DeleteDocumentModal = ({ isOpen, onClose, documentId, documentTitle }) => 
     <Modal isOpen={isOpen} onClose={handleClose}>
       <ModalOverlay />
       <ModalContent>
-        <ModalHeader color="orange.600">Archive Document</ModalHeader>
+        <ModalHeader color="red.600">Permanently Delete from Archive</ModalHeader>
         <ModalCloseButton />
         <ModalBody>
           <VStack spacing={4} align="stretch">
-            <Alert status="warning">
+            <Alert status="error">
               <AlertIcon />
-              This will move the document to the Archive folder. You can restore it later if needed.
+              This will permanently delete the document from archive. This action cannot be undone.
             </Alert>
-            
+
             <Text>
               To confirm deletion, please type the document title:
             </Text>
-            
-            <Text fontWeight="semibold" color="blue.600" fontSize="lg">
+
+            <Text fontWeight="semibold" color="red.600" fontSize="lg">
               {documentTitle}
             </Text>
 
@@ -102,12 +73,12 @@ const DeleteDocumentModal = ({ isOpen, onClose, documentId, documentTitle }) => 
             Cancel
           </Button>
           <Button
-            colorScheme="orange"
+            colorScheme="red"
             onClick={handleDelete}
             isDisabled={!isMatch || isDeleting}
             isLoading={isDeleting}
           >
-            Archive Document
+            Delete Permanently
           </Button>
         </ModalFooter>
       </ModalContent>
@@ -115,5 +86,4 @@ const DeleteDocumentModal = ({ isOpen, onClose, documentId, documentTitle }) => 
   )
 }
 
-export default DeleteDocumentModal
-
+export default ArchiveDeleteConfirmModal

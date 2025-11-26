@@ -64,6 +64,7 @@ const DocumentUploadModal = ({ isOpen, onClose }) => {
       fileSize: formData.file.size,
       department: currentUser?.department || '',
       createdBy: currentUser?.id || null,
+      createdByName: currentUser?.name || null,
       createdByUserType: currentUser?.userType || null,
     })
 

@@ -16,6 +16,11 @@ export const AppProvider = ({ children }) => {
     return saved ? JSON.parse(saved) : []
   })
 
+  const [archivedDocuments, setArchivedDocuments] = useState(() => {
+    const saved = localStorage.getItem('archivedDocuments')
+    return saved ? JSON.parse(saved) : []
+  })
+
   const [certifications, setCertifications] = useState(() => {
     const saved = localStorage.getItem('certifications')
     return saved ? JSON.parse(saved) : []
@@ -55,6 +60,10 @@ export const AppProvider = ({ children }) => {
   useEffect(() => {
     localStorage.setItem('documents', JSON.stringify(documents))
   }, [documents])
+
+  useEffect(() => {
+    localStorage.setItem('archivedDocuments', JSON.stringify(archivedDocuments))
+  }, [archivedDocuments])
 
   useEffect(() => {
     localStorage.setItem('certifications', JSON.stringify(certifications))
@@ -150,6 +159,7 @@ export const AppProvider = ({ children }) => {
       isNew: true,
       department: document.department || '',
       createdBy: document.createdBy || null,
+      createdByName: document.createdByName || currentUser?.name || null,
       createdByUserType: document.createdByUserType || null,
       versions: document.versions || [{ version: 1, file: document.file, uploadedAt: new Date().toISOString() }],
     }
@@ -171,6 +181,38 @@ export const AppProvider = ({ children }) => {
     const doc = documents.find(d => d.id === id)
     setDocuments(prev => prev.filter(doc => doc.id !== id))
     addActivityLog('deleted', 'document', id, doc?.title || 'Document')
+  }
+
+  const archiveDocument = (id) => {
+    const doc = documents.find(d => d.id === id)
+    if (!doc) return
+    const archived = {
+      ...doc,
+      archivedAt: new Date().toISOString(),
+      status: 'archived',
+    }
+    setArchivedDocuments(prev => [archived, ...prev])
+    setDocuments(prev => prev.filter(d => d.id !== id))
+    addActivityLog('archived', 'document', id, doc.title || 'Document')
+  }
+
+  const restoreDocument = (id) => {
+    const doc = archivedDocuments.find(d => d.id === id)
+    if (!doc) return
+    const restored = {
+      ...doc,
+      status: 'pending',
+      archivedAt: null,
+    }
+    setDocuments(prev => [restored, ...prev])
+    setArchivedDocuments(prev => prev.filter(d => d.id !== id))
+    addActivityLog('restored', 'document', id, doc.title || 'Document')
+  }
+
+  const deleteArchivedDocument = (id) => {
+    const doc = archivedDocuments.find(d => d.id === id)
+    setArchivedDocuments(prev => prev.filter(d => d.id !== id))
+    addActivityLog('deleted_permanently', 'document', id, doc?.title || 'Document')
   }
 
   const approveDocument = (id) => {
@@ -387,6 +429,10 @@ export const AppProvider = ({ children }) => {
         addRecentFolder,
         toggleStar,
         getExpiringCertifications,
+        archivedDocuments,
+        archiveDocument,
+        restoreDocument,
+        deleteArchivedDocument,
       }}
     >
       {children}

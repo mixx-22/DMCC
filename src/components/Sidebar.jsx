@@ -1,6 +1,6 @@
 import { Box, VStack, Link, Text, Icon } from '@chakra-ui/react'
 import { NavLink } from 'react-router-dom'
-import { FiHome, FiFileText, FiShield, FiUsers } from 'react-icons/fi'
+import { FiHome, FiFileText, FiShield, FiUsers, FiArchive } from 'react-icons/fi'
 import { useApp } from '../context/AppContext'
 
 const Sidebar = () => {
@@ -9,6 +9,7 @@ const Sidebar = () => {
   const navItems = [
     { path: '/dashboard', label: 'Dashboard', icon: FiHome },
     { path: '/documents', label: 'Documents', icon: FiFileText },
+    { path: '/archive', label: 'Archive', icon: FiArchive },
     { path: '/certifications', label: 'Certifications', icon: FiShield },
   ]
 

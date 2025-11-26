@@ -8,6 +8,7 @@ import DocumentDetail from './pages/DocumentDetail'
 import Certifications from './pages/Certifications'
 import CertificationDetail from './pages/CertificationDetail'
 import Accounts from './pages/Accounts'
+import Archive from './pages/Archive'
 
 const ProtectedRoute = ({ children }) => {
   const { currentUser } = useApp()
@@ -36,6 +37,7 @@ function App() {
                   <Route path="/dashboard" element={<Dashboard />} />
                   <Route path="/documents" element={<Documents />} />
                   <Route path="/documents/:id" element={<DocumentDetail />} />
+                  <Route path="/archive" element={<Archive />} />
                   <Route path="/certifications" element={<Certifications />} />
                   <Route path="/certifications/:id" element={<CertificationDetail />} />
                   <Route path="/accounts" element={<Accounts />} />
