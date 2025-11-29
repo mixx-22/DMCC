@@ -2,8 +2,9 @@ import { Box, Grid, Heading, Text, VStack, HStack, Badge, Icon, Card, CardBody, 
 import { FiFileText, FiShield, FiClock, FiStar, FiActivity, FiPrinter } from 'react-icons/fi'
 import { useApp } from '../context/AppContext'
 import { useNavigate } from 'react-router-dom'
-import { formatDistanceToNow } from 'date-fns'
-import { useRef } from 'react'
+import { formatDistanceToNow, differenceInCalendarDays } from 'date-fns'
+import { useRef, useMemo } from 'react'
+import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip } from 'recharts'
 
 const Dashboard = () => {
   const { recentDocuments, starredDocuments, documents, certifications, activityLogs, currentUser } = useApp()
@@ -105,6 +106,52 @@ const Dashboard = () => {
     printWindow.print()
   }
 
+  // Calculate certificate age data (days from createdAt to now)
+  const certificateAgeData = useMemo(() => {
+    const now = new Date()
+    let greenCount = 0
+    let redCount = 0
+
+    visibleCertifications.forEach(cert => {
+      if (cert.createdAt) {
+        const ageInDays = differenceInCalendarDays(now, new Date(cert.createdAt))
+        if (ageInDays <= 300) {
+          greenCount++
+        } else {
+          redCount++
+        }
+      }
+    })
+
+    return [
+      { name: '≤ 300 days', value: greenCount, color: '#48BB78' },
+      { name: '> 300 days', value: redCount, color: '#F56565' }
+    ]
+  }, [visibleCertifications])
+
+  // Calculate remaining days data (days from now to expirationDate)
+  const remainingDaysData = useMemo(() => {
+    const now = new Date()
+    let greenCount = 0
+    let redCount = 0
+
+    visibleCertifications.forEach(cert => {
+      if (cert.expirationDate) {
+        const daysRemaining = differenceInCalendarDays(new Date(cert.expirationDate), now)
+        if (daysRemaining <= 300) {
+          greenCount++
+        } else {
+          redCount++
+        }
+      }
+    })
+
+    return [
+      { name: '≤ 300 days', value: greenCount, color: '#48BB78' },
+      { name: '> 300 days', value: redCount, color: '#F56565' }
+    ]
+  }, [visibleCertifications])
+
   return (
     <Box>
       <Heading mb={6}>Dashboard</Heading>
@@ -143,6 +190,126 @@ const Dashboard = () => {
               </VStack>
               <Icon as={FiClock} boxSize={10} color="orange.500" />
             </HStack>
+          </CardBody>
+        </Card>
+      </Grid>
+
+      <Grid templateColumns="repeat(auto-fit, minmax(400px, 1fr))" gap={6} mb={8}>
+        <Card>
+          <CardHeader>
+            <Heading size="md">Certificate Age</Heading>
+            <Text fontSize="sm" color="gray.600" mt={1}>
+              Age of certificates from creation date
+            </Text>
+          </CardHeader>
+          <CardBody>
+            {visibleCertifications.length === 0 ? (
+              <Text color="gray.500" textAlign="center" py={8}>
+                No certifications available
+              </Text>
+            ) : (
+              <VStack spacing={4}>
+                <ResponsiveContainer width="100%" height={300}>
+                  <PieChart>
+                    <Pie
+                      data={certificateAgeData}
+                      cx="50%"
+                      cy="50%"
+                      labelLine={false}
+                      label={({ name, value, percent }) => 
+                        value > 0 ? `${name}: ${value} (${(percent * 100).toFixed(0)}%)` : ''
+                      }
+                      outerRadius={100}
+                      fill="#8884d8"
+                      dataKey="value"
+                    >
+                      {certificateAgeData.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={entry.color} />
+                      ))}
+                    </Pie>
+                    <Tooltip />
+                    <Legend 
+                      verticalAlign="bottom" 
+                      height={36}
+                      formatter={(value, entry) => (
+                        <span style={{ color: entry.color }}>
+                          {value}: {entry.payload.value}
+                        </span>
+                      )}
+                    />
+                  </PieChart>
+                </ResponsiveContainer>
+                <HStack spacing={4} justify="center" mt={2}>
+                  <HStack>
+                    <Box w={4} h={4} bg="green.500" borderRadius="sm" />
+                    <Text fontSize="sm">≤ 300 days: {certificateAgeData[0].value}</Text>
+                  </HStack>
+                  <HStack>
+                    <Box w={4} h={4} bg="red.500" borderRadius="sm" />
+                    <Text fontSize="sm">> 300 days: {certificateAgeData[1].value}</Text>
+                  </HStack>
+                </HStack>
+              </VStack>
+            )}
+          </CardBody>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <Heading size="md">Remaining Days</Heading>
+            <Text fontSize="sm" color="gray.600" mt={1}>
+              Days remaining until expiration (1 year from renewal)
+            </Text>
+          </CardHeader>
+          <CardBody>
+            {visibleCertifications.filter(cert => cert.expirationDate).length === 0 ? (
+              <Text color="gray.500" textAlign="center" py={8}>
+                No certifications with expiration dates
+              </Text>
+            ) : (
+              <VStack spacing={4}>
+                <ResponsiveContainer width="100%" height={300}>
+                  <PieChart>
+                    <Pie
+                      data={remainingDaysData}
+                      cx="50%"
+                      cy="50%"
+                      labelLine={false}
+                      label={({ name, value, percent }) => 
+                        value > 0 ? `${name}: ${value} (${(percent * 100).toFixed(0)}%)` : ''
+                      }
+                      outerRadius={100}
+                      fill="#8884d8"
+                      dataKey="value"
+                    >
+                      {remainingDaysData.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={entry.color} />
+                      ))}
+                    </Pie>
+                    <Tooltip />
+                    <Legend 
+                      verticalAlign="bottom" 
+                      height={36}
+                      formatter={(value, entry) => (
+                        <span style={{ color: entry.color }}>
+                          {value}: {entry.payload.value}
+                        </span>
+                      )}
+                    />
+                  </PieChart>
+                </ResponsiveContainer>
+                <HStack spacing={4} justify="center" mt={2}>
+                  <HStack>
+                    <Box w={4} h={4} bg="green.500" borderRadius="sm" />
+                    <Text fontSize="sm">≤ 300 days: {remainingDaysData[0].value}</Text>
+                  </HStack>
+                  <HStack>
+                    <Box w={4} h={4} bg="red.500" borderRadius="sm" />
+                    <Text fontSize="sm">> 300 days: {remainingDaysData[1].value}</Text>
+                  </HStack>
+                </HStack>
+              </VStack>
+            )}
           </CardBody>
         </Card>
       </Grid>

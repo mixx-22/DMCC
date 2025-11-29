@@ -171,7 +171,12 @@ export const AppProvider = ({ children }) => {
   const updateDocument = (id, updates) => {
     setDocuments(prev =>
       prev.map(doc =>
-        doc.id === id ? { ...doc, ...updates } : doc
+        doc.id === id ? { 
+          ...doc, 
+          ...updates,
+          lastModifiedBy: currentUser?.name || 'Unknown',
+          lastModifiedAt: new Date().toISOString(),
+        } : doc
       )
     )
     addActivityLog('updated', 'document', id, updates.title || 'Document')
@@ -224,6 +229,8 @@ export const AppProvider = ({ children }) => {
           approvedAt: new Date().toISOString(),
           isNew: false,
           isRevised: false,
+          lastModifiedBy: currentUser?.name || 'Unknown',
+          lastModifiedAt: new Date().toISOString(),
         } : doc
       )
     )
@@ -234,7 +241,13 @@ export const AppProvider = ({ children }) => {
   const rejectDocument = (id, reason) => {
     setDocuments(prev =>
       prev.map(doc =>
-        doc.id === id ? { ...doc, status: 'rejected', rejectionReason: reason } : doc
+        doc.id === id ? { 
+          ...doc, 
+          status: 'rejected', 
+          rejectionReason: reason,
+          lastModifiedBy: currentUser?.name || 'Unknown',
+          lastModifiedAt: new Date().toISOString(),
+        } : doc
       )
     )
     const doc = documents.find(d => d.id === id)
@@ -256,6 +269,8 @@ export const AppProvider = ({ children }) => {
             status: 'pending',
             isRevised: true,
             isNew: false,
+            lastModifiedBy: currentUser?.name || 'Unknown',
+            lastModifiedAt: new Date().toISOString(),
           }
         }
         return doc
@@ -304,6 +319,8 @@ export const AppProvider = ({ children }) => {
             department: doc.department,
             createdBy: doc.createdBy,
             createdByUserType: doc.createdByUserType,
+            lastModifiedBy: currentUser?.name || 'Unknown',
+            lastModifiedAt: new Date().toISOString(),
           }
         }
         return doc

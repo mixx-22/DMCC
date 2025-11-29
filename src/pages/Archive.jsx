@@ -154,6 +154,7 @@ const Archive = () => {
             <Tr>
               <Th>Title</Th>
               <Th>Owner</Th>
+              <Th>Last Modified By</Th>
               <Th>Archived At</Th>
               <Th>Days Left</Th>
               <Th>Actions</Th>
@@ -167,6 +168,16 @@ const Archive = () => {
                 <Tr key={doc.id}>
                   <Td fontWeight="semibold">{doc.title}</Td>
                   <Td>{doc.createdByName || doc.createdBy || 'Unknown'}</Td>
+                  <Td>
+                    <VStack align="start" spacing={0}>
+                      <Text>{doc.lastModifiedBy || doc.createdByName || doc.createdBy || 'Unknown'}</Text>
+                      {doc.lastModifiedAt && (
+                        <Text fontSize="xs" color="gray.500">
+                          {new Date(doc.lastModifiedAt).toLocaleString()}
+                        </Text>
+                      )}
+                    </VStack>
+                  </Td>
                   <Td>{doc.archivedAt ? new Date(doc.archivedAt).toLocaleString() : '-'}</Td>
                   <Td>
                     {daysLeft === 0 ? (
