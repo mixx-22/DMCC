@@ -1,5 +1,5 @@
-import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   Box,
   VStack,
@@ -16,39 +16,39 @@ import {
   CardBody,
   Text,
   IconButton,
-} from '@chakra-ui/react'
-import { FiEye, FiEyeOff, FiLock, FiUser } from 'react-icons/fi'
-import { useApp } from '../context/AppContext'
+} from "@chakra-ui/react";
+import { FiEye, FiEyeOff, FiLock, FiUser } from "react-icons/fi";
+import { useApp } from "../context/AppContext";
 
 const Login = () => {
-  const { accounts, login, addAccount } = useApp()
-  const navigate = useNavigate()
-  const toast = useToast()
-  const [username, setUsername] = useState('')
-  const [password, setPassword] = useState('')
-  const [showPassword, setShowPassword] = useState(false)
-  const [isLoading, setIsLoading] = useState(false)
+  const { accounts, login, addAccount } = useApp();
+  const navigate = useNavigate();
+  const toast = useToast();
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleSubmit = async (e) => {
-    e.preventDefault()
+    e.preventDefault();
 
     if (!username || !password) {
       toast({
-        title: 'Validation Error',
-        description: 'Please enter both username and password',
-        status: 'error',
+        title: "Validation Error",
+        description: "Please enter both username and password",
+        status: "error",
         duration: 3000,
         isClosable: true,
-      })
-      return
+      });
+      return;
     }
 
-    setIsLoading(true)
+    setIsLoading(true);
 
     // Find account with matching username
     let account = accounts.find(
-      acc => acc.username?.toLowerCase() === username.toLowerCase()
-    )
+      (acc) => acc.username?.toLowerCase() === username.toLowerCase()
+    );
 
     if (!account && accounts.length === 0) {
       // Seed a first account so users can sign in on fresh installs
@@ -56,50 +56,50 @@ const Login = () => {
         name: username,
         username,
         password,
-        userType: 'Admin',
-        jobTitle: 'System Administrator',
-        department: 'Administration',
-      })
+        userType: "Admin",
+        jobTitle: "System Administrator",
+        department: "Administration",
+      });
     }
 
     if (!account) {
-      setIsLoading(false)
+      setIsLoading(false);
       toast({
-        title: 'Login Failed',
-        description: 'Invalid username or password',
-        status: 'error',
+        title: "Login Failed",
+        description: "Invalid username or password",
+        status: "error",
         duration: 3000,
         isClosable: true,
-      })
-      return
+      });
+      return;
     }
 
     // Check password (in a real app, this would be hashed)
     if (account.password !== password) {
-      setIsLoading(false)
+      setIsLoading(false);
       toast({
-        title: 'Login Failed',
-        description: 'Invalid username or password',
-        status: 'error',
+        title: "Login Failed",
+        description: "Invalid username or password",
+        status: "error",
         duration: 3000,
         isClosable: true,
-      })
-      return
+      });
+      return;
     }
 
     // Login successful
-    login(account)
+    login(account);
     toast({
-      title: 'Login Successful',
+      title: "Login Successful",
       description: `Welcome back, ${account.name}!`,
-      status: 'success',
+      status: "success",
       duration: 3000,
       isClosable: true,
-    })
+    });
 
-    setIsLoading(false)
-    navigate('/dashboard')
-  }
+    setIsLoading(false);
+    navigate("/dashboard");
+  };
 
   return (
     <Box
@@ -113,11 +113,9 @@ const Login = () => {
         <CardBody p={8}>
           <VStack spacing={6}>
             <VStack spacing={2}>
-              <Heading size="lg" color="blue.600">
-                DMCC
-              </Heading>
+              <Heading color="brandPrimary.600">Auptilyze</Heading>
               <Text color="gray.600" fontSize="sm">
-                Document Management & Certification Monitoring
+                With Certainty.
               </Text>
             </VStack>
 
@@ -147,7 +145,7 @@ const Login = () => {
                         <FiLock />
                       </InputLeftElement>
                       <Input
-                        type={showPassword ? 'text' : 'password'}
+                        type={showPassword ? "text" : "password"}
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
                         placeholder="Enter your password"
@@ -156,7 +154,9 @@ const Login = () => {
                       />
                       <InputRightElement>
                         <IconButton
-                          aria-label={showPassword ? 'Hide password' : 'Show password'}
+                          aria-label={
+                            showPassword ? "Hide password" : "Show password"
+                          }
                           icon={showPassword ? <FiEyeOff /> : <FiEye />}
                           variant="ghost"
                           size="sm"
@@ -168,7 +168,7 @@ const Login = () => {
 
                   <Button
                     type="submit"
-                    colorScheme="blue"
+                    colorScheme="brandPrimary"
                     w="full"
                     size="lg"
                     isLoading={isLoading}
@@ -183,8 +183,7 @@ const Login = () => {
         </CardBody>
       </Card>
     </Box>
-  )
-}
+  );
+};
 
-export default Login
-
+export default Login;

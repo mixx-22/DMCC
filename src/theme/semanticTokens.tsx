@@ -1,4 +1,8 @@
 export const semanticTokens = {
+  fonts: {
+    heading: `'Funnel Display', sans-serif`,
+    body: `'Inter', sans-serif`,
+  },
   colors: {
     error: "red.500",
     success: "green.500",
