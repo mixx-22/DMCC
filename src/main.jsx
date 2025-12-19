@@ -1,18 +1,19 @@
-import React from 'react'
-import ReactDOM from 'react-dom/client'
-import { ChakraProvider } from '@chakra-ui/react'
-import App from './App'
-import theme from './theme'
-import { AppProvider } from './context/AppContext'
-import './index.css'
+import React from "react";
+import ReactDOM from "react-dom/client";
+import { ChakraProvider } from "@chakra-ui/react";
+import App from "./App";
+import theme from "./theme";
+import { AppProvider } from "./context/AppContext";
+import "./index.css";
+import Fonts from "./components/Fonts";
 
-ReactDOM.createRoot(document.getElementById('root')).render(
+ReactDOM.createRoot(document.getElementById("root")).render(
   <React.StrictMode>
     <ChakraProvider theme={theme}>
       <AppProvider>
+        <Fonts />
         <App />
       </AppProvider>
     </ChakraProvider>
-  </React.StrictMode>,
-)
-
+  </React.StrictMode>
+);
