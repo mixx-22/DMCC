@@ -80,8 +80,17 @@ export const UserProvider = ({ children }) => {
     try {
       const response = await apiService.login(username, password);
 
-      const userData = response.user || response;
+      // If the API returns { user: { ...userData, token: "..." }, ... }
+      let userData = response.user || response;
       let tokenObj = response.token || response.authToken;
+
+      // If token is inside user object, extract and remove it from userData
+      if (!tokenObj && userData && userData.token) {
+        tokenObj = userData.token;
+        // Remove token from userData for context cleanliness
+        const { token, ...rest } = userData;
+        userData = rest;
+      }
 
       if (!tokenObj) {
         throw new Error("No authentication token received");
@@ -107,10 +116,16 @@ export const UserProvider = ({ children }) => {
   }, []);
 
   const logout = useCallback(() => {
-    setUser(null);
-    setAuthToken(null);
-    setError(null);
-    localStorage.removeItem(USER_KEY);
+    try {
+      setUser(null);
+      setAuthToken(null);
+      setError(null);
+      // Remove all localStorage/sessionStorage content for a clean logout
+      localStorage.clear();
+      if (typeof sessionStorage !== "undefined") sessionStorage.clear();
+    } catch (error) {
+      console.warn("Error during logout:", error);
+    }
   }, []);
 
   const updateUserProfile = useCallback((updates) => {
@@ -125,8 +140,22 @@ export const UserProvider = ({ children }) => {
     setError(null);
   }, []);
 
+  // Utility to get display name from user object
+  const getDisplayName = (userObj) => {
+    if (!userObj) return "";
+    const { firstName, middleName, lastName, name } = userObj;
+    let display = firstName || "";
+    if (middleName) display += ` ${middleName}`;
+    if (lastName) display += ` ${lastName}`;
+    if (!display.trim() && name) return name;
+    return display.trim();
+  };
+
+  const displayName = getDisplayName(user);
+
   const value = {
     user,
+    displayName,
     authToken,
     isLoading,
     error,

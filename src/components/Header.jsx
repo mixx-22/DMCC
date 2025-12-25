@@ -17,12 +17,14 @@ import {
   useColorModeValue,
 } from "@chakra-ui/react";
 import { FiBell, FiLogOut } from "react-icons/fi";
-import { useApp } from "../context/AppContext";
+import { useUser } from "../context/useUser";
 import { useNavigate } from "react-router-dom";
 import { useLayout } from "../context/Layout";
+import { useApp } from "../context/AppContext";
 
 const Header = () => {
-  const { getExpiringCertifications, currentUser, logout } = useApp();
+  const { getExpiringCertifications } = useApp();
+  const { user: currentUser, logout } = useUser();
   const { headerRef } = useLayout();
   const navigate = useNavigate();
   const expiringCerts = getExpiringCertifications();
@@ -44,7 +46,6 @@ const Header = () => {
       zIndex="sticky"
       h="sidebar.row"
       justify="center"
-      px={4}
     >
       <Flex
         w="full"
@@ -105,7 +106,19 @@ const Header = () => {
               icon={
                 <Avatar
                   src={currentUser?.profilePicture}
-                  name={currentUser?.name || "User"}
+                  name={
+                    currentUser
+                      ? [
+                          currentUser.firstName,
+                          currentUser.middleName,
+                          currentUser.lastName,
+                        ]
+                          .filter(Boolean)
+                          .join(" ") ||
+                        currentUser.name ||
+                        "User"
+                      : "User"
+                  }
                   size="sm"
                 />
               }
@@ -122,10 +135,20 @@ const Header = () => {
                   />
                   <VStack spacing={0} align="start">
                     <Text fontSize="sm" fontWeight="semibold">
-                      {currentUser?.name || "User"}
+                      {currentUser
+                        ? [
+                            currentUser.firstName,
+                            currentUser.middleName,
+                            currentUser.lastName,
+                          ]
+                            .filter(Boolean)
+                            .join(" ") ||
+                          currentUser.name ||
+                          "User"
+                        : "User"}
                     </Text>
                     <Text fontSize="xs" color="gray.500">
-                      {currentUser?.userType || ""}
+                      {currentUser?.position || ""}
                     </Text>
                   </VStack>
                 </HStack>
