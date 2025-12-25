@@ -73,25 +73,19 @@ const Documents = () => {
   const [selectedDoc, setSelectedDoc] = useState(null);
   const [rejectionReason, setRejectionReason] = useState("");
 
-  // Helper function to check if user can view document
   const canViewDocument = (doc) => {
-    // Admin can view all documents
     if (currentUser?.userType === "Admin") {
       return true;
     }
-    // Users can only view documents from their department
     return doc.department === currentUser?.department;
   };
 
-  // Get visible documents filtered by department
   const visibleDocuments = documents.filter(canViewDocument);
 
-  // Get unique categories/folders from visible documents only
   const folders = [
     ...new Set(visibleDocuments.map((doc) => doc.category || "Uncategorized")),
   ];
 
-  // Filter recent documents to only show document type and by department
   const recentDocItems = recentDocuments
     .filter((doc) => doc.type === "documents")
     .filter((recentDoc) => {
@@ -99,7 +93,6 @@ const Documents = () => {
       return doc ? canViewDocument(doc) : false;
     });
 
-  // Get recent folders from categories - only show folders with documents from user's department
   const recentFolderItems = recentFolders
     .map((folder) => ({
       ...folder,
@@ -107,31 +100,25 @@ const Documents = () => {
         (doc) => (doc.category || "Uncategorized") === folder.name
       ).length,
     }))
-    .filter((folder) => folder.count > 0); // Only show folders that have visible documents
+    .filter((folder) => folder.count > 0);
 
-  // Helper function to check if user can approve document
   const canApproveDocument = (doc) => {
-    // Admin can approve any document
     if (currentUser?.userType === "Admin") {
       return true;
     }
-    // Only Supervisor or Manager can approve
     if (
       currentUser?.userType !== "Supervisor" &&
       currentUser?.userType !== "Manager"
     ) {
       return false;
     }
-    // If supervisor created the document, only manager can approve
     if (doc.createdByUserType === "Supervisor") {
       return currentUser?.userType === "Manager";
     }
-    // Supervisor or Manager can approve documents created by others
     return true;
   };
 
   const filteredDocuments = documents.filter((doc) => {
-    // First check if user can view this document
     if (!canViewDocument(doc)) {
       return false;
     }
@@ -164,7 +151,6 @@ const Documents = () => {
     }
   };
 
-  // Get pending documents (new and revised) - filtered by department and approval permissions
   const pendingDocuments = documents.filter((doc) => {
     return (
       doc.status === "pending" &&

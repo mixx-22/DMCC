@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState } from "react";
 import {
   Modal,
   ModalOverlay,
@@ -13,54 +13,53 @@ import {
   Input,
   useToast,
   VStack,
-} from '@chakra-ui/react'
-import { useApp } from '../context/AppContext'
+} from "@chakra-ui/react";
+import { useApp } from "../context/AppContext";
 
 const DocumentVersionModal = ({ isOpen, onClose, documentId }) => {
-  const { addDocumentVersion } = useApp()
-  const toast = useToast()
-  const [file, setFile] = useState(null)
-  const [isSubmitting, setIsSubmitting] = useState(false)
+  const { addDocumentVersion } = useApp();
+  const toast = useToast();
+  const [file, setFile] = useState(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleFileChange = (e) => {
-    const selectedFile = e.target.files[0]
+    const selectedFile = e.target.files[0];
     if (selectedFile) {
-      setFile(selectedFile)
+      setFile(selectedFile);
     }
-  }
+  };
 
   const handleSubmit = async (e) => {
-    e.preventDefault()
+    e.preventDefault();
     if (!file) {
       toast({
-        title: 'Validation Error',
-        description: 'Please select a file',
-        status: 'error',
+        title: "Validation Error",
+        description: "Please select a file",
+        status: "error",
         duration: 3000,
         isClosable: true,
-      })
-      return
+      });
+      return;
     }
 
-    setIsSubmitting(true)
-    
-    // Simulate file upload
-    const fileUrl = URL.createObjectURL(file)
-    
-    addDocumentVersion(documentId, fileUrl)
+    setIsSubmitting(true);
+
+    const fileUrl = URL.createObjectURL(file);
+
+    addDocumentVersion(documentId, fileUrl);
 
     toast({
-      title: 'Version Added',
-      description: 'New version has been uploaded and is pending approval',
-      status: 'success',
+      title: "Version Added",
+      description: "New version has been uploaded and is pending approval",
+      status: "success",
       duration: 3000,
       isClosable: true,
-    })
+    });
 
-    setFile(null)
-    setIsSubmitting(false)
-    onClose()
-  }
+    setFile(null);
+    setIsSubmitting(false);
+    onClose();
+  };
 
   return (
     <Modal isOpen={isOpen} onClose={onClose}>
@@ -79,12 +78,7 @@ const DocumentVersionModal = ({ isOpen, onClose, documentId }) => {
                   accept=".pdf,.doc,.docx,.txt"
                 />
                 {file && (
-                  <Input
-                    mt={2}
-                    value={file.name}
-                    isReadOnly
-                    variant="filled"
-                  />
+                  <Input mt={2} value={file.name} isReadOnly variant="filled" />
                 )}
               </FormControl>
             </VStack>
@@ -101,9 +95,7 @@ const DocumentVersionModal = ({ isOpen, onClose, documentId }) => {
         </form>
       </ModalContent>
     </Modal>
-  )
-}
+  );
+};
 
-export default DocumentVersionModal
-
-
+export default DocumentVersionModal;

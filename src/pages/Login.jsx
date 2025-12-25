@@ -45,13 +45,11 @@ const Login = () => {
 
     setIsLoading(true);
 
-    // Find account with matching username
     let account = accounts.find(
       (acc) => acc.username?.toLowerCase() === username.toLowerCase()
     );
 
     if (!account && accounts.length === 0) {
-      // Seed a first account so users can sign in on fresh installs
       account = addAccount({
         name: username,
         username,
@@ -74,7 +72,6 @@ const Login = () => {
       return;
     }
 
-    // Check password (in a real app, this would be hashed)
     if (account.password !== password) {
       setIsLoading(false);
       toast({
@@ -87,7 +84,6 @@ const Login = () => {
       return;
     }
 
-    // Login successful
     login(account);
     toast({
       title: "Login Successful",

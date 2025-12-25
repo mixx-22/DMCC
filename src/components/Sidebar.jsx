@@ -44,7 +44,6 @@ const Sidebar = () => {
   const [isBottomNavVisible, setIsBottomNavVisible] = useState(true);
   const [lastScrollY, setLastScrollY] = useState(0);
 
-  // Check if mobile and handle scroll
   useEffect(() => {
     const checkMobile = () => {
       setIsMobile(window.innerWidth < 768);
@@ -54,13 +53,10 @@ const Sidebar = () => {
       const currentScrollY = window.scrollY;
 
       if (currentScrollY < 10) {
-        // At the top of the page
         setIsBottomNavVisible(true);
       } else if (currentScrollY > lastScrollY && currentScrollY > 100) {
-        // Scrolling down
         setIsBottomNavVisible(false);
       } else if (currentScrollY < lastScrollY) {
-        // Scrolling up
         setIsBottomNavVisible(true);
       }
 
@@ -118,7 +114,6 @@ const Sidebar = () => {
     },
   ];
 
-  // Only show Accounts link for Admin
   if (currentUser?.userType === "Admin") {
     navItems.push({
       id: "accounts",
@@ -204,7 +199,6 @@ const Sidebar = () => {
     );
   };
 
-  // Mobile Bottom Navigation
   if (isMobile) {
     const mainNavItems = [
       { id: "dashboard", path: "/dashboard", label: "Home", icon: FiHome },
@@ -307,7 +301,6 @@ const Sidebar = () => {
     );
   }
 
-  // Desktop Sidebar
   return (
     <Box
       w={isCollapsed ? "80px" : "250px"}

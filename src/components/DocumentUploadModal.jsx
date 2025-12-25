@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState } from "react";
 import {
   Modal,
   ModalOverlay,
@@ -16,45 +16,44 @@ import {
   VStack,
   useToast,
   Text,
-} from '@chakra-ui/react'
-import { useApp } from '../context/AppContext'
+} from "@chakra-ui/react";
+import { useApp } from "../context/AppContext";
 
 const DocumentUploadModal = ({ isOpen, onClose }) => {
-  const { addDocument, currentUser } = useApp()
-  const toast = useToast()
+  const { addDocument, currentUser } = useApp();
+  const toast = useToast();
   const [formData, setFormData] = useState({
-    title: '',
-    description: '',
-    category: '',
+    title: "",
+    description: "",
+    category: "",
     file: null,
-  })
-  const [isSubmitting, setIsSubmitting] = useState(false)
+  });
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleFileChange = (e) => {
-    const file = e.target.files[0]
+    const file = e.target.files[0];
     if (file) {
-      setFormData(prev => ({ ...prev, file }))
+      setFormData((prev) => ({ ...prev, file }));
     }
-  }
+  };
 
   const handleSubmit = async (e) => {
-    e.preventDefault()
+    e.preventDefault();
     if (!formData.title || !formData.file) {
       toast({
-        title: 'Validation Error',
-        description: 'Please fill in all required fields',
-        status: 'error',
+        title: "Validation Error",
+        description: "Please fill in all required fields",
+        status: "error",
         duration: 3000,
         isClosable: true,
-      })
-      return
+      });
+      return;
     }
 
-    setIsSubmitting(true)
-    
-    // Simulate file upload - in real app, upload to server
-    const fileUrl = URL.createObjectURL(formData.file)
-    
+    setIsSubmitting(true);
+
+    const fileUrl = URL.createObjectURL(formData.file);
+
     addDocument({
       title: formData.title,
       description: formData.description,
@@ -62,29 +61,29 @@ const DocumentUploadModal = ({ isOpen, onClose }) => {
       file: fileUrl,
       fileName: formData.file.name,
       fileSize: formData.file.size,
-      department: currentUser?.department || '',
+      department: currentUser?.department || "",
       createdBy: currentUser?.id || null,
       createdByName: currentUser?.name || null,
       createdByUserType: currentUser?.userType || null,
-    })
+    });
 
     toast({
-      title: 'Document Uploaded',
-      description: 'Document has been uploaded and is pending approval',
-      status: 'success',
+      title: "Document Uploaded",
+      description: "Document has been uploaded and is pending approval",
+      status: "success",
       duration: 3000,
       isClosable: true,
-    })
+    });
 
     setFormData({
-      title: '',
-      description: '',
-      category: '',
+      title: "",
+      description: "",
+      category: "",
       file: null,
-    })
-    setIsSubmitting(false)
-    onClose()
-  }
+    });
+    setIsSubmitting(false);
+    onClose();
+  };
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} size="xl">
@@ -99,7 +98,9 @@ const DocumentUploadModal = ({ isOpen, onClose }) => {
                 <FormLabel>Title</FormLabel>
                 <Input
                   value={formData.title}
-                  onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))}
+                  onChange={(e) =>
+                    setFormData((prev) => ({ ...prev, title: e.target.value }))
+                  }
                   placeholder="Enter document title"
                 />
               </FormControl>
@@ -108,7 +109,12 @@ const DocumentUploadModal = ({ isOpen, onClose }) => {
                 <FormLabel>Description</FormLabel>
                 <Textarea
                   value={formData.description}
-                  onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
+                  onChange={(e) =>
+                    setFormData((prev) => ({
+                      ...prev,
+                      description: e.target.value,
+                    }))
+                  }
                   placeholder="Enter document description"
                   rows={4}
                 />
@@ -118,7 +124,12 @@ const DocumentUploadModal = ({ isOpen, onClose }) => {
                 <FormLabel>Category</FormLabel>
                 <Select
                   value={formData.category}
-                  onChange={(e) => setFormData(prev => ({ ...prev, category: e.target.value }))}
+                  onChange={(e) =>
+                    setFormData((prev) => ({
+                      ...prev,
+                      category: e.target.value,
+                    }))
+                  }
                   placeholder="Select category"
                 >
                   <option value="Quality Manual">Quality Manual</option>
@@ -139,7 +150,8 @@ const DocumentUploadModal = ({ isOpen, onClose }) => {
                     variant="filled"
                   />
                   <Text fontSize="xs" color="gray.500" mt={1}>
-                    Document will be visible to {currentUser.department} department
+                    Document will be visible to {currentUser.department}{" "}
+                    department
                   </Text>
                 </FormControl>
               )}
@@ -174,9 +186,7 @@ const DocumentUploadModal = ({ isOpen, onClose }) => {
         </form>
       </ModalContent>
     </Modal>
-  )
-}
+  );
+};
 
-export default DocumentUploadModal
-
-
+export default DocumentUploadModal;

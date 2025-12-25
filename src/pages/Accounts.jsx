@@ -34,7 +34,6 @@ const Accounts = () => {
   const { accounts, deleteAccount, currentUser } = useApp();
   const navigate = useNavigate();
 
-  // Check if user is admin
   React.useEffect(() => {
     if (currentUser?.userType !== "Admin") {
       navigate("/dashboard");

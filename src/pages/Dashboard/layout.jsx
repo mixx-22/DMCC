@@ -44,7 +44,6 @@ const Layout = () => {
   const navigate = useNavigate();
   const activityLogsRef = useRef(null);
 
-  // Filter documents by department (admin sees all)
   const canViewDocument = (doc) => {
     if (currentUser?.userType === "Admin") {
       return true;
@@ -52,12 +51,10 @@ const Layout = () => {
     return doc.department === currentUser?.department;
   };
 
-  // Filter certifications by department (admin sees all)
   const canViewCertification = (cert) => {
     if (currentUser?.userType === "Admin") {
       return true;
     }
-    // If certification has department field, filter by it
     return !cert.department || cert.department === currentUser?.department;
   };
 
@@ -70,7 +67,6 @@ const Layout = () => {
     (doc) => doc.status === "pending"
   );
 
-  // Filter recent documents by department
   const filteredRecentDocuments = recentDocuments
     .filter((recentDoc) => {
       if (recentDoc.type !== "documents") return true;
@@ -81,17 +77,14 @@ const Layout = () => {
       (doc, index, self) => self.findIndex((d) => d.id === doc.id) === index
     );
 
-  // Filter activity logs by department (only admin can see all)
   const visibleActivityLogs =
     currentUser?.userType === "Admin"
       ? activityLogs
       : activityLogs.filter((log) => {
-          // Filter logs related to documents by department
           if (log.type === "document") {
             const doc = documents.find((d) => d.id === log.itemId);
             return doc ? canViewDocument(doc) : false;
           }
-          // Filter logs related to certifications by department
           if (log.type === "certification") {
             const cert = certifications.find((c) => c.id === log.itemId);
             return cert ? canViewCertification(cert) : false;
@@ -99,7 +92,6 @@ const Layout = () => {
           return true;
         });
 
-  // Remove duplicates by ID to prevent key conflicts
   const uniqueVisibleActivityLogs = visibleActivityLogs.filter(
     (log, index, self) => self.findIndex((l) => l.id === log.id) === index
   );
@@ -159,7 +151,6 @@ const Layout = () => {
     printWindow.print();
   };
 
-  // Calculate certificate age data (days from createdAt to now)
   const certificateAgeData = useMemo(() => {
     const now = new Date();
     let greenCount = 0;
@@ -185,7 +176,6 @@ const Layout = () => {
     ];
   }, [visibleCertifications]);
 
-  // Calculate remaining days data (days from now to expirationDate)
   const remainingDaysData = useMemo(() => {
     const now = new Date();
     let greenCount = 0;

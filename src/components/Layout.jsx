@@ -7,7 +7,6 @@ const Layout = ({ children }) => {
   const contentBg = useColorModeValue("gray.50", "gray.900");
   const [isMobile, setIsMobile] = useState(false);
 
-  // Check if mobile
   useEffect(() => {
     const checkMobile = () => {
       setIsMobile(window.innerWidth < 768);

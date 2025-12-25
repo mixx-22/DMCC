@@ -152,7 +152,6 @@ const Archive = () => {
     }
   };
 
-  // Filter archived documents by department unless user is Admin
   const visibleArchived = React.useMemo(() => {
     if (!currentUser) return [];
     if (currentUser.userType === "Admin") return archivedDocuments || [];
@@ -161,7 +160,6 @@ const Archive = () => {
     );
   }, [archivedDocuments, currentUser]);
 
-  // Auto-delete documents that have exceeded 2 years
   React.useEffect(() => {
     visibleArchived.forEach((doc) => {
       const daysLeft = calculateDaysLeft(doc.archivedAt);
@@ -171,7 +169,6 @@ const Archive = () => {
     });
   }, [visibleArchived]);
 
-  // Get documents expiring within 2 months
   const expiringDocuments = React.useMemo(() => {
     const TWO_MONTHS_DAYS = 60;
     return visibleArchived.filter((doc) => {

@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState } from "react";
 import {
   Modal,
   ModalOverlay,
@@ -14,54 +14,54 @@ import {
   useToast,
   VStack,
   Text,
-} from '@chakra-ui/react'
-import { useApp } from '../context/AppContext'
+} from "@chakra-ui/react";
+import { useApp } from "../context/AppContext";
 
 const CheckInModal = ({ isOpen, onClose, documentId }) => {
-  const { checkInDocument } = useApp()
-  const toast = useToast()
-  const [file, setFile] = useState(null)
-  const [isSubmitting, setIsSubmitting] = useState(false)
+  const { checkInDocument } = useApp();
+  const toast = useToast();
+  const [file, setFile] = useState(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleFileChange = (e) => {
-    const selectedFile = e.target.files[0]
+    const selectedFile = e.target.files[0];
     if (selectedFile) {
-      setFile(selectedFile)
+      setFile(selectedFile);
     }
-  }
+  };
 
   const handleSubmit = async (e) => {
-    e.preventDefault()
+    e.preventDefault();
     if (!file) {
       toast({
-        title: 'Validation Error',
-        description: 'Please upload the revised document file',
-        status: 'error',
+        title: "Validation Error",
+        description: "Please upload the revised document file",
+        status: "error",
         duration: 3000,
         isClosable: true,
-      })
-      return
+      });
+      return;
     }
 
-    setIsSubmitting(true)
-    
-    // Simulate file upload
-    const fileUrl = URL.createObjectURL(file)
-    
-    checkInDocument(documentId, fileUrl)
+    setIsSubmitting(true);
+
+    const fileUrl = URL.createObjectURL(file);
+
+    checkInDocument(documentId, fileUrl);
 
     toast({
-      title: 'Document Checked In',
-      description: 'Revised document has been submitted and is pending approval',
-      status: 'success',
+      title: "Document Checked In",
+      description:
+        "Revised document has been submitted and is pending approval",
+      status: "success",
       duration: 3000,
       isClosable: true,
-    })
+    });
 
-    setFile(null)
-    setIsSubmitting(false)
-    onClose()
-  }
+    setFile(null);
+    setIsSubmitting(false);
+    onClose();
+  };
 
   return (
     <Modal isOpen={isOpen} onClose={onClose}>
@@ -73,7 +73,8 @@ const CheckInModal = ({ isOpen, onClose, documentId }) => {
           <ModalBody>
             <VStack spacing={4}>
               <Text fontSize="sm" color="gray.600">
-                Upload the revised document file. The document will be submitted for approval before posting.
+                Upload the revised document file. The document will be submitted
+                for approval before posting.
               </Text>
               <FormControl isRequired>
                 <FormLabel>Revised Document File</FormLabel>
@@ -83,12 +84,7 @@ const CheckInModal = ({ isOpen, onClose, documentId }) => {
                   accept=".pdf,.doc,.docx,.txt"
                 />
                 {file && (
-                  <Input
-                    mt={2}
-                    value={file.name}
-                    isReadOnly
-                    variant="filled"
-                  />
+                  <Input mt={2} value={file.name} isReadOnly variant="filled" />
                 )}
               </FormControl>
             </VStack>
@@ -105,8 +101,7 @@ const CheckInModal = ({ isOpen, onClose, documentId }) => {
         </form>
       </ModalContent>
     </Modal>
-  )
-}
+  );
+};
 
-export default CheckInModal
-
+export default CheckInModal;

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect } from "react";
 import {
   Modal,
   ModalOverlay,
@@ -20,127 +20,121 @@ import {
   Box,
   Text,
   IconButton,
-} from '@chakra-ui/react'
-import { FiEye, FiEyeOff } from 'react-icons/fi'
-import { useApp } from '../context/AppContext'
+} from "@chakra-ui/react";
+import { FiEye, FiEyeOff } from "react-icons/fi";
+import { useApp } from "../context/AppContext";
 
 const AccountModal = ({ isOpen, onClose, account = null }) => {
-  const { addAccount, updateAccount } = useApp()
-  const toast = useToast()
-  const isEdit = !!account
+  const { addAccount, updateAccount } = useApp();
+  const toast = useToast();
+  const isEdit = !!account;
   const [formData, setFormData] = useState({
-    name: '',
-    username: '',
-    password: '',
-    jobTitle: '',
-    department: '',
-    userType: '',
+    name: "",
+    username: "",
+    password: "",
+    jobTitle: "",
+    department: "",
+    userType: "",
     profilePicture: null,
-  })
-  const [profilePreview, setProfilePreview] = useState(null)
-  const [isSubmitting, setIsSubmitting] = useState(false)
-  const [showPassword, setShowPassword] = useState(false)
+  });
+  const [profilePreview, setProfilePreview] = useState(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   useEffect(() => {
     if (isOpen) {
       if (account) {
         setFormData({
-          name: account.name || '',
-          username: account.username || '',
-          password: '', // Don't show existing password for security
-          jobTitle: account.jobTitle || '',
-          department: account.department || '',
-          userType: account.userType || '',
+          name: account.name || "",
+          username: account.username || "",
+          password: "",
+          jobTitle: account.jobTitle || "",
+          department: account.department || "",
+          userType: account.userType || "",
           profilePicture: null,
-        })
-        setProfilePreview(account.profilePicture || null)
+        });
+        setProfilePreview(account.profilePicture || null);
       } else {
         setFormData({
-          name: '',
-          username: '',
-          password: '',
-          jobTitle: '',
-          department: '',
-          userType: '',
+          name: "",
+          username: "",
+          password: "",
+          jobTitle: "",
+          department: "",
+          userType: "",
           profilePicture: null,
-        })
-        setProfilePreview(null)
+        });
+        setProfilePreview(null);
       }
-      setShowPassword(false)
+      setShowPassword(false);
     }
-  }, [account, isOpen])
+  }, [account, isOpen]);
 
   const handleFileChange = (e) => {
-    const file = e.target.files[0]
+    const file = e.target.files[0];
     if (file) {
-      // Validate file type
-      if (!file.type.startsWith('image/')) {
+      if (!file.type.startsWith("image/")) {
         toast({
-          title: 'Invalid File Type',
-          description: 'Please upload an image file',
-          status: 'error',
+          title: "Invalid File Type",
+          description: "Please upload an image file",
+          status: "error",
           duration: 3000,
           isClosable: true,
-        })
-        return
+        });
+        return;
       }
 
-      // Validate file size (max 5MB)
       if (file.size > 5 * 1024 * 1024) {
         toast({
-          title: 'File Too Large',
-          description: 'Please upload an image smaller than 5MB',
-          status: 'error',
+          title: "File Too Large",
+          description: "Please upload an image smaller than 5MB",
+          status: "error",
           duration: 3000,
           isClosable: true,
-        })
-        return
+        });
+        return;
       }
 
-      setFormData(prev => ({ ...prev, profilePicture: file }))
-      
-      // Create preview
-      const reader = new FileReader()
+      setFormData((prev) => ({ ...prev, profilePicture: file }));
+
+      const reader = new FileReader();
       reader.onloadend = () => {
-        setProfilePreview(reader.result)
-      }
-      reader.readAsDataURL(file)
+        setProfilePreview(reader.result);
+      };
+      reader.readAsDataURL(file);
     }
-  }
+  };
 
   const handleSubmit = async (e) => {
-    e.preventDefault()
+    e.preventDefault();
     if (!formData.name || !formData.userType) {
       toast({
-        title: 'Validation Error',
-        description: 'Please fill in all required fields',
-        status: 'error',
+        title: "Validation Error",
+        description: "Please fill in all required fields",
+        status: "error",
         duration: 3000,
         isClosable: true,
-      })
-      return
+      });
+      return;
     }
 
-    // For new accounts, username and password are required
     if (!isEdit && (!formData.username || !formData.password)) {
       toast({
-        title: 'Validation Error',
-        description: 'Username and password are required for new accounts',
-        status: 'error',
+        title: "Validation Error",
+        description: "Username and password are required for new accounts",
+        status: "error",
         duration: 3000,
         isClosable: true,
-      })
-      return
+      });
+      return;
     }
 
-    setIsSubmitting(true)
-    
-    // Handle profile picture
-    let profilePictureUrl = profilePreview
+    setIsSubmitting(true);
+
+    let profilePictureUrl = profilePreview;
     if (formData.profilePicture) {
-      // If a new file was uploaded, create a blob URL
       if (formData.profilePicture instanceof File) {
-        profilePictureUrl = URL.createObjectURL(formData.profilePicture)
+        profilePictureUrl = URL.createObjectURL(formData.profilePicture);
       }
     }
 
@@ -151,54 +145,55 @@ const AccountModal = ({ isOpen, onClose, account = null }) => {
       department: formData.department,
       userType: formData.userType,
       profilePicture: profilePictureUrl,
-    }
+    };
 
-    // Only include password if it's provided (for new accounts or password updates)
     if (formData.password) {
-      accountData.password = formData.password
+      accountData.password = formData.password;
     }
 
     if (isEdit) {
-      updateAccount(account.id, accountData)
+      updateAccount(account.id, accountData);
       toast({
-        title: 'Account Updated',
-        description: 'Account has been updated successfully',
-        status: 'success',
+        title: "Account Updated",
+        description: "Account has been updated successfully",
+        status: "success",
         duration: 3000,
         isClosable: true,
-      })
+      });
     } else {
-      addAccount(accountData)
+      addAccount(accountData);
       toast({
-        title: 'Account Created',
-        description: 'Account has been created successfully',
-        status: 'success',
+        title: "Account Created",
+        description: "Account has been created successfully",
+        status: "success",
         duration: 3000,
         isClosable: true,
-      })
+      });
     }
 
     setFormData({
-      name: '',
-      username: '',
-      password: '',
-      jobTitle: '',
-      department: '',
-      userType: '',
+      name: "",
+      username: "",
+      password: "",
+      jobTitle: "",
+      department: "",
+      userType: "",
       profilePicture: null,
-    })
-    setProfilePreview(null)
-    setShowPassword(false)
-    setIsSubmitting(false)
-    onClose()
-  }
+    });
+    setProfilePreview(null);
+    setShowPassword(false);
+    setIsSubmitting(false);
+    onClose();
+  };
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} size="xl">
       <ModalOverlay />
       <ModalContent>
         <form onSubmit={handleSubmit}>
-          <ModalHeader>{isEdit ? 'Edit Account' : 'Create New Account'}</ModalHeader>
+          <ModalHeader>
+            {isEdit ? "Edit Account" : "Create New Account"}
+          </ModalHeader>
           <ModalCloseButton />
           <ModalBody>
             <VStack spacing={4}>
@@ -208,7 +203,7 @@ const AccountModal = ({ isOpen, onClose, account = null }) => {
                 <VStack spacing={4}>
                   <Avatar
                     src={profilePreview}
-                    name={formData.name || 'User'}
+                    name={formData.name || "User"}
                     size="xl"
                   />
                   <Box>
@@ -226,7 +221,7 @@ const AccountModal = ({ isOpen, onClose, account = null }) => {
                       variant="outline"
                       size="sm"
                     >
-                      {profilePreview ? 'Change Picture' : 'Upload Picture'}
+                      {profilePreview ? "Change Picture" : "Upload Picture"}
                     </Button>
                   </Box>
                   <Text fontSize="xs" color="gray.500">
@@ -239,7 +234,9 @@ const AccountModal = ({ isOpen, onClose, account = null }) => {
                 <FormLabel>Name</FormLabel>
                 <Input
                   value={formData.name}
-                  onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
+                  onChange={(e) =>
+                    setFormData((prev) => ({ ...prev, name: e.target.value }))
+                  }
                   placeholder="Enter full name"
                 />
               </FormControl>
@@ -248,9 +245,14 @@ const AccountModal = ({ isOpen, onClose, account = null }) => {
                 <FormLabel>Username</FormLabel>
                 <Input
                   value={formData.username}
-                  onChange={(e) => setFormData(prev => ({ ...prev, username: e.target.value }))}
+                  onChange={(e) =>
+                    setFormData((prev) => ({
+                      ...prev,
+                      username: e.target.value,
+                    }))
+                  }
                   placeholder="Enter username"
-                  isDisabled={isEdit} // Username shouldn't be changed after creation
+                  isDisabled={isEdit}
                 />
                 {isEdit && (
                   <Text fontSize="xs" color="gray.500" mt={1}>
@@ -263,14 +265,25 @@ const AccountModal = ({ isOpen, onClose, account = null }) => {
                 <FormLabel>Password</FormLabel>
                 <InputGroup>
                   <Input
-                    type={showPassword ? 'text' : 'password'}
+                    type={showPassword ? "text" : "password"}
                     value={formData.password}
-                    onChange={(e) => setFormData(prev => ({ ...prev, password: e.target.value }))}
-                    placeholder={isEdit ? 'Leave blank to keep current password' : 'Enter password'}
+                    onChange={(e) =>
+                      setFormData((prev) => ({
+                        ...prev,
+                        password: e.target.value,
+                      }))
+                    }
+                    placeholder={
+                      isEdit
+                        ? "Leave blank to keep current password"
+                        : "Enter password"
+                    }
                   />
                   <InputRightElement>
                     <IconButton
-                      aria-label={showPassword ? 'Hide password' : 'Show password'}
+                      aria-label={
+                        showPassword ? "Hide password" : "Show password"
+                      }
                       icon={showPassword ? <FiEyeOff /> : <FiEye />}
                       variant="ghost"
                       size="sm"
@@ -289,7 +302,12 @@ const AccountModal = ({ isOpen, onClose, account = null }) => {
                 <FormLabel>Job Title</FormLabel>
                 <Input
                   value={formData.jobTitle}
-                  onChange={(e) => setFormData(prev => ({ ...prev, jobTitle: e.target.value }))}
+                  onChange={(e) =>
+                    setFormData((prev) => ({
+                      ...prev,
+                      jobTitle: e.target.value,
+                    }))
+                  }
                   placeholder="Enter job title"
                 />
               </FormControl>
@@ -298,7 +316,12 @@ const AccountModal = ({ isOpen, onClose, account = null }) => {
                 <FormLabel>Department</FormLabel>
                 <Select
                   value={formData.department}
-                  onChange={(e) => setFormData(prev => ({ ...prev, department: e.target.value }))}
+                  onChange={(e) =>
+                    setFormData((prev) => ({
+                      ...prev,
+                      department: e.target.value,
+                    }))
+                  }
                   placeholder="Select department"
                 >
                   <option value="Administration">Administration</option>
@@ -317,7 +340,12 @@ const AccountModal = ({ isOpen, onClose, account = null }) => {
                 <FormLabel>User Type</FormLabel>
                 <Select
                   value={formData.userType}
-                  onChange={(e) => setFormData(prev => ({ ...prev, userType: e.target.value }))}
+                  onChange={(e) =>
+                    setFormData((prev) => ({
+                      ...prev,
+                      userType: e.target.value,
+                    }))
+                  }
                   placeholder="Select user type"
                 >
                   <option value="Admin">Admin</option>
@@ -334,17 +362,13 @@ const AccountModal = ({ isOpen, onClose, account = null }) => {
               Cancel
             </Button>
             <Button colorScheme="blue" type="submit" isLoading={isSubmitting}>
-              {isEdit ? 'Update' : 'Create'} Account
+              {isEdit ? "Update" : "Create"} Account
             </Button>
           </ModalFooter>
         </form>
       </ModalContent>
     </Modal>
-  )
-}
+  );
+};
 
-export default AccountModal
-
-
-
-
+export default AccountModal;

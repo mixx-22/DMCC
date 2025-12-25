@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState } from "react";
 import {
   Modal,
   ModalOverlay,
@@ -16,104 +16,117 @@ import {
   VStack,
   Text,
   useToast,
-} from '@chakra-ui/react'
-import { useApp } from '../context/AppContext'
+} from "@chakra-ui/react";
+import { useApp } from "../context/AppContext";
 
-const CertificationUploadModal = ({ isOpen, onClose, certification = null }) => {
-  const { addCertification, updateCertification, currentUser } = useApp()
-  const toast = useToast()
-  const isEdit = !!certification
+const CertificationUploadModal = ({
+  isOpen,
+  onClose,
+  certification = null,
+}) => {
+  const { addCertification, updateCertification, currentUser } = useApp();
+  const toast = useToast();
+  const isEdit = !!certification;
   const [formData, setFormData] = useState({
-    name: certification?.name || '',
-    type: certification?.type || '',
-    issuer: certification?.issuer || '',
-    description: certification?.description || '',
-    expirationDate: certification?.expirationDate ? certification.expirationDate.split('T')[0] : '',
+    name: certification?.name || "",
+    type: certification?.type || "",
+    issuer: certification?.issuer || "",
+    description: certification?.description || "",
+    expirationDate: certification?.expirationDate
+      ? certification.expirationDate.split("T")[0]
+      : "",
     file: null,
-  })
-  const [isSubmitting, setIsSubmitting] = useState(false)
+  });
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleFileChange = (e) => {
-    const file = e.target.files[0]
+    const file = e.target.files[0];
     if (file) {
-      setFormData(prev => ({ ...prev, file }))
+      setFormData((prev) => ({ ...prev, file }));
     }
-  }
+  };
 
   const handleSubmit = async (e) => {
-    e.preventDefault()
+    e.preventDefault();
     if (!formData.name) {
       toast({
-        title: 'Validation Error',
-        description: 'Please fill in all required fields',
-        status: 'error',
+        title: "Validation Error",
+        description: "Please fill in all required fields",
+        status: "error",
         duration: 3000,
         isClosable: true,
-      })
-      return
+      });
+      return;
     }
 
-    setIsSubmitting(true)
-    
-    // Simulate file upload
-    const fileUrl = formData.file ? URL.createObjectURL(formData.file) : certification?.file
-    const fileName = formData.file ? formData.file.name : certification?.fileName
-    const fileSize = formData.file ? formData.file.size : certification?.fileSize
-    
+    setIsSubmitting(true);
+
+    const fileUrl = formData.file
+      ? URL.createObjectURL(formData.file)
+      : certification?.file;
+    const fileName = formData.file
+      ? formData.file.name
+      : certification?.fileName;
+    const fileSize = formData.file
+      ? formData.file.size
+      : certification?.fileSize;
+
     if (isEdit) {
       updateCertification(certification.id, {
         ...formData,
         file: fileUrl,
         fileName,
         fileSize,
-        department: certification.department || currentUser?.department || '',
-      })
+        department: certification.department || currentUser?.department || "",
+      });
       toast({
-        title: 'Certification Updated',
-        description: 'Certification has been updated successfully',
-        status: 'success',
+        title: "Certification Updated",
+        description: "Certification has been updated successfully",
+        status: "success",
         duration: 3000,
         isClosable: true,
-      })
+      });
     } else {
       addCertification({
         ...formData,
         file: fileUrl,
-        fileName: fileName || '',
+        fileName: fileName || "",
         fileSize: fileSize || 0,
-        department: currentUser?.department || '',
+        department: currentUser?.department || "",
         requestedBy: currentUser?.id || null,
-        requestedByName: currentUser?.name || '',
-      })
+        requestedByName: currentUser?.name || "",
+      });
       toast({
-        title: 'Certification Added',
-        description: 'Certification has been added successfully',
-        status: 'success',
+        title: "Certification Added",
+        description: "Certification has been added successfully",
+        status: "success",
         duration: 3000,
         isClosable: true,
-      })
+      });
     }
 
     if (!isEdit) {
       setFormData({
-        name: '',
-        type: '',
-        issuer: '',
-        description: '',
-        expirationDate: '',
+        name: "",
+        type: "",
+        issuer: "",
+        description: "",
+        expirationDate: "",
         file: null,
-      })
+      });
     }
-    setIsSubmitting(false)
-    onClose()
-  }
+    setIsSubmitting(false);
+    onClose();
+  };
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} size="xl">
       <ModalOverlay />
       <ModalContent>
         <form onSubmit={handleSubmit}>
-          <ModalHeader>{isEdit ? 'Edit Certification' : 'Add New Certification'}</ModalHeader>
+          <ModalHeader>
+            {isEdit ? "Edit Certification" : "Add New Certification"}
+          </ModalHeader>
           <ModalCloseButton />
           <ModalBody>
             <VStack spacing={4}>
@@ -121,7 +134,9 @@ const CertificationUploadModal = ({ isOpen, onClose, certification = null }) => 
                 <FormLabel>Name</FormLabel>
                 <Input
                   value={formData.name}
-                  onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
+                  onChange={(e) =>
+                    setFormData((prev) => ({ ...prev, name: e.target.value }))
+                  }
                   placeholder="Enter certification name"
                 />
               </FormControl>
@@ -130,7 +145,9 @@ const CertificationUploadModal = ({ isOpen, onClose, certification = null }) => 
                 <FormLabel>Type</FormLabel>
                 <Select
                   value={formData.type}
-                  onChange={(e) => setFormData(prev => ({ ...prev, type: e.target.value }))}
+                  onChange={(e) =>
+                    setFormData((prev) => ({ ...prev, type: e.target.value }))
+                  }
                   placeholder="Select type"
                 >
                   <option value="License">License</option>
@@ -145,7 +162,9 @@ const CertificationUploadModal = ({ isOpen, onClose, certification = null }) => 
                 <FormLabel>Issuer</FormLabel>
                 <Input
                   value={formData.issuer}
-                  onChange={(e) => setFormData(prev => ({ ...prev, issuer: e.target.value }))}
+                  onChange={(e) =>
+                    setFormData((prev) => ({ ...prev, issuer: e.target.value }))
+                  }
                   placeholder="Enter issuer name"
                 />
               </FormControl>
@@ -154,7 +173,12 @@ const CertificationUploadModal = ({ isOpen, onClose, certification = null }) => 
                 <FormLabel>Description</FormLabel>
                 <Textarea
                   value={formData.description}
-                  onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
+                  onChange={(e) =>
+                    setFormData((prev) => ({
+                      ...prev,
+                      description: e.target.value,
+                    }))
+                  }
                   placeholder="Enter description"
                   rows={3}
                 />
@@ -163,9 +187,14 @@ const CertificationUploadModal = ({ isOpen, onClose, certification = null }) => 
               {currentUser?.department && (
                 <FormControl>
                   <FormLabel>Department</FormLabel>
-                  <Input value={currentUser.department} isReadOnly variant="filled" />
+                  <Input
+                    value={currentUser.department}
+                    isReadOnly
+                    variant="filled"
+                  />
                   <Text fontSize="xs" color="gray.500" mt={1}>
-                    Certification will be visible to the {currentUser.department} department
+                    Certification will be visible to the{" "}
+                    {currentUser.department} department
                   </Text>
                 </FormControl>
               )}
@@ -175,7 +204,12 @@ const CertificationUploadModal = ({ isOpen, onClose, certification = null }) => 
                 <Input
                   type="date"
                   value={formData.expirationDate}
-                  onChange={(e) => setFormData(prev => ({ ...prev, expirationDate: e.target.value }))}
+                  onChange={(e) =>
+                    setFormData((prev) => ({
+                      ...prev,
+                      expirationDate: e.target.value,
+                    }))
+                  }
                 />
               </FormControl>
 
@@ -211,15 +245,13 @@ const CertificationUploadModal = ({ isOpen, onClose, certification = null }) => 
               Cancel
             </Button>
             <Button colorScheme="blue" type="submit" isLoading={isSubmitting}>
-              {isEdit ? 'Update' : 'Add'} Certification
+              {isEdit ? "Update" : "Add"} Certification
             </Button>
           </ModalFooter>
         </form>
       </ModalContent>
     </Modal>
-  )
-}
+  );
+};
 
-export default CertificationUploadModal
-
-
+export default CertificationUploadModal;
