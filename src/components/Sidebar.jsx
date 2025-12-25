@@ -162,6 +162,7 @@ const Sidebar = () => {
         ],
       },
       { id: "archive", path: "/archive", label: "Archive", icon: FiArchive },
+      { id: "users", path: "/users", label: "Users", icon: FiUsers },
       {
         id: "certifications",
         path: "/certifications",
