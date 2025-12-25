@@ -120,8 +120,9 @@ export const UserProvider = ({ children }) => {
       setUser(null);
       setAuthToken(null);
       setError(null);
-      // Remove all localStorage/sessionStorage content for a clean logout
-      localStorage.clear();
+      [
+        // Keys here
+      ].forEach((key) => localStorage.removeItem(key));
       if (typeof sessionStorage !== "undefined") sessionStorage.clear();
     } catch (error) {
       console.warn("Error during logout:", error);
