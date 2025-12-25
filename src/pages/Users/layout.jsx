@@ -19,9 +19,10 @@ import { useState } from "react";
 
 const Layout = () => {
   const { users, loading, error, fetchUsers } = useUsers();
+  const userList = Array.isArray(users) ? users : [];
   const [search, setSearch] = useState("");
 
-  const filteredUsers = users.filter(
+  const filteredUsers = userList?.filter(
     (user) =>
       user.name?.toLowerCase().includes(search.toLowerCase()) ||
       user.email?.toLowerCase().includes(search.toLowerCase()) ||
