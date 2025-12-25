@@ -16,7 +16,6 @@ import {
   DrawerBody,
   Flex,
   Collapse,
-  DrawerHeader,
   Spacer,
 } from "@chakra-ui/react";
 import { NavLink, useLocation } from "react-router-dom";
@@ -59,6 +58,7 @@ const SidebarRow = ({
   isExpanded = false,
   isActive = false,
   onToggle,
+  onClick,
 }) => {
   const activeBg = useColorModeValue("blue.50", "whiteAlpha.200");
   const activeColor = useColorModeValue("blue.600", "blue.200");
@@ -84,6 +84,7 @@ const SidebarRow = ({
       title={isCollapsed && !isMobile ? label : ""}
       w="full"
       position="relative"
+      onClick={onClick}
     >
       {isActive && !isMobile && !isChild && (
         <Box
@@ -254,6 +255,7 @@ const Sidebar = () => {
             isExpanded={isExpanded}
             isActive={isActiveParent}
             onToggle={() => toggleItem(item.id)}
+            onClick={() => mobileMode && !hasChildren && onClose()}
           />
 
           {hasChildren && (
@@ -268,6 +270,7 @@ const Sidebar = () => {
                     isMobile={mobileMode}
                     isChild={true}
                     isActive={isRouteMatch(location, child.path)}
+                    onClick={() => mobileMode && onClose()}
                   />
                 ))}
               </VStack>
@@ -291,6 +294,7 @@ const Sidebar = () => {
           zIndex="docked"
           transition="transform 0.3s ease"
           transform={isBottomNavVisible ? "translateY(0)" : "translateY(100%)"}
+          h="sidebar.row"
         >
           <Flex justify="center" py={3}>
             <IconButton
@@ -314,14 +318,17 @@ const Sidebar = () => {
           <DrawerOverlay />
           <DrawerContent bg={bgColor}>
             <DrawerCloseButton borderRadius="full" color={textColor} />
-            <DrawerHeader px={2}>
-              <Heading fontSize="lg" mb={6} color={brandColor} px={2}>
-                {import.meta.env.VITE_PROJECT_NAME}
-              </Heading>
-            </DrawerHeader>
-            <DrawerBody p={0}>
+            <DrawerBody px={0} py="sidebar.row">
               <VStack spacing={0} align="stretch" h="full">
                 <Spacer />
+                <Heading
+                  fontSize="lg"
+                  mb={"sidebar.row"}
+                  color={brandColor}
+                  px={4}
+                >
+                  {import.meta.env.VITE_PROJECT_NAME}
+                </Heading>
                 {renderNavList(navItems, true)}
               </VStack>
             </DrawerBody>
@@ -349,7 +356,7 @@ const Sidebar = () => {
         justify={isCollapsed ? "center" : "flex-start"}
         pl={isCollapsed ? 0 : 4}
         pr={isCollapsed ? 0 : 2}
-        mb={2}
+        mb={"sidebar.row"}
         transition="all 0.3s cubic-bezier(0.4, 0, 0.2, 1)"
       >
         {!isCollapsed && (
