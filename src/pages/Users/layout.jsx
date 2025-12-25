@@ -19,16 +19,21 @@ import { useState } from "react";
 
 const Layout = () => {
   const { users, loading, error, fetchUsers } = useUsers();
-  const userList = Array.isArray(users) ? users : [];
+  // Use users?.data or empty array if not present
+  const userList = Array.isArray(users?.data) ? users.data : [];
   const [search, setSearch] = useState("");
 
-  const filteredUsers = userList?.filter(
-    (user) =>
-      user.name?.toLowerCase().includes(search.toLowerCase()) ||
-      user.email?.toLowerCase().includes(search.toLowerCase()) ||
-      user.department?.toLowerCase().includes(search.toLowerCase()) ||
-      user.userType?.toLowerCase().includes(search.toLowerCase())
-  );
+  const filteredUsers = userList.filter((user) => {
+    const fullName = `${user.firstName || ""} ${user.middleName || ""} ${
+      user.lastName || ""
+    }`.trim();
+    const roles = Array.isArray(user.role) ? user.role.join(", ") : "";
+    return (
+      fullName.toLowerCase().includes(search.toLowerCase()) ||
+      (user.email || "").toLowerCase().includes(search.toLowerCase()) ||
+      roles.toLowerCase().includes(search.toLowerCase())
+    );
+  });
 
   return (
     <Box p={4}>
@@ -57,30 +62,43 @@ const Layout = () => {
             <Tr>
               <Th>Name</Th>
               <Th>Email</Th>
-              <Th>Department</Th>
-              <Th>User Type</Th>
+              <Th>Roles</Th>
+              <Th>Status</Th>
             </Tr>
           </Thead>
           <Tbody>
-            {filteredUsers.map((user) => (
-              <Tr key={user.id || user._id}>
-                <Td>
-                  <HStack>
-                    <Avatar size="sm" name={user.name} src={user.avatar} />
-                    <span>{user.name}</span>
-                  </HStack>
-                </Td>
-                <Td>{user.email}</Td>
-                <Td>{user.department}</Td>
-                <Td>
-                  <Badge
-                    colorScheme={user.userType === "Admin" ? "purple" : "gray"}
-                  >
-                    {user.userType}
-                  </Badge>
-                </Td>
-              </Tr>
-            ))}
+            {filteredUsers.map((user) => {
+              const fullName = `${user.firstName || ""} ${
+                user.middleName || ""
+              } ${user.lastName || ""}`.trim();
+              return (
+                <Tr key={user.userId || user.employeeId}>
+                  <Td>
+                    <HStack>
+                      <Avatar size="sm" name={fullName} />
+                      <span>{fullName}</span>
+                    </HStack>
+                  </Td>
+                  <Td>{user.email}</Td>
+                  <Td>
+                    {user.role && user.role.length > 0 ? (
+                      user.role.map((r) => (
+                        <Badge key={r} colorScheme="purple" mr={1}>
+                          {r}
+                        </Badge>
+                      ))
+                    ) : (
+                      <Badge colorScheme="gray">No Role</Badge>
+                    )}
+                  </Td>
+                  <Td>
+                    <Badge colorScheme={user.isActive ? "green" : "red"}>
+                      {user.isActive ? "Active" : "Inactive"}
+                    </Badge>
+                  </Td>
+                </Tr>
+              );
+            })}
           </Tbody>
         </Table>
       )}
