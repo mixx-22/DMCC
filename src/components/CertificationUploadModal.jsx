@@ -138,6 +138,8 @@ const CertificationUploadModal = ({
                     setFormData((prev) => ({ ...prev, name: e.target.value }))
                   }
                   placeholder="Enter certification name"
+                  id="name"
+                  name="name"
                 />
               </FormControl>
 
@@ -149,6 +151,8 @@ const CertificationUploadModal = ({
                     setFormData((prev) => ({ ...prev, type: e.target.value }))
                   }
                   placeholder="Select type"
+                  id="type"
+                  name="type"
                 >
                   <option value="License">License</option>
                   <option value="Certification">Certification</option>
@@ -166,6 +170,8 @@ const CertificationUploadModal = ({
                     setFormData((prev) => ({ ...prev, issuer: e.target.value }))
                   }
                   placeholder="Enter issuer name"
+                  id="issuer"
+                  name="issuer"
                 />
               </FormControl>
 

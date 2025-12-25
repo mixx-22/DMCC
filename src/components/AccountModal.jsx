@@ -238,6 +238,8 @@ const AccountModal = ({ isOpen, onClose, account = null }) => {
                     setFormData((prev) => ({ ...prev, name: e.target.value }))
                   }
                   placeholder="Enter full name"
+                  id="name"
+                  name="name"
                 />
               </FormControl>
 
@@ -253,6 +255,8 @@ const AccountModal = ({ isOpen, onClose, account = null }) => {
                   }
                   placeholder="Enter username"
                   isDisabled={isEdit}
+                  id="username"
+                  name="username"
                 />
                 {isEdit && (
                   <Text fontSize="xs" color="gray.500" mt={1}>
@@ -278,6 +282,8 @@ const AccountModal = ({ isOpen, onClose, account = null }) => {
                         ? "Leave blank to keep current password"
                         : "Enter password"
                     }
+                    id="password"
+                    name="password"
                   />
                   <InputRightElement>
                     <IconButton
@@ -309,6 +315,8 @@ const AccountModal = ({ isOpen, onClose, account = null }) => {
                     }))
                   }
                   placeholder="Enter job title"
+                  id="jobTitle"
+                  name="jobTitle"
                 />
               </FormControl>
 
@@ -323,6 +331,8 @@ const AccountModal = ({ isOpen, onClose, account = null }) => {
                     }))
                   }
                   placeholder="Select department"
+                  id="department"
+                  name="department"
                 >
                   <option value="Administration">Administration</option>
                   <option value="Human Resources">Human Resources</option>
@@ -347,6 +357,8 @@ const AccountModal = ({ isOpen, onClose, account = null }) => {
                     }))
                   }
                   placeholder="Select user type"
+                  id="userType"
+                  name="userType"
                 >
                   <option value="Admin">Admin</option>
                   <option value="Manager">Manager</option>

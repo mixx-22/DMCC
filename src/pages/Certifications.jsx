@@ -115,6 +115,8 @@ const Certifications = () => {
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
           maxW="400px"
+          id="search"
+          name="search"
         />
       </Box>
 

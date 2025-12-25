@@ -170,6 +170,8 @@ const Approvals = () => {
                 value={rejectionReason}
                 onChange={(e) => setRejectionReason(e.target.value)}
                 rows={4}
+                id="rejectionReason"
+                name="rejectionReason"
               />
             </VStack>
           </ModalBody>

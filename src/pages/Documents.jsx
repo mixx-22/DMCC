@@ -220,6 +220,8 @@ const Documents = () => {
               onChange={(e) => setSearchTerm(e.target.value)}
               pl={10}
               size="lg"
+              id="search"
+              name="search"
             />
             <Box
               position="absolute"
@@ -236,6 +238,8 @@ const Documents = () => {
             onChange={(e) => setStatusFilter(e.target.value)}
             w="200px"
             size="lg"
+            id="statusFilter"
+            name="statusFilter"
           >
             <option value="all">All Status</option>
             <option value="pending">Pending</option>
@@ -247,6 +251,8 @@ const Documents = () => {
             onChange={(e) => setFolderFilter(e.target.value)}
             w="200px"
             size="lg"
+            id="folderFilter"
+            name="folderFilter"
           >
             <option value="all">All Folders</option>
             {folders.map((folder) => (
@@ -552,6 +558,8 @@ const Documents = () => {
                 value={rejectionReason}
                 onChange={(e) => setRejectionReason(e.target.value)}
                 rows={4}
+                id="rejectionReason"
+                name="rejectionReason"
               />
             </VStack>
           </ModalBody>

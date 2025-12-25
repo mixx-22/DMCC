@@ -102,6 +102,8 @@ const DocumentUploadModal = ({ isOpen, onClose }) => {
                     setFormData((prev) => ({ ...prev, title: e.target.value }))
                   }
                   placeholder="Enter document title"
+                  id="title"
+                  name="title"
                 />
               </FormControl>
 
@@ -117,6 +119,8 @@ const DocumentUploadModal = ({ isOpen, onClose }) => {
                   }
                   placeholder="Enter document description"
                   rows={4}
+                  id="description"
+                  name="description"
                 />
               </FormControl>
 
@@ -131,6 +135,8 @@ const DocumentUploadModal = ({ isOpen, onClose }) => {
                     }))
                   }
                   placeholder="Select category"
+                  id="category"
+                  name="category"
                 >
                   <option value="Quality Manual">Quality Manual</option>
                   <option value="Procedure">Procedure</option>
@@ -162,6 +168,8 @@ const DocumentUploadModal = ({ isOpen, onClose }) => {
                   type="file"
                   onChange={handleFileChange}
                   accept=".pdf,.doc,.docx,.txt"
+                  id="documentFile"
+                  name="documentFile"
                 />
                 {formData.file && (
                   <Input

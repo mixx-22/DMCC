@@ -130,6 +130,8 @@ const Login = () => {
                         onChange={(e) => setUsername(e.target.value)}
                         placeholder="Enter your username"
                         pl={10}
+                        id="username"
+                        name="username"
                       />
                     </InputGroup>
                   </FormControl>
@@ -147,6 +149,8 @@ const Login = () => {
                         placeholder="Enter your password"
                         pl={10}
                         pr={10}
+                        id="password"
+                        name="password"
                       />
                       <InputRightElement>
                         <IconButton
