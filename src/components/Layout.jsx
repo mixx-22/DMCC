@@ -22,12 +22,12 @@ const Layout = ({ children }) => {
       <Flex direction="column" flex={1} overflow="hidden">
         <Header />
         <Box
-          bg={contentBg}
           flex={1}
+          bg={contentBg}
           overflowY="auto"
           pb={isMobile ? "80px" : 0}
         >
-          <Box maxW="1200px" mx="auto" w="full" p={6}>
+          <Box maxW="page.maxContent" mx="auto" w="full" p="page.padding">
             {children}
           </Box>
         </Box>

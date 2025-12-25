@@ -46,7 +46,13 @@ const Header = () => {
       justify="center"
       px={4}
     >
-      <Flex w="full" justify="space-between" align="center">
+      <Flex
+        w="full"
+        px="page.padding"
+        maxW="page.maxContent"
+        justify="space-between"
+        align="center"
+      >
         <Box ref={headerRef}></Box>
         <Spacer />
         <Flex align="center" gap={0}>
