@@ -35,17 +35,18 @@ const Header = () => {
   };
 
   return (
-    <Box
+    <Flex
       bg={bgColor}
       borderBottom="1px"
       border="none"
-      px={6}
-      py={4}
       position="sticky"
       top={0}
       zIndex="sticky"
+      h="sidebar.row"
+      justify="center"
+      px={4}
     >
-      <Flex justify="space-between" align="center">
+      <Flex w="full" justify="space-between" align="center">
         <Box ref={headerRef}></Box>
         <Spacer />
         <Flex align="center" gap={0}>
@@ -55,6 +56,7 @@ const Header = () => {
               icon={<FiBell />}
               variant="ghost"
               position="relative"
+              isRound
             >
               {expiringCerts.length > 0 && (
                 <Badge
@@ -102,6 +104,7 @@ const Header = () => {
                 />
               }
               aria-label="User menu"
+              isRound
             />
             <MenuList>
               <MenuItem>
@@ -139,7 +142,7 @@ const Header = () => {
           </Menu>
         </Flex>
       </Flex>
-    </Box>
+    </Flex>
   );
 };
 
