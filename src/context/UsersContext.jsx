@@ -16,8 +16,29 @@ export const useUsers = () => {
 
 const USERS_ENDPOINT = import.meta.env.VITE_API_PACKAGE_USERS;
 const API_ENDPOINT = import.meta.env.VITE_API_ENDPOINT;
+const USE_API = import.meta.env.VITE_USE_API !== "false";
 
 const getApiUrl = (endpoint) => `${API_ENDPOINT}${endpoint}`;
+
+// Example mock data for local development
+const MOCK_USERS = [
+  {
+    id: "1",
+    name: "Jane Doe",
+    email: "jane@example.com",
+    department: "Engineering",
+    userType: "Admin",
+    avatar: "",
+  },
+  {
+    id: "2",
+    name: "John Smith",
+    email: "john@example.com",
+    department: "HR",
+    userType: "User",
+    avatar: "",
+  },
+];
 
 export const UsersProvider = ({ children }) => {
   const [users, setUsers] = useState([]);
@@ -27,6 +48,14 @@ export const UsersProvider = ({ children }) => {
   const fetchUsers = useCallback(async () => {
     setLoading(true);
     setError(null);
+    if (!USE_API) {
+      // Use mock data for local development
+      setTimeout(() => {
+        setUsers(MOCK_USERS);
+        setLoading(false);
+      }, 500);
+      return;
+    }
     try {
       const res = await fetch(getApiUrl(USERS_ENDPOINT));
       if (!res.ok) throw new Error("Failed to fetch users");

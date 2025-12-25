@@ -1,5 +1,6 @@
 const API_ENDPOINT = import.meta.env.VITE_API_ENDPOINT;
 const LOGIN_ENDPOINT = import.meta.env.VITE_API_PACKAGE_LOGIN;
+const USE_API = import.meta.env.VITE_USE_API !== "false";
 
 const createApiUrl = (endpoint) => {
   if (!API_ENDPOINT) {
@@ -10,6 +11,31 @@ const createApiUrl = (endpoint) => {
 
 export const apiService = {
   async login(username, password) {
+    if (!USE_API) {
+      // Mock login: accept any username/password, return a mock user and token
+      if (!username || !password) {
+        throw new Error("Username and password are required");
+      }
+      // You can customize this mock user as needed
+      // Mock a JWT token with expiry 1 hour from now
+      const now = Date.now();
+      const expiresAt = now + 60 * 60 * 1000; // 1 hour
+      const mockToken = {
+        value: "mock-token-123",
+        expiresAt,
+      };
+      return {
+        user: {
+          id: "mock-1",
+          name: username,
+          email: `${username}@mock.local`,
+          department: "Engineering",
+          userType: username === "admin" ? "Admin" : "User",
+          avatar: "",
+        },
+        token: mockToken,
+      };
+    }
     try {
       const response = await fetch(createApiUrl(LOGIN_ENDPOINT), {
         method: "POST",
