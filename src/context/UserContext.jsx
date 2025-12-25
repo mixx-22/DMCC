@@ -88,8 +88,8 @@ export const UserProvider = ({ children }) => {
       if (!tokenObj && userData && userData.token) {
         tokenObj = userData.token;
         // Remove token from userData for context cleanliness
-        const { token, ...rest } = userData;
-        userData = rest;
+        userData = { ...userData };
+        delete userData.token;
       }
 
       if (!tokenObj) {
