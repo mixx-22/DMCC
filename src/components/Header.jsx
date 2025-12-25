@@ -43,7 +43,7 @@ const Header = () => {
       py={4}
       position="sticky"
       top={0}
-      zIndex={10}
+      zIndex="sticky"
     >
       <Flex justify="space-between" align="center">
         <Box ref={headerRef}></Box>
