@@ -1,64 +1,111 @@
-import { Box, Grid, Heading, Text, VStack, HStack, Badge, Icon, Card, CardBody, CardHeader, Button } from '@chakra-ui/react'
-import { FiFileText, FiShield, FiClock, FiStar, FiActivity, FiPrinter } from 'react-icons/fi'
-import { useApp } from '../context/AppContext'
-import { useNavigate } from 'react-router-dom'
-import { formatDistanceToNow, differenceInCalendarDays } from 'date-fns'
-import { useRef, useMemo } from 'react'
-import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip } from 'recharts'
+import {
+  Box,
+  Grid,
+  Heading,
+  Text,
+  VStack,
+  HStack,
+  Badge,
+  Icon,
+  Card,
+  CardBody,
+  CardHeader,
+  Button,
+} from "@chakra-ui/react";
+import {
+  FiFileText,
+  FiShield,
+  FiClock,
+  FiActivity,
+  FiPrinter,
+} from "react-icons/fi";
+import { useApp } from "../../context/AppContext";
+import { useNavigate } from "react-router-dom";
+import { formatDistanceToNow, differenceInCalendarDays } from "date-fns";
+import { useRef, useMemo } from "react";
+import {
+  PieChart,
+  Pie,
+  Cell,
+  ResponsiveContainer,
+  Legend,
+  Tooltip,
+} from "recharts";
 
-const Dashboard = () => {
-  const { recentDocuments, starredDocuments, documents, certifications, activityLogs, currentUser } = useApp()
-  const navigate = useNavigate()
-  const activityLogsRef = useRef(null)
+const Layout = () => {
+  const {
+    recentDocuments,
+    starredDocuments,
+    documents,
+    certifications,
+    activityLogs,
+    currentUser,
+  } = useApp();
+  const navigate = useNavigate();
+  const activityLogsRef = useRef(null);
 
   // Filter documents by department (admin sees all)
   const canViewDocument = (doc) => {
-    if (currentUser?.userType === 'Admin') {
-      return true
+    if (currentUser?.userType === "Admin") {
+      return true;
     }
-    return doc.department === currentUser?.department
-  }
+    return doc.department === currentUser?.department;
+  };
 
   // Filter certifications by department (admin sees all)
   const canViewCertification = (cert) => {
-    if (currentUser?.userType === 'Admin') {
-      return true
+    if (currentUser?.userType === "Admin") {
+      return true;
     }
     // If certification has department field, filter by it
-    return !cert.department || cert.department === currentUser?.department
-  }
+    return !cert.department || cert.department === currentUser?.department;
+  };
 
-  const visibleDocuments = documents.filter(canViewDocument)
-  const visibleCertifications = certifications.filter(canViewCertification)
-  const starredDocs = visibleDocuments.filter(doc => starredDocuments.includes(doc.id))
-  const pendingApprovals = visibleDocuments.filter(doc => doc.status === 'pending')
+  const visibleDocuments = documents.filter(canViewDocument);
+  const visibleCertifications = certifications.filter(canViewCertification);
+  const starredDocs = visibleDocuments.filter((doc) =>
+    [...new Set(starredDocuments)].includes(doc.id)
+  );
+  const pendingApprovals = visibleDocuments.filter(
+    (doc) => doc.status === "pending"
+  );
 
   // Filter recent documents by department
-  const filteredRecentDocuments = recentDocuments.filter(recentDoc => {
-    if (recentDoc.type !== 'documents') return true
-    const doc = documents.find(d => d.id === recentDoc.id)
-    return doc ? canViewDocument(doc) : false
-  })
+  const filteredRecentDocuments = recentDocuments
+    .filter((recentDoc) => {
+      if (recentDoc.type !== "documents") return true;
+      const doc = documents.find((d) => d.id === recentDoc.id);
+      return doc ? canViewDocument(doc) : false;
+    })
+    .filter(
+      (doc, index, self) => self.findIndex((d) => d.id === doc.id) === index
+    );
 
   // Filter activity logs by department (only admin can see all)
-  const visibleActivityLogs = currentUser?.userType === 'Admin' 
-    ? activityLogs 
-    : activityLogs.filter(log => {
-        // Filter logs related to documents by department
-        if (log.type === 'document') {
-          const doc = documents.find(d => d.id === log.itemId)
-          return doc ? canViewDocument(doc) : false
-        }
-        // Filter logs related to certifications by department
-        if (log.type === 'certification') {
-          const cert = certifications.find(c => c.id === log.itemId)
-          return cert ? canViewCertification(cert) : false
-        }
-        return true
-      })
+  const visibleActivityLogs =
+    currentUser?.userType === "Admin"
+      ? activityLogs
+      : activityLogs.filter((log) => {
+          // Filter logs related to documents by department
+          if (log.type === "document") {
+            const doc = documents.find((d) => d.id === log.itemId);
+            return doc ? canViewDocument(doc) : false;
+          }
+          // Filter logs related to certifications by department
+          if (log.type === "certification") {
+            const cert = certifications.find((c) => c.id === log.itemId);
+            return cert ? canViewCertification(cert) : false;
+          }
+          return true;
+        });
+
+  // Remove duplicates by ID to prevent key conflicts
+  const uniqueVisibleActivityLogs = visibleActivityLogs.filter(
+    (log, index, self) => self.findIndex((l) => l.id === log.id) === index
+  );
 
   const handlePrintActivityLogs = () => {
-    const printWindow = window.open('', '_blank')
+    const printWindow = window.open("", "_blank");
     const printContent = `
       <!DOCTYPE html>
       <html>
@@ -76,8 +123,10 @@ const Dashboard = () => {
         <body>
           <h1>Activity Logs</h1>
           <p><strong>Generated:</strong> ${new Date().toLocaleString()}</p>
-          <p><strong>User:</strong> ${currentUser?.name || 'N/A'}</p>
-          <p><strong>Department:</strong> ${currentUser?.department || 'N/A'}</p>
+          <p><strong>User:</strong> ${currentUser?.name || "N/A"}</p>
+          <p><strong>Department:</strong> ${
+            currentUser?.department || "N/A"
+          }</p>
           <table>
             <thead>
               <tr>
@@ -88,81 +137,97 @@ const Dashboard = () => {
               </tr>
             </thead>
             <tbody>
-              ${visibleActivityLogs.map(log => `
+              ${uniqueVisibleActivityLogs
+                .map(
+                  (log) => `
                 <tr>
                   <td>${log.action}</td>
                   <td>${log.type}</td>
                   <td>${log.itemName}</td>
                   <td>${new Date(log.timestamp).toLocaleString()}</td>
                 </tr>
-              `).join('')}
+              `
+                )
+                .join("")}
             </tbody>
           </table>
         </body>
       </html>
-    `
-    printWindow.document.write(printContent)
-    printWindow.document.close()
-    printWindow.print()
-  }
+    `;
+    printWindow.document.write(printContent);
+    printWindow.document.close();
+    printWindow.print();
+  };
 
   // Calculate certificate age data (days from createdAt to now)
   const certificateAgeData = useMemo(() => {
-    const now = new Date()
-    let greenCount = 0
-    let redCount = 0
+    const now = new Date();
+    let greenCount = 0;
+    let redCount = 0;
 
-    visibleCertifications.forEach(cert => {
+    visibleCertifications.forEach((cert) => {
       if (cert.createdAt) {
-        const ageInDays = differenceInCalendarDays(now, new Date(cert.createdAt))
+        const ageInDays = differenceInCalendarDays(
+          now,
+          new Date(cert.createdAt)
+        );
         if (ageInDays <= 300) {
-          greenCount++
+          greenCount++;
         } else {
-          redCount++
+          redCount++;
         }
       }
-    })
+    });
 
     return [
-      { name: '≤ 300 days', value: greenCount, color: '#48BB78' },
-      { name: '> 300 days', value: redCount, color: '#F56565' }
-    ]
-  }, [visibleCertifications])
+      { name: "≤ 300 days", value: greenCount, color: "#48BB78" },
+      { name: "> 300 days", value: redCount, color: "#F56565" },
+    ];
+  }, [visibleCertifications]);
 
   // Calculate remaining days data (days from now to expirationDate)
   const remainingDaysData = useMemo(() => {
-    const now = new Date()
-    let greenCount = 0
-    let redCount = 0
+    const now = new Date();
+    let greenCount = 0;
+    let redCount = 0;
 
-    visibleCertifications.forEach(cert => {
+    visibleCertifications.forEach((cert) => {
       if (cert.expirationDate) {
-        const daysRemaining = differenceInCalendarDays(new Date(cert.expirationDate), now)
+        const daysRemaining = differenceInCalendarDays(
+          new Date(cert.expirationDate),
+          now
+        );
         if (daysRemaining <= 300) {
-          greenCount++
+          greenCount++;
         } else {
-          redCount++
+          redCount++;
         }
       }
-    })
+    });
 
     return [
-      { name: '≤ 300 days', value: greenCount, color: '#48BB78' },
-      { name: '> 300 days', value: redCount, color: '#F56565' }
-    ]
-  }, [visibleCertifications])
+      { name: "≤ 300 days", value: greenCount, color: "#48BB78" },
+      { name: "> 300 days", value: redCount, color: "#F56565" },
+    ];
+  }, [visibleCertifications]);
 
   return (
-    <Box>
-      <Heading mb={6}>Dashboard</Heading>
-      
-      <Grid templateColumns="repeat(auto-fit, minmax(250px, 1fr))" gap={6} mb={8}>
+    <>
+      <Grid
+        templateColumns="repeat(auto-fit, minmax(250px, 1fr))"
+        gap={6}
+        mb={8}
+      >
         <Card>
           <CardBody>
             <HStack justify="space-between">
               <VStack align="start" spacing={1}>
-                <Text fontSize="sm" color="gray.600">Total Documents</Text>
-                <Text fontSize="3xl" fontWeight="bold">{visibleDocuments.length}</Text>
+                <Text fontSize="sm" color="gray.600">
+                  Total Documents
+                </Text>
+                <Text fontSize="3xl" fontWeight="bold">
+                  {visibleDocuments.length}
+                </Text>
               </VStack>
               <Icon as={FiFileText} boxSize={10} color="blue.500" />
             </HStack>
@@ -173,8 +238,12 @@ const Dashboard = () => {
           <CardBody>
             <HStack justify="space-between">
               <VStack align="start" spacing={1}>
-                <Text fontSize="sm" color="gray.600">Certifications</Text>
-                <Text fontSize="3xl" fontWeight="bold">{visibleCertifications.length}</Text>
+                <Text fontSize="sm" color="gray.600">
+                  Certifications
+                </Text>
+                <Text fontSize="3xl" fontWeight="bold">
+                  {visibleCertifications.length}
+                </Text>
               </VStack>
               <Icon as={FiShield} boxSize={10} color="green.500" />
             </HStack>
@@ -185,8 +254,12 @@ const Dashboard = () => {
           <CardBody>
             <HStack justify="space-between">
               <VStack align="start" spacing={1}>
-                <Text fontSize="sm" color="gray.600">Pending Approvals</Text>
-                <Text fontSize="3xl" fontWeight="bold">{pendingApprovals.length}</Text>
+                <Text fontSize="sm" color="gray.600">
+                  Pending Approvals
+                </Text>
+                <Text fontSize="3xl" fontWeight="bold">
+                  {pendingApprovals.length}
+                </Text>
               </VStack>
               <Icon as={FiClock} boxSize={10} color="orange.500" />
             </HStack>
@@ -194,7 +267,11 @@ const Dashboard = () => {
         </Card>
       </Grid>
 
-      <Grid templateColumns="repeat(auto-fit, minmax(400px, 1fr))" gap={6} mb={8}>
+      <Grid
+        templateColumns="repeat(auto-fit, minmax(400px, 1fr))"
+        gap={6}
+        mb={8}
+      >
         <Card>
           <CardHeader>
             <Heading size="md">Certificate Age</Heading>
@@ -216,8 +293,10 @@ const Dashboard = () => {
                       cx="50%"
                       cy="50%"
                       labelLine={false}
-                      label={({ name, value, percent }) => 
-                        value > 0 ? `${name}: ${value} (${(percent * 100).toFixed(0)}%)` : ''
+                      label={({ name, value, percent }) =>
+                        value > 0
+                          ? `${name}: ${value} (${(percent * 100).toFixed(0)}%)`
+                          : ""
                       }
                       outerRadius={100}
                       fill="#8884d8"
@@ -228,8 +307,8 @@ const Dashboard = () => {
                       ))}
                     </Pie>
                     <Tooltip />
-                    <Legend 
-                      verticalAlign="bottom" 
+                    <Legend
+                      verticalAlign="bottom"
                       height={36}
                       formatter={(value, entry) => (
                         <span style={{ color: entry.color }}>
@@ -242,11 +321,15 @@ const Dashboard = () => {
                 <HStack spacing={4} justify="center" mt={2}>
                   <HStack>
                     <Box w={4} h={4} bg="green.500" borderRadius="sm" />
-                    <Text fontSize="sm">≤ 300 days: {certificateAgeData[0].value}</Text>
+                    <Text fontSize="sm">
+                      ≤ 300 days: {certificateAgeData[0].value}
+                    </Text>
                   </HStack>
                   <HStack>
                     <Box w={4} h={4} bg="red.500" borderRadius="sm" />
-                    <Text fontSize="sm">> 300 days: {certificateAgeData[1].value}</Text>
+                    <Text fontSize="sm">
+                      300 days: {certificateAgeData[1].value}
+                    </Text>
                   </HStack>
                 </HStack>
               </VStack>
@@ -262,7 +345,8 @@ const Dashboard = () => {
             </Text>
           </CardHeader>
           <CardBody>
-            {visibleCertifications.filter(cert => cert.expirationDate).length === 0 ? (
+            {visibleCertifications.filter((cert) => cert.expirationDate)
+              .length === 0 ? (
               <Text color="gray.500" textAlign="center" py={8}>
                 No certifications with expiration dates
               </Text>
@@ -275,8 +359,10 @@ const Dashboard = () => {
                       cx="50%"
                       cy="50%"
                       labelLine={false}
-                      label={({ name, value, percent }) => 
-                        value > 0 ? `${name}: ${value} (${(percent * 100).toFixed(0)}%)` : ''
+                      label={({ name, value, percent }) =>
+                        value > 0
+                          ? `${name}: ${value} (${(percent * 100).toFixed(0)}%)`
+                          : ""
                       }
                       outerRadius={100}
                       fill="#8884d8"
@@ -287,8 +373,8 @@ const Dashboard = () => {
                       ))}
                     </Pie>
                     <Tooltip />
-                    <Legend 
-                      verticalAlign="bottom" 
+                    <Legend
+                      verticalAlign="bottom"
                       height={36}
                       formatter={(value, entry) => (
                         <span style={{ color: entry.color }}>
@@ -301,11 +387,15 @@ const Dashboard = () => {
                 <HStack spacing={4} justify="center" mt={2}>
                   <HStack>
                     <Box w={4} h={4} bg="green.500" borderRadius="sm" />
-                    <Text fontSize="sm">≤ 300 days: {remainingDaysData[0].value}</Text>
+                    <Text fontSize="sm">
+                      ≤ 300 days: {remainingDaysData[0].value}
+                    </Text>
                   </HStack>
                   <HStack>
                     <Box w={4} h={4} bg="red.500" borderRadius="sm" />
-                    <Text fontSize="sm">> 300 days: {remainingDaysData[1].value}</Text>
+                    <Text fontSize="sm">
+                      300 days: {remainingDaysData[1].value}
+                    </Text>
                   </HStack>
                 </HStack>
               </VStack>
@@ -326,23 +416,29 @@ const Dashboard = () => {
               ) : (
                 filteredRecentDocuments.slice(0, 5).map((doc) => (
                   <Box
-                    key={doc.id}
+                    key={`recent-${doc.id}`}
                     p={3}
                     border="1px"
                     borderColor="gray.200"
                     borderRadius="md"
                     cursor="pointer"
-                    _hover={{ bg: 'gray.50' }}
+                    _hover={{ bg: "gray.50" }}
                     onClick={() => navigate(`/${doc.type}/${doc.id}`)}
                   >
                     <HStack justify="space-between">
                       <VStack align="start" spacing={0}>
                         <Text fontWeight="semibold">{doc.name}</Text>
                         <Text fontSize="sm" color="gray.500">
-                          {formatDistanceToNow(new Date(doc.openedAt), { addSuffix: true })}
+                          {formatDistanceToNow(new Date(doc.openedAt), {
+                            addSuffix: true,
+                          })}
                         </Text>
                       </VStack>
-                      <Badge colorScheme={doc.type === 'documents' ? 'blue' : 'green'}>
+                      <Badge
+                        colorScheme={
+                          doc.type === "documents" ? "blue" : "green"
+                        }
+                      >
                         {doc.type}
                       </Badge>
                     </HStack>
@@ -364,23 +460,31 @@ const Dashboard = () => {
               ) : (
                 starredDocs.slice(0, 5).map((doc) => (
                   <Box
-                    key={doc.id}
+                    key={`starred-${doc.id}`}
                     p={3}
                     border="1px"
                     borderColor="gray.200"
                     borderRadius="md"
                     cursor="pointer"
-                    _hover={{ bg: 'gray.50' }}
+                    _hover={{ bg: "gray.50" }}
                     onClick={() => navigate(`/documents/${doc.id}`)}
                   >
                     <HStack justify="space-between">
                       <VStack align="start" spacing={0}>
                         <Text fontWeight="semibold">{doc.title}</Text>
                         <Text fontSize="sm" color="gray.500">
-                          {doc.category || 'Uncategorized'}
+                          {doc.category || "Uncategorized"}
                         </Text>
                       </VStack>
-                      <Badge colorScheme={doc.status === 'approved' ? 'green' : doc.status === 'pending' ? 'yellow' : 'red'}>
+                      <Badge
+                        colorScheme={
+                          doc.status === "approved"
+                            ? "green"
+                            : doc.status === "pending"
+                            ? "yellow"
+                            : "red"
+                        }
+                      >
                         {doc.status}
                       </Badge>
                     </HStack>
@@ -391,7 +495,7 @@ const Dashboard = () => {
           </CardBody>
         </Card>
 
-        {currentUser?.userType === 'Admin' && (
+        {currentUser?.userType === "Admin" && (
           <Card gridColumn="span 2" ref={activityLogsRef}>
             <CardHeader>
               <HStack justify="space-between">
@@ -409,46 +513,46 @@ const Dashboard = () => {
             </CardHeader>
             <CardBody>
               <VStack align="stretch" spacing={2}>
-                {visibleActivityLogs.length === 0 ? (
+                {uniqueVisibleActivityLogs.length === 0 ? (
                   <Text color="gray.500">No activity logs</Text>
                 ) : (
-                  visibleActivityLogs.slice(0, 10).map((log) => (
-                  <Box
-                    key={log.id}
-                    p={3}
-                    border="1px"
-                    borderColor="gray.200"
-                    borderRadius="md"
-                  >
-                    <HStack justify="space-between">
-                      <HStack>
-                        <Icon as={FiActivity} />
-                        <Text>
-                          <Text as="span" fontWeight="semibold">{log.action}</Text>
-                          {' '}
-                          <Text as="span" color="gray.600">{log.type}</Text>
-                          {' '}
-                          <Text as="span">{log.itemName}</Text>
+                  uniqueVisibleActivityLogs.slice(0, 10).map((log) => (
+                    <Box
+                      key={`activity-${log.id}`}
+                      p={3}
+                      border="1px"
+                      borderColor="gray.200"
+                      borderRadius="md"
+                    >
+                      <HStack justify="space-between">
+                        <HStack>
+                          <Icon as={FiActivity} />
+                          <Text>
+                            <Text as="span" fontWeight="semibold">
+                              {log.action}
+                            </Text>{" "}
+                            <Text as="span" color="gray.600">
+                              {log.type}
+                            </Text>{" "}
+                            <Text as="span">{log.itemName}</Text>
+                          </Text>
+                        </HStack>
+                        <Text fontSize="sm" color="gray.500">
+                          {formatDistanceToNow(new Date(log.timestamp), {
+                            addSuffix: true,
+                          })}
                         </Text>
                       </HStack>
-                      <Text fontSize="sm" color="gray.500">
-                        {formatDistanceToNow(new Date(log.timestamp), { addSuffix: true })}
-                      </Text>
-                    </HStack>
-                  </Box>
-                ))
-              )}
+                    </Box>
+                  ))
+                )}
               </VStack>
             </CardBody>
           </Card>
         )}
       </Grid>
-    </Box>
-  )
-}
+    </>
+  );
+};
 
-export default Dashboard
-
-
-
-
+export default Layout;
