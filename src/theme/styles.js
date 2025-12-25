@@ -1,8 +1,7 @@
-import { ThemeProps } from "@chakra-ui/react";
 import sweetAlertStyles from "./sweetalert";
 
 export const styles = {
-  global: (props: ThemeProps) => ({
+  global: (props) => ({
     "html, body": {
       "h1, h2, h3": {
         fontFamily: `'Funnel Display', sans-serif`,

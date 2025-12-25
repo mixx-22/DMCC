@@ -1,7 +1,6 @@
-import { ThemeProps } from "@chakra-ui/react";
 import { mode } from "@chakra-ui/theme-tools";
 
-export const sweetAlertStyles = (props: ThemeProps) => {
+export const sweetAlertStyles = (props) => {
   const { theme: { sizes = {}, components: c = {} } = {} } = props;
   const defaultAlert = {
     color: mode(`gray.800`, `white`)(props),
