@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   Box,
+  Flex,
   VStack,
   Heading,
   FormControl,
@@ -12,10 +13,12 @@ import {
   InputRightElement,
   Button,
   useToast,
-  Card,
-  CardBody,
   Text,
   IconButton,
+  HStack,
+  Checkbox,
+  useColorModeValue,
+  Image,
 } from "@chakra-ui/react";
 import { FiEye, FiEyeOff, FiLock, FiUser } from "react-icons/fi";
 import { useUser } from "../context/useUser";
@@ -81,91 +84,186 @@ const Login = () => {
   };
 
   return (
-    <Box
-      minH="100vh"
-      display="flex"
-      alignItems="center"
-      justifyContent="center"
-      bg="gray.50"
-    >
-      <Card w="100%" maxW="400px" boxShadow="lg">
-        <CardBody p={8}>
-          <VStack spacing={6}>
-            <VStack spacing={2}>
-              <Heading color="brandPrimary.600">Auptilyze</Heading>
-              <Text color="gray.600" fontSize="sm">
-                With Certainty.
+    <Flex minH="100vh" bg={useColorModeValue("gray.50", "gray.900")}>
+      {/* Desktop: split layout */}
+      <Flex
+        flex={1}
+        direction={{ base: "column", md: "row" }}
+        w="100%"
+        align="center"
+        justify="center"
+      >
+        {/* Left: Login Form */}
+        <Box
+          w={{ base: "100%", md: "50%" }}
+          maxW={{ base: "100%", md: "480px" }}
+          mx={{ base: 2, md: 0 }}
+          py={{ base: 8, md: 16 }}
+          px={{ base: 4, md: 12 }}
+          display="flex"
+          flexDirection="column"
+          justifyContent="center"
+        >
+          <VStack spacing={8} align="stretch">
+            <VStack align="flex-start" spacing={1} mb={2}>
+              <Heading
+                fontWeight="extrabold"
+                fontSize={{ base: "2xl", md: "3xl" }}
+                lineHeight={1.1}
+                color={useColorModeValue("gray.800", "white")}
+              >
+                Sign in
+              </Heading>
+              <Text
+                color={useColorModeValue("gray.500", "gray.300")}
+                fontSize="md"
+              >
+                Enter your email address and password to continue
               </Text>
             </VStack>
-
-            <Box w="100%">
-              <form onSubmit={handleSubmit}>
-                <VStack spacing={4}>
-                  <FormControl isRequired>
-                    <FormLabel>Username</FormLabel>
-                    <InputGroup>
-                      <InputLeftElement pointerEvents="none" color="gray.400">
-                        <FiUser />
-                      </InputLeftElement>
-                      <Input
-                        type="text"
-                        value={username}
-                        onChange={(e) => setUsername(e.target.value)}
-                        placeholder="Enter your username"
-                        pl={10}
-                        id="username"
-                        name="username"
+            <form onSubmit={handleSubmit}>
+              <VStack spacing={5} align="stretch">
+                <FormControl isRequired>
+                  <FormLabel>Email Address</FormLabel>
+                  <InputGroup>
+                    <InputLeftElement pointerEvents="none" color="gray.400">
+                      <FiUser />
+                    </InputLeftElement>
+                    <Input
+                      type="email"
+                      value={username}
+                      onChange={(e) => setUsername(e.target.value)}
+                      placeholder="Enter your email address"
+                      pl={10}
+                      id="email"
+                      name="email"
+                      autoComplete="username"
+                    />
+                  </InputGroup>
+                </FormControl>
+                <FormControl isRequired>
+                  <FormLabel>Password</FormLabel>
+                  <InputGroup>
+                    <InputLeftElement pointerEvents="none" color="gray.400">
+                      <FiLock />
+                    </InputLeftElement>
+                    <Input
+                      type={showPassword ? "text" : "password"}
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      placeholder="Enter your password"
+                      pl={10}
+                      pr={10}
+                      id="password"
+                      name="password"
+                      autoComplete="current-password"
+                    />
+                    <InputRightElement>
+                      <IconButton
+                        aria-label={
+                          showPassword ? "Hide password" : "Show password"
+                        }
+                        icon={showPassword ? <FiEyeOff /> : <FiEye />}
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setShowPassword(!showPassword)}
                       />
-                    </InputGroup>
-                  </FormControl>
-
-                  <FormControl isRequired>
-                    <FormLabel>Password</FormLabel>
-                    <InputGroup>
-                      <InputLeftElement pointerEvents="none" color="gray.400">
-                        <FiLock />
-                      </InputLeftElement>
-                      <Input
-                        type={showPassword ? "text" : "password"}
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                        placeholder="Enter your password"
-                        pl={10}
-                        pr={10}
-                        id="password"
-                        name="password"
-                      />
-                      <InputRightElement>
-                        <IconButton
-                          aria-label={
-                            showPassword ? "Hide password" : "Show password"
-                          }
-                          icon={showPassword ? <FiEyeOff /> : <FiEye />}
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => setShowPassword(!showPassword)}
-                        />
-                      </InputRightElement>
-                    </InputGroup>
-                  </FormControl>
-
+                    </InputRightElement>
+                  </InputGroup>
+                </FormControl>
+                <HStack justify="space-between" align="center">
+                  <Checkbox colorScheme="brandPrimary">Remember me</Checkbox>
                   <Button
-                    type="submit"
+                    variant="link"
                     colorScheme="brandPrimary"
-                    w="full"
-                    size="lg"
-                    isLoading={isLoading}
-                    leftIcon={<FiLock />}
+                    fontSize="sm"
+                    fontWeight="medium"
+                    px={0}
                   >
-                    Sign In
+                    Forgot Password
                   </Button>
-                </VStack>
-              </form>
-            </Box>
+                </HStack>
+                <Button
+                  type="submit"
+                  w="full"
+                  size="lg"
+                  isLoading={isLoading}
+                  fontWeight="bold"
+                  fontSize="md"
+                  borderRadius="lg"
+                  mt={2}
+                  colorScheme="brandPrimary"
+                >
+                  Sign In
+                </Button>
+                <Text
+                  textAlign="center"
+                  color={useColorModeValue("gray.500", "gray.300")}
+                  fontSize="sm"
+                >
+                  Don&apos;t have an account?{" "}
+                  <Button
+                    variant="link"
+                    colorScheme="brandPrimary"
+                    fontWeight="medium"
+                    fontSize="sm"
+                    px={0}
+                  >
+                    Sign up
+                  </Button>
+                </Text>
+              </VStack>
+            </form>
           </VStack>
-        </CardBody>
-      </Card>
-    </Box>
+        </Box>
+        {/* Right: Info Panel (desktop only) */}
+        <Box
+          display={{ base: "none", md: "flex" }}
+          flex={1}
+          alignItems="center"
+          justifyContent="center"
+          bg={useColorModeValue("brandPrimary.500", "brandPrimary.400")}
+          color="white"
+          borderRadius={{ md: "2xl" }}
+          m={6}
+          p={10}
+          flexDirection="column"
+          minH="80vh"
+          boxShadow="2xl"
+          position="relative"
+        >
+          <Image
+            src="https://images.unsplash.com/photo-1535350356005-fd52b3b524fb?auto=format&fit=crop&w=800&q=80"
+            alt="Decorative overlay"
+            position="absolute"
+            top={0}
+            left={0}
+            w="100%"
+            h="100%"
+            objectFit="cover"
+            opacity={0.18}
+            zIndex={0}
+            pointerEvents="none"
+            style={{ mixBlendMode: "lighten" }}
+          />
+          <VStack spacing={8} align="flex-start" w="100%">
+            <Box mb={4}>
+              <Heading size="2xl" fontWeight="extrabold" letterSpacing="tight">
+                {import.meta.env.VITE_PROJECT_NAME}
+              </Heading>
+            </Box>
+            <Heading size="lg" fontWeight="bold" mb={2}>
+              Welcome to {import.meta.env.VITE_PROJECT_NAME}
+            </Heading>
+            <Text fontSize="lg" maxW="md" color="gray.200">
+              {import.meta.env.VITE_PROJECT_NAME} helps you securely manage
+              documents and certifications. Join us and start building your
+              workflow today.
+            </Text>
+          </VStack>
+        </Box>
+      </Flex>
+    </Flex>
   );
 };
 
