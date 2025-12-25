@@ -209,7 +209,7 @@ const Login = () => {
                     fontSize="sm"
                     px={0}
                   >
-                    Sign up
+                    Get an invite.
                   </Button>
                 </Text>
               </VStack>
