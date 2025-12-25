@@ -15,7 +15,6 @@ import {
   DrawerCloseButton,
   DrawerBody,
   Flex,
-  Spacer,
   Collapse,
 } from "@chakra-ui/react";
 import { NavLink } from "react-router-dom";
@@ -33,34 +32,102 @@ import {
 } from "react-icons/fi";
 import { useApp } from "../context/AppContext";
 
+/* ────────────────────────────── */
+/* Sidebar Row */
+/* ────────────────────────────── */
+
+const SidebarRow = ({
+  to,
+  icon,
+  label,
+  isCollapsed,
+  isMobile = false,
+  hasChildren = false,
+  isExpanded = false,
+  onToggle,
+  onClick,
+}) => {
+  return (
+    <Link
+      as={to ? NavLink : "div"}
+      to={to}
+      display="flex"
+      alignItems="center"
+      h="sidebar.row"
+      px={3}
+      gap={3}
+      borderRadius="md"
+      cursor="pointer"
+      _hover={{ bg: "gray.100" }}
+      _activeLink={
+        to
+          ? {
+              bg: "blue.50",
+              color: "blue.600",
+              fontWeight: "semibold",
+            }
+          : {}
+      }
+      onClick={onClick}
+    >
+      {/* Icon always visible */}
+      <Icon as={icon} boxSize={5} />
+
+      {/* Label + chevron ONLY when expanded or mobile */}
+      {(!isCollapsed || isMobile) && (
+        <>
+          <Text>{label}</Text>
+
+          {hasChildren && <Flex flex={1} />}
+
+          {hasChildren && (
+            <Icon
+              as={isExpanded ? FiChevronUp : FiChevronDown}
+              boxSize={4}
+              cursor="pointer"
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                onToggle?.();
+              }}
+            />
+          )}
+        </>
+      )}
+    </Link>
+  );
+};
+
+/* ────────────────────────────── */
+/* Sidebar */
+/* ────────────────────────────── */
+
 const Sidebar = () => {
   const { currentUser } = useApp();
   const bgColor = useColorModeValue("white", "gray.800");
   const borderColor = useColorModeValue("gray.200", "gray.700");
   const { isOpen, onOpen, onClose } = useDisclosure();
+
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   const [expandedItems, setExpandedItems] = useState(new Set());
   const [isBottomNavVisible, setIsBottomNavVisible] = useState(true);
   const [lastScrollY, setLastScrollY] = useState(0);
 
+  /* ────────────────────────────── */
+  /* Responsive + Scroll */
+  /* ────────────────────────────── */
+
   useEffect(() => {
-    const checkMobile = () => {
-      setIsMobile(window.innerWidth < 768);
-    };
+    const checkMobile = () => setIsMobile(window.innerWidth < 768);
 
     const handleScroll = () => {
-      const currentScrollY = window.scrollY;
-
-      if (currentScrollY < 10) {
-        setIsBottomNavVisible(true);
-      } else if (currentScrollY > lastScrollY && currentScrollY > 100) {
+      const currentY = window.scrollY;
+      if (currentY < 10) setIsBottomNavVisible(true);
+      else if (currentY > lastScrollY && currentY > 100)
         setIsBottomNavVisible(false);
-      } else if (currentScrollY < lastScrollY) {
-        setIsBottomNavVisible(true);
-      }
-
-      setLastScrollY(currentScrollY);
+      else if (currentY < lastScrollY) setIsBottomNavVisible(true);
+      setLastScrollY(currentY);
     };
 
     checkMobile();
@@ -73,23 +140,18 @@ const Sidebar = () => {
     };
   }, [lastScrollY]);
 
-  const toggleItem = (itemId) => {
-    const newExpanded = new Set(expandedItems);
-    if (newExpanded.has(itemId)) {
-      newExpanded.delete(itemId);
-    } else {
-      newExpanded.add(itemId);
-    }
-    setExpandedItems(newExpanded);
+  const toggleItem = (id) => {
+    const next = new Set(expandedItems);
+    next.has(id) ? next.delete(id) : next.add(id);
+    setExpandedItems(next);
   };
 
+  /* ────────────────────────────── */
+  /* Navigation Data */
+  /* ────────────────────────────── */
+
   const navItems = [
-    {
-      id: "dashboard",
-      path: "/dashboard",
-      label: "Dashboard",
-      icon: FiHome,
-    },
+    { id: "dashboard", path: "/dashboard", label: "Dashboard", icon: FiHome },
     {
       id: "documents",
       path: "/documents",
@@ -100,12 +162,7 @@ const Sidebar = () => {
         { path: "/documents?status=pending", label: "Pending Approval" },
       ],
     },
-    {
-      id: "archive",
-      path: "/archive",
-      label: "Archive",
-      icon: FiArchive,
-    },
+    { id: "archive", path: "/archive", label: "Archive", icon: FiArchive },
     {
       id: "certifications",
       path: "/certifications",
@@ -123,92 +180,14 @@ const Sidebar = () => {
     });
   }
 
-  const NavItem = ({ item, isMobile = false }) => {
-    const hasChildren = item.children && item.children.length > 0;
-    const isExpanded = expandedItems.has(item.id);
-
-    return (
-      <Box>
-        <Link
-          as={NavLink}
-          to={item.path}
-          display="flex"
-          alignItems="center"
-          gap={3}
-          p={3}
-          borderRadius="md"
-          _hover={{ bg: "gray.100" }}
-          _activeLink={{
-            bg: "blue.50",
-            color: "blue.600",
-            fontWeight: "semibold",
-          }}
-          onClick={isMobile ? onClose : undefined}
-        >
-          <Icon as={item.icon} boxSize={5} />
-          {(!isCollapsed || isMobile) && <Text>{item.label}</Text>}
-          {hasChildren && (!isCollapsed || isMobile) && <Spacer />}
-          {hasChildren && (!isCollapsed || isMobile) && (
-            <Icon
-              as={isExpanded ? FiChevronUp : FiChevronDown}
-              boxSize={4}
-              onClick={(e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                toggleItem(item.id);
-              }}
-              cursor="pointer"
-            />
-          )}
-        </Link>
-        {hasChildren && (
-          <Collapse in={isExpanded} animateOpacity>
-            <VStack
-              spacing={0}
-              align="stretch"
-              pl={!isCollapsed || isMobile ? 8 : 2}
-              mt={1}
-            >
-              {item.children.map((child, index) => (
-                <Link
-                  key={`${item.id}-child-${index}`}
-                  as={NavLink}
-                  to={child.path}
-                  display="flex"
-                  alignItems="center"
-                  gap={3}
-                  p={2}
-                  pl={3}
-                  borderRadius="md"
-                  fontSize="sm"
-                  _hover={{ bg: "gray.50" }}
-                  _activeLink={{
-                    bg: "blue.50",
-                    color: "blue.600",
-                    fontWeight: "semibold",
-                  }}
-                  onClick={isMobile ? onClose : undefined}
-                >
-                  <Text>{child.label}</Text>
-                </Link>
-              ))}
-            </VStack>
-          </Collapse>
-        )}
-      </Box>
-    );
-  };
+  /* ────────────────────────────── */
+  /* Mobile */
+  /* ────────────────────────────── */
 
   if (isMobile) {
-    const mainNavItems = [
-      { id: "dashboard", path: "/dashboard", label: "Home", icon: FiHome },
-      { id: "documents", path: "/documents", label: "Docs", icon: FiFileText },
-      { id: "more", path: "#", label: "More", icon: FiMenu, isMore: true },
-    ];
-
     return (
       <>
-        {/* Bottom Navigation Bar */}
+        {/* Bottom Nav */}
         <Box
           position="fixed"
           bottom={0}
@@ -218,81 +197,69 @@ const Sidebar = () => {
           borderTop="1px"
           borderColor={borderColor}
           zIndex="docked"
-          p={2}
-          top={isBottomNavVisible ? "auto" : "100vh"}
-          transition="top 0.3s ease-in-out"
-          boxShadow="0 -2px 10px rgba(0,0,0,0.1)"
+          transition="transform 0.3s ease"
+          transform={isBottomNavVisible ? "translateY(0)" : "translateY(100%)"}
         >
-          <Flex justify="space-around" align="center">
-            {/* Menu Toggle */}
-            <Box
-              display="flex"
-              flexDirection="column"
-              alignItems="center"
-              gap={1}
-              p={2}
-              borderRadius="md"
-              cursor="pointer"
+          <Flex justify="space-around" py={2}>
+            <Sidebar.row
+              icon={FiMenu}
+              label="Menu"
+              isCollapsed={false}
+              isMobile
               onClick={onOpen}
-              _hover={{ bg: "gray.100" }}
-            >
-              <Icon as={FiMenu} boxSize={5} />
-              <Text fontSize="xs">Menu</Text>
-            </Box>
-
-            {/* Main Navigation Items */}
-            {mainNavItems.map((item) => (
-              <Link
-                key={`mobile-${item.id}`}
-                as={item.isMore ? "div" : NavLink}
-                to={item.isMore ? undefined : item.path}
-                display="flex"
-                flexDirection="column"
-                alignItems="center"
-                gap={1}
-                p={2}
-                borderRadius="md"
-                cursor={item.isMore ? "pointer" : "default"}
-                onClick={item.isMore ? onOpen : undefined}
-                _activeLink={
-                  !item.isMore
-                    ? {
-                        bg: "blue.50",
-                        color: "blue.600",
-                      }
-                    : {}
-                }
-                _hover={item.isMore ? { bg: "gray.100" } : {}}
-              >
-                <Icon as={item.icon} boxSize={5} />
-                <Text fontSize="xs">{item.label}</Text>
-              </Link>
-            ))}
+            />
           </Flex>
         </Box>
 
-        {/* Mobile Drawer */}
+        {/* Drawer */}
         <Drawer isOpen={isOpen} placement="left" onClose={onClose}>
           <DrawerOverlay />
           <DrawerContent>
             <DrawerCloseButton />
             <DrawerBody p={0}>
-              <Box bg={bgColor} h="100%">
-                <Box p={6}>
-                  <Heading
-                    fontSize="xl"
-                    fontWeight="bold"
-                    color="brandPrimary.500"
-                    mb={8}
-                  >
-                    auptilyze
-                  </Heading>
-                  <VStack spacing={0} align="stretch">
-                    {navItems.map((item) => (
-                      <NavItem key={item.id} item={item} isMobile={true} />
-                    ))}
-                  </VStack>
-                </Box>
+              <Box p={4}>
+                <Heading fontSize="lg" mb={4} color="brandPrimary.500">
+                  auptilyze
+                </Heading>
+
+                <VStack spacing={0} align="stretch">
+                  {navItems.map((item) => {
+                    const expanded = expandedItems.has(item.id);
+                    return (
+                      <Box key={item.id}>
+                        <Sidebar.row
+                          to={item.path}
+                          icon={item.icon}
+                          label={item.label}
+                          isCollapsed={false}
+                          isMobile
+                          hasChildren={!!item.children}
+                          isExpanded={expanded}
+                          onToggle={() => toggleItem(item.id)}
+                          onClick={onClose}
+                        />
+
+                        {item.children && (
+                          <Collapse in={expanded}>
+                            <VStack align="stretch" pl={8}>
+                              {item.children.map((child) => (
+                                <Sidebar.row
+                                  key={child.path}
+                                  to={child.path}
+                                  icon={FiFileText}
+                                  label={child.label}
+                                  isCollapsed={false}
+                                  isMobile
+                                  onClick={onClose}
+                                />
+                              ))}
+                            </VStack>
+                          </Collapse>
+                        )}
+                      </Box>
+                    );
+                  })}
+                </VStack>
               </Box>
             </DrawerBody>
           </DrawerContent>
@@ -301,9 +268,13 @@ const Sidebar = () => {
     );
   }
 
+  /* ────────────────────────────── */
+  /* Desktop */
+  /* ────────────────────────────── */
+
   return (
     <Box
-      w={isCollapsed ? "80px" : "250px"}
+      w={isCollapsed ? "sidebar.collapsed" : "sidebar.expanded"}
       bg={bgColor}
       h="100vh"
       position="sticky"
@@ -312,27 +283,65 @@ const Sidebar = () => {
       borderColor={borderColor}
       transition="width 0.3s ease"
     >
-      <Box p={4}>
-        <Flex align="center" justify="space-between" mb={8}>
-          {!isCollapsed && (
-            <Heading fontSize="xl" fontWeight="bold" color="brandPrimary.500">
-              auptilyze
-            </Heading>
-          )}
-          <IconButton
-            icon={isCollapsed ? <FiChevronRight /> : <FiChevronLeft />}
-            onClick={() => setIsCollapsed(!isCollapsed)}
-            variant="ghost"
-            size="sm"
-            aria-label="Toggle sidebar"
-          />
-        </Flex>
-        <VStack spacing={0} align="stretch">
-          {navItems.map((item) => (
-            <NavItem key={item.id} item={item} />
-          ))}
-        </VStack>
-      </Box>
+      {/* Header */}
+      <Flex align="center" h="sidebar.row" px={3} gap={2}>
+        {!isCollapsed && (
+          <Heading
+            flex={1}
+            fontSize="md"
+            fontWeight="bold"
+            color="brandPrimary.500"
+            lineHeight="1"
+          >
+            auptilyze
+          </Heading>
+        )}
+        <IconButton
+          aria-label="Toggle Sidebar"
+          icon={<Icon as={isCollapsed ? FiChevronRight : FiChevronLeft} />}
+          size="sm"
+          variant="ghost"
+          h="sidebar.row"
+          minW="sidebar.row"
+          onClick={() => setIsCollapsed(!isCollapsed)}
+        />
+      </Flex>
+
+      {/* Navigation */}
+      <VStack spacing={0} align="stretch">
+        {navItems.map((item) => {
+          const expanded = expandedItems.has(item.id);
+          return (
+            <Box key={item.id}>
+              <SidebarRow
+                to={item.path}
+                icon={item.icon}
+                label={item.label}
+                isCollapsed={isCollapsed}
+                hasChildren={!!item.children}
+                isExpanded={expanded}
+                onToggle={() => toggleItem(item.id)}
+              />
+
+              {item.children && !isCollapsed && (
+                <Collapse in={expanded}>
+                  <VStack align="stretch" pl={8}>
+                    {item.children.map((child) => (
+                      <SidebarRow
+                        key={child.path}
+                        to={child.path}
+                        icon={FiFileText}
+                        label={child.label}
+                        isCollapsed={false}
+                      />
+                    ))}
+                  </VStack>
+                </Collapse>
+              )}
+            </Box>
+          );
+        })}
+      </VStack>
     </Box>
   );
 };

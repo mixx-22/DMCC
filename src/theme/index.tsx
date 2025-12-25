@@ -5,6 +5,7 @@ import { fonts } from "./fonts";
 import { semanticTokens } from "./semanticTokens";
 import { styles } from "./styles";
 import { headingTheme } from "./heading";
+import sizes from "./sizes";
 
 export const transition = {
   smooth: "200ms ease-out",
@@ -16,6 +17,7 @@ export const theme = extendTheme({
   config,
   fonts,
   semanticTokens,
+  sizes,
   components: {
     Heading: headingTheme,
   },
