@@ -18,6 +18,7 @@ export const theme = extendTheme({
   fonts,
   semanticTokens,
   sizes,
+  space: { ...sizes },
   components: {
     Heading: headingTheme,
   },

@@ -1,7 +1,7 @@
 export const sizes = {
   sidebar: {
     expanded: "250px",
-    collapsed: "80px",
+    collapsed: "48px",
     row: "48px",
   },
 };
