@@ -18,6 +18,7 @@ import {
 } from "@chakra-ui/react";
 import { FiBell, FiLogOut } from "react-icons/fi";
 import { useUser } from "../context/useUser";
+import Swal from "sweetalert2";
 import { useNavigate } from "react-router-dom";
 import { useLayout } from "../context/Layout";
 import { useApp } from "../context/AppContext";
@@ -31,9 +32,21 @@ const Header = () => {
   const { colorMode, toggleColorMode } = useColorMode();
   const bgColor = useColorModeValue("gray.50", "gray.900");
 
-  const handleLogout = () => {
-    logout();
-    navigate("/login");
+  const handleLogout = async () => {
+    const result = await Swal.fire({
+      title: "Leaving so soon?",
+      text: "Upon proceeding, you will be logged out of your session.",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#3085d6",
+      cancelButtonColor: "#d33",
+      confirmButtonText: "Yes, Log Out",
+      cancelButtonText: "Cancel",
+    });
+    if (result.isConfirmed) {
+      logout();
+      navigate("/login");
+    }
   };
 
   return (
