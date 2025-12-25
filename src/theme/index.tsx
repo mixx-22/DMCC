@@ -3,9 +3,9 @@ import { colors } from "./colors";
 import { config } from "./config";
 import { fonts } from "./fonts";
 import { semanticTokens } from "./semanticTokens";
-import { styles } from "./styles";
 import { headingTheme } from "./heading";
 import sizes from "./sizes";
+import styles from "./styles";
 
 export const transition = {
   smooth: "200ms ease-out",
