@@ -1,23 +1,44 @@
-import { Box, Flex, Text, Badge, IconButton, Button, Menu, MenuButton, MenuList, MenuItem, Avatar, VStack, HStack } from '@chakra-ui/react'
-import { FiBell, FiUser, FiLogOut } from 'react-icons/fi'
-import { useApp } from '../context/AppContext'
-import { useNavigate } from 'react-router-dom'
+import {
+  Box,
+  Flex,
+  Text,
+  Badge,
+  IconButton,
+  Menu,
+  MenuButton,
+  MenuList,
+  MenuItem,
+  Avatar,
+  VStack,
+  HStack,
+  Divider,
+  useColorMode,
+  Spacer,
+  useColorModeValue,
+} from "@chakra-ui/react";
+import { FiBell, FiLogOut } from "react-icons/fi";
+import { useApp } from "../context/AppContext";
+import { useNavigate } from "react-router-dom";
+import { useLayout } from "../context/Layout";
 
 const Header = () => {
-  const { getExpiringCertifications, currentUser, logout } = useApp()
-  const navigate = useNavigate()
-  const expiringCerts = getExpiringCertifications()
+  const { getExpiringCertifications, currentUser, logout } = useApp();
+  const { headerRef } = useLayout();
+  const navigate = useNavigate();
+  const expiringCerts = getExpiringCertifications();
+  const { colorMode, toggleColorMode } = useColorMode();
+  const bgColor = useColorModeValue("gray.50", "gray.900");
 
   const handleLogout = () => {
-    logout()
-    navigate('/login')
-  }
+    logout();
+    navigate("/login");
+  };
 
   return (
     <Box
-      bg="white"
+      bg={bgColor}
       borderBottom="1px"
-      borderColor="gray.200"
+      border="none"
       px={6}
       py={4}
       position="sticky"
@@ -25,10 +46,9 @@ const Header = () => {
       zIndex={10}
     >
       <Flex justify="space-between" align="center">
-        <Text fontSize="2xl" fontWeight="bold" color="gray.800">
-          Document Management & Certification Monitoring
-        </Text>
-        <Flex align="center" gap={4}>
+        <Box ref={headerRef}></Box>
+        <Spacer />
+        <Flex align="center" gap={0}>
           <Menu>
             <MenuButton
               as={IconButton}
@@ -59,10 +79,11 @@ const Header = () => {
                   </MenuItem>
                   {expiringCerts.map((cert) => (
                     <MenuItem
-                      key={cert.id}
+                      key={`expiring-cert-${cert.id}`}
                       onClick={() => navigate(`/certifications/${cert.id}`)}
                     >
-                      {cert.name} - Expires: {new Date(cert.expirationDate).toLocaleDateString()}
+                      {cert.name} - Expires:{" "}
+                      {new Date(cert.expirationDate).toLocaleDateString()}
                     </MenuItem>
                   ))}
                 </>
@@ -76,7 +97,7 @@ const Header = () => {
               icon={
                 <Avatar
                   src={currentUser?.profilePicture}
-                  name={currentUser?.name || 'User'}
+                  name={currentUser?.name || "User"}
                   size="sm"
                 />
               }
@@ -87,34 +108,39 @@ const Header = () => {
                 <HStack spacing={3}>
                   <Avatar
                     src={currentUser?.profilePicture}
-                    name={currentUser?.name || 'User'}
+                    name={currentUser?.name || "User"}
                     size="sm"
                   />
                   <VStack spacing={0} align="start">
                     <Text fontSize="sm" fontWeight="semibold">
-                      {currentUser?.name || 'User'}
+                      {currentUser?.name || "User"}
                     </Text>
                     <Text fontSize="xs" color="gray.500">
-                      {currentUser?.userType || ''}
+                      {currentUser?.userType || ""}
                     </Text>
                   </VStack>
                 </HStack>
               </MenuItem>
-              <MenuItem>Profile</MenuItem>
               <MenuItem>Settings</MenuItem>
-              <MenuItem icon={<FiLogOut />} onClick={handleLogout}>
-                Logout
+              <Divider />
+              <MenuItem onClick={toggleColorMode}>
+                Appearance: {colorMode === "dark" ? "Dark" : "Light"}
               </MenuItem>
+              <Divider />
+              <MenuItem
+                icon={<FiLogOut />}
+                onClick={handleLogout}
+                color="error.500"
+              >
+                Log Out
+              </MenuItem>
+              <Divider />
             </MenuList>
           </Menu>
         </Flex>
       </Flex>
     </Box>
-  )
-}
+  );
+};
 
-export default Header
-
-
-
-
+export default Header;

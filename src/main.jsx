@@ -6,13 +6,16 @@ import theme from "./theme";
 import { AppProvider } from "./context/AppContext";
 import "./index.css";
 import Fonts from "./components/Fonts";
+import { LayoutProvider } from "./context/Layout";
 
 ReactDOM.createRoot(document.getElementById("root")).render(
   <React.StrictMode>
     <ChakraProvider theme={theme}>
       <AppProvider>
-        <Fonts />
-        <App />
+        <LayoutProvider>
+          <Fonts />
+          <App />
+        </LayoutProvider>
       </AppProvider>
     </ChakraProvider>
   </React.StrictMode>
