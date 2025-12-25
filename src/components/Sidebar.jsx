@@ -16,6 +16,8 @@ import {
   DrawerBody,
   Flex,
   Collapse,
+  DrawerHeader,
+  Spacer,
 } from "@chakra-ui/react";
 import { NavLink, useLocation } from "react-router-dom";
 import {
@@ -48,10 +50,11 @@ const isRouteMatch = (location, target) => {
 
 const SidebarRow = ({
   to,
-  icon,
+  icon = null,
   label,
   isCollapsed,
   isMobile = false,
+  isChild = false,
   hasChildren = false,
   isExpanded = false,
   isActive = false,
@@ -59,29 +62,46 @@ const SidebarRow = ({
 }) => {
   const activeBg = useColorModeValue("blue.50", "whiteAlpha.200");
   const activeColor = useColorModeValue("blue.600", "blue.200");
-  const hoverBg = useColorModeValue("gray.100", "whiteAlpha.100");
+  const hoverBg = useColorModeValue("gray.50", "whiteAlpha.100");
   const textColor = useColorModeValue("gray.700", "gray.300");
+  const childTextColor = useColorModeValue("gray.500", "gray.400");
 
   const content = (
     <Flex
       align="center"
-      h="sidebar.row"
-      px={3}
-      gap={3}
-      borderRadius="md"
+      h={isChild ? "40px" : "sidebar.row"}
+      justify={isCollapsed && !isMobile ? "center" : "flex-start"}
+      pl={isCollapsed && !isMobile ? 0 : isChild ? 12 : 4}
+      pr={isCollapsed && !isMobile ? 0 : isChild ? 8 : 4}
+      gap={isCollapsed && !isMobile ? 0 : 3}
+      borderRadius="0"
       cursor="pointer"
       bg={isActive ? activeBg : "transparent"}
-      color={isActive ? activeColor : textColor}
+      color={isActive ? activeColor : isChild ? childTextColor : textColor}
       fontWeight={isActive ? "semibold" : "normal"}
       _hover={{ bg: isActive ? activeBg : hoverBg }}
-      transition="all 0.2s"
+      transition="all 0.3s cubic-bezier(0.4, 0, 0.2, 1)"
       title={isCollapsed && !isMobile ? label : ""}
       w="full"
+      position="relative"
     >
-      <Icon as={icon} boxSize={5} minW={5} />
+      {isActive && !isMobile && !isChild && (
+        <Box
+          position="absolute"
+          left={0}
+          w="3px"
+          h="full"
+          bg={activeColor}
+          transition="all 0.2s"
+        />
+      )}
+
+      {icon !== null && (
+        <Icon as={icon} boxSize={isChild ? 4 : 5} minW={isChild ? 4 : 5} />
+      )}
       {(!isCollapsed || isMobile) && (
         <>
-          <Text flex={1} noOfLines={1} fontSize="sm">
+          <Text flex={1} noOfLines={1} fontSize={isChild ? "xs" : "sm"}>
             {label}
           </Text>
           {hasChildren && (
@@ -114,11 +134,12 @@ const Sidebar = () => {
   const { currentUser } = useApp();
   const location = useLocation();
   const { isOpen, onOpen, onClose } = useDisclosure();
-  const textColor = useColorModeValue("gray.700", "gray.300");
 
+  const textColor = useColorModeValue("gray.700", "gray.300");
   const bgColor = useColorModeValue("white", "gray.900");
-  const borderColor = useColorModeValue("gray.200", "gray.700");
+  const borderColor = useColorModeValue("gray.100", "gray.800");
   const brandColor = useColorModeValue("brandPrimary.500", "brandPrimary.200");
+  const subMenuBg = useColorModeValue("blackAlpha.50", "whiteAlpha.50");
 
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
@@ -237,20 +258,15 @@ const Sidebar = () => {
 
           {hasChildren && (
             <Collapse in={isExpanded} animateOpacity>
-              <VStack
-                align="stretch"
-                pl={isCollapsed && !mobileMode ? 0 : 8}
-                spacing={0}
-                py={1}
-              >
+              <VStack align="stretch" spacing={0} bg={subMenuBg}>
                 {item.children.map((child) => (
                   <SidebarRow
                     key={child.path}
                     to={child.path}
-                    icon={FiFileText}
                     label={child.label}
                     isCollapsed={isCollapsed}
                     isMobile={mobileMode}
+                    isChild={true}
                     isActive={isRouteMatch(location, child.path)}
                   />
                 ))}
@@ -264,7 +280,6 @@ const Sidebar = () => {
   if (isMobile) {
     return (
       <>
-        {/* Mobile Bottom Bar */}
         <Box
           position="fixed"
           bottom={0}
@@ -288,26 +303,27 @@ const Sidebar = () => {
               h="auto"
               gap={1}
               color={textColor}
+              borderRadius="0"
             >
               <Text fontSize="xs">Menu</Text>
             </IconButton>
           </Flex>
         </Box>
 
-        {/* Mobile Drawer */}
         <Drawer isOpen={isOpen} placement="left" onClose={onClose} size="xs">
           <DrawerOverlay />
           <DrawerContent bg={bgColor}>
-            <DrawerCloseButton color={textColor} />
+            <DrawerCloseButton borderRadius="full" color={textColor} />
+            <DrawerHeader px={2}>
+              <Heading fontSize="lg" mb={6} color={brandColor} px={2}>
+                {import.meta.env.VITE_PROJECT_NAME}
+              </Heading>
+            </DrawerHeader>
             <DrawerBody p={0}>
-              <Box p={4}>
-                <Heading fontSize="lg" mb={6} color={brandColor} px={2}>
-                  {import.meta.env.VITE_PROJECT_NAME}
-                </Heading>
-                <VStack spacing={1} align="stretch">
-                  {renderNavList(navItems, true)}
-                </VStack>
-              </Box>
+              <VStack spacing={0} align="stretch" h="full">
+                <Spacer />
+                {renderNavList(navItems, true)}
+              </VStack>
             </DrawerBody>
           </DrawerContent>
         </Drawer>
@@ -327,11 +343,19 @@ const Sidebar = () => {
       transition="width 0.3s cubic-bezier(0.4, 0, 0.2, 1)"
       overflowX="hidden"
     >
-      <Flex align="center" h="sidebar.row" px={3} mb={2}>
+      <Flex
+        align="center"
+        h="sidebar.row"
+        justify={isCollapsed ? "center" : "flex-start"}
+        pl={isCollapsed ? 0 : 4}
+        pr={isCollapsed ? 0 : 2}
+        mb={2}
+        transition="all 0.3s cubic-bezier(0.4, 0, 0.2, 1)"
+      >
         {!isCollapsed && (
           <Heading
             flex={1}
-            fontSize="md"
+            fontSize="lg"
             fontWeight="bold"
             color={brandColor}
             noOfLines={1}
@@ -345,11 +369,12 @@ const Sidebar = () => {
           size="sm"
           variant="ghost"
           color={textColor}
-          mx={isCollapsed ? "auto" : 0}
           onClick={() => setIsCollapsed(!isCollapsed)}
+          isRound
         />
       </Flex>
-      <VStack spacing={1} align="stretch" px={2}>
+
+      <VStack spacing={0} align="stretch">
         {renderNavList(navItems)}
       </VStack>
     </Box>
