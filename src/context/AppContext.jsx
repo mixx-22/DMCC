@@ -1,4 +1,5 @@
 import { createContext, useContext, useState, useEffect } from "react";
+import { useUser } from "./useUser";
 
 const AppContext = createContext();
 
@@ -11,6 +12,8 @@ export const useApp = () => {
 };
 
 export const AppProvider = ({ children }) => {
+  const { user: currentUser } = useUser();
+
   const [documents, setDocuments] = useState(() => {
     const saved = localStorage.getItem("documents");
     return saved ? JSON.parse(saved) : [];
@@ -51,11 +54,6 @@ export const AppProvider = ({ children }) => {
     return saved ? JSON.parse(saved) : [];
   });
 
-  const [currentUser, setCurrentUser] = useState(() => {
-    const saved = localStorage.getItem("currentUser");
-    return saved ? JSON.parse(saved) : null;
-  });
-
   useEffect(() => {
     localStorage.setItem("documents", JSON.stringify(documents));
   }, [documents]);
@@ -90,14 +88,6 @@ export const AppProvider = ({ children }) => {
   useEffect(() => {
     localStorage.setItem("accounts", JSON.stringify(accounts));
   }, [accounts]);
-
-  useEffect(() => {
-    if (currentUser) {
-      localStorage.setItem("currentUser", JSON.stringify(currentUser));
-    } else {
-      localStorage.removeItem("currentUser");
-    }
-  }, [currentUser]);
 
   const addActivityLog = (action, type, itemId, itemName) => {
     const log = {
@@ -436,18 +426,6 @@ export const AppProvider = ({ children }) => {
     addActivityLog("deleted", "account", id, account?.name || "Account");
   };
 
-  const login = (account) => {
-    setCurrentUser(account);
-    addActivityLog("logged_in", "account", account.id, account.name);
-  };
-
-  const logout = () => {
-    if (currentUser) {
-      addActivityLog("logged_out", "account", currentUser.id, currentUser.name);
-    }
-    setCurrentUser(null);
-  };
-
   return (
     <AppContext.Provider
       value={{
@@ -459,8 +437,6 @@ export const AppProvider = ({ children }) => {
         recentFolders,
         starredDocuments,
         currentUser,
-        login,
-        logout,
         addDocument,
         updateDocument,
         deleteDocument,

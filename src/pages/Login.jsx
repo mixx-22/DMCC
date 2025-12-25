@@ -18,10 +18,10 @@ import {
   IconButton,
 } from "@chakra-ui/react";
 import { FiEye, FiEyeOff, FiLock, FiUser } from "react-icons/fi";
-import { useApp } from "../context/AppContext";
+import { useUser } from "../context/useUser";
 
 const Login = () => {
-  const { accounts, login, addAccount } = useApp();
+  const { login } = useUser();
   const navigate = useNavigate();
   const toast = useToast();
   const [username, setUsername] = useState("");
@@ -45,56 +45,39 @@ const Login = () => {
 
     setIsLoading(true);
 
-    let account = accounts.find(
-      (acc) => acc.username?.toLowerCase() === username.toLowerCase()
-    );
+    try {
+      const result = await login(username, password);
 
-    if (!account && accounts.length === 0) {
-      account = addAccount({
-        name: username,
-        username,
-        password,
-        userType: "Admin",
-        jobTitle: "System Administrator",
-        department: "Administration",
-      });
-    }
+      if (result.success) {
+        toast({
+          title: "Login Successful",
+          description: `Welcome back, ${result.user.name || username}!`,
+          status: "success",
+          duration: 3000,
+          isClosable: true,
+        });
 
-    if (!account) {
-      setIsLoading(false);
+        navigate("/dashboard");
+      } else {
+        toast({
+          title: "Login Failed",
+          description: result.error || "Invalid username or password",
+          status: "error",
+          duration: 3000,
+          isClosable: true,
+        });
+      }
+    } catch (error) {
       toast({
-        title: "Login Failed",
-        description: "Invalid username or password",
+        title: "Login Error",
+        description: error.message || "An unexpected error occurred",
         status: "error",
         duration: 3000,
         isClosable: true,
       });
-      return;
-    }
-
-    if (account.password !== password) {
+    } finally {
       setIsLoading(false);
-      toast({
-        title: "Login Failed",
-        description: "Invalid username or password",
-        status: "error",
-        duration: 3000,
-        isClosable: true,
-      });
-      return;
     }
-
-    login(account);
-    toast({
-      title: "Login Successful",
-      description: `Welcome back, ${account.name}!`,
-      status: "success",
-      duration: 3000,
-      isClosable: true,
-    });
-
-    setIsLoading(false);
-    navigate("/dashboard");
   };
 
   return (
