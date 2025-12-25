@@ -1,37 +1,49 @@
-import { Box, VStack, Link, Text, Icon } from '@chakra-ui/react'
-import { NavLink } from 'react-router-dom'
-import { FiHome, FiFileText, FiShield, FiUsers, FiArchive } from 'react-icons/fi'
-import { useApp } from '../context/AppContext'
+import {
+  Box,
+  VStack,
+  Link,
+  Text,
+  Icon,
+  Heading,
+  useColorModeValue,
+} from "@chakra-ui/react";
+import { NavLink } from "react-router-dom";
+import {
+  FiHome,
+  FiFileText,
+  FiShield,
+  FiUsers,
+  FiArchive,
+} from "react-icons/fi";
+import { useApp } from "../context/AppContext";
 
 const Sidebar = () => {
-  const { currentUser } = useApp()
-  
+  const { currentUser } = useApp();
+  const bgColor = useColorModeValue("white", "gray.800");
+
   const navItems = [
-    { path: '/dashboard', label: 'Dashboard', icon: FiHome },
-    { path: '/documents', label: 'Documents', icon: FiFileText },
-    { path: '/archive', label: 'Archive', icon: FiArchive },
-    { path: '/certifications', label: 'Certifications', icon: FiShield },
-  ]
+    { path: "/dashboard", label: "Dashboard", icon: FiHome },
+    { path: "/documents", label: "Documents", icon: FiFileText },
+    { path: "/archive", label: "Archive", icon: FiArchive },
+    { path: "/certifications", label: "Certifications", icon: FiShield },
+  ];
 
   // Only show Accounts link for Admin
-  if (currentUser?.userType === 'Admin') {
-    navItems.push({ path: '/accounts', label: 'Accounts', icon: FiUsers })
+  if (currentUser?.userType === "Admin") {
+    navItems.push({ path: "/accounts", label: "Accounts", icon: FiUsers });
   }
 
   return (
-    <Box
-      w="250px"
-      bg="white"
-      borderRight="1px"
-      borderColor="gray.200"
-      h="100vh"
-      position="sticky"
-      top={0}
-    >
+    <Box w="250px" bg={bgColor} h="100vh" position="sticky" top={0}>
       <Box p={6}>
-        <Text fontSize="xl" fontWeight="bold" color="blue.600" mb={8}>
-          DMCC
-        </Text>
+        <Heading
+          fontSize="xl"
+          fontWeight="bold"
+          color="brandPrimary.500"
+          mb={8}
+        >
+          auptilyze
+        </Heading>
         <VStack spacing={2} align="stretch">
           {navItems.map((item) => (
             <Link
@@ -43,11 +55,11 @@ const Sidebar = () => {
               gap={3}
               p={3}
               borderRadius="md"
-              _hover={{ bg: 'gray.100' }}
+              _hover={{ bg: "gray.100" }}
               _activeLink={{
-                bg: 'blue.50',
-                color: 'blue.600',
-                fontWeight: 'semibold',
+                bg: "blue.50",
+                color: "blue.600",
+                fontWeight: "semibold",
               }}
             >
               <Icon as={item.icon} boxSize={5} />
@@ -57,11 +69,7 @@ const Sidebar = () => {
         </VStack>
       </Box>
     </Box>
-  )
-}
+  );
+};
 
-export default Sidebar
-
-
-
-
+export default Sidebar;

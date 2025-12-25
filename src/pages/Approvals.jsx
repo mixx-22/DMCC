@@ -14,7 +14,6 @@ import {
   VStack,
   Card,
   CardBody,
-  CardHeader,
   Textarea,
   useToast,
   useDisclosure,
@@ -25,63 +24,63 @@ import {
   ModalFooter,
   ModalBody,
   ModalCloseButton,
-} from '@chakra-ui/react'
-import { FiCheck, FiX } from 'react-icons/fi'
-import { useApp } from '../context/AppContext'
-import { useNavigate } from 'react-router-dom'
-import { useState } from 'react'
+} from "@chakra-ui/react";
+import { FiCheck, FiX } from "react-icons/fi";
+import { useApp } from "../context/AppContext";
+import { useNavigate } from "react-router-dom";
+import { useState } from "react";
 
 const Approvals = () => {
-  const { documents, approveDocument, rejectDocument } = useApp()
-  const navigate = useNavigate()
-  const toast = useToast()
-  const { isOpen, onOpen, onClose } = useDisclosure()
-  const [selectedDoc, setSelectedDoc] = useState(null)
-  const [rejectionReason, setRejectionReason] = useState('')
+  const { documents, approveDocument, rejectDocument } = useApp();
+  const navigate = useNavigate();
+  const toast = useToast();
+  const { isOpen, onOpen, onClose } = useDisclosure();
+  const [selectedDoc, setSelectedDoc] = useState(null);
+  const [rejectionReason, setRejectionReason] = useState("");
 
-  const pendingDocuments = documents.filter(doc => doc.status === 'pending')
+  const pendingDocuments = documents.filter((doc) => doc.status === "pending");
 
   const handleApprove = (docId) => {
-    approveDocument(docId)
+    approveDocument(docId);
     toast({
-      title: 'Document Approved',
-      description: 'Document has been approved and posted',
-      status: 'success',
+      title: "Document Approved",
+      description: "Document has been approved and posted",
+      status: "success",
       duration: 3000,
       isClosable: true,
-    })
-  }
+    });
+  };
 
   const handleRejectClick = (doc) => {
-    setSelectedDoc(doc)
-    setRejectionReason('')
-    onOpen()
-  }
+    setSelectedDoc(doc);
+    setRejectionReason("");
+    onOpen();
+  };
 
   const handleReject = () => {
     if (!rejectionReason.trim()) {
       toast({
-        title: 'Validation Error',
-        description: 'Please provide a reason for rejection',
-        status: 'error',
+        title: "Validation Error",
+        description: "Please provide a reason for rejection",
+        status: "error",
         duration: 3000,
         isClosable: true,
-      })
-      return
+      });
+      return;
     }
 
-    rejectDocument(selectedDoc.id, rejectionReason)
+    rejectDocument(selectedDoc.id, rejectionReason);
     toast({
-      title: 'Document Rejected',
-      description: 'Document has been rejected',
-      status: 'info',
+      title: "Document Rejected",
+      description: "Document has been rejected",
+      status: "info",
       duration: 3000,
       isClosable: true,
-    })
-    onClose()
-    setSelectedDoc(null)
-    setRejectionReason('')
-  }
+    });
+    onClose();
+    setSelectedDoc(null);
+    setRejectionReason("");
+  };
 
   return (
     <Box>
@@ -115,13 +114,13 @@ const Approvals = () => {
             <Tbody>
               {pendingDocuments.map((doc) => (
                 <Tr
-                  key={doc.id}
+                  key={`approval-${doc.id}`}
                   cursor="pointer"
-                  _hover={{ bg: 'gray.50' }}
+                  _hover={{ bg: "gray.50" }}
                   onClick={() => navigate(`/documents/${doc.id}`)}
                 >
                   <Td fontWeight="semibold">{doc.title}</Td>
-                  <Td>{doc.category || 'Uncategorized'}</Td>
+                  <Td>{doc.category || "Uncategorized"}</Td>
                   <Td>
                     <Badge colorScheme="blue">
                       v{doc.versions?.length || 1}
@@ -163,7 +162,8 @@ const Approvals = () => {
           <ModalBody>
             <VStack spacing={4} align="stretch">
               <Text>
-                Are you sure you want to reject <strong>{selectedDoc?.title}</strong>?
+                Are you sure you want to reject{" "}
+                <strong>{selectedDoc?.title}</strong>?
               </Text>
               <Textarea
                 placeholder="Please provide a reason for rejection..."
@@ -184,9 +184,7 @@ const Approvals = () => {
         </ModalContent>
       </Modal>
     </Box>
-  )
-}
+  );
+};
 
-export default Approvals
-
-
+export default Approvals;

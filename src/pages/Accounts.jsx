@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react'
+import React, { useState, useRef } from "react";
 import {
   Box,
   Heading,
@@ -24,93 +24,94 @@ import {
   AlertDialogHeader,
   AlertDialogContent,
   AlertDialogOverlay,
-} from '@chakra-ui/react'
-import { FiPlus, FiEdit, FiTrash2, FiSearch, FiUser } from 'react-icons/fi'
-import { useApp } from '../context/AppContext'
-import { useNavigate } from 'react-router-dom'
-import AccountModal from '../components/AccountModal'
+} from "@chakra-ui/react";
+import { FiPlus, FiEdit, FiTrash2, FiSearch, FiUser } from "react-icons/fi";
+import { useApp } from "../context/AppContext";
+import { useNavigate } from "react-router-dom";
+import AccountModal from "../components/AccountModal";
 
 const Accounts = () => {
-  const { accounts, deleteAccount, currentUser } = useApp()
-  const navigate = useNavigate()
+  const { accounts, deleteAccount, currentUser } = useApp();
+  const navigate = useNavigate();
 
   // Check if user is admin
   React.useEffect(() => {
-    if (currentUser?.userType !== 'Admin') {
-      navigate('/dashboard')
+    if (currentUser?.userType !== "Admin") {
+      navigate("/dashboard");
     }
-  }, [currentUser, navigate])
+  }, [currentUser, navigate]);
 
-  if (currentUser?.userType !== 'Admin') {
+  if (currentUser?.userType !== "Admin") {
     return (
       <Box>
         <Text>Access Denied. Only administrators can access this page.</Text>
       </Box>
-    )
+    );
   }
-  const { isOpen, onOpen, onClose } = useDisclosure()
+  const { isOpen, onOpen, onClose } = useDisclosure();
   const {
     isOpen: isDeleteOpen,
     onOpen: onDeleteOpen,
     onClose: onDeleteClose,
-  } = useDisclosure()
-  const cancelRef = useRef()
-  const toast = useToast()
-  const [searchTerm, setSearchTerm] = useState('')
-  const [selectedAccount, setSelectedAccount] = useState(null)
-  const [accountToDelete, setAccountToDelete] = useState(null)
+  } = useDisclosure();
+  const cancelRef = useRef();
+  const toast = useToast();
+  const [searchTerm, setSearchTerm] = useState("");
+  const [selectedAccount, setSelectedAccount] = useState(null);
+  const [accountToDelete, setAccountToDelete] = useState(null);
 
-  const filteredAccounts = accounts.filter(account =>
-    account.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    account.jobTitle?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    account.department?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    account.userType?.toLowerCase().includes(searchTerm.toLowerCase())
-  )
+  const filteredAccounts = accounts.filter(
+    (account) =>
+      account.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      account.jobTitle?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      account.department?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      account.userType?.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
   const handleCreate = () => {
-    setSelectedAccount(null)
-    onOpen()
-  }
+    setSelectedAccount(null);
+    onOpen();
+  };
 
   const handleEdit = (account) => {
-    setSelectedAccount(account)
-    onOpen()
-  }
+    setSelectedAccount(account);
+    onOpen();
+  };
 
   const handleDeleteClick = (account) => {
-    setAccountToDelete(account)
-    onDeleteOpen()
-  }
+    setAccountToDelete(account);
+    onDeleteOpen();
+  };
 
   const handleDelete = () => {
     if (accountToDelete) {
-      deleteAccount(accountToDelete.id)
+      deleteAccount(accountToDelete.id);
       toast({
-        title: 'Account Deleted',
+        title: "Account Deleted",
         description: `${accountToDelete.name} has been deleted`,
-        status: 'success',
+        status: "success",
         duration: 3000,
         isClosable: true,
-      })
+      });
     }
-    setAccountToDelete(null)
-    onDeleteClose()
-  }
+    setAccountToDelete(null);
+    onDeleteClose();
+  };
 
   const getUserTypeColor = (userType) => {
     switch (userType?.toLowerCase()) {
-      case 'admin':
-        return 'red'
-      case 'manager':
-        return 'orange'
-      case 'supervisor':
-        return 'purple'
-      case 'user':
-        return 'blue'
+      case "admin":
+        return "red";
+      case "manager":
+        return "orange";
+      case "supervisor":
+        return "purple";
+      case "user":
+        return "blue";
       default:
-        return 'gray'
+        return "gray";
     }
-  }
+  };
 
   return (
     <Box>
@@ -131,7 +132,13 @@ const Accounts = () => {
             pl={10}
             size="lg"
           />
-          <Box position="absolute" left={3} top="50%" transform="translateY(-50%)" color="gray.400">
+          <Box
+            position="absolute"
+            left={3}
+            top="50%"
+            transform="translateY(-50%)"
+            color="gray.400"
+          >
             <FiSearch />
           </Box>
         </Box>
@@ -165,7 +172,7 @@ const Accounts = () => {
               </Tr>
             ) : (
               filteredAccounts.map((account) => (
-                <Tr key={account.id}>
+                <Tr key={`account-${account.id}`}>
                   <Td>
                     <Avatar
                       src={account.profilePicture}
@@ -174,11 +181,11 @@ const Accounts = () => {
                     />
                   </Td>
                   <Td fontWeight="semibold">{account.name}</Td>
-                  <Td>{account.jobTitle || 'N/A'}</Td>
-                  <Td>{account.department || 'N/A'}</Td>
+                  <Td>{account.jobTitle || "N/A"}</Td>
+                  <Td>{account.department || "N/A"}</Td>
                   <Td>
                     <Badge colorScheme={getUserTypeColor(account.userType)}>
-                      {account.userType || 'N/A'}
+                      {account.userType || "N/A"}
                     </Badge>
                   </Td>
                   <Td>
@@ -212,8 +219,8 @@ const Accounts = () => {
       <AccountModal
         isOpen={isOpen}
         onClose={() => {
-          onClose()
-          setSelectedAccount(null)
+          onClose();
+          setSelectedAccount(null);
         }}
         account={selectedAccount}
       />
@@ -231,7 +238,9 @@ const Accounts = () => {
             </AlertDialogHeader>
 
             <AlertDialogBody>
-              Are you sure you want to delete <strong>{accountToDelete?.name}</strong>? This action cannot be undone.
+              Are you sure you want to delete{" "}
+              <strong>{accountToDelete?.name}</strong>? This action cannot be
+              undone.
             </AlertDialogBody>
 
             <AlertDialogFooter>
@@ -246,11 +255,7 @@ const Accounts = () => {
         </AlertDialogOverlay>
       </AlertDialog>
     </Box>
-  )
-}
+  );
+};
 
-export default Accounts
-
-
-
-
+export default Accounts;

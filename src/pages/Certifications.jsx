@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState } from "react";
 import {
   Box,
   Heading,
@@ -16,66 +16,74 @@ import {
   VStack,
   Text,
   IconButton,
-} from '@chakra-ui/react'
-import { FiPlus, FiSearch, FiEdit, FiTrash2, FiEye } from 'react-icons/fi'
-import { useApp } from '../context/AppContext'
-import { useNavigate } from 'react-router-dom'
-import CertificationUploadModal from '../components/CertificationUploadModal'
-import { formatDistanceToNow, differenceInCalendarDays } from 'date-fns'
+} from "@chakra-ui/react";
+import { FiPlus, FiSearch, FiEdit, FiTrash2, FiEye } from "react-icons/fi";
+import { useApp } from "../context/AppContext";
+import { useNavigate } from "react-router-dom";
+import CertificationUploadModal from "../components/CertificationUploadModal";
+import { formatDistanceToNow, differenceInCalendarDays } from "date-fns";
 
 const Certifications = () => {
-  const { certifications, deleteCertification, getExpiringCertifications, currentUser } = useApp()
-  const { isOpen, onOpen, onClose } = useDisclosure()
-  const navigate = useNavigate()
-  const [searchTerm, setSearchTerm] = useState('')
+  const {
+    certifications,
+    deleteCertification,
+    getExpiringCertifications,
+    currentUser,
+  } = useApp();
+  const { isOpen, onOpen, onClose } = useDisclosure();
+  const navigate = useNavigate();
+  const [searchTerm, setSearchTerm] = useState("");
   const canViewCertification = (cert) => {
-    if (currentUser?.userType === 'Admin') {
-      return true
+    if (currentUser?.userType === "Admin") {
+      return true;
     }
     if (!cert.department) {
-      return true
+      return true;
     }
-    return cert.department === currentUser?.department
-  }
+    return cert.department === currentUser?.department;
+  };
 
-  const visibleCertifications = certifications.filter(canViewCertification)
-  const expiringCerts = getExpiringCertifications().filter(canViewCertification)
+  const visibleCertifications = certifications.filter(canViewCertification);
+  const expiringCerts =
+    getExpiringCertifications().filter(canViewCertification);
 
-  const filteredCertifications = visibleCertifications.filter(cert =>
-    cert.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    cert.type?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    cert.issuer?.toLowerCase().includes(searchTerm.toLowerCase())
-  )
+  const filteredCertifications = visibleCertifications.filter(
+    (cert) =>
+      cert.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      cert.type?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      cert.issuer?.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
   const getExpirationStatus = (expirationDate) => {
-    if (!expirationDate) return { status: 'unknown', color: 'gray', text: 'No expiration date' }
-    
-    const expDate = new Date(expirationDate)
-    const now = new Date()
-    const twoMonthsFromNow = new Date()
-    twoMonthsFromNow.setMonth(twoMonthsFromNow.getMonth() + 2)
-    
+    if (!expirationDate)
+      return { status: "unknown", color: "gray", text: "No expiration date" };
+
+    const expDate = new Date(expirationDate);
+    const now = new Date();
+    const twoMonthsFromNow = new Date();
+    twoMonthsFromNow.setMonth(twoMonthsFromNow.getMonth() + 2);
+
     if (expDate < now) {
-      return { status: 'expired', color: 'red', text: 'Expired' }
+      return { status: "expired", color: "red", text: "Expired" };
     } else if (expDate <= twoMonthsFromNow) {
-      return { status: 'expiring', color: 'orange', text: 'Expiring Soon' }
+      return { status: "expiring", color: "orange", text: "Expiring Soon" };
     } else {
-      return { status: 'valid', color: 'green', text: 'Valid' }
+      return { status: "valid", color: "green", text: "Valid" };
     }
-  }
+  };
 
   const getDaysRemaining = (expirationDate) => {
-    if (!expirationDate) return null
-    const expDate = new Date(expirationDate)
-    const diff = differenceInCalendarDays(expDate, new Date())
-    return diff
-  }
+    if (!expirationDate) return null;
+    const expDate = new Date(expirationDate);
+    const diff = differenceInCalendarDays(expDate, new Date());
+    return diff;
+  };
 
   const handleDelete = (id) => {
-    if (window.confirm('Are you sure you want to delete this certification?')) {
-      deleteCertification(id)
+    if (window.confirm("Are you sure you want to delete this certification?")) {
+      deleteCertification(id);
     }
-  }
+  };
 
   return (
     <Box>
@@ -137,24 +145,26 @@ const Certifications = () => {
               </Tr>
             ) : (
               filteredCertifications.map((cert) => {
-                const expStatus = getExpirationStatus(cert.expirationDate)
-                const daysRemaining = getDaysRemaining(cert.expirationDate)
+                const expStatus = getExpirationStatus(cert.expirationDate);
+                const daysRemaining = getDaysRemaining(cert.expirationDate);
                 return (
-                  <Tr key={cert.id}>
+                  <Tr key={`cert-${cert.id}`}>
                     <Td fontWeight="semibold">{cert.name}</Td>
-                    <Td>{cert.type || 'N/A'}</Td>
-                    <Td>{cert.issuer || 'N/A'}</Td>
+                    <Td>{cert.type || "N/A"}</Td>
+                    <Td>{cert.issuer || "N/A"}</Td>
                     <Td>
                       {cert.expirationDate
                         ? new Date(cert.expirationDate).toLocaleDateString()
-                        : 'N/A'}
+                        : "N/A"}
                     </Td>
                     <Td>
                       {daysRemaining === null
-                        ? 'N/A'
+                        ? "N/A"
                         : daysRemaining < 0
-                        ? 'Expired'
-                        : `${daysRemaining} day${daysRemaining === 1 ? '' : 's'}`}
+                        ? "Expired"
+                        : `${daysRemaining} day${
+                            daysRemaining === 1 ? "" : "s"
+                          }`}
                     </Td>
                     <Td>
                       <Badge colorScheme={expStatus.color}>
@@ -174,7 +184,9 @@ const Certifications = () => {
                           icon={<FiEdit />}
                           size="sm"
                           variant="ghost"
-                          onClick={() => navigate(`/certifications/${cert.id}?edit=true`)}
+                          onClick={() =>
+                            navigate(`/certifications/${cert.id}?edit=true`)
+                          }
                           aria-label="Edit"
                         />
                         <IconButton
@@ -188,7 +200,7 @@ const Certifications = () => {
                       </HStack>
                     </Td>
                   </Tr>
-                )
+                );
               })
             )}
           </Tbody>
@@ -197,9 +209,7 @@ const Certifications = () => {
 
       <CertificationUploadModal isOpen={isOpen} onClose={onClose} />
     </Box>
-  )
-}
+  );
+};
 
-export default Certifications
-
-
+export default Certifications;
