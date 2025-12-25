@@ -12,7 +12,8 @@ import Documents from "./pages/Documents";
 import DocumentDetail from "./pages/DocumentDetail";
 import Certifications from "./pages/Certifications";
 import CertificationDetail from "./pages/CertificationDetail";
-import Accounts from "./pages/Accounts";
+import Users from "./pages/Users";
+import { UsersProvider } from "./context/UsersContext";
 import Archive from "./pages/Archive";
 
 const ProtectedRoute = ({ children }) => {
@@ -56,7 +57,14 @@ function App() {
                     path="/certifications/:id"
                     element={<CertificationDetail />}
                   />
-                  <Route path="/accounts" element={<Accounts />} />
+                  <Route
+                    path="/users"
+                    element={
+                      <UsersProvider>
+                        <Users />
+                      </UsersProvider>
+                    }
+                  />
                 </Routes>
               </Layout>
             </ProtectedRoute>
