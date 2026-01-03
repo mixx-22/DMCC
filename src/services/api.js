@@ -1,3 +1,5 @@
+import cookieService from './cookieService';
+
 const API_ENDPOINT = import.meta.env.VITE_API_ENDPOINT;
 const LOGIN_ENDPOINT = import.meta.env.VITE_API_PACKAGE_LOGIN;
 const USE_API = import.meta.env.VITE_USE_API !== "false";
@@ -64,7 +66,12 @@ export const apiService = {
 
   async request(endpoint, options = {}) {
     try {
-      const token = localStorage.getItem("authToken");
+      // Try to get token from cookie first, then fall back to localStorage
+      let token = cookieService.getToken();
+      if (!token) {
+        token = localStorage.getItem("authToken");
+      }
+
       const headers = {
         "Content-Type": "application/json",
         ...options.headers,
@@ -77,10 +84,13 @@ export const apiService = {
       const response = await fetch(createApiUrl(endpoint), {
         ...options,
         headers,
+        credentials: 'include', // Include cookies in requests for server-set HttpOnly cookies
       });
 
       if (!response.ok) {
         if (response.status === 401) {
+          // Clear both cookie and localStorage on authentication failure
+          cookieService.removeToken();
           localStorage.removeItem("authToken");
           localStorage.removeItem("currentUser");
           window.location.href = "/login";

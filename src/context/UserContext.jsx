@@ -1,16 +1,26 @@
 import { createContext, useState, useCallback, useEffect } from "react";
 import apiService from "../services/api";
+import cookieService from "../services/cookieService";
 
 const USER_KEY = import.meta.env.VITE_USER_KEY || "currentUser";
 
 const TOKEN_KEY = "authToken";
+
+// Helper function to get token from cookie first, then localStorage
 const getStoredToken = () => {
+  // Priority 1: Check cookie
+  const cookieToken = cookieService.getToken();
+  if (cookieToken) {
+    return { value: cookieToken, source: 'cookie' };
+  }
+
+  // Priority 2: Check localStorage (for backward compatibility)
   const raw = localStorage.getItem(TOKEN_KEY);
   if (!raw) return null;
   try {
     const parsed = JSON.parse(raw);
-    if (typeof parsed === "string") return { value: parsed };
-    return parsed;
+    if (typeof parsed === "string") return { value: parsed, source: 'localStorage' };
+    return { ...parsed, source: 'localStorage' };
   } catch {
     return null;
   }
@@ -31,7 +41,8 @@ export const UserProvider = ({ children }) => {
     if (savedUser && savedToken && isTokenValid(savedToken)) {
       return JSON.parse(savedUser);
     }
-    // Clean up expired token
+    // Clean up expired token from both sources
+    cookieService.removeToken();
     localStorage.removeItem(TOKEN_KEY);
     return null;
   });
@@ -58,17 +69,25 @@ export const UserProvider = ({ children }) => {
 
   useEffect(() => {
     if (authToken) {
-      // If already stored as object, don't overwrite
+      // Store token in cookie (primary storage)
       const tokenObj = getStoredToken();
+      
       if (!tokenObj || tokenObj.value !== authToken) {
         // Default: set expiry 1 hour from now if not present
         const expiresAt = Date.now() + 60 * 60 * 1000;
+        
+        // Store in cookie with expiry
+        cookieService.setTokenWithExpiry(authToken, expiresAt);
+        
+        // Also store in localStorage for backward compatibility
         localStorage.setItem(
           TOKEN_KEY,
           JSON.stringify({ value: authToken, expiresAt })
         );
       }
     } else {
+      // Clear both cookie and localStorage
+      cookieService.removeToken();
       localStorage.removeItem(TOKEN_KEY);
     }
     setIsAuthenticated(!!authToken);
@@ -82,28 +101,33 @@ export const UserProvider = ({ children }) => {
 
       // If the API returns { user: { ...userData, token: "..." }, ... }
       let userData = response.user || response;
-      let tokenObj = response.token || response.authToken;
+      let tokenValue = response.token || response.authToken;
 
       // If token is inside user object, extract and remove it from userData
-      if (!tokenObj && userData && userData.token) {
-        tokenObj = userData.token;
+      if (!tokenValue && userData && userData.token) {
+        tokenValue = userData.token;
         // Remove token from userData for context cleanliness
         userData = { ...userData };
         delete userData.token;
       }
 
-      if (!tokenObj) {
+      if (!tokenValue) {
         throw new Error("No authentication token received");
       }
 
-      // If token is a string, wrap with expiry
-      if (typeof tokenObj === "string") {
-        tokenObj = { value: tokenObj, expiresAt: Date.now() + 60 * 60 * 1000 };
-      }
+      // Store token in cookie using JWT parsing for automatic expiry
+      cookieService.setJWTToken(tokenValue);
+
+      // Also store in localStorage for backward compatibility
+      const payload = cookieService.parseJWT(tokenValue);
+      const expiresAt = payload && payload.exp 
+        ? payload.exp * 1000 
+        : Date.now() + 60 * 60 * 1000;
+      
+      localStorage.setItem(TOKEN_KEY, JSON.stringify({ value: tokenValue, expiresAt }));
 
       setUser(userData);
-      setAuthToken(tokenObj.value);
-      localStorage.setItem(TOKEN_KEY, JSON.stringify(tokenObj));
+      setAuthToken(tokenValue);
 
       return { success: true, user: userData };
     } catch (err) {
@@ -120,9 +144,13 @@ export const UserProvider = ({ children }) => {
       setUser(null);
       setAuthToken(null);
       setError(null);
-      [
-        // Keys here
-      ].forEach((key) => localStorage.removeItem(key));
+      
+      // Clear cookie
+      cookieService.removeToken();
+      
+      // Clear localStorage items
+      [TOKEN_KEY, USER_KEY].forEach((key) => localStorage.removeItem(key));
+      
       if (typeof sessionStorage !== "undefined") sessionStorage.clear();
     } catch (error) {
       console.warn("Error during logout:", error);
