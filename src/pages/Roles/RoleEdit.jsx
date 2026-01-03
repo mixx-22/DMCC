@@ -14,14 +14,14 @@ import {
 } from "@chakra-ui/react";
 import { FiSave, FiArrowLeft } from "react-icons/fi";
 import { useParams, useNavigate } from "react-router-dom";
-import { useRoles } from "../../context/RolesContext";
 import { useState, useEffect } from "react";
 import PermissionsCheckboxGroup from "../../components/PermissionsCheckboxGroup";
+import { useRoles } from "../../context/_useContext";
 
 // Validation: At least one permission must be enabled
 const validatePermissions = (permissions) => {
   if (!permissions) return false;
-  
+
   return Object.values(permissions).some((entityPerms) =>
     Object.values(entityPerms).some((value) => value === true)
   );
@@ -31,7 +31,11 @@ const RoleEdit = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const toast = useToast();
-  const { getRoleById, addRole, updateRole } = useRoles();
+  const {
+    getRoleById = () => {},
+    addRole = () => {},
+    updateRole = () => {},
+  } = useRoles();
   const isEditMode = id !== "new";
 
   const bgColor = useColorModeValue("white", "gray.800");
@@ -167,7 +171,13 @@ const RoleEdit = () => {
 
       <form onSubmit={handleSubmit}>
         <VStack align="stretch" spacing={6}>
-          <Box p={6} bg={bgColor} borderWidth="1px" borderColor={borderColor} borderRadius="md">
+          <Box
+            p={6}
+            bg={bgColor}
+            borderWidth="1px"
+            borderColor={borderColor}
+            borderRadius="md"
+          >
             <Heading size="md" mb={6}>
               {isEditMode ? "Edit Role" : "Create New Role"}
             </Heading>
@@ -196,7 +206,13 @@ const RoleEdit = () => {
             </VStack>
           </Box>
 
-          <Box p={6} bg={bgColor} borderWidth="1px" borderColor={borderColor} borderRadius="md">
+          <Box
+            p={6}
+            bg={bgColor}
+            borderWidth="1px"
+            borderColor={borderColor}
+            borderRadius="md"
+          >
             <FormControl isInvalid={errors.permissions}>
               <Heading size="md" mb={4}>
                 Permissions
@@ -212,7 +228,9 @@ const RoleEdit = () => {
           <HStack justify="flex-end" spacing={4}>
             <Button
               variant="outline"
-              onClick={() => navigate(isEditMode ? `/roles/${id}/view` : "/roles")}
+              onClick={() =>
+                navigate(isEditMode ? `/roles/${id}/view` : "/roles")
+              }
             >
               Cancel
             </Button>

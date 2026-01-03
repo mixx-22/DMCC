@@ -5,15 +5,14 @@ import {
   VStack,
   Heading,
   Text,
-  Badge,
   Divider,
   useColorModeValue,
 } from "@chakra-ui/react";
 import { FiEdit, FiArrowLeft } from "react-icons/fi";
 import { useParams, useNavigate } from "react-router-dom";
-import { useRoles } from "../../context/RolesContext";
 import { formatDistanceToNow } from "date-fns";
 import PermissionsCheckboxGroup from "../../components/PermissionsCheckboxGroup";
+import { useRoles } from "../../context/_useContext";
 
 const RoleView = () => {
   const { id } = useParams();
@@ -57,7 +56,13 @@ const RoleView = () => {
       </HStack>
 
       <VStack align="stretch" spacing={6}>
-        <Box p={6} bg={bgColor} borderWidth="1px" borderColor={borderColor} borderRadius="md">
+        <Box
+          p={6}
+          bg={bgColor}
+          borderWidth="1px"
+          borderColor={borderColor}
+          borderRadius="md"
+        >
           <VStack align="stretch" spacing={4}>
             <Box>
               <Text fontSize="sm" color="gray.500" mb={1}>
@@ -85,7 +90,11 @@ const RoleView = () => {
                 <Text fontWeight="medium">
                   {new Date(role.createdAt).toLocaleDateString()}{" "}
                   <Text as="span" fontSize="sm" color="gray.500">
-                    ({formatDistanceToNow(new Date(role.createdAt), { addSuffix: true })})
+                    (
+                    {formatDistanceToNow(new Date(role.createdAt), {
+                      addSuffix: true,
+                    })}
+                    )
                   </Text>
                 </Text>
               </Box>
@@ -96,7 +105,11 @@ const RoleView = () => {
                 <Text fontWeight="medium">
                   {new Date(role.updatedAt).toLocaleDateString()}{" "}
                   <Text as="span" fontSize="sm" color="gray.500">
-                    ({formatDistanceToNow(new Date(role.updatedAt), { addSuffix: true })})
+                    (
+                    {formatDistanceToNow(new Date(role.updatedAt), {
+                      addSuffix: true,
+                    })}
+                    )
                   </Text>
                 </Text>
               </Box>
@@ -104,7 +117,13 @@ const RoleView = () => {
           </VStack>
         </Box>
 
-        <Box p={6} bg={bgColor} borderWidth="1px" borderColor={borderColor} borderRadius="md">
+        <Box
+          p={6}
+          bg={bgColor}
+          borderWidth="1px"
+          borderColor={borderColor}
+          borderRadius="md"
+        >
           <Heading size="md" mb={4}>
             Permissions
           </Heading>

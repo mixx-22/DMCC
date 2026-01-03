@@ -8,7 +8,7 @@ const Roles = () => {
       <PageHeader>
         <Heading variant="pageTitle">Roles & Permissions</Heading>
       </PageHeader>
-      <Box p={4}>
+      <Box>
         <RolesList />
       </Box>
     </Box>

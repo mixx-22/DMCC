@@ -9,41 +9,25 @@ import {
   Tr,
   Th,
   Td,
-  Badge,
-  IconButton,
   Tooltip,
   Text,
-  useColorModeValue,
+  LinkBox,
+  LinkOverlay,
 } from "@chakra-ui/react";
-import { FiEye, FiEdit, FiPlus, FiTrash2 } from "react-icons/fi";
-import { useRoles } from "../../context/RolesContext";
+import { FiPlus } from "react-icons/fi";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { formatDistanceToNow } from "date-fns";
-import Swal from "sweetalert2";
+import { useRoles } from "../../context/_useContext";
+import { generateRoleDescriptions } from "../../helpers/describePermissions";
+import { Link as RouterLink } from "react-router-dom";
 
 const RolesList = () => {
-  const { roles, deleteRole } = useRoles();
+  const { roles = [] } = useRoles();
   const [search, setSearch] = useState("");
   const navigate = useNavigate();
 
-  const borderColor = useColorModeValue("gray.200", "gray.700");
-
-  // Calculate permissions summary
-  const getPermissionsSummary = (permissions) => {
-    if (!permissions) return "No permissions";
-
-    const entities = Object.keys(permissions);
-    const totalPermissions = entities.reduce((acc, entity) => {
-      const perms = permissions[entity];
-      return acc + Object.values(perms).filter(Boolean).length;
-    }, 0);
-
-    const maxPermissions = entities.length * 4; // 4 permissions per entity (c, r, u, d)
-    return `${totalPermissions}/${maxPermissions} permissions`;
-  };
-
-  const filteredRoles = roles.filter((role) => {
+  const filteredRoles = roles?.filter((role) => {
     const searchLower = search.toLowerCase();
     return (
       role.title.toLowerCase().includes(searchLower) ||
@@ -51,35 +35,11 @@ const RolesList = () => {
     );
   });
 
-  const handleDelete = async (role) => {
-    const result = await Swal.fire({
-      title: "Delete Role?",
-      text: `Are you sure you want to delete "${role.title}"? This action cannot be undone.`,
-      icon: "warning",
-      showCancelButton: true,
-      confirmButtonColor: "#d33",
-      cancelButtonColor: "#3085d6",
-      confirmButtonText: "Yes, delete it",
-      cancelButtonText: "Cancel",
-    });
-
-    if (result.isConfirmed) {
-      deleteRole(role.id);
-      Swal.fire({
-        title: "Deleted!",
-        text: "Role has been deleted successfully.",
-        icon: "success",
-        timer: 2000,
-        showConfirmButton: false,
-      });
-    }
-  };
-
   return (
     <Box>
       <HStack mb={4} justify="space-between">
         <Input
-          placeholder="Search roles..."
+          placeholder="Search Roles..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           maxW="300px"
@@ -89,43 +49,43 @@ const RolesList = () => {
           colorScheme="brandPrimary"
           onClick={() => navigate("/roles/new")}
         >
-          New Role
+          Create New Role
         </Button>
       </HStack>
 
       <Box overflowX="auto">
-        <Table variant="simple">
+        <Table>
           <Thead>
             <Tr>
               <Th>Role Title</Th>
-              <Th>Description</Th>
-              <Th>Permissions Summary</Th>
-              <Th>Created At</Th>
-              <Th>Updated At</Th>
-              <Th>Actions</Th>
+              <Th>Summary</Th>
+              <Th>Last Updated</Th>
             </Tr>
           </Thead>
           <Tbody>
             {filteredRoles.map((role) => (
-              <Tr key={role.id}>
-                <Td fontWeight="semibold">{role.title}</Td>
-                <Td maxW="300px">
-                  <Text noOfLines={2}>{role.description}</Text>
+              <LinkBox as={Tr} key={role._id}>
+                <Td fontWeight="semibold">
+                  <LinkOverlay as={RouterLink} to={`/roles/${role._id}`}>
+                    {role.title}
+                  </LinkOverlay>
+
+                  <Text
+                    fontWeight="normal"
+                    fontSize="sm"
+                    noOfLines={2}
+                    opacity={0.7}
+                  >
+                    {role.description}
+                  </Text>
                 </Td>
+
                 <Td>
-                  <Badge colorScheme="blue">
-                    {getPermissionsSummary(role.permissions)}
-                  </Badge>
+                  <Text fontWeight="normal" fontSize="sm" noOfLines={2}>
+                    {generateRoleDescriptions(role.permissions).short}
+                  </Text>
                 </Td>
-                <Td>
-                  <Tooltip label={new Date(role.createdAt).toLocaleString()}>
-                    <Text fontSize="sm">
-                      {formatDistanceToNow(new Date(role.createdAt), {
-                        addSuffix: true,
-                      })}
-                    </Text>
-                  </Tooltip>
-                </Td>
+
                 <Td>
                   <Tooltip label={new Date(role.updatedAt).toLocaleString()}>
                     <Text fontSize="sm">
@@ -135,39 +95,7 @@ const RolesList = () => {
                     </Text>
                   </Tooltip>
                 </Td>
-                <Td>
-                  <HStack spacing={2}>
-                    <Tooltip label="View">
-                      <IconButton
-                        aria-label="View role"
-                        icon={<FiEye />}
-                        size="sm"
-                        variant="ghost"
-                        onClick={() => navigate(`/roles/${role.id}/view`)}
-                      />
-                    </Tooltip>
-                    <Tooltip label="Edit">
-                      <IconButton
-                        aria-label="Edit role"
-                        icon={<FiEdit />}
-                        size="sm"
-                        variant="ghost"
-                        onClick={() => navigate(`/roles/${role.id}/edit`)}
-                      />
-                    </Tooltip>
-                    <Tooltip label="Delete">
-                      <IconButton
-                        aria-label="Delete role"
-                        icon={<FiTrash2 />}
-                        size="sm"
-                        variant="ghost"
-                        colorScheme="red"
-                        onClick={() => handleDelete(role)}
-                      />
-                    </Tooltip>
-                  </HStack>
-                </Td>
-              </Tr>
+              </LinkBox>
             ))}
             {filteredRoles.length === 0 && (
               <Tr>
