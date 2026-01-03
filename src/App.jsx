@@ -20,6 +20,7 @@ import Roles from "./pages/Roles";
 import RoleView from "./pages/Roles/RoleView";
 import RoleEdit from "./pages/Roles/RoleEdit";
 import { RolesProvider } from "./context/RolesContext";
+import { useBreakpointValue } from "@chakra-ui/react";
 
 const ProtectedRoute = ({ children }) => {
   const { currentUser } = useApp();
@@ -33,74 +34,81 @@ const ProtectedRoute = ({ children }) => {
 
 function App() {
   const { currentUser } = useApp();
+  const position = useBreakpointValue({
+    base: "bottom-center",
+    md: "bottom-left",
+  });
 
   return (
     <>
-      <Toaster position="top-right" richColors closeButton />
+      <Toaster position={position} richColors />
       <Router future={{ v7_relativeSplatPath: true, v7_startTransition: true }}>
         <Routes>
-        <Route
-          path="/login"
-          element={
-            currentUser ? <Navigate to="/dashboard" replace /> : <Login />
-          }
-        />
-        <Route
-          path="/*"
-          element={
-            <ProtectedRoute>
-              <Layout>
-                <Routes>
-                  <Route
-                    path="/"
-                    element={<Navigate to="/dashboard" replace />}
-                  />
-                  <Route path="/dashboard" element={<Dashboard />} />
-                  <Route path="/documents" element={<Documents />} />
-                  <Route path="/documents/:id" element={<DocumentDetail />} />
-                  <Route path="/archive" element={<Archive />} />
-                  <Route path="/certifications" element={<Certifications />} />
-                  <Route
-                    path="/certifications/:id"
-                    element={<CertificationDetail />}
-                  />
-                  <Route
-                    path="/users"
-                    element={
-                      <UsersProvider>
-                        <Users />
-                      </UsersProvider>
-                    }
-                  />
-                  <Route
-                    path="/roles"
-                    element={
-                      <RolesProvider>
-                        <Roles />
-                      </RolesProvider>
-                    }
-                  />
-                  <Route
-                    path="/roles/:id/view"
-                    element={
-                      <RolesProvider>
-                        <RoleView />
-                      </RolesProvider>
-                    }
-                  />
-                  <Route
-                    path="/roles/:id/edit"
-                    element={
-                      <RolesProvider>
-                        <RoleEdit />
-                      </RolesProvider>
-                    }
-                  />
-                </Routes>
-              </Layout>
-            </ProtectedRoute>
-          }
-        />
+          <Route
+            path="/login"
+            element={
+              currentUser ? <Navigate to="/dashboard" replace /> : <Login />
+            }
+          />
+          <Route
+            path="/*"
+            element={
+              <ProtectedRoute>
+                <Layout>
+                  <Routes>
+                    <Route
+                      path="/"
+                      element={<Navigate to="/dashboard" replace />}
+                    />
+                    <Route path="/dashboard" element={<Dashboard />} />
+                    <Route path="/documents" element={<Documents />} />
+                    <Route path="/documents/:id" element={<DocumentDetail />} />
+                    <Route path="/archive" element={<Archive />} />
+                    <Route
+                      path="/certifications"
+                      element={<Certifications />}
+                    />
+                    <Route
+                      path="/certifications/:id"
+                      element={<CertificationDetail />}
+                    />
+                    <Route
+                      path="/users"
+                      element={
+                        <UsersProvider>
+                          <Users />
+                        </UsersProvider>
+                      }
+                    />
+                    <Route
+                      path="/roles"
+                      element={
+                        <RolesProvider>
+                          <Roles />
+                        </RolesProvider>
+                      }
+                    />
+                    <Route
+                      path="/roles/:id/view"
+                      element={
+                        <RolesProvider>
+                          <RoleView />
+                        </RolesProvider>
+                      }
+                    />
+                    <Route
+                      path="/roles/:id/edit"
+                      element={
+                        <RolesProvider>
+                          <RoleEdit />
+                        </RolesProvider>
+                      }
+                    />
+                  </Routes>
+                </Layout>
+              </ProtectedRoute>
+            }
+          />
         </Routes>
       </Router>
     </>

@@ -46,7 +46,7 @@ const Login = () => {
 
     // Validate the login input format (email or username)
     const validationResult = validateLoginInput(username);
-    
+
     if (!validationResult.isValid) {
       toast.error("Invalid Input", {
         description: validationResult.error,
@@ -62,7 +62,7 @@ const Login = () => {
 
       if (result.success) {
         toast.success("Login Successful", {
-          description: `Welcome back, ${result.user.name || username}!`,
+          description: `Welcome back, ${result.user.firstName || username}!`,
           duration: 3000,
         });
 
