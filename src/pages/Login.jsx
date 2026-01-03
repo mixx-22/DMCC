@@ -22,6 +22,7 @@ import {
 } from "@chakra-ui/react";
 import { FiEye, FiEyeOff, FiLock, FiUser } from "react-icons/fi";
 import { useUser } from "../context/useUser";
+import { validateLoginInput } from "../helpers/validation";
 import logoWhite from "../images/auptilyze-white.png";
 
 const Login = () => {
@@ -39,9 +40,23 @@ const Login = () => {
     if (!username || !password) {
       toast({
         title: "Validation Error",
-        description: "Please enter both username and password",
+        description: "Please enter both email/username and password",
         status: "error",
         duration: 3000,
+        isClosable: true,
+      });
+      return;
+    }
+
+    // Validate the login input format (email or username)
+    const validationResult = validateLoginInput(username);
+    
+    if (!validationResult.isValid) {
+      toast({
+        title: "Invalid Input",
+        description: validationResult.error,
+        status: "error",
+        duration: 4000,
         isClosable: true,
       });
       return;
@@ -65,7 +80,7 @@ const Login = () => {
       } else {
         toast({
           title: "Login Failed",
-          description: result.error || "Invalid username or password",
+          description: result.error || "Invalid email/username or password",
           status: "error",
           duration: 3000,
           isClosable: true,
@@ -119,22 +134,22 @@ const Login = () => {
                 color={useColorModeValue("gray.500", "gray.300")}
                 fontSize="md"
               >
-                Enter your email address and password to continue
+                Enter your email or username and password to continue
               </Text>
             </VStack>
             <form onSubmit={handleSubmit}>
               <VStack spacing={5} align="stretch">
                 <FormControl isRequired>
-                  <FormLabel>Email Address</FormLabel>
+                  <FormLabel>Email or Username</FormLabel>
                   <InputGroup>
                     <InputLeftElement pointerEvents="none" color="gray.400">
                       <FiUser />
                     </InputLeftElement>
                     <Input
-                      type="email"
+                      type="text"
                       value={username}
                       onChange={(e) => setUsername(e.target.value)}
-                      placeholder="Enter your email address"
+                      placeholder="Enter your email or username"
                       pl={10}
                       id="email"
                       name="email"
