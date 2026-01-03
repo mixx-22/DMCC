@@ -14,8 +14,8 @@ import {
   Avatar,
   Badge,
 } from "@chakra-ui/react";
-import { useUsers } from "../../context/UsersContext";
 import { useState } from "react";
+import { useUsers } from "../../context/_useContext";
 
 const Layout = () => {
   const { users, loading, error, fetchUsers } = useUsers();
