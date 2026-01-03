@@ -15,6 +15,10 @@ import CertificationDetail from "./pages/CertificationDetail";
 import Users from "./pages/Users";
 import { UsersProvider } from "./context/UsersContext";
 import Archive from "./pages/Archive";
+import Roles from "./pages/Roles";
+import RoleView from "./pages/Roles/RoleView";
+import RoleEdit from "./pages/Roles/RoleEdit";
+import { RolesProvider } from "./context/RolesContext";
 
 const ProtectedRoute = ({ children }) => {
   const { currentUser } = useApp();
@@ -63,6 +67,30 @@ function App() {
                       <UsersProvider>
                         <Users />
                       </UsersProvider>
+                    }
+                  />
+                  <Route
+                    path="/roles"
+                    element={
+                      <RolesProvider>
+                        <Roles />
+                      </RolesProvider>
+                    }
+                  />
+                  <Route
+                    path="/roles/:id/view"
+                    element={
+                      <RolesProvider>
+                        <RoleView />
+                      </RolesProvider>
+                    }
+                  />
+                  <Route
+                    path="/roles/:id/edit"
+                    element={
+                      <RolesProvider>
+                        <RoleEdit />
+                      </RolesProvider>
                     }
                   />
                 </Routes>

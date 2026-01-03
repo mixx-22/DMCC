@@ -30,6 +30,7 @@ import {
   FiMenu,
   FiChevronDown,
   FiChevronUp,
+  FiKey,
 } from "react-icons/fi";
 import { useApp } from "../context/AppContext";
 
@@ -169,6 +170,7 @@ const Sidebar = () => {
         label: "Certifications",
         icon: FiShield,
       },
+      { id: "roles", path: "/roles", label: "Roles", icon: FiKey },
     ];
     if (currentUser?.userType === "Admin") {
       items.push({
