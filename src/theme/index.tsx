@@ -3,9 +3,10 @@ import { colors } from "./colors";
 import { config } from "./config";
 import { fonts } from "./fonts";
 import { semanticTokens } from "./semanticTokens";
-import { headingTheme } from "./heading";
 import sizes from "./sizes";
 import styles from "./styles";
+import { headingTheme } from "./heading";
+import { tableTheme } from "./table";
 
 export const transition = {
   smooth: "200ms ease-out",
@@ -21,6 +22,7 @@ export const theme = extendTheme({
   space: { ...sizes },
   components: {
     Heading: headingTheme,
+    Table: tableTheme,
   },
   styles,
 });
