@@ -1,18 +1,5 @@
-import {
-  createContext,
-  useContext,
-  useState,
-  useEffect,
-  useCallback,
-} from "react";
-
-const UsersContext = createContext();
-
-export const useUsers = () => {
-  const context = useContext(UsersContext);
-  if (!context) throw new Error("useUsers must be used within UsersProvider");
-  return context;
-};
+import { useState, useEffect, useCallback } from "react";
+import { UsersContext } from "./_contexts";
 
 const USERS_ENDPOINT = import.meta.env.VITE_API_PACKAGE_USERS;
 const API_ENDPOINT = import.meta.env.VITE_API_ENDPOINT;

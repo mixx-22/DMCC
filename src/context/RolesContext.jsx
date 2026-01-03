@@ -1,28 +1,25 @@
-import { createContext, useContext, useState, useEffect } from "react";
+import { useEffect, useCallback, useRef, useReducer } from "react";
+import { RolesContext } from "./_contexts";
 
-const RolesContext = createContext();
+const ROLES_ENDPOINT = import.meta.env.VITE_API_PACKAGE_ROLES;
+const API_ENDPOINT = import.meta.env.VITE_API_ENDPOINT;
+const USE_API = import.meta.env.VITE_USE_API !== "false";
 
-export const useRoles = () => {
-  const context = useContext(RolesContext);
-  if (!context) {
-    throw new Error("useRoles must be used within RolesProvider");
-  }
-  return context;
-};
+const getApiUrl = (endpoint) => `${API_ENDPOINT}${endpoint}`;
 
-// Initial mock data for roles with nested permissions
-const INITIAL_ROLES = [
+// Example mock data for local development
+const MOCK_ROLES = [
   {
     id: "1",
     title: "Admin",
     description: "Full system access with all permissions",
     permissions: {
-      documents: { c: true, r: true, u: true, d: true },
-      certifications: { c: true, r: true, u: true, d: true },
-      users: { c: true, r: true, u: true, d: true },
-      roles: { c: true, r: true, u: true, d: true },
-      accounts: { c: true, r: true, u: true, d: true },
-      archive: { c: false, r: true, u: false, d: true },
+      documents: { c: 1, r: 1, u: 1, d: 1 },
+      certifications: { c: 1, r: 1, u: 1, d: 1 },
+      users: { c: 1, r: 1, u: 1, d: 1 },
+      roles: { c: 1, r: 1, u: 1, d: 1 },
+      accounts: { c: 1, r: 1, u: 1, d: 1 },
+      archive: { c: 0, r: 1, u: 0, d: 1 },
     },
     createdAt: "2024-01-15T10:00:00.000Z",
     updatedAt: "2024-01-15T10:00:00.000Z",
@@ -32,12 +29,12 @@ const INITIAL_ROLES = [
     title: "Manager",
     description: "Can manage documents and view reports",
     permissions: {
-      documents: { c: true, r: true, u: true, d: false },
-      certifications: { c: true, r: true, u: true, d: false },
-      users: { c: false, r: true, u: false, d: false },
-      roles: { c: false, r: true, u: false, d: false },
-      accounts: { c: false, r: true, u: false, d: false },
-      archive: { c: false, r: true, u: false, d: false },
+      documents: { c: 1, r: 1, u: 1, d: 0 },
+      certifications: { c: 1, r: 1, u: 1, d: 0 },
+      users: { c: 0, r: 1, u: 0, d: 0 },
+      roles: { c: 0, r: 1, u: 0, d: 0 },
+      accounts: { c: 0, r: 1, u: 0, d: 0 },
+      archive: { c: 0, r: 1, u: 0, d: 0 },
     },
     createdAt: "2024-02-10T14:30:00.000Z",
     updatedAt: "2024-03-05T09:15:00.000Z",
@@ -47,12 +44,12 @@ const INITIAL_ROLES = [
     title: "User",
     description: "Basic user with read-only access",
     permissions: {
-      documents: { c: false, r: true, u: false, d: false },
-      certifications: { c: false, r: true, u: false, d: false },
-      users: { c: false, r: false, u: false, d: false },
-      roles: { c: false, r: false, u: false, d: false },
-      accounts: { c: false, r: false, u: false, d: false },
-      archive: { c: false, r: true, u: false, d: false },
+      documents: { c: 0, r: 1, u: 0, d: 0 },
+      certifications: { c: 0, r: 1, u: 0, d: 0 },
+      users: { c: 0, r: 0, u: 0, d: 0 },
+      roles: { c: 0, r: 0, u: 0, d: 0 },
+      accounts: { c: 0, r: 0, u: 0, d: 0 },
+      archive: { c: 0, r: 1, u: 0, d: 0 },
     },
     createdAt: "2024-01-20T08:00:00.000Z",
     updatedAt: "2024-01-20T08:00:00.000Z",
@@ -62,71 +59,98 @@ const INITIAL_ROLES = [
     title: "Document Editor",
     description: "Can create and edit documents only",
     permissions: {
-      documents: { c: true, r: true, u: true, d: false },
-      certifications: { c: false, r: true, u: false, d: false },
-      users: { c: false, r: false, u: false, d: false },
-      roles: { c: false, r: false, u: false, d: false },
-      accounts: { c: false, r: false, u: false, d: false },
-      archive: { c: false, r: false, u: false, d: false },
+      documents: { c: 1, r: 1, u: 1, d: 0 },
+      certifications: { c: 0, r: 1, u: 0, d: 0 },
+      users: { c: 0, r: 0, u: 0, d: 0 },
+      roles: { c: 0, r: 0, u: 0, d: 0 },
+      accounts: { c: 0, r: 0, u: 0, d: 0 },
+      archive: { c: 0, r: 0, u: 0, d: 0 },
     },
     createdAt: "2024-03-01T11:20:00.000Z",
     updatedAt: "2024-03-01T11:20:00.000Z",
   },
 ];
 
+const reducer = (state, action) => {
+  const { type, ...payload } = action;
+  switch (type) {
+    case "SET_ROLES":
+      return {
+        ...state,
+        roles: payload.roles,
+        documentCount: payload.documentCount,
+        page: payload.page,
+      };
+    case "SET_LOADING":
+      return {
+        ...state,
+        loading: payload.value,
+      };
+    case "SET_ERROR":
+      return {
+        ...state,
+        error: payload.value,
+      };
+    default:
+      return state;
+  }
+};
+
+const initialState = {
+  roles: [],
+  documentCount: 0,
+  page: 1,
+  loading: false,
+  error: {},
+};
+
 export const RolesProvider = ({ children }) => {
-  const [roles, setRoles] = useState(() => {
-    const saved = localStorage.getItem("roles");
-    return saved ? JSON.parse(saved) : INITIAL_ROLES;
-  });
+  const [state, dispatch] = useReducer(reducer, initialState);
+  const fetched = useRef();
+
+  const fetchRoles = useCallback(async () => {
+    if (fetched.current) return;
+    fetched.current = true;
+    dispatch({ type: "SET_LOADING", value: true });
+    dispatch({ type: "SET_ERROR", value: null });
+    if (!USE_API) {
+      setTimeout(() => {
+        dispatch({
+          type: "SET_ROLES",
+          roles: MOCK_ROLES,
+          documentCount: MOCK_ROLES.length,
+          page: 1,
+        });
+        dispatch({ type: "SET_LOADING", value: false });
+      }, 500);
+      return;
+    }
+    try {
+      const res = await fetch(getApiUrl(ROLES_ENDPOINT));
+      if (!res.ok) throw new Error("Failed to fetch roles");
+      const data = await res.json();
+      dispatch({
+        type: "SET_ROLES",
+        roles: data.data,
+        documentCount: data.meta.total,
+        page: data.meta.page,
+      });
+    } catch (err) {
+      dispatch({ type: "SET_ERROR", value: err.message || "Unknown error" });
+    } finally {
+      dispatch({ type: "SET_LOADING", value: false });
+    }
+  }, []);
 
   useEffect(() => {
-    localStorage.setItem("roles", JSON.stringify(roles));
-  }, [roles]);
-
-  const addRole = (roleData) => {
-    // Generate a more robust ID using timestamp + random component to avoid collisions
-    const id = `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
-    const newRole = {
-      ...roleData,
-      id,
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-    };
-    setRoles((prev) => [...prev, newRole]);
-    return newRole;
-  };
-
-  const updateRole = (id, updates) => {
-    setRoles((prev) =>
-      prev.map((role) =>
-        role.id === id
-          ? {
-              ...role,
-              ...updates,
-              updatedAt: new Date().toISOString(),
-            }
-          : role
-      )
-    );
-  };
-
-  const deleteRole = (id) => {
-    setRoles((prev) => prev.filter((role) => role.id !== id));
-  };
-
-  const getRoleById = (id) => {
-    return roles.find((role) => role.id === id);
-  };
+    fetchRoles();
+  }, [fetchRoles]);
 
   return (
     <RolesContext.Provider
       value={{
-        roles,
-        addRole,
-        updateRole,
-        deleteRole,
-        getRoleById,
+        ...state,
+        dispatch,
       }}
     >
       {children}
