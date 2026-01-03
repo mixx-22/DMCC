@@ -85,9 +85,11 @@ export const RolesProvider = ({ children }) => {
   }, [roles]);
 
   const addRole = (roleData) => {
+    // Generate a more robust ID using timestamp + random component to avoid collisions
+    const id = `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
     const newRole = {
       ...roleData,
-      id: Date.now().toString(),
+      id,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     };
