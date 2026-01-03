@@ -15,9 +15,10 @@ import {
   LinkOverlay,
 } from "@chakra-ui/react";
 import { FiPlus } from "react-icons/fi";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { formatDistanceToNow } from "date-fns";
 import { motion } from "framer-motion";
+import { useEffect } from "react";
 import { useRoles } from "../../context/_useContext";
 import { generateRoleDescriptions } from "../../helpers/describePermissions";
 import { Link as RouterLink } from "react-router-dom";
@@ -29,6 +30,34 @@ const MotionBox = motion(Box);
 const RolesList = () => {
   const { roles = [], loading, page, limit, total, search, setPage, setSearch } = useRoles();
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  // Initialize from URL on mount
+  useEffect(() => {
+    const urlPage = searchParams.get('page');
+    const urlKeyword = searchParams.get('keyword');
+    
+    if (urlPage && parseInt(urlPage) !== page) {
+      setPage(parseInt(urlPage));
+    }
+    if (urlKeyword !== null && urlKeyword !== search) {
+      setSearch(urlKeyword);
+    }
+    // Only run on mount
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Update URL when page or search changes
+  useEffect(() => {
+    const params = {};
+    if (page > 1) {
+      params.page = page.toString();
+    }
+    if (search && search.length >= 2) {
+      params.keyword = search;
+    }
+    setSearchParams(params, { replace: true });
+  }, [page, search, setSearchParams]);
 
   const handleSearchChange = (e) => {
     const value = e.target.value;
@@ -128,7 +157,7 @@ const RolesList = () => {
         )}
       </Box>
 
-      {!loading && total > 0 && (
+      {!loading && (
         <Pagination
           currentPage={page}
           totalItems={total}

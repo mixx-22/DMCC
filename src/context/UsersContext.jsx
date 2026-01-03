@@ -120,9 +120,9 @@ export const UsersProvider = ({ children }) => {
         limit: state.limit,
       };
       
-      // Only add search param if it's at least 2 characters
+      // Only add keyword param if it's at least 2 characters
       if (search && search.length >= 2) {
-        params.search = search;
+        params.keyword = search;
       }
       
       const data = await apiService.request(USERS_ENDPOINT, {

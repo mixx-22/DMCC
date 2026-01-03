@@ -2,9 +2,7 @@ import { HStack, Button, Text, IconButton } from "@chakra-ui/react";
 import { FiChevronLeft, FiChevronRight } from "react-icons/fi";
 
 const Pagination = ({ currentPage, totalItems, itemsPerPage, onPageChange }) => {
-  const totalPages = Math.ceil(totalItems / itemsPerPage);
-
-  if (totalPages <= 1) return null;
+  const totalPages = Math.ceil(totalItems / itemsPerPage) || 1;
 
   const handlePrevious = () => {
     if (currentPage > 1) {

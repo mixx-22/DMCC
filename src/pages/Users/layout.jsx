@@ -13,6 +13,8 @@ import {
   Badge,
 } from "@chakra-ui/react";
 import { motion } from "framer-motion";
+import { useEffect } from "react";
+import { useSearchParams } from "react-router-dom";
 import { useUsers } from "../../context/_useContext";
 import Pagination from "../../components/Pagination";
 import UsersSkeleton from "../../components/UsersSkeleton";
@@ -21,8 +23,36 @@ const MotionBox = motion(Box);
 
 const Layout = () => {
   const { users, loading, error, page, limit, total, search, setPage, setSearch } = useUsers();
+  const [searchParams, setSearchParams] = useSearchParams();
   // Use users?.data or empty array if not present
   const userList = Array.isArray(users?.data) ? users.data : [];
+
+  // Initialize from URL on mount
+  useEffect(() => {
+    const urlPage = searchParams.get('page');
+    const urlKeyword = searchParams.get('keyword');
+    
+    if (urlPage && parseInt(urlPage) !== page) {
+      setPage(parseInt(urlPage));
+    }
+    if (urlKeyword !== null && urlKeyword !== search) {
+      setSearch(urlKeyword);
+    }
+    // Only run on mount
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Update URL when page or search changes
+  useEffect(() => {
+    const params = {};
+    if (page > 1) {
+      params.page = page.toString();
+    }
+    if (search && search.length >= 2) {
+      params.keyword = search;
+    }
+    setSearchParams(params, { replace: true });
+  }, [page, search, setSearchParams]);
 
   const handleSearchChange = (e) => {
     const value = e.target.value;
@@ -112,7 +142,7 @@ const Layout = () => {
         </MotionBox>
       )}
 
-      {!loading && !error && total > 0 && (
+      {!loading && !error && (
         <Pagination
           currentPage={page}
           totalItems={total}
