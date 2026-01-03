@@ -78,7 +78,23 @@ export const apiService = {
         headers.Authorization = `Bearer ${token}`;
       }
 
-      const response = await fetch(createApiUrl(endpoint), {
+      // Build URL with query parameters if provided
+      let url = createApiUrl(endpoint);
+      if (options.params) {
+        const queryString = new URLSearchParams(
+          Object.entries(options.params).reduce((acc, [key, value]) => {
+            if (value !== undefined && value !== null && value !== '') {
+              acc[key] = value;
+            }
+            return acc;
+          }, {})
+        ).toString();
+        if (queryString) {
+          url = `${url}?${queryString}`;
+        }
+      }
+
+      const response = await fetch(url, {
         ...options,
         headers,
         credentials: 'include', // Include cookies in requests for server-set HttpOnly cookies
