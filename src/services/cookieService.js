@@ -6,7 +6,7 @@ import Cookies from 'js-cookie';
  */
 
 // Configuration constants
-const TOKEN_COOKIE_NAME = 'authToken';
+const TOKEN_COOKIE_NAME = import.meta.env.VITE_TOKEN_KEY || 'authToken';
 const TOKEN_EXPIRY_HOURS = 1; // Default token expiry time
 
 // Cookie options with security best practices

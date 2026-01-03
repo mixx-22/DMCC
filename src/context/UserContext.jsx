@@ -4,55 +4,22 @@ import cookieService from "../services/cookieService";
 
 const USER_KEY = import.meta.env.VITE_USER_KEY || "currentUser";
 
-const TOKEN_KEY = "authToken";
-
-// Helper function to get token from cookie first, then localStorage
-const getStoredToken = () => {
-  // Priority 1: Check cookie
-  const cookieToken = cookieService.getToken();
-  if (cookieToken) {
-    return { value: cookieToken, source: 'cookie' };
-  }
-
-  // Priority 2: Check localStorage (for backward compatibility)
-  const raw = localStorage.getItem(TOKEN_KEY);
-  if (!raw) return null;
-  try {
-    const parsed = JSON.parse(raw);
-    if (typeof parsed === "string") return { value: parsed, source: 'localStorage' };
-    return { ...parsed, source: 'localStorage' };
-  } catch {
-    return null;
-  }
-};
-
-const isTokenValid = (tokenObj) => {
-  if (!tokenObj) return false;
-  if (!tokenObj.expiresAt) return true; // If no expiry, treat as valid (for legacy)
-  return Date.now() < tokenObj.expiresAt;
-};
-
 const UserContext = createContext();
 
 export const UserProvider = ({ children }) => {
   const [user, setUser] = useState(() => {
     const savedUser = localStorage.getItem(USER_KEY);
-    const savedToken = getStoredToken();
-    if (savedUser && savedToken && isTokenValid(savedToken)) {
+    const token = cookieService.getToken();
+    if (savedUser && token) {
       return JSON.parse(savedUser);
     }
-    // Clean up expired token from both sources
+    // Clean up if no token
     cookieService.removeToken();
-    localStorage.removeItem(TOKEN_KEY);
     return null;
   });
 
   const [authToken, setAuthToken] = useState(() => {
-    const tokenObj = getStoredToken();
-    if (tokenObj && isTokenValid(tokenObj)) {
-      return tokenObj.value;
-    }
-    return null;
+    return cookieService.getToken() || null;
   });
 
   const [isLoading, setIsLoading] = useState(false);
@@ -68,28 +35,6 @@ export const UserProvider = ({ children }) => {
   }, [user]);
 
   useEffect(() => {
-    if (authToken) {
-      // Store token in cookie (primary storage)
-      const tokenObj = getStoredToken();
-      
-      if (!tokenObj || tokenObj.value !== authToken) {
-        // Default: set expiry 1 hour from now if not present
-        const expiresAt = Date.now() + 60 * 60 * 1000;
-        
-        // Store in cookie with expiry
-        cookieService.setTokenWithExpiry(authToken, expiresAt);
-        
-        // Also store in localStorage for backward compatibility
-        localStorage.setItem(
-          TOKEN_KEY,
-          JSON.stringify({ value: authToken, expiresAt })
-        );
-      }
-    } else {
-      // Clear both cookie and localStorage
-      cookieService.removeToken();
-      localStorage.removeItem(TOKEN_KEY);
-    }
     setIsAuthenticated(!!authToken);
   }, [authToken]);
 
@@ -119,17 +64,8 @@ export const UserProvider = ({ children }) => {
       const success = cookieService.setJWTToken(tokenValue);
       
       if (!success) {
-        console.warn("Failed to store token in cookie, using localStorage only");
+        console.warn("Failed to store token in cookie");
       }
-
-      // Also store in localStorage for backward compatibility
-      // Parse JWT to get expiry for localStorage
-      const payload = cookieService.parseJWT(tokenValue);
-      const expiresAt = payload && payload.exp 
-        ? payload.exp * 1000 
-        : Date.now() + 60 * 60 * 1000;
-      
-      localStorage.setItem(TOKEN_KEY, JSON.stringify({ value: tokenValue, expiresAt }));
 
       setUser(userData);
       setAuthToken(tokenValue);
@@ -153,8 +89,8 @@ export const UserProvider = ({ children }) => {
       // Clear cookie
       cookieService.removeToken();
       
-      // Clear localStorage items
-      [TOKEN_KEY, USER_KEY].forEach((key) => localStorage.removeItem(key));
+      // Clear localStorage (only user data)
+      localStorage.removeItem(USER_KEY);
       
       if (typeof sessionStorage !== "undefined") sessionStorage.clear();
     } catch (error) {

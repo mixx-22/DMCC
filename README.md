@@ -28,23 +28,27 @@ A comprehensive document management system with certification and permit monitor
 ## Authentication & Security
 
 ### Token Management
-The application uses **cookie-based token management** with security best practices:
+The application uses **cookie-only token management** with security best practices:
 
 #### Features:
-- **Dual Storage**: Tokens are stored in cookies (primary) with localStorage as fallback for backward compatibility
+- **Cookie Storage Only**: Tokens are stored exclusively in cookies (no localStorage)
+- **Configurable Cookie Name**: Set via `VITE_TOKEN_KEY` environment variable
 - **Automatic Expiry**: JWT tokens are parsed and cookie expiry is set automatically based on the token's `exp` claim
 - **Security Flags**: Cookies are configured with:
   - `SameSite=strict` - Prevents CSRF attacks
   - `Secure=true` (in production) - Only transmitted over HTTPS
   - Path-scoped to `/`
-- **Credentials Include**: API requests include credentials for server-set HttpOnly cookies
+- **Automatic Token Inclusion**: All API requests automatically include the token from cookies
 
 #### How it works:
 1. On login, the server returns a JWT token in the response body
 2. The token is automatically stored in a cookie with appropriate security settings
 3. Token expiry is extracted from JWT and set on the cookie
-4. All API requests automatically include the token via cookies
-5. On logout or token expiry, both cookies and localStorage are cleared
+4. All API requests automatically include the token via the Authorization header
+5. On logout or 401 error, the cookie is cleared
+
+#### Usage:
+See [TOKEN_USAGE.md](./TOKEN_USAGE.md) for detailed usage examples and best practices.
 
 #### Cookie Service API:
 The `cookieService` utility (`src/services/cookieService.js`) provides:

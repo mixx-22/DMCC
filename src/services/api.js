@@ -66,21 +66,8 @@ export const apiService = {
 
   async request(endpoint, options = {}) {
     try {
-      // Try to get token from cookie first, then fall back to localStorage
-      let token = cookieService.getToken();
-      if (!token) {
-        // localStorage stores token as JSON object with value and expiresAt
-        const rawToken = localStorage.getItem("authToken");
-        if (rawToken) {
-          try {
-            const parsed = JSON.parse(rawToken);
-            token = typeof parsed === 'string' ? parsed : parsed.value;
-          } catch {
-            // If parsing fails, treat as plain string
-            token = rawToken;
-          }
-        }
-      }
+      // Get token from cookie only
+      const token = cookieService.getToken();
 
       const headers = {
         "Content-Type": "application/json",
@@ -99,10 +86,8 @@ export const apiService = {
 
       if (!response.ok) {
         if (response.status === 401) {
-          // Clear both cookie and localStorage on authentication failure
+          // Clear cookie on authentication failure
           cookieService.removeToken();
-          localStorage.removeItem("authToken");
-          localStorage.removeItem("currentUser");
           window.location.href = "/login";
         }
         const errorData = await response.json().catch(() => ({}));

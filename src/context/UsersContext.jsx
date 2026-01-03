@@ -5,6 +5,7 @@ import {
   useEffect,
   useCallback,
 } from "react";
+import apiService from "../services/api";
 
 const UsersContext = createContext();
 
@@ -15,10 +16,7 @@ export const useUsers = () => {
 };
 
 const USERS_ENDPOINT = import.meta.env.VITE_API_PACKAGE_USERS;
-const API_ENDPOINT = import.meta.env.VITE_API_ENDPOINT;
 const USE_API = import.meta.env.VITE_USE_API !== "false";
-
-const getApiUrl = (endpoint) => `${API_ENDPOINT}${endpoint}`;
 
 // Example mock data for local development
 const MOCK_USERS = [
@@ -57,9 +55,10 @@ export const UsersProvider = ({ children }) => {
       return;
     }
     try {
-      const res = await fetch(getApiUrl(USERS_ENDPOINT));
-      if (!res.ok) throw new Error("Failed to fetch users");
-      const data = await res.json();
+      // Use apiService.request which automatically includes the token from cookie
+      const data = await apiService.request(USERS_ENDPOINT, {
+        method: 'GET',
+      });
       setUsers(data);
     } catch (err) {
       setError(err.message || "Unknown error");
