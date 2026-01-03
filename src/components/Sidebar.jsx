@@ -17,6 +17,7 @@ import {
   Flex,
   Collapse,
   Spacer,
+  Image,
 } from "@chakra-ui/react";
 import { NavLink, useLocation } from "react-router-dom";
 import {
@@ -32,6 +33,8 @@ import {
   FiChevronUp,
   FiSettings,
 } from "react-icons/fi";
+import logoDefault from "../images/auptilyze.png";
+import logoWhite from "../images/auptilyze-white.png";
 
 const isRouteMatch = (location, target) => {
   const [targetPath, targetQuery] = target.split("?");
@@ -60,8 +63,8 @@ const SidebarRow = ({
   onToggle,
   onClick,
 }) => {
-  const activeBg = useColorModeValue("blue.50", "whiteAlpha.200");
-  const activeColor = useColorModeValue("blue.600", "blue.200");
+  const activeBg = useColorModeValue("brandPrimary.50", "whiteAlpha.200");
+  const activeColor = useColorModeValue("brandPrimary.600", "brandPrimary.200");
   const hoverBg = useColorModeValue("gray.50", "whiteAlpha.100");
   const textColor = useColorModeValue("gray.700", "gray.300");
   const childTextColor = useColorModeValue("gray.500", "gray.400");
@@ -135,6 +138,7 @@ const Sidebar = () => {
   const location = useLocation();
   const { isOpen, onOpen, onClose } = useDisclosure();
 
+  const logoSrc = useColorModeValue(logoDefault, logoWhite);
   const textColor = useColorModeValue("gray.700", "gray.300");
   const bgColor = useColorModeValue("white", "gray.900");
   const borderColor = useColorModeValue("gray.100", "gray.800");
@@ -371,15 +375,14 @@ const Sidebar = () => {
         transition="all 0.3s cubic-bezier(0.4, 0, 0.2, 1)"
       >
         {!isCollapsed && (
-          <Heading
-            flex={1}
-            fontSize="lg"
-            fontWeight="bold"
-            color={brandColor}
-            noOfLines={1}
-          >
-            {import.meta.env.VITE_PROJECT_NAME}
-          </Heading>
+          <>
+            <Image
+              w={24}
+              src={logoSrc}
+              alt={import.meta.env.VITE_PROJECT_NAME}
+            />
+            <Spacer />
+          </>
         )}
         <IconButton
           aria-label="Toggle Sidebar"
