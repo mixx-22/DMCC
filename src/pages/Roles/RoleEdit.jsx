@@ -10,8 +10,8 @@ import {
   Textarea,
   Heading,
   useColorModeValue,
-  useToast,
 } from "@chakra-ui/react";
+import { toast } from "sonner";
 import { FiSave, FiArrowLeft } from "react-icons/fi";
 import { useParams, useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
@@ -30,7 +30,6 @@ const validatePermissions = (permissions) => {
 const RoleEdit = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const toast = useToast();
   const {
     getRoleById = () => {},
     addRole = () => {},
@@ -66,15 +65,13 @@ const RoleEdit = () => {
           permissions: role.permissions,
         });
       } else {
-        toast({
-          title: "Role not found",
-          status: "error",
+        toast.error("Role not found", {
           duration: 3000,
         });
         navigate("/roles");
       }
     }
-  }, [id, isEditMode, getRoleById, navigate, toast]);
+  }, [id, isEditMode, getRoleById, navigate]);
 
   const handleChange = (field, value) => {
     setFormData((prev) => ({
@@ -127,10 +124,8 @@ const RoleEdit = () => {
     e.preventDefault();
 
     if (!validate()) {
-      toast({
-        title: "Validation Error",
+      toast.error("Validation Error", {
         description: "Please fix the errors before saving",
-        status: "error",
         duration: 3000,
       });
       return;
@@ -138,19 +133,15 @@ const RoleEdit = () => {
 
     if (isEditMode) {
       updateRole(id, formData);
-      toast({
-        title: "Role updated",
+      toast.success("Role updated", {
         description: "Role has been updated successfully",
-        status: "success",
         duration: 3000,
       });
       navigate(`/roles/${id}/view`);
     } else {
       const newRole = addRole(formData);
-      toast({
-        title: "Role created",
+      toast.success("Role created", {
         description: "Role has been created successfully",
-        status: "success",
         duration: 3000,
       });
       navigate(`/roles/${newRole.id}/view`);

@@ -17,7 +17,6 @@ import {
   Text,
   Avatar,
   Badge,
-  useToast,
   AlertDialog,
   AlertDialogBody,
   AlertDialogFooter,
@@ -25,6 +24,7 @@ import {
   AlertDialogContent,
   AlertDialogOverlay,
 } from "@chakra-ui/react";
+import { toast } from "sonner";
 import { FiPlus, FiEdit, FiTrash2, FiSearch, FiUser } from "react-icons/fi";
 import { useApp } from "../context/AppContext";
 import { useNavigate } from "react-router-dom";
@@ -54,7 +54,6 @@ const Accounts = () => {
     onClose: onDeleteClose,
   } = useDisclosure();
   const cancelRef = useRef();
-  const toast = useToast();
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedAccount, setSelectedAccount] = useState(null);
   const [accountToDelete, setAccountToDelete] = useState(null);
@@ -85,12 +84,9 @@ const Accounts = () => {
   const handleDelete = () => {
     if (accountToDelete) {
       deleteAccount(accountToDelete.id);
-      toast({
-        title: "Account Deleted",
+      toast.success("Account Deleted", {
         description: `${accountToDelete.name} has been deleted`,
-        status: "success",
         duration: 3000,
-        isClosable: true,
       });
     }
     setAccountToDelete(null);

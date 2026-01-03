@@ -4,6 +4,7 @@ import {
   Route,
   Navigate,
 } from "react-router-dom";
+import { Toaster } from "sonner";
 import { useApp } from "./context/AppContext";
 import Layout from "./components/Layout";
 import Login from "./pages/Login";
@@ -34,8 +35,10 @@ function App() {
   const { currentUser } = useApp();
 
   return (
-    <Router future={{ v7_relativeSplatPath: true, v7_startTransition: true }}>
-      <Routes>
+    <>
+      <Toaster position="top-right" richColors closeButton />
+      <Router future={{ v7_relativeSplatPath: true, v7_startTransition: true }}>
+        <Routes>
         <Route
           path="/login"
           element={
@@ -98,8 +101,9 @@ function App() {
             </ProtectedRoute>
           }
         />
-      </Routes>
-    </Router>
+        </Routes>
+      </Router>
+    </>
   );
 }
 

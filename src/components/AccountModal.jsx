@@ -15,18 +15,17 @@ import {
   InputRightElement,
   Select,
   VStack,
-  useToast,
   Avatar,
   Box,
   Text,
   IconButton,
 } from "@chakra-ui/react";
+import { toast } from "sonner";
 import { FiEye, FiEyeOff } from "react-icons/fi";
 import { useApp } from "../context/AppContext";
 
 const AccountModal = ({ isOpen, onClose, account = null }) => {
   const { addAccount, updateAccount } = useApp();
-  const toast = useToast();
   const isEdit = !!account;
   const [formData, setFormData] = useState({
     name: "",
@@ -74,23 +73,17 @@ const AccountModal = ({ isOpen, onClose, account = null }) => {
     const file = e.target.files[0];
     if (file) {
       if (!file.type.startsWith("image/")) {
-        toast({
-          title: "Invalid File Type",
+        toast.error("Invalid File Type", {
           description: "Please upload an image file",
-          status: "error",
           duration: 3000,
-          isClosable: true,
         });
         return;
       }
 
       if (file.size > 5 * 1024 * 1024) {
-        toast({
-          title: "File Too Large",
+        toast.error("File Too Large", {
           description: "Please upload an image smaller than 5MB",
-          status: "error",
           duration: 3000,
-          isClosable: true,
         });
         return;
       }
@@ -108,23 +101,17 @@ const AccountModal = ({ isOpen, onClose, account = null }) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!formData.name || !formData.userType) {
-      toast({
-        title: "Validation Error",
+      toast.error("Validation Error", {
         description: "Please fill in all required fields",
-        status: "error",
         duration: 3000,
-        isClosable: true,
       });
       return;
     }
 
     if (!isEdit && (!formData.username || !formData.password)) {
-      toast({
-        title: "Validation Error",
+      toast.error("Validation Error", {
         description: "Username and password are required for new accounts",
-        status: "error",
         duration: 3000,
-        isClosable: true,
       });
       return;
     }
@@ -153,21 +140,15 @@ const AccountModal = ({ isOpen, onClose, account = null }) => {
 
     if (isEdit) {
       updateAccount(account.id, accountData);
-      toast({
-        title: "Account Updated",
+      toast.success("Account Updated", {
         description: "Account has been updated successfully",
-        status: "success",
         duration: 3000,
-        isClosable: true,
       });
     } else {
       addAccount(accountData);
-      toast({
-        title: "Account Created",
+      toast.success("Account Created", {
         description: "Account has been created successfully",
-        status: "success",
         duration: 3000,
-        isClosable: true,
       });
     }
 

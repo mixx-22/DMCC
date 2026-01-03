@@ -11,7 +11,6 @@ import {
   Button,
   Text,
   HStack,
-  useToast,
   useDisclosure,
   Badge,
   VStack,
@@ -26,6 +25,7 @@ import {
   AlertIcon,
   Input,
 } from "@chakra-ui/react";
+import { toast } from "sonner";
 import { FiDownload, FiTrash2, FiRefreshCw } from "react-icons/fi";
 import { useApp } from "../context/AppContext";
 import ArchiveDeleteConfirmModal from "../components/ArchiveDeleteConfirmModal";
@@ -38,7 +38,6 @@ const Archive = () => {
     deleteArchivedDocument,
     currentUser,
   } = useApp();
-  const toast = useToast();
   const [selectedDocId, setSelectedDocId] = React.useState(null);
   const [isDeleting, setIsDeleting] = React.useState(false);
   const [isRestoring, setIsRestoring] = React.useState(false);
@@ -63,12 +62,9 @@ const Archive = () => {
 
   const handleView = (fileUrl) => {
     if (!fileUrl) {
-      toast({
-        title: "File Not Available",
+      toast.error("File Not Available", {
         description: "No file for this document",
-        status: "error",
         duration: 3000,
-        isClosable: true,
       });
       return;
     }
@@ -84,12 +80,9 @@ const Archive = () => {
     if (selectedDocId) {
       setIsRestoring(true);
       restoreDocument(selectedDocId);
-      toast({
-        title: "Restored",
+      toast.success("Restored", {
         description: "Document restored to Documents",
-        status: "success",
         duration: 3000,
-        isClosable: true,
       });
       setIsRestoring(false);
       setSelectedDocId(null);
@@ -113,7 +106,7 @@ const Archive = () => {
     return "active";
   };
 
-  const handleDeleteClick = (id, title) => {
+  const handleDeleteClick = (id) => {
     setSelectedDocId(id);
     onDeleteOpen();
   };
@@ -122,12 +115,9 @@ const Archive = () => {
     if (selectedDocId) {
       setIsDeleting(true);
       deleteArchivedDocument(selectedDocId);
-      toast({
-        title: "Deleted Permanently",
+      toast.warning("Deleted Permanently", {
         description: "Document removed from archive",
-        status: "warning",
         duration: 3000,
-        isClosable: true,
       });
       setIsDeleting(false);
       setSelectedDocId(null);
@@ -140,12 +130,9 @@ const Archive = () => {
       visibleArchived.forEach((doc) => {
         deleteArchivedDocument(doc.id);
       });
-      toast({
-        title: "All documents deleted",
+      toast.warning("All documents deleted", {
         description: "All archived documents have been permanently deleted",
-        status: "warning",
         duration: 3000,
-        isClosable: true,
       });
       setDeleteAllConfirm("");
       onDeleteAllClose();
@@ -232,7 +219,6 @@ const Archive = () => {
           <Tbody>
             {visibleArchived.map((doc) => {
               const daysLeft = calculateDaysLeft(doc.archivedAt);
-              const status = getObsoleteStatus(daysLeft);
               return (
                 <Tr key={`archived-${doc.id}`}>
                   <Td fontWeight="semibold">{doc.title}</Td>

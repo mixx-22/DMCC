@@ -15,8 +15,8 @@ import {
   Select,
   VStack,
   Text,
-  useToast,
 } from "@chakra-ui/react";
+import { toast } from "sonner";
 import { useApp } from "../context/AppContext";
 
 const CertificationUploadModal = ({
@@ -25,7 +25,6 @@ const CertificationUploadModal = ({
   certification = null,
 }) => {
   const { addCertification, updateCertification, currentUser } = useApp();
-  const toast = useToast();
   const isEdit = !!certification;
   const [formData, setFormData] = useState({
     name: certification?.name || "",
@@ -49,12 +48,9 @@ const CertificationUploadModal = ({
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!formData.name) {
-      toast({
-        title: "Validation Error",
+      toast.error("Validation Error", {
         description: "Please fill in all required fields",
-        status: "error",
         duration: 3000,
-        isClosable: true,
       });
       return;
     }
@@ -79,12 +75,9 @@ const CertificationUploadModal = ({
         fileSize,
         department: certification.department || currentUser?.department || "",
       });
-      toast({
-        title: "Certification Updated",
+      toast.success("Certification Updated", {
         description: "Certification has been updated successfully",
-        status: "success",
         duration: 3000,
-        isClosable: true,
       });
     } else {
       addCertification({
@@ -96,12 +89,9 @@ const CertificationUploadModal = ({
         requestedBy: currentUser?.id || null,
         requestedByName: currentUser?.name || "",
       });
-      toast({
-        title: "Certification Added",
+      toast.success("Certification Added", {
         description: "Certification has been added successfully",
-        status: "success",
         duration: 3000,
-        isClosable: true,
       });
     }
 

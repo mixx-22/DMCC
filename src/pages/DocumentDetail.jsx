@@ -12,7 +12,6 @@ import {
   CardBody,
   CardHeader,
   IconButton,
-  useToast,
   Table,
   Thead,
   Tbody,
@@ -22,6 +21,7 @@ import {
   useDisclosure,
   Grid,
 } from "@chakra-ui/react";
+import { toast } from "sonner";
 import {
   FiArrowLeft,
   FiStar,
@@ -38,7 +38,6 @@ import DeleteDocumentModal from "../components/DeleteDocumentModal";
 const DocumentDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const toast = useToast();
   const { isOpen, onOpen, onClose } = useDisclosure();
   const {
     isOpen: isDeleteOpen,
@@ -149,12 +148,9 @@ const DocumentDetail = () => {
 
   const handleView = (fileUrl) => {
     if (!fileUrl) {
-      toast({
-        title: "File Not Available",
+      toast.error("File Not Available", {
         description: "This document does not have an accessible file.",
-        status: "error",
         duration: 3000,
-        isClosable: true,
       });
       return;
     }
@@ -163,13 +159,10 @@ const DocumentDetail = () => {
 
   const handleCheckOut = () => {
     checkOutDocument(document.id);
-    toast({
-      title: "Document Checked Out",
+    toast.info("Document Checked Out", {
       description:
         "Document is now available for revision. You can download it to make changes.",
-      status: "info",
       duration: 3000,
-      isClosable: true,
     });
   };
 

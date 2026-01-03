@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState } from "react";
 import {
   Box,
   Heading,
@@ -20,7 +20,6 @@ import {
   Grid,
   Card,
   CardBody,
-  CardHeader,
   Flex,
   Textarea,
   Modal,
@@ -30,8 +29,8 @@ import {
   ModalFooter,
   ModalBody,
   ModalCloseButton,
-  useToast,
 } from "@chakra-ui/react";
+import { toast } from "sonner";
 import {
   FiPlus,
   FiStar,
@@ -66,7 +65,6 @@ const Documents = () => {
     onClose: onRejectClose,
   } = useDisclosure();
   const navigate = useNavigate();
-  const toast = useToast();
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [folderFilter, setFolderFilter] = useState("all");
@@ -161,12 +159,9 @@ const Documents = () => {
 
   const handleApprove = (docId) => {
     approveDocument(docId);
-    toast({
-      title: "Document Approved",
+    toast.success("Document Approved", {
       description: "Document has been approved and posted",
-      status: "success",
       duration: 3000,
-      isClosable: true,
     });
   };
 
@@ -178,23 +173,17 @@ const Documents = () => {
 
   const handleReject = () => {
     if (!rejectionReason.trim()) {
-      toast({
-        title: "Validation Error",
+      toast.error("Validation Error", {
         description: "Please provide a reason for rejection",
-        status: "error",
         duration: 3000,
-        isClosable: true,
       });
       return;
     }
 
     rejectDocument(selectedDoc.id, rejectionReason);
-    toast({
-      title: "Document Rejected",
+    toast.info("Document Rejected", {
       description: "Document has been rejected",
-      status: "info",
       duration: 3000,
-      isClosable: true,
     });
     onRejectClose();
     setSelectedDoc(null);
