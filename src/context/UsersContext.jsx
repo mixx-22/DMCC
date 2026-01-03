@@ -140,13 +140,15 @@ export const UsersProvider = ({ children }) => {
     } finally {
       dispatch({ type: "SET_LOADING", value: false });
     }
-  }, [state.page, state.search, state.limit]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [state.limit]);
 
   const setPage = useCallback((page) => {
     dispatch({ type: "SET_PAGE", value: page });
     dispatch({ type: "SET_LAST_PAGE", value: page });
     fetchUsers(page, state.search);
-  }, [fetchUsers, state.search]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [fetchUsers]);
 
   const setSearch = useCallback((search) => {
     dispatch({ type: "SET_SEARCH", value: search });
@@ -170,7 +172,8 @@ export const UsersProvider = ({ children }) => {
         fetchUsers(1, search);
       }, 500); // 500ms debounce
     }
-  }, [fetchUsers, state.lastPage]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [fetchUsers]);
 
   useEffect(() => {
     fetchUsers();

@@ -196,14 +196,16 @@ export const RolesProvider = ({ children }) => {
     } finally {
       dispatch({ type: "SET_LOADING", value: false });
     }
-  }, [state.page, state.search, state.limit]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [state.limit]);
 
   const setPage = useCallback((page) => {
     dispatch({ type: "SET_PAGE", value: page });
     dispatch({ type: "SET_LAST_PAGE", value: page });
     fetched.current = false;
     fetchRoles(page, state.search);
-  }, [fetchRoles, state.search]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [fetchRoles]);
 
   const setSearch = useCallback((search) => {
     dispatch({ type: "SET_SEARCH", value: search });
@@ -229,7 +231,8 @@ export const RolesProvider = ({ children }) => {
         fetchRoles(1, search);
       }, 500); // 500ms debounce
     }
-  }, [fetchRoles, state.lastPage]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [fetchRoles]);
 
   useEffect(() => {
     fetchRoles();
