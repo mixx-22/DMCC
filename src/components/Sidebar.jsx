@@ -30,9 +30,8 @@ import {
   FiMenu,
   FiChevronDown,
   FiChevronUp,
-  FiKey,
+  FiSettings,
 } from "react-icons/fi";
-import { useApp } from "../context/AppContext";
 
 const isRouteMatch = (location, target) => {
   const [targetPath, targetQuery] = target.split("?");
@@ -133,7 +132,6 @@ const SidebarRow = ({
 };
 
 const Sidebar = () => {
-  const { currentUser } = useApp();
   const location = useLocation();
   const { isOpen, onOpen, onClose } = useDisclosure();
 
@@ -149,6 +147,8 @@ const Sidebar = () => {
   const [isBottomNavVisible, setIsBottomNavVisible] = useState(true);
   const [lastScrollY, setLastScrollY] = useState(0);
 
+  const isAdmin = true;
+
   const navItems = useMemo(() => {
     const items = [
       { id: "dashboard", path: "/dashboard", label: "Dashboard", icon: FiHome },
@@ -163,25 +163,33 @@ const Sidebar = () => {
         ],
       },
       { id: "archive", path: "/archive", label: "Archive", icon: FiArchive },
-      { id: "users", path: "/users", label: "Users", icon: FiUsers },
       {
         id: "certifications",
         path: "/certifications",
         label: "Certifications",
         icon: FiShield,
       },
-      { id: "roles", path: "/roles", label: "Roles", icon: FiKey },
     ];
-    if (currentUser?.userType === "Admin") {
+    if (isAdmin) {
       items.push({
-        id: "accounts",
-        path: "/accounts",
-        label: "Accounts",
+        id: "users",
+        path: "/users",
+        label: "Users",
         icon: FiUsers,
+      });
+      items.push({
+        id: "settings",
+        path: "/settings",
+        label: "Settings",
+        icon: FiSettings,
+        children: [
+          { path: "/settings", label: "All Settings" },
+          { path: "/roles", label: "Roles" },
+        ],
       });
     }
     return items;
-  }, [currentUser]);
+  }, [isAdmin]);
 
   useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth < 768);
