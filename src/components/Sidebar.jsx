@@ -23,9 +23,7 @@ import { NavLink, useLocation } from "react-router-dom";
 import {
   FiHome,
   FiFileText,
-  FiShield,
   FiUsers,
-  FiArchive,
   FiChevronLeft,
   FiChevronRight,
   FiMenu,
@@ -163,16 +161,16 @@ const Sidebar = () => {
         icon: FiFileText,
         children: [
           { path: "/documents", label: "All Documents" },
-          { path: "/documents?status=pending", label: "Pending Approval" },
+          // { path: "/documents?status=pending", label: "Pending Approval" },
         ],
       },
-      { id: "archive", path: "/archive", label: "Archive", icon: FiArchive },
-      {
-        id: "certifications",
-        path: "/certifications",
-        label: "Certifications",
-        icon: FiShield,
-      },
+      // { id: "archive", path: "/archive", label: "Archive", icon: FiArchive },
+      // {
+      //   id: "certifications",
+      //   path: "/certifications",
+      //   label: "Certifications",
+      //   icon: FiShield,
+      // },
     ];
     if (isAdmin) {
       items.push({
@@ -187,7 +185,7 @@ const Sidebar = () => {
         label: "Settings",
         icon: FiSettings,
         children: [
-          { path: "/settings", label: "All Settings" },
+          // { path: "/settings", label: "All Settings" },
           { path: "/roles", label: "Roles & Permissions" },
         ],
       });
