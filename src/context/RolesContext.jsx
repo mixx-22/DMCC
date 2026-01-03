@@ -1,11 +1,9 @@
 import { useEffect, useCallback, useRef, useReducer } from "react";
 import { RolesContext } from "./_contexts";
+import apiService from "../services/api";
 
 const ROLES_ENDPOINT = import.meta.env.VITE_API_PACKAGE_ROLES;
-const API_ENDPOINT = import.meta.env.VITE_API_ENDPOINT;
 const USE_API = import.meta.env.VITE_USE_API !== "false";
-
-const getApiUrl = (endpoint) => `${API_ENDPOINT}${endpoint}`;
 
 // Example mock data for local development
 const MOCK_ROLES = [
@@ -126,9 +124,9 @@ export const RolesProvider = ({ children }) => {
       return;
     }
     try {
-      const res = await fetch(getApiUrl(ROLES_ENDPOINT));
-      if (!res.ok) throw new Error("Failed to fetch roles");
-      const data = await res.json();
+      const data = await apiService.request(ROLES_ENDPOINT, {
+        method: "GET",
+      });
       dispatch({
         type: "SET_ROLES",
         roles: data.data,

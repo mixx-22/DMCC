@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useEffect, useCallback, useReducer } from "react";
 import { UsersContext } from "./_contexts";
 import apiService from "../services/api";
 
@@ -25,19 +25,46 @@ const MOCK_USERS = [
   },
 ];
 
+const reducer = (state, action) => {
+  const { type, ...payload } = action;
+  switch (type) {
+    case "SET_USERS":
+      return {
+        ...state,
+        users: payload.users,
+      };
+    case "SET_LOADING":
+      return {
+        ...state,
+        loading: payload.value,
+      };
+    case "SET_ERROR":
+      return {
+        ...state,
+        error: payload.value,
+      };
+    default:
+      return state;
+  }
+};
+
+const initialState = {
+  users: [],
+  loading: false,
+  error: null,
+};
+
 export const UsersProvider = ({ children }) => {
-  const [users, setUsers] = useState([]);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
+  const [state, dispatch] = useReducer(reducer, initialState);
 
   const fetchUsers = useCallback(async () => {
-    setLoading(true);
-    setError(null);
+    dispatch({ type: "SET_LOADING", value: true });
+    dispatch({ type: "SET_ERROR", value: null });
     if (!USE_API) {
       // Use mock data for local development
       setTimeout(() => {
-        setUsers(MOCK_USERS);
-        setLoading(false);
+        dispatch({ type: "SET_USERS", users: MOCK_USERS });
+        dispatch({ type: "SET_LOADING", value: false });
       }, 500);
       return;
     }
@@ -46,11 +73,11 @@ export const UsersProvider = ({ children }) => {
       const data = await apiService.request(USERS_ENDPOINT, {
         method: "GET",
       });
-      setUsers(data);
+      dispatch({ type: "SET_USERS", users: data });
     } catch (err) {
-      setError(err.message || "Unknown error");
+      dispatch({ type: "SET_ERROR", value: err.message || "Unknown error" });
     } finally {
-      setLoading(false);
+      dispatch({ type: "SET_LOADING", value: false });
     }
   }, []);
 
@@ -59,7 +86,7 @@ export const UsersProvider = ({ children }) => {
   }, [fetchUsers]);
 
   return (
-    <UsersContext.Provider value={{ users, loading, error, fetchUsers }}>
+    <UsersContext.Provider value={{ ...state, dispatch, fetchUsers }}>
       {children}
     </UsersContext.Provider>
   );
