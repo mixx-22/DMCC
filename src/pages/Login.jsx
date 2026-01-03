@@ -12,7 +12,6 @@ import {
   InputLeftElement,
   InputRightElement,
   Button,
-  useToast,
   Text,
   IconButton,
   HStack,
@@ -20,6 +19,7 @@ import {
   useColorModeValue,
   Image,
 } from "@chakra-ui/react";
+import { toast } from "sonner";
 import { FiEye, FiEyeOff, FiLock, FiUser } from "react-icons/fi";
 import { useUser } from "../context/useUser";
 import { validateLoginInput } from "../helpers/validation";
@@ -28,7 +28,6 @@ import logoWhite from "../images/auptilyze-white.png";
 const Login = () => {
   const { login } = useUser();
   const navigate = useNavigate();
-  const toast = useToast();
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -38,12 +37,9 @@ const Login = () => {
     e.preventDefault();
 
     if (!username || !password) {
-      toast({
-        title: "Validation Error",
+      toast.error("Validation Error", {
         description: "Please enter both email/username and password",
-        status: "error",
         duration: 3000,
-        isClosable: true,
       });
       return;
     }
@@ -52,12 +48,9 @@ const Login = () => {
     const validationResult = validateLoginInput(username);
     
     if (!validationResult.isValid) {
-      toast({
-        title: "Invalid Input",
+      toast.error("Invalid Input", {
         description: validationResult.error,
-        status: "error",
         duration: 4000,
-        isClosable: true,
       });
       return;
     }
@@ -68,31 +61,22 @@ const Login = () => {
       const result = await login(username, password);
 
       if (result.success) {
-        toast({
-          title: "Login Successful",
+        toast.success("Login Successful", {
           description: `Welcome back, ${result.user.name || username}!`,
-          status: "success",
           duration: 3000,
-          isClosable: true,
         });
 
         navigate("/dashboard");
       } else {
-        toast({
-          title: "Login Failed",
+        toast.error("Login Failed", {
           description: result.error || "Invalid email/username or password",
-          status: "error",
           duration: 3000,
-          isClosable: true,
         });
       }
     } catch (error) {
-      toast({
-        title: "Login Error",
+      toast.error("Login Error", {
         description: error.message || "An unexpected error occurred",
-        status: "error",
         duration: 3000,
-        isClosable: true,
       });
     } finally {
       setIsLoading(false);

@@ -11,14 +11,13 @@ import {
   FormControl,
   FormLabel,
   Input,
-  useToast,
   VStack,
 } from "@chakra-ui/react";
+import { toast } from "sonner";
 import { useApp } from "../context/AppContext";
 
 const DocumentVersionModal = ({ isOpen, onClose, documentId }) => {
   const { addDocumentVersion } = useApp();
-  const toast = useToast();
   const [file, setFile] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -32,12 +31,9 @@ const DocumentVersionModal = ({ isOpen, onClose, documentId }) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!file) {
-      toast({
-        title: "Validation Error",
+      toast.error("Validation Error", {
         description: "Please select a file",
-        status: "error",
         duration: 3000,
-        isClosable: true,
       });
       return;
     }
@@ -48,12 +44,9 @@ const DocumentVersionModal = ({ isOpen, onClose, documentId }) => {
 
     addDocumentVersion(documentId, fileUrl);
 
-    toast({
-      title: "Version Added",
+    toast.success("Version Added", {
       description: "New version has been uploaded and is pending approval",
-      status: "success",
       duration: 3000,
-      isClosable: true,
     });
 
     setFile(null);

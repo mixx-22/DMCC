@@ -11,19 +11,18 @@ import {
   FormControl,
   FormLabel,
   Input,
-  useToast,
   VStack,
   Text,
   Alert,
   AlertIcon,
 } from '@chakra-ui/react'
+import { toast } from 'sonner'
 import { useApp } from '../context/AppContext'
 import { useNavigate } from 'react-router-dom'
 
 const DeleteDocumentModal = ({ isOpen, onClose, documentId, documentTitle }) => {
   const { archiveDocument } = useApp()
   const navigate = useNavigate()
-  const toast = useToast()
   const [confirmText, setConfirmText] = useState('')
   const [isDeleting, setIsDeleting] = useState(false)
 
@@ -31,12 +30,9 @@ const DeleteDocumentModal = ({ isOpen, onClose, documentId, documentTitle }) => 
 
   const handleDelete = async () => {
     if (!isMatch) {
-      toast({
-        title: 'Validation Error',
+      toast.error('Validation Error', {
         description: 'Document title does not match',
-        status: 'error',
         duration: 3000,
-        isClosable: true,
       })
       return
     }
@@ -45,12 +41,9 @@ const DeleteDocumentModal = ({ isOpen, onClose, documentId, documentTitle }) => 
 
     archiveDocument(documentId)
 
-    toast({
-      title: 'Document Archived',
+    toast.success('Document Archived', {
       description: 'Document has been moved to Archive',
-      status: 'success',
       duration: 3000,
-      isClosable: true,
     })
 
     setIsDeleting(false)

@@ -11,15 +11,14 @@ import {
   FormControl,
   FormLabel,
   Input,
-  useToast,
   VStack,
   Text,
 } from "@chakra-ui/react";
+import { toast } from "sonner";
 import { useApp } from "../context/AppContext";
 
 const CheckInModal = ({ isOpen, onClose, documentId }) => {
   const { checkInDocument } = useApp();
-  const toast = useToast();
   const [file, setFile] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -33,12 +32,9 @@ const CheckInModal = ({ isOpen, onClose, documentId }) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!file) {
-      toast({
-        title: "Validation Error",
+      toast.error("Validation Error", {
         description: "Please upload the revised document file",
-        status: "error",
         duration: 3000,
-        isClosable: true,
       });
       return;
     }
@@ -49,13 +45,10 @@ const CheckInModal = ({ isOpen, onClose, documentId }) => {
 
     checkInDocument(documentId, fileUrl);
 
-    toast({
-      title: "Document Checked In",
+    toast.success("Document Checked In", {
       description:
         "Revised document has been submitted and is pending approval",
-      status: "success",
       duration: 3000,
-      isClosable: true,
     });
 
     setFile(null);

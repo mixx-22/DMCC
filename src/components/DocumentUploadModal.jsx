@@ -14,14 +14,13 @@ import {
   Textarea,
   Select,
   VStack,
-  useToast,
   Text,
 } from "@chakra-ui/react";
+import { toast } from "sonner";
 import { useApp } from "../context/AppContext";
 
 const DocumentUploadModal = ({ isOpen, onClose }) => {
   const { addDocument, currentUser } = useApp();
-  const toast = useToast();
   const [formData, setFormData] = useState({
     title: "",
     description: "",
@@ -40,12 +39,9 @@ const DocumentUploadModal = ({ isOpen, onClose }) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!formData.title || !formData.file) {
-      toast({
-        title: "Validation Error",
+      toast.error("Validation Error", {
         description: "Please fill in all required fields",
-        status: "error",
         duration: 3000,
-        isClosable: true,
       });
       return;
     }
@@ -67,12 +63,9 @@ const DocumentUploadModal = ({ isOpen, onClose }) => {
       createdByUserType: currentUser?.userType || null,
     });
 
-    toast({
-      title: "Document Uploaded",
+    toast.success("Document Uploaded", {
       description: "Document has been uploaded and is pending approval",
-      status: "success",
       duration: 3000,
-      isClosable: true,
     });
 
     setFormData({
