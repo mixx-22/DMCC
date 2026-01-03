@@ -22,6 +22,7 @@ import {
 } from "@chakra-ui/react";
 import { FiEye, FiEyeOff, FiLock, FiUser } from "react-icons/fi";
 import { useUser } from "../context/useUser";
+import logoWhite from "../images/auptilyze-white.png";
 
 const Login = () => {
   const { login } = useUser();
@@ -222,7 +223,7 @@ const Login = () => {
           flex={1}
           alignItems="center"
           justifyContent="center"
-          bg={useColorModeValue("brandPrimary.500", "brandPrimary.400")}
+          bg={useColorModeValue("brandPrimary.900", "brandPrimary-dark.400")}
           color="white"
           borderRadius={{ md: "2xl" }}
           m={6}
@@ -246,19 +247,21 @@ const Login = () => {
             pointerEvents="none"
             style={{ mixBlendMode: "lighten" }}
           />
-          <VStack spacing={8} align="flex-start" w="100%">
-            <Box mb={4}>
-              <Heading size="2xl" fontWeight="extrabold" letterSpacing="tight">
-                {import.meta.env.VITE_PROJECT_NAME}
-              </Heading>
+          <VStack spacing={4} align="flex-start" w="100%" zIndex={1}>
+            <Box>
+              <Image
+                w={"xs"}
+                h="auto"
+                src={logoWhite}
+                alt={import.meta.env.VITE_PROJECT_NAME}
+              />
             </Box>
-            <Heading size="lg" fontWeight="bold" mb={2}>
-              Welcome to {import.meta.env.VITE_PROJECT_NAME}
-            </Heading>
             <Text fontSize="lg" maxW="md" color="gray.200">
-              {import.meta.env.VITE_PROJECT_NAME} helps you securely manage
-              documents and certifications. Join us and start building your
-              workflow today.
+              <Text as="span" fontFamily="heading" textTransform="lowercase">
+                {import.meta.env.VITE_PROJECT_NAME}
+              </Text>{" "}
+              helps you securely manage documents and certifications. Join us
+              and start building your workflow today.
             </Text>
           </VStack>
         </Box>

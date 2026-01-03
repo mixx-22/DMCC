@@ -184,7 +184,7 @@ const Sidebar = () => {
         icon: FiSettings,
         children: [
           { path: "/settings", label: "All Settings" },
-          { path: "/roles", label: "Roles" },
+          { path: "/roles", label: "Roles & Permissions" },
         ],
       });
     }
