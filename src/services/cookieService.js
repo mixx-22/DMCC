@@ -101,6 +101,13 @@ export const cookieService = {
       // Calculate hours until expiry
       const now = Date.now();
       const expiresInMs = expiresAt - now;
+      
+      // If token is already expired or will expire in less than 6 minutes, don't store it
+      if (expiresInMs <= 0) {
+        console.warn('Token is already expired');
+        return false;
+      }
+      
       const expiresInHours = Math.max(expiresInMs / (1000 * 60 * 60), 0.1); // Minimum 6 minutes
 
       return this.setToken(token, expiresInHours);

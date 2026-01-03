@@ -116,9 +116,14 @@ export const UserProvider = ({ children }) => {
       }
 
       // Store token in cookie using JWT parsing for automatic expiry
-      cookieService.setJWTToken(tokenValue);
+      const success = cookieService.setJWTToken(tokenValue);
+      
+      if (!success) {
+        console.warn("Failed to store token in cookie, using localStorage only");
+      }
 
       // Also store in localStorage for backward compatibility
+      // Parse JWT to get expiry for localStorage
       const payload = cookieService.parseJWT(tokenValue);
       const expiresAt = payload && payload.exp 
         ? payload.exp * 1000 

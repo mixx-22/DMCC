@@ -69,7 +69,17 @@ export const apiService = {
       // Try to get token from cookie first, then fall back to localStorage
       let token = cookieService.getToken();
       if (!token) {
-        token = localStorage.getItem("authToken");
+        // localStorage stores token as JSON object with value and expiresAt
+        const rawToken = localStorage.getItem("authToken");
+        if (rawToken) {
+          try {
+            const parsed = JSON.parse(rawToken);
+            token = typeof parsed === 'string' ? parsed : parsed.value;
+          } catch {
+            // If parsing fails, treat as plain string
+            token = rawToken;
+          }
+        }
       }
 
       const headers = {
