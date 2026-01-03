@@ -32,8 +32,11 @@ const Layout = () => {
     const urlPage = searchParams.get('page');
     const urlKeyword = searchParams.get('keyword');
     
-    if (urlPage && parseInt(urlPage) !== page) {
-      setPage(parseInt(urlPage));
+    if (urlPage) {
+      const pageNum = parseInt(urlPage, 10);
+      if (!isNaN(pageNum) && pageNum > 0 && pageNum !== page) {
+        setPage(pageNum);
+      }
     }
     if (urlKeyword !== null && urlKeyword !== search) {
       setSearch(urlKeyword);
