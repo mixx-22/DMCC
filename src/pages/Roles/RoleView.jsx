@@ -1,6 +1,7 @@
 import {
   Box,
   Button,
+  Checkbox,
   FormControl,
   FormErrorMessage,
   FormLabel,
@@ -15,22 +16,33 @@ import {
   useColorModeValue,
 } from "@chakra-ui/react";
 import { FiEdit, FiArrowLeft, FiSave, FiX } from "react-icons/fi";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { formatDistanceToNow } from "date-fns";
 import { toast } from "sonner";
+import Swal from "sweetalert2";
 import { useState, useEffect } from "react";
 import PermissionsCheckboxGroup from "../../components/PermissionsCheckboxGroup";
 import { useRole } from "../../context/RoleContext";
 
 const RoleView = () => {
   const navigate = useNavigate();
-  const { role, loading, saving, error, updateRole } = useRole();
+  const { id } = useParams();
+  const { role, loading, saving, error, updateRole, createRole } = useRole();
 
-  const [isEditMode, setIsEditMode] = useState(false);
+  const isNewRole = id === "new";
+  console.log('RoleView render:', { id, isNewRole, role, loading });
+  const [isEditMode, setIsEditMode] = useState(isNewRole);
   const [formData, setFormData] = useState({
     title: "",
     description: "",
-    permissions: {},
+    permissions: {
+      users: { c: 0, r: 0, u: 0, d: 0 },
+      teams: { c: 0, r: 0, u: 0, d: 0 },
+      roles: { c: 0, r: 0, u: 0, d: 0 },
+      document: { c: 0, r: 0, u: 0, d: 0 },
+      audit: { c: 0, r: 0, u: 0, d: 0 },
+    },
+    isSystemRole: false,
   });
   const [validationErrors, setValidationErrors] = useState({});
 
@@ -39,14 +51,15 @@ const RoleView = () => {
 
   // Initialize form data when role loads
   useEffect(() => {
-    if (role) {
+    if (role && !isNewRole) {
       setFormData({
         title: role.title || "",
         description: role.description || "",
         permissions: role.permissions || {},
+        isSystemRole: role.isSystemRole || false,
       });
     }
-  }, [role]);
+  }, [role, isNewRole]);
 
   const handleFieldChange = (field, value) => {
     setFormData((prev) => ({
@@ -75,6 +88,63 @@ const RoleView = () => {
     }
   };
 
+  // Helper function to set all delete permissions
+  const setAllDeletePermissions = (permissions, value) => {
+    const updatedPermissions = JSON.parse(JSON.stringify(permissions));
+    
+    const updateDelete = (obj) => {
+      Object.keys(obj).forEach(key => {
+        if (key === 'd') {
+          obj[key] = value ? 1 : 0;
+        } else if (typeof obj[key] === 'object' && obj[key] !== null && !['c', 'r', 'u', 'd'].includes(key)) {
+          updateDelete(obj[key]);
+        }
+      });
+    };
+    
+    updateDelete(updatedPermissions);
+    return updatedPermissions;
+  };
+
+  const handleSystemRoleChange = async (checked) => {
+    if (checked) {
+      // When turning ON, ask if they want to allow delete on all modules
+      const result = await Swal.fire({
+        title: 'Enable System Role',
+        text: 'Do you want to allow delete permissions on all modules?',
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonText: 'Yes, allow delete',
+        cancelButtonText: 'No, keep current',
+        confirmButtonColor: '#3182ce',
+      });
+
+      if (result.isConfirmed) {
+        // Set all delete permissions to 1
+        const updatedPermissions = setAllDeletePermissions(formData.permissions, true);
+        setFormData((prev) => ({
+          ...prev,
+          isSystemRole: true,
+          permissions: updatedPermissions,
+        }));
+      } else {
+        // Just set isSystemRole to true without changing permissions
+        setFormData((prev) => ({
+          ...prev,
+          isSystemRole: true,
+        }));
+      }
+    } else {
+      // When turning OFF, turn off all delete permissions without confirmation
+      const updatedPermissions = setAllDeletePermissions(formData.permissions, false);
+      setFormData((prev) => ({
+        ...prev,
+        isSystemRole: false,
+        permissions: updatedPermissions,
+      }));
+    }
+  };
+
   const validateForm = () => {
     const errors = {};
     if (!formData.title.trim()) {
@@ -95,38 +165,58 @@ const RoleView = () => {
       return;
     }
 
-    const result = await updateRole(role._id || role.id, formData);
-    
-    if (result.success) {
-      toast.success("Role Updated", {
-        description: "Role has been updated successfully",
-      });
-      setIsEditMode(false);
+    if (isNewRole) {
+      const result = await createRole(formData);
+      
+      if (result.success) {
+        toast.success("Role Created", {
+          description: "Role has been created successfully",
+        });
+        navigate(`/roles/${result.id}`);
+      } else {
+        toast.error("Create Failed", {
+          description: result.error || "Failed to create role",
+        });
+      }
     } else {
-      toast.error("Update Failed", {
-        description: result.error || "Failed to update role",
-      });
+      const result = await updateRole(role._id || role.id, formData);
+      
+      if (result.success) {
+        toast.success("Role Updated", {
+          description: "Role has been updated successfully",
+        });
+        setIsEditMode(false);
+      } else {
+        toast.error("Update Failed", {
+          description: result.error || "Failed to update role",
+        });
+      }
     }
   };
 
   const handleCancel = () => {
-    // Reset form data to original role data
-    if (role) {
-      setFormData({
-        title: role.title || "",
-        description: role.description || "",
-        permissions: role.permissions || {},
-      });
+    if (isNewRole) {
+      navigate("/roles");
+    } else {
+      // Reset form data to original role data
+      if (role) {
+        setFormData({
+          title: role.title || "",
+          description: role.description || "",
+          permissions: role.permissions || {},
+          isSystemRole: role.isSystemRole || false,
+        });
+      }
+      setValidationErrors({});
+      setIsEditMode(false);
     }
-    setValidationErrors({});
-    setIsEditMode(false);
   };
 
   const handleEdit = () => {
     setIsEditMode(true);
   };
 
-  if (loading) {
+  if (loading && !isNewRole) {
     return (
       <Box p={8} textAlign="center">
         <Spinner size="xl" />
@@ -135,7 +225,7 @@ const RoleView = () => {
     );
   }
 
-  if (error) {
+  if (error && !isNewRole) {
     return (
       <Box p={4}>
         <Text color="red.500">Error: {error}</Text>
@@ -146,7 +236,7 @@ const RoleView = () => {
     );
   }
 
-  if (!role) {
+  if (!role && !isNewRole && !loading) {
     return (
       <Box p={4}>
         <Text>Role not found</Text>
@@ -167,7 +257,7 @@ const RoleView = () => {
         >
           Back
         </Button>
-        {!isEditMode ? (
+        {!isEditMode && !isNewRole ? (
           <Button
             leftIcon={<FiEdit />}
             colorScheme="brandPrimary"
@@ -192,7 +282,7 @@ const RoleView = () => {
               isLoading={saving}
               loadingText="Saving..."
             >
-              Save Changes
+              {isNewRole ? "Create Role" : "Save Changes"}
             </Button>
           </HStack>
         )}
@@ -229,6 +319,19 @@ const RoleView = () => {
                   />
                   <FormErrorMessage>{validationErrors.description}</FormErrorMessage>
                 </FormControl>
+
+                <FormControl>
+                  <Checkbox
+                    isChecked={formData.isSystemRole}
+                    onChange={(e) => handleSystemRoleChange(e.target.checked)}
+                    colorScheme="brandPrimary"
+                  >
+                    System Role
+                  </Checkbox>
+                  <Text fontSize="sm" color="gray.500" mt={1}>
+                    System roles have special privileges. Toggling this will affect delete permissions.
+                  </Text>
+                </FormControl>
               </>
             ) : (
               <>
@@ -250,7 +353,7 @@ const RoleView = () => {
               </>
             )}
 
-            {!isEditMode && (
+            {!isEditMode && !isNewRole && (
               <>
                 <Divider />
                 <HStack spacing={8} flexWrap="wrap">
@@ -284,16 +387,14 @@ const RoleView = () => {
                       </Text>
                     </Text>
                   </Box>
-                  {role.isSystemRole !== undefined && (
-                    <Box>
-                      <Text fontSize="sm" color="gray.500" mb={1}>
-                        System Role
-                      </Text>
-                      <Text fontWeight="medium">
-                        {role.isSystemRole ? "Yes" : "No"}
-                      </Text>
-                    </Box>
-                  )}
+                  <Box>
+                    <Text fontSize="sm" color="gray.500" mb={1}>
+                      System Role
+                    </Text>
+                    <Text fontWeight="medium">
+                      {role.isSystemRole ? "Yes" : "No"}
+                    </Text>
+                  </Box>
                 </HStack>
               </>
             )}

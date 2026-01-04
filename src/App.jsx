@@ -90,6 +90,14 @@ function App() {
                       }
                     />
                     <Route
+                      path="/roles/new"
+                      element={
+                        <RoleProvider>
+                          <RoleView />
+                        </RoleProvider>
+                      }
+                    />
+                    <Route
                       path="/roles/:id"
                       element={
                         <RoleProvider>

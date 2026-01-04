@@ -47,13 +47,13 @@ const MOCK_ROLE = {
           u: 1,
           d: 1
         }
-      },
-      audit: {
-        c: 1,
-        r: 1,
-        u: 1,
-        d: 1
       }
+    },
+    audit: {
+      c: 1,
+      r: 1,
+      u: 1,
+      d: 1
     }
   },
   isSystemRole: false,
@@ -169,8 +169,50 @@ export const RoleProvider = ({ children }) => {
     }
   }, [state.role]);
 
+  const createRole = useCallback(async (roleData) => {
+    dispatch({ type: "SET_SAVING", value: true });
+    dispatch({ type: "SET_ERROR", value: null });
+    
+    if (!USE_API) {
+      // Mock API call
+      const newId = `role-${Date.now()}`;
+      setTimeout(() => {
+        dispatch({
+          type: "SET_ROLE",
+          role: { 
+            ...roleData, 
+            _id: newId,
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+          },
+        });
+        dispatch({ type: "SET_SAVING", value: false });
+      }, 500);
+      return { success: true, id: newId };
+    }
+    
+    try {
+      const data = await apiService.request(ROLES_ENDPOINT, {
+        method: "POST",
+        body: JSON.stringify(roleData),
+      });
+      
+      const newRole = data.data || data;
+      dispatch({
+        type: "SET_ROLE",
+        role: newRole,
+      });
+      dispatch({ type: "SET_SAVING", value: false });
+      return { success: true, id: newRole._id || newRole.id };
+    } catch (err) {
+      dispatch({ type: "SET_ERROR", value: err.message || "Failed to create role" });
+      dispatch({ type: "SET_SAVING", value: false });
+      return { success: false, error: err.message };
+    }
+  }, []);
+
   useEffect(() => {
-    if (id) {
+    if (id && id !== "new") {
       fetchRole(id);
     }
   }, [id, fetchRole]);
@@ -182,6 +224,7 @@ export const RoleProvider = ({ children }) => {
         dispatch,
         fetchRole,
         updateRole,
+        createRole,
       }}
     >
       {children}
