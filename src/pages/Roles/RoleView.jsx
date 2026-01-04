@@ -38,7 +38,11 @@ const RoleView = () => {
       users: { c: 0, r: 0, u: 0, d: 0 },
       teams: { c: 0, r: 0, u: 0, d: 0 },
       roles: { c: 0, r: 0, u: 0, d: 0 },
-      document: { c: 0, r: 0, u: 0, d: 0 },
+      document: { 
+        c: 0, r: 0, u: 0, d: 0,
+        archive: { c: 0, r: 0, u: 0, d: 0 },
+        download: { c: 0, r: 0, u: 0, d: 0 }
+      },
       audit: { c: 0, r: 0, u: 0, d: 0 },
     },
     isSystemRole: false,
@@ -74,17 +78,61 @@ const RoleView = () => {
     }
   };
 
-  const handlePermissionsChange = (newPermissions) => {
-    setFormData((prev) => ({
-      ...prev,
-      permissions: newPermissions,
-    }));
+  const handlePermissionsChange = async (newPermissions) => {
+    // Check if any delete permission was toggled ON
+    const hasNewDeleteEnabled = checkIfDeleteWasEnabled(formData.permissions, newPermissions);
+    
+    // If delete was enabled and not a system role, prompt to make it a system role
+    if (hasNewDeleteEnabled && !formData.isSystemRole) {
+      const result = await Swal.fire({
+        title: 'Enable System Role?',
+        text: 'A delete permission was enabled. Do you want to make this a system role?',
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonText: 'Yes, make system role',
+        cancelButtonText: 'No, keep as is',
+        confirmButtonColor: '#3182ce',
+      });
+
+      setFormData((prev) => ({
+        ...prev,
+        permissions: newPermissions,
+        isSystemRole: result.isConfirmed ? true : prev.isSystemRole,
+      }));
+    } else {
+      setFormData((prev) => ({
+        ...prev,
+        permissions: newPermissions,
+      }));
+    }
+    
     if (validationErrors.permissions) {
       setValidationErrors((prev) => ({
         ...prev,
         permissions: undefined,
       }));
     }
+  };
+
+  // Helper to check if any delete permission was newly enabled
+  const checkIfDeleteWasEnabled = (oldPerms, newPerms) => {
+    const checkObject = (oldObj, newObj) => {
+      for (const key in newObj) {
+        if (key === 'd') {
+          // Check if delete was toggled from 0 to 1
+          if (oldObj?.[key] === 0 && newObj[key] === 1) {
+            return true;
+          }
+        } else if (typeof newObj[key] === 'object' && newObj[key] !== null && !['c', 'r', 'u', 'd'].includes(key)) {
+          if (checkObject(oldObj?.[key] || {}, newObj[key])) {
+            return true;
+          }
+        }
+      }
+      return false;
+    };
+    
+    return checkObject(oldPerms, newPerms);
   };
 
   // Helper function to set all delete permissions

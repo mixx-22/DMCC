@@ -179,13 +179,15 @@ const NestedPermissionGroup = ({ entityKey, entityValue, path = [], onChange, re
             
             <Collapse in={isOpen} animateOpacity>
               <VStack align="stretch" spacing={4}>
-                {/* Render CRUD permissions for parent */}
-                <PermissionEntity
-                  label={`${label} Base Permissions`}
-                  perms={crudPerms}
-                  onPermissionChange={handleCrudChange}
-                  readOnly={readOnly}
-                />
+                {/* Only show parent CRUD if it has meaningful permissions (not all zeros) */}
+                {(crudPerms.c || crudPerms.r || crudPerms.u || crudPerms.d) && (
+                  <PermissionEntity
+                    label={label}
+                    perms={crudPerms}
+                    onPermissionChange={handleCrudChange}
+                    readOnly={readOnly}
+                  />
+                )}
                 
                 {/* Render nested entities */}
                 {nestedEntities.map(([nestedKey, nestedValue]) => (
