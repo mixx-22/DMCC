@@ -30,7 +30,6 @@ const RoleView = () => {
   const { role, loading, saving, error, updateRole, createRole } = useRole();
 
   const isNewRole = id === "new";
-  console.log('RoleView render:', { id, isNewRole, role, loading });
   const [isEditMode, setIsEditMode] = useState(isNewRole);
   const [formData, setFormData] = useState({
     title: "",
