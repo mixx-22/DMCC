@@ -1,7 +1,13 @@
-import { HStack, Button, Text, IconButton } from "@chakra-ui/react";
+import { HStack, Button, Text, IconButton, Spacer } from "@chakra-ui/react";
 import { FiChevronLeft, FiChevronRight } from "react-icons/fi";
 
-const Pagination = ({ currentPage, totalItems, itemsPerPage, onPageChange }) => {
+const Pagination = ({
+  currentPage,
+  totalItems,
+  itemsPerPage,
+  onPageChange,
+  mini = false,
+}) => {
   const totalPages = totalItems > 0 ? Math.ceil(totalItems / itemsPerPage) : 1;
 
   const handlePrevious = () => {
@@ -19,7 +25,7 @@ const Pagination = ({ currentPage, totalItems, itemsPerPage, onPageChange }) => 
   const getPageNumbers = () => {
     const pages = [];
     const maxVisible = 5;
-    
+
     if (totalPages <= maxVisible) {
       // Show all pages if total is less than max visible
       for (let i = 1; i <= totalPages; i++) {
@@ -31,30 +37,52 @@ const Pagination = ({ currentPage, totalItems, itemsPerPage, onPageChange }) => 
         for (let i = 1; i <= 4; i++) {
           pages.push(i);
         }
-        pages.push('...');
+        pages.push("...");
         pages.push(totalPages);
       } else if (currentPage >= totalPages - 2) {
         pages.push(1);
-        pages.push('...');
+        pages.push("...");
         for (let i = totalPages - 3; i <= totalPages; i++) {
           pages.push(i);
         }
       } else {
         pages.push(1);
-        pages.push('...');
+        pages.push("...");
         pages.push(currentPage - 1);
         pages.push(currentPage);
         pages.push(currentPage + 1);
-        pages.push('...');
+        pages.push("...");
         pages.push(totalPages);
       }
     }
-    
+
     return pages;
   };
 
+  if (mini) {
+    return (
+      <HStack spacing={2} justify="center">
+        <IconButton
+          icon={<FiChevronLeft />}
+          onClick={handlePrevious}
+          isDisabled={currentPage === 1}
+          size="sm"
+          variant="outline"
+          aria-label="Previous page"
+        />
+        <IconButton
+          icon={<FiChevronRight />}
+          onClick={handleNext}
+          isDisabled={currentPage === totalPages}
+          size="sm"
+          variant="outline"
+          aria-label="Next page"
+        />
+      </HStack>
+    );
+  }
   return (
-    <HStack spacing={2} justify="center" mt={4}>
+    <HStack w="full" spacing={2} justify="center" mt={4}>
       <IconButton
         icon={<FiChevronLeft />}
         onClick={handlePrevious}
@@ -63,10 +91,12 @@ const Pagination = ({ currentPage, totalItems, itemsPerPage, onPageChange }) => 
         variant="outline"
         aria-label="Previous page"
       />
-      
-      {getPageNumbers().map((page, index) => (
-        page === '...' ? (
-          <Text key={`ellipsis-${index}`} px={2}>...</Text>
+      <Spacer />
+      {getPageNumbers().map((page, index) =>
+        page === "..." ? (
+          <Text key={`ellipsis-${index}`} px={2}>
+            ...
+          </Text>
         ) : (
           <Button
             key={page}
@@ -78,8 +108,8 @@ const Pagination = ({ currentPage, totalItems, itemsPerPage, onPageChange }) => 
             {page}
           </Button>
         )
-      ))}
-      
+      )}
+      <Spacer />
       <IconButton
         icon={<FiChevronRight />}
         onClick={handleNext}
@@ -88,10 +118,6 @@ const Pagination = ({ currentPage, totalItems, itemsPerPage, onPageChange }) => 
         variant="outline"
         aria-label="Next page"
       />
-      
-      <Text fontSize="sm" color="gray.600" ml={4}>
-        Page {currentPage} of {totalPages}
-      </Text>
     </HStack>
   );
 };

@@ -13,8 +13,11 @@ import {
   Text,
   LinkBox,
   LinkOverlay,
+  Spacer,
+  InputGroup,
+  InputLeftElement,
 } from "@chakra-ui/react";
-import { FiPlus } from "react-icons/fi";
+import { FiPlus, FiSearch } from "react-icons/fi";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { formatDistanceToNow } from "date-fns";
 import { motion } from "framer-motion";
@@ -28,15 +31,24 @@ import RolesSkeleton from "../../components/RolesSkeleton";
 const MotionBox = motion(Box);
 
 const RolesList = () => {
-  const { roles = [], loading, page, limit, total, search, setPage, setSearch } = useRoles();
+  const {
+    roles = [],
+    loading,
+    page,
+    limit,
+    total,
+    search,
+    setPage,
+    setSearch,
+  } = useRoles();
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
 
   // Initialize from URL on mount
   useEffect(() => {
-    const urlPage = searchParams.get('page');
-    const urlKeyword = searchParams.get('keyword');
-    
+    const urlPage = searchParams.get("page");
+    const urlKeyword = searchParams.get("keyword");
+
     if (urlPage) {
       const pageNum = parseInt(urlPage, 10);
       if (!isNaN(pageNum) && pageNum > 0 && pageNum !== page) {
@@ -70,26 +82,50 @@ const RolesList = () => {
   return (
     <Box>
       <HStack mb={4} justify="space-between">
-        <Input
-          placeholder="Search Roles (min. 2 characters)..."
-          value={search}
-          onChange={handleSearchChange}
-          maxW="300px"
-        />
-        <HStack>
-          <Text fontSize="sm" color="gray.600">
-            {total > 0 && `${total} role${total !== 1 ? 's' : ''} found`}
-          </Text>
-          <Button
-            leftIcon={<FiPlus />}
-            colorScheme="brandPrimary"
-            onClick={() => navigate("/roles/new")}
-          >
-            Create New Role
-          </Button>
-        </HStack>
+        <Spacer />
+        <Button
+          leftIcon={<FiPlus />}
+          colorScheme="brandPrimary"
+          onClick={() => navigate("/roles/new")}
+        >
+          Create New Role
+        </Button>
       </HStack>
-
+      <HStack
+        mb={4}
+        justify="space-between"
+        flexWrap={{ base: "wrap", md: "nowrap" }}
+      >
+        <InputGroup
+          flex={{ base: "1", md: "none" }}
+          maxW={{ base: "full", md: "300px" }}
+          minW={{ base: "full", md: "200px" }}
+        >
+          <InputLeftElement pointerEvents="none" color="gray.400">
+            <FiSearch />
+          </InputLeftElement>
+          <Input
+            placeholder="Start searching for Roles..."
+            value={search}
+            onChange={handleSearchChange}
+          />
+        </InputGroup>
+        <Spacer display={{ base: "none", md: "block" }} />
+        <Text fontSize="sm" color="gray.600" flex={{ base: "1", md: "none" }}>
+          {total > 0
+            ? `Showing ${roles?.length} of ${total} Role${
+                total !== 1 ? "s" : ""
+              }`
+            : `No Roles Available`}
+        </Text>
+        <Pagination
+          mini
+          currentPage={page}
+          totalItems={total}
+          itemsPerPage={limit}
+          onPageChange={setPage}
+        />
+      </HStack>
       <Box overflowX="auto">
         {loading ? (
           <RolesSkeleton rows={limit} />
@@ -112,8 +148,8 @@ const RolesList = () => {
                   <Tr>
                     <Td colSpan={3} textAlign="center" py={8}>
                       <Text color="gray.500">
-                        {search && search.length >= 2 
-                          ? "No roles found matching your search" 
+                        {search && search.length >= 2
+                          ? "No roles found matching your search"
                           : "No roles found"}
                       </Text>
                     </Td>
@@ -122,7 +158,10 @@ const RolesList = () => {
                   roles.map((role) => (
                     <LinkBox as={Tr} key={role._id || role.id}>
                       <Td fontWeight="semibold">
-                        <LinkOverlay as={RouterLink} to={`/roles/${role._id || role.id}`}>
+                        <LinkOverlay
+                          as={RouterLink}
+                          to={`/roles/${role._id || role.id}`}
+                        >
                           {role.title}
                         </LinkOverlay>
 
@@ -143,7 +182,9 @@ const RolesList = () => {
                       </Td>
 
                       <Td>
-                        <Tooltip label={new Date(role.updatedAt).toLocaleString()}>
+                        <Tooltip
+                          label={new Date(role.updatedAt).toLocaleString()}
+                        >
                           <Text fontSize="sm">
                             {formatDistanceToNow(new Date(role.updatedAt), {
                               addSuffix: true,

@@ -11,27 +11,43 @@ import {
   HStack,
   Avatar,
   Badge,
+  Spacer,
+  Button,
+  InputGroup,
+  InputLeftElement,
 } from "@chakra-ui/react";
 import { motion } from "framer-motion";
 import { useEffect } from "react";
-import { useSearchParams } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { useUsers } from "../../context/_useContext";
 import Pagination from "../../components/Pagination";
 import UsersSkeleton from "../../components/UsersSkeleton";
+import { FiPlus, FiSearch } from "react-icons/fi";
 
 const MotionBox = motion(Box);
 
 const Layout = () => {
-  const { users, loading, error, page, limit, total, search, setPage, setSearch } = useUsers();
+  const {
+    users,
+    loading,
+    error,
+    page,
+    limit,
+    total,
+    search,
+    setPage,
+    setSearch,
+  } = useUsers();
+  const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   // Use users?.data or empty array if not present
   const userList = Array.isArray(users?.data) ? users.data : [];
 
   // Initialize from URL on mount
   useEffect(() => {
-    const urlPage = searchParams.get('page');
-    const urlKeyword = searchParams.get('keyword');
-    
+    const urlPage = searchParams.get("page");
+    const urlKeyword = searchParams.get("keyword");
+
     if (urlPage) {
       const pageNum = parseInt(urlPage, 10);
       if (!isNaN(pageNum) && pageNum > 0 && pageNum !== page) {
@@ -63,17 +79,51 @@ const Layout = () => {
   };
 
   return (
-    <Box p={4}>
+    <Box>
       <HStack mb={4} justify="space-between">
-        <Input
-          placeholder="Search users (min. 2 characters)..."
-          value={search}
-          onChange={handleSearchChange}
-          maxW="300px"
-        />
-        <Text fontSize="sm" color="gray.600">
-          {total > 0 && `${total} user${total !== 1 ? 's' : ''} found`}
+        <Spacer />
+        <Button
+          leftIcon={<FiPlus />}
+          colorScheme="brandPrimary"
+          onClick={() => navigate("/users/new")}
+        >
+          Create New User
+        </Button>
+      </HStack>
+      <HStack
+        mb={4}
+        justify="space-between"
+        flexWrap={{ base: "wrap", md: "nowrap" }}
+      >
+        <InputGroup
+          flex={{ base: "1", md: "none" }}
+          maxW={{ base: "full", md: "300px" }}
+          minW={{ base: "full", md: "200px" }}
+        >
+          <InputLeftElement pointerEvents="none" color="gray.400">
+            <FiSearch />
+          </InputLeftElement>
+          <Input
+            placeholder="Start searching for Users..."
+            value={search}
+            onChange={handleSearchChange}
+          />
+        </InputGroup>
+        <Spacer display={{ base: "none", md: "block" }} />
+        <Text fontSize="sm" color="gray.600" flex={{ base: "1", md: "none" }}>
+          {total > 0
+            ? `Showing ${userList?.length} of ${total} User${
+                total !== 1 ? "s" : ""
+              }`
+            : `No Users Available`}
         </Text>
+        <Pagination
+          mini
+          currentPage={page}
+          totalItems={total}
+          itemsPerPage={limit}
+          onPageChange={setPage}
+        />
       </HStack>
 
       {error ? (
@@ -100,8 +150,8 @@ const Layout = () => {
                 <Tr>
                   <Td colSpan={4} textAlign="center" py={8}>
                     <Text color="gray.500">
-                      {search && search.length >= 2 
-                        ? "No users found matching your search" 
+                      {search && search.length >= 2
+                        ? "No users found matching your search"
                         : "No users found"}
                     </Text>
                   </Td>
