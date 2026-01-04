@@ -20,6 +20,7 @@ import Roles from "./pages/Roles";
 import RoleView from "./pages/Roles/RoleView";
 import RoleEdit from "./pages/Roles/RoleEdit";
 import { RolesProvider } from "./context/RolesContext";
+import { RoleProvider } from "./context/RoleContext";
 import { useBreakpointValue } from "@chakra-ui/react";
 
 const ProtectedRoute = ({ children }) => {
@@ -89,11 +90,11 @@ function App() {
                       }
                     />
                     <Route
-                      path="/roles/:id/view"
+                      path="/roles/:id"
                       element={
-                        <RolesProvider>
+                        <RoleProvider>
                           <RoleView />
-                        </RolesProvider>
+                        </RoleProvider>
                       }
                     />
                     <Route
