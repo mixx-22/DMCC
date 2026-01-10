@@ -22,7 +22,6 @@ const PERMISSION_LABELS = {
   d: "Delete",
 };
 
-// Hardcoded module structure
 const MODULES = [
   {
     key: "users",
@@ -75,18 +74,11 @@ const MODULES = [
   },
 ];
 
-/**
- * Main component for displaying and editing permissions in a hardcoded unified table
- * @param {Object} permissions - Nested permissions object
- * @param {Function} onChange - Callback when permissions change
- * @param {Boolean} readOnly - Whether the component is read-only
- */
 const PermissionsCheckboxGroup = ({
   permissions = {},
   onChange,
   readOnly = false,
 }) => {
-  // Get permission value from nested object
   const getPermissionValue = (path, action = "r") => {
     if (!permissions || !path) return false;
 
@@ -161,31 +153,35 @@ const PermissionsCheckboxGroup = ({
             </Tr>
           </Thead>
         </Hide>
+
         <Tbody>
           {MODULES.map((module) => (
             <Fragment key={module.key}>
               <Show below="md">
-                <Td colSpan={5}>
-                  <VStack align="stretch" spacing={0}>
-                    <Text
-                      fontWeight={module.level === 0 ? "semibold" : "normal"}
-                      fontSize={{ base: "sm", md: "md" }}
-                      pl={module.level * 6}
-                    >
-                      {module.label}
-                    </Text>
-                    <Text
-                      fontSize={{ base: "xs", md: "sm" }}
-                      color="gray.600"
-                      pl={module.level * 6}
-                      opacity={0.6}
-                      _hover={{ opacity: 1 }}
-                    >
-                      {module.description}
-                    </Text>
-                  </VStack>
-                </Td>
+                <Tr>
+                  <Td colSpan={5}>
+                    <VStack align="stretch" spacing={0}>
+                      <Text
+                        fontWeight={module.level === 0 ? "semibold" : "normal"}
+                        fontSize={{ base: "sm", md: "md" }}
+                        pl={module.level * 6}
+                      >
+                        {module.label}
+                      </Text>
+                      <Text
+                        fontSize={{ base: "xs", md: "sm" }}
+                        color="gray.600"
+                        pl={module.level * 6}
+                        opacity={0.6}
+                        _hover={{ opacity: 1 }}
+                      >
+                        {module.description}
+                      </Text>
+                    </VStack>
+                  </Td>
+                </Tr>
               </Show>
+
               <Tr>
                 <Hide below="md">
                   <Td>
@@ -209,13 +205,15 @@ const PermissionsCheckboxGroup = ({
                     </VStack>
                   </Td>
                 </Hide>
+
                 {["c", "r", "u", "d"].map((action) => {
                   const isActive = getPermissionValue(module.path, action);
                   return (
                     <Td
                       key={action}
                       textAlign="center"
-                      w={{ base: "50px", sm: "auto" }}
+                      w={{ base: "25%", md: "auto" }}
+                      px={{ base: 1, md: 3 }}
                     >
                       <Tooltip
                         label={`${PERMISSION_LABELS[action]} ${module.label}`}
@@ -246,6 +244,9 @@ const PermissionsCheckboxGroup = ({
                               ? {
                                   transform: "scale(1.05)",
                                   transition: "all 0.2s",
+                                  colorScheme: isActive
+                                    ? "gray"
+                                    : "brandPrimary",
                                 }
                               : {}
                           }
