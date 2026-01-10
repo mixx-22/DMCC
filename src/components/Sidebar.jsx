@@ -5,15 +5,8 @@ import {
   Link,
   Text,
   Icon,
-  Heading,
   useColorModeValue,
   IconButton,
-  useDisclosure,
-  Drawer,
-  DrawerOverlay,
-  DrawerContent,
-  DrawerCloseButton,
-  DrawerBody,
   Flex,
   Collapse,
   Spacer,
@@ -43,7 +36,6 @@ import {
   FiSettings,
   FiBell,
   FiLogOut,
-  FiUser,
 } from "react-icons/fi";
 import logoDefault from "../images/auptilyze.png";
 import logoWhite from "../images/auptilyze-white.png";
@@ -166,7 +158,6 @@ const SidebarRow = ({
 const Sidebar = () => {
   const location = useLocation();
   const navigate = useNavigate();
-  const { isOpen, onOpen, onClose } = useDisclosure();
   const { user: currentUser, logout } = useUser();
   const { getExpiringCertifications } = useApp();
   const { colorMode, toggleColorMode } = useColorMode();
@@ -177,7 +168,6 @@ const Sidebar = () => {
   const textColor = useColorModeValue("gray.700", "gray.300");
   const bgColor = useColorModeValue("white", "gray.900");
   const borderColor = useColorModeValue("gray.100", "gray.800");
-  const brandColor = useColorModeValue("brandPrimary.500", "brandPrimary.200");
   const subMenuBg = useColorModeValue("blackAlpha.50", "whiteAlpha.50");
   const activeBg = useColorModeValue("brandPrimary.50", "whiteAlpha.200");
   const activeColor = useColorModeValue("brandPrimary.600", "brandPrimary.200");
@@ -211,7 +201,6 @@ const Sidebar = () => {
 
   const handleNotificationClick = (certId) => {
     navigate(`/certifications/${certId}`);
-    onClose();
   };
 
   const navItems = useMemo(() => {
@@ -413,7 +402,7 @@ const Sidebar = () => {
             isExpanded={isExpanded}
             isActive={isActiveParent}
             onToggle={() => toggleItem(item.id)}
-            onClick={() => mobileMode && !hasChildren && onClose()}
+            onClick={() => mobileMode && !hasChildren && {}}
           />
 
           {hasChildren && (
@@ -433,7 +422,7 @@ const Sidebar = () => {
                     isMobile={mobileMode}
                     isChild={true}
                     isActive={isRouteMatch(location, child.path)}
-                    onClick={() => mobileMode && onClose()}
+                    onClick={() => {}}
                   />
                 ))}
               </VStack>
