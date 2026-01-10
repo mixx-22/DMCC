@@ -25,6 +25,15 @@ import { toast } from "sonner";
 import { useState, useEffect } from "react";
 import { useUserProfile } from "../../context/UserProfileContext";
 import PageHeader from "../../components/PageHeader";
+import PageFooter from "../../components/PageFooter";
+import RoleAsyncSelect from "../../components/RoleAsyncSelect";
+
+// Helper function to validate and format dates safely
+const isValidDate = (dateString) => {
+  if (!dateString) return false;
+  const date = new Date(dateString);
+  return date instanceof Date && !isNaN(date.getTime());
+};
 
 const UserPage = () => {
   const navigate = useNavigate();
@@ -171,47 +180,49 @@ const UserPage = () => {
           {isNewUser ? "Create New User" : fullName}
         </Heading>
       </PageHeader>
-      <Flex
-        mb={6}
-        gap={4}
-        flexWrap="wrap"
-        justifyContent={{ base: "stretch", sm: "flex-end" }}
-      >
-        {!isEditMode && !isNewUser ? (
-          <Button
-            leftIcon={<FiEdit />}
-            colorScheme="brandPrimary"
-            onClick={handleEdit}
-            w={{ base: "full", sm: "auto" }}
-          >
-            Edit User
-          </Button>
-        ) : (
-          <Flex gap={2} w={{ base: "full", sm: "auto" }}>
+      <PageFooter>
+        <Flex
+          mb={6}
+          gap={4}
+          flexWrap="wrap"
+          justifyContent={{ base: "stretch", sm: "flex-end" }}
+        >
+          {!isEditMode && !isNewUser ? (
             <Button
-              leftIcon={<FiX />}
-              variant="outline"
-              onClick={handleCancel}
-              isDisabled={saving}
-              flex={{ base: 1, sm: "auto" }}
-            >
-              Cancel
-            </Button>
-            <Button
-              leftIcon={<FiSave />}
+              leftIcon={<FiEdit />}
               colorScheme="brandPrimary"
-              onClick={handleSave}
-              isLoading={saving}
-              loadingText="Saving..."
-              flex={{ base: 1, sm: "auto" }}
+              onClick={handleEdit}
+              w={{ base: "full", sm: "auto" }}
             >
-              {isNewUser ? "Create User" : "Save Changes"}
+              Edit User
             </Button>
-          </Flex>
-        )}
-      </Flex>
+          ) : (
+            <Flex gap={2} w={{ base: "full", sm: "auto" }}>
+              <Button
+                leftIcon={<FiX />}
+                variant="outline"
+                onClick={handleCancel}
+                isDisabled={saving}
+                flex={{ base: 1, sm: "auto" }}
+              >
+                Cancel
+              </Button>
+              <Button
+                leftIcon={<FiSave />}
+                colorScheme="brandPrimary"
+                onClick={handleSave}
+                isLoading={saving}
+                loadingText="Saving..."
+                flex={{ base: 1, sm: "auto" }}
+              >
+                {isNewUser ? "Create User" : "Save Changes"}
+              </Button>
+            </Flex>
+          )}
+        </Flex>
+      </PageFooter>
       <Flex gap={6} flexWrap={{ base: "wrap", lg: "nowrap" }}>
-        <Box w={{ base: "full", lg: "md" }}>
+        <Box w={{ base: "full", lg: "xs" }}>
           <Card>
             <CardBody>
               <VStack align="stretch" spacing={4}>
@@ -285,40 +296,6 @@ const UserPage = () => {
                       </FormErrorMessage>
                     </FormControl>
 
-                    <FormControl>
-                      <FormLabel>Phone</FormLabel>
-                      <Input
-                        type="tel"
-                        value={formData.phone}
-                        onChange={(e) =>
-                          handleFieldChange("phone", e.target.value)
-                        }
-                        placeholder="Enter phone number"
-                      />
-                    </FormControl>
-
-                    <FormControl>
-                      <FormLabel>Department</FormLabel>
-                      <Input
-                        value={formData.department}
-                        onChange={(e) =>
-                          handleFieldChange("department", e.target.value)
-                        }
-                        placeholder="Enter department"
-                      />
-                    </FormControl>
-
-                    <FormControl>
-                      <FormLabel>Position</FormLabel>
-                      <Input
-                        value={formData.position}
-                        onChange={(e) =>
-                          handleFieldChange("position", e.target.value)
-                        }
-                        placeholder="Enter position"
-                      />
-                    </FormControl>
-
                     <FormControl display="flex" alignItems="center">
                       <FormLabel mb="0">Active Status</FormLabel>
                       <Switch
@@ -355,6 +332,121 @@ const UserPage = () => {
                     <Divider />
                     <Box>
                       <Text fontSize="sm" color="gray.500" mb={1}>
+                        Status
+                      </Text>
+                      <Badge colorScheme={user.isActive ? "green" : "red"}>
+                        {user.isActive ? "Active" : "Inactive"}
+                      </Badge>
+                    </Box>
+                  </>
+                )}
+
+                {!isEditMode && !isNewUser && isValidDate(user.createdAt) && (
+                  <>
+                    <Divider />
+                    <VStack spacing={4} align="stretch">
+                      <Box>
+                        <Text fontSize="sm" color="gray.500" mb={1}>
+                          Created At
+                        </Text>
+                        <Text
+                          fontWeight="medium"
+                          fontSize={{ base: "sm", md: "md" }}
+                        >
+                          {new Date(user.createdAt).toLocaleDateString()}{" "}
+                          <Text as="span" fontSize="sm" color="gray.500">
+                            (
+                            {formatDistanceToNow(new Date(user.createdAt), {
+                              addSuffix: true,
+                            })}
+                            )
+                          </Text>
+                        </Text>
+                      </Box>
+                      {isValidDate(user.updatedAt) && (
+                        <Box>
+                          <Text fontSize="sm" color="gray.500" mb={1}>
+                            Updated At
+                          </Text>
+                          <Text
+                            fontWeight="medium"
+                            fontSize={{ base: "sm", md: "md" }}
+                          >
+                            {new Date(user.updatedAt).toLocaleDateString()}{" "}
+                            <Text as="span" fontSize="sm" color="gray.500">
+                              (
+                              {formatDistanceToNow(new Date(user.updatedAt), {
+                                addSuffix: true,
+                              })}
+                              )
+                            </Text>
+                          </Text>
+                        </Box>
+                      )}
+                    </VStack>
+                  </>
+                )}
+              </VStack>
+            </CardBody>
+          </Card>
+        </Box>
+        <Box w={{ base: "full", md: "auto" }} flex={{ base: 0, md: "1" }}>
+          <Card w="full">
+            <CardBody>
+              <VStack align="stretch" spacing={4}>
+                {isEditMode ? (
+                  <>
+                    <Heading size="md" mb={2}>
+                      Additional Information
+                    </Heading>
+                    <FormControl>
+                      <FormLabel>Phone</FormLabel>
+                      <Input
+                        type="tel"
+                        value={formData.phone}
+                        onChange={(e) =>
+                          handleFieldChange("phone", e.target.value)
+                        }
+                        placeholder="Enter phone number"
+                      />
+                    </FormControl>
+
+                    <FormControl>
+                      <FormLabel>Department</FormLabel>
+                      <Input
+                        value={formData.department}
+                        onChange={(e) =>
+                          handleFieldChange("department", e.target.value)
+                        }
+                        placeholder="Enter department"
+                      />
+                    </FormControl>
+
+                    <FormControl>
+                      <FormLabel>Position</FormLabel>
+                      <Input
+                        value={formData.position}
+                        onChange={(e) =>
+                          handleFieldChange("position", e.target.value)
+                        }
+                        placeholder="Enter position"
+                      />
+                    </FormControl>
+
+                    <Divider my={2} />
+
+                    <RoleAsyncSelect
+                      value={formData.role || []}
+                      onChange={(roles) => handleFieldChange("role", roles)}
+                    />
+                  </>
+                ) : (
+                  <>
+                    <Heading size="md" mb={2}>
+                      Additional Information
+                    </Heading>
+                    <Box>
+                      <Text fontSize="sm" color="gray.500" mb={1}>
                         Phone
                       </Text>
                       <Text fontWeight="medium">
@@ -382,15 +474,6 @@ const UserPage = () => {
                     <Divider />
                     <Box>
                       <Text fontSize="sm" color="gray.500" mb={1}>
-                        Status
-                      </Text>
-                      <Badge colorScheme={user.isActive ? "green" : "red"}>
-                        {user.isActive ? "Active" : "Inactive"}
-                      </Badge>
-                    </Box>
-                    <Divider />
-                    <Box>
-                      <Text fontSize="sm" color="gray.500" mb={1}>
                         Roles
                       </Text>
                       <HStack wrap="wrap" spacing={2}>
@@ -405,50 +488,6 @@ const UserPage = () => {
                         )}
                       </HStack>
                     </Box>
-                  </>
-                )}
-
-                {!isEditMode && !isNewUser && (
-                  <>
-                    <Divider />
-                    <VStack spacing={4} align="stretch">
-                      <Box>
-                        <Text fontSize="sm" color="gray.500" mb={1}>
-                          Created At
-                        </Text>
-                        <Text
-                          fontWeight="medium"
-                          fontSize={{ base: "sm", md: "md" }}
-                        >
-                          {new Date(user.createdAt).toLocaleDateString()}{" "}
-                          <Text as="span" fontSize="sm" color="gray.500">
-                            (
-                            {formatDistanceToNow(new Date(user.createdAt), {
-                              addSuffix: true,
-                            })}
-                            )
-                          </Text>
-                        </Text>
-                      </Box>
-                      <Box>
-                        <Text fontSize="sm" color="gray.500" mb={1}>
-                          Updated At
-                        </Text>
-                        <Text
-                          fontWeight="medium"
-                          fontSize={{ base: "sm", md: "md" }}
-                        >
-                          {new Date(user.updatedAt).toLocaleDateString()}{" "}
-                          <Text as="span" fontSize="sm" color="gray.500">
-                            (
-                            {formatDistanceToNow(new Date(user.updatedAt), {
-                              addSuffix: true,
-                            })}
-                            )
-                          </Text>
-                        </Text>
-                      </Box>
-                    </VStack>
                   </>
                 )}
               </VStack>
