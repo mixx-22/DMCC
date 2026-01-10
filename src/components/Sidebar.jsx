@@ -22,6 +22,7 @@ import {
   MenuButton,
   MenuList,
   MenuItem,
+  Portal,
 } from "@chakra-ui/react";
 import { NavLink, useLocation } from "react-router-dom";
 import {
@@ -266,7 +267,7 @@ const Sidebar = () => {
       // Show popup menu for items with children when collapsed
       if (hasChildren && isCollapsed && !mobileMode) {
         return (
-          <Menu key={item.id} placement="right-start" offset={[0, 0]}>
+          <Menu key={item.id} placement="right-start" offset={[8, 0]} strategy="fixed">
             <MenuButton as={Box} w="full">
               <SidebarRow
                 icon={item.icon}
@@ -278,24 +279,26 @@ const Sidebar = () => {
                 isActive={isActiveParent}
               />
             </MenuButton>
-            <MenuList minW="200px" py={2}>
-              {item.children.map((child) => (
-                <MenuItem
-                  key={child.path}
-                  as={NavLink}
-                  to={child.path}
-                  px={4}
-                  py={2}
-                  fontSize="sm"
-                  fontWeight={isRouteMatch(location, child.path) ? "semibold" : "normal"}
-                  color={isRouteMatch(location, child.path) ? activeColor : textColor}
-                  bg={isRouteMatch(location, child.path) ? activeBg : "transparent"}
-                  _hover={{ bg: hoverBg }}
-                >
-                  {child.label}
-                </MenuItem>
-              ))}
-            </MenuList>
+            <Portal>
+              <MenuList minW="200px" py={2}>
+                {item.children.map((child) => (
+                  <MenuItem
+                    key={child.path}
+                    as={NavLink}
+                    to={child.path}
+                    px={4}
+                    py={2}
+                    fontSize="sm"
+                    fontWeight={isRouteMatch(location, child.path) ? "semibold" : "normal"}
+                    color={isRouteMatch(location, child.path) ? activeColor : textColor}
+                    bg={isRouteMatch(location, child.path) ? activeBg : "transparent"}
+                    _hover={{ bg: hoverBg }}
+                  >
+                    {child.label}
+                  </MenuItem>
+                ))}
+              </MenuList>
+            </Portal>
           </Menu>
         );
       }
