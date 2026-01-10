@@ -10,7 +10,10 @@ import {
   Tr,
   Tooltip,
   VStack,
+  Hide,
+  Show,
 } from "@chakra-ui/react";
+import { Fragment } from "react";
 
 const PERMISSION_LABELS = {
   c: "Create",
@@ -142,87 +145,119 @@ const PermissionsCheckboxGroup = ({
         w="full"
         minW={{ base: "600px", md: "full" }}
       >
-        <Thead>
-          <Tr>
-            <Th rowSpan={2}>Module</Th>
-            <Th textAlign="center" colSpan={4} border="none">
-              Permissions
-            </Th>
-          </Tr>
-          <Tr>
-            <Th textAlign="center">Create</Th>
-            <Th textAlign="center">Read</Th>
-            <Th textAlign="center">Update</Th>
-            <Th textAlign="center">Delete</Th>
-          </Tr>
-        </Thead>
+        <Hide below="md">
+          <Thead>
+            <Tr>
+              <Th rowSpan={2}>Module</Th>
+              <Th textAlign="center" colSpan={4} border="none">
+                Permissions
+              </Th>
+            </Tr>
+            <Tr>
+              <Th textAlign="center">Create</Th>
+              <Th textAlign="center">Read</Th>
+              <Th textAlign="center">Update</Th>
+              <Th textAlign="center">Delete</Th>
+            </Tr>
+          </Thead>
+        </Hide>
         <Tbody>
           {MODULES.map((module) => (
-            <Tr key={module.key}>
-              <Td>
-                <VStack align="stretch" spacing={0}>
-                  <Text
-                    fontWeight={module.level === 0 ? "semibold" : "normal"}
-                    fontSize={{ base: "sm", md: "md" }}
-                    pl={module.level * 6}
-                  >
-                    {module.label}
-                  </Text>
-                  <Text
-                    fontSize={{ base: "xs", md: "sm" }}
-                    color="gray.600"
-                    pl={module.level * 6}
-                    opacity={0.6}
-                    _hover={{ opacity: 1 }}
-                  >
-                    {module.description}
-                  </Text>
-                </VStack>
-              </Td>
-              {["c", "r", "u", "d"].map((action) => {
-                const isActive = getPermissionValue(module.path, action);
-                return (
-                  <Td key={action} textAlign="center">
-                    <Tooltip
-                      label={`${PERMISSION_LABELS[action]} ${module.label}`}
-                      placement="top"
-                      hasArrow
+            <Fragment key={module.key}>
+              <Show below="md">
+                <Td colSpan={5}>
+                  <VStack align="stretch" spacing={0}>
+                    <Text
+                      fontWeight={module.level === 0 ? "semibold" : "normal"}
+                      fontSize={{ base: "sm", md: "md" }}
+                      pl={module.level * 6}
                     >
-                      <Button
-                        size="sm"
-                        borderRadius="full"
-                        variant={isActive ? "solid" : "outline"}
-                        colorScheme={isActive ? "brandPrimary" : "gray"}
-                        onClick={() => {
-                          if (!readOnly) {
-                            handlePermissionChange(
-                              module.path,
-                              action,
-                              !isActive
-                            );
-                          }
-                        }}
-                        isDisabled={readOnly}
-                        minW="40px"
-                        h="40px"
-                        fontWeight="semibold"
-                        fontSize="sm"
-                        _hover={
-                          !readOnly
-                            ? {
-                                transform: "scale(1.05)",
-                                transition: "all 0.2s",
-                              }
-                            : {}
-                        }
+                      {module.label}
+                    </Text>
+                    <Text
+                      fontSize={{ base: "xs", md: "sm" }}
+                      color="gray.600"
+                      pl={module.level * 6}
+                      opacity={0.6}
+                      _hover={{ opacity: 1 }}
+                    >
+                      {module.description}
+                    </Text>
+                  </VStack>
+                </Td>
+              </Show>
+              <Tr>
+                <Hide below="md">
+                  <Td>
+                    <VStack align="stretch" spacing={0}>
+                      <Text
+                        fontWeight={module.level === 0 ? "semibold" : "normal"}
+                        fontSize={{ base: "sm", md: "md" }}
+                        pl={module.level * 6}
                       >
-                        {action.toUpperCase()}
-                      </Button>
-                    </Tooltip>
+                        {module.label}
+                      </Text>
+                      <Text
+                        fontSize={{ base: "xs", md: "sm" }}
+                        color="gray.600"
+                        pl={module.level * 6}
+                        opacity={0.6}
+                        _hover={{ opacity: 1 }}
+                      >
+                        {module.description}
+                      </Text>
+                    </VStack>
                   </Td>
-                );
-              })}
-            </Tr>
+                </Hide>
+                {["c", "r", "u", "d"].map((action) => {
+                  const isActive = getPermissionValue(module.path, action);
+                  return (
+                    <Td
+                      key={action}
+                      textAlign="center"
+                      w={{ base: "50px", sm: "auto" }}
+                    >
+                      <Tooltip
+                        label={`${PERMISSION_LABELS[action]} ${module.label}`}
+                        placement="top"
+                        hasArrow
+                      >
+                        <Button
+                          size="sm"
+                          borderRadius="full"
+                          variant={isActive ? "solid" : "outline"}
+                          colorScheme={isActive ? "brandPrimary" : "gray"}
+                          onClick={() => {
+                            if (!readOnly) {
+                              handlePermissionChange(
+                                module.path,
+                                action,
+                                !isActive
+                              );
+                            }
+                          }}
+                          pointerEvents={readOnly ? "none" : "initial"}
+                          minW="40px"
+                          h="40px"
+                          fontWeight="semibold"
+                          fontSize="sm"
+                          _hover={
+                            !readOnly
+                              ? {
+                                  transform: "scale(1.05)",
+                                  transition: "all 0.2s",
+                                }
+                              : {}
+                          }
+                        >
+                          {action.toUpperCase()}
+                        </Button>
+                      </Tooltip>
+                    </Td>
+                  );
+                })}
+              </Tr>
+            </Fragment>
           ))}
         </Tbody>
       </Table>
