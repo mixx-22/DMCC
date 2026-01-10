@@ -12,7 +12,7 @@ import {
   Spinner,
   useOutsideClick,
 } from "@chakra-ui/react";
-import { useState, useRef, useCallback, useEffect } from "react";
+import { useState, useRef, useCallback } from "react";
 import apiService from "../services/api";
 
 const ROLES_ENDPOINT = import.meta.env.VITE_API_PACKAGE_ROLES;
@@ -96,9 +96,10 @@ const RoleAsyncSelect = ({ value = [], onChange, isInvalid, ...props }) => {
   };
 
   const handleSelectRole = (role) => {
-    const { id, title } = role;
-    if (!value.includes(title)) {
-      onChange([...value, { id, title }]);
+    const roleTitle = role.title;
+    // Prevent duplicate selection - check if role title already exists
+    if (!value.includes(roleTitle)) {
+      onChange([...value, roleTitle]);
     }
     setInputValue("");
     setOptions([]);

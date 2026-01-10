@@ -87,6 +87,14 @@ const UserPage = () => {
     if (!formData.employeeId.trim()) {
       errors.employeeId = "Employee ID is required";
     }
+    // Phone number validation (optional but if provided, must be valid)
+    if (formData.phone && formData.phone.trim()) {
+      // Accepts formats: +1234567890, (123) 456-7890, 123-456-7890, 123.456.7890, etc.
+      const phoneRegex = /^[\+]?[(]?[0-9]{1,4}[)]?[-\s\.]?[(]?[0-9]{1,4}[)]?[-\s\.]?[0-9]{1,9}$/;
+      if (!phoneRegex.test(formData.phone.replace(/[\s\-\.\(\)]/g, ''))) {
+        errors.phone = "Please enter a valid phone number";
+      }
+    }
     setValidationErrors(errors);
     return Object.keys(errors).length === 0;
   };
@@ -401,7 +409,7 @@ const UserPage = () => {
                     <Heading size="md" mb={2}>
                       Additional Information
                     </Heading>
-                    <FormControl>
+                    <FormControl isInvalid={validationErrors.phone}>
                       <FormLabel>Phone</FormLabel>
                       <Input
                         type="tel"
@@ -409,8 +417,11 @@ const UserPage = () => {
                         onChange={(e) =>
                           handleFieldChange("phone", e.target.value)
                         }
-                        placeholder="Enter phone number"
+                        placeholder="Enter phone number (e.g., +1234567890)"
                       />
+                      <FormErrorMessage>
+                        {validationErrors.phone}
+                      </FormErrorMessage>
                     </FormControl>
 
                     <FormControl>
