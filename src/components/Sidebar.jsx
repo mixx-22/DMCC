@@ -454,7 +454,7 @@ const Sidebar = () => {
           bg={bgColor}
           borderTop="1px"
           borderColor={borderColor}
-          zIndex="docked"
+          zIndex="modal"
           transition="transform 0.3s ease"
           transform={isBottomNavVisible ? "translateY(0)" : "translateY(100%)"}
           h="60px"
@@ -505,7 +505,7 @@ const Sidebar = () => {
                   )}
                 </MenuButton>
                 <Portal>
-                  <MenuList maxH="300px" overflowY="auto">
+                  <MenuList maxH="300px" overflowY="auto" zIndex="modal">
                     {expiringCerts.length === 0 ? (
                       <MenuItem>No notifications</MenuItem>
                     ) : (
@@ -561,7 +561,7 @@ const Sidebar = () => {
                 borderRadius="md"
               />
               <Portal>
-                <MenuList>
+                <MenuList zIndex="modal">
                   <MenuItem>
                     <HStack spacing={3}>
                       <Avatar
