@@ -18,6 +18,10 @@ import {
   Collapse,
   Spacer,
   Image,
+  Menu,
+  MenuButton,
+  MenuList,
+  MenuItem,
 } from "@chakra-ui/react";
 import { NavLink, useLocation } from "react-router-dom";
 import {
@@ -142,6 +146,9 @@ const Sidebar = () => {
   const borderColor = useColorModeValue("gray.100", "gray.800");
   const brandColor = useColorModeValue("brandPrimary.500", "brandPrimary.200");
   const subMenuBg = useColorModeValue("blackAlpha.50", "whiteAlpha.50");
+  const activeBg = useColorModeValue("brandPrimary.50", "whiteAlpha.200");
+  const activeColor = useColorModeValue("brandPrimary.600", "brandPrimary.200");
+  const hoverBg = useColorModeValue("gray.50", "whiteAlpha.100");
 
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
@@ -255,6 +262,43 @@ const Sidebar = () => {
 
       const isExpanded =
         expandedItems.has(item.id) && (!isCollapsed || mobileMode);
+
+      // Show popup menu for items with children when collapsed
+      if (hasChildren && isCollapsed && !mobileMode) {
+        return (
+          <Menu key={item.id} placement="right-start" offset={[0, 0]}>
+            <MenuButton as={Box} w="full">
+              <SidebarRow
+                icon={item.icon}
+                label={item.label}
+                isCollapsed={isCollapsed}
+                isMobile={mobileMode}
+                hasChildren={hasChildren}
+                isExpanded={false}
+                isActive={isActiveParent}
+              />
+            </MenuButton>
+            <MenuList minW="200px" py={2}>
+              {item.children.map((child) => (
+                <MenuItem
+                  key={child.path}
+                  as={NavLink}
+                  to={child.path}
+                  px={4}
+                  py={2}
+                  fontSize="sm"
+                  fontWeight={isRouteMatch(location, child.path) ? "semibold" : "normal"}
+                  color={isRouteMatch(location, child.path) ? activeColor : textColor}
+                  bg={isRouteMatch(location, child.path) ? activeBg : "transparent"}
+                  _hover={{ bg: hoverBg }}
+                >
+                  {child.label}
+                </MenuItem>
+              ))}
+            </MenuList>
+          </Menu>
+        );
+      }
 
       return (
         <Box key={item.id} w="full">
