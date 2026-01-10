@@ -104,24 +104,30 @@ const PermissionsCheckboxGroup = ({
   const handlePermissionChange = (path, action, checked) => {
     if (readOnly || !onChange) return;
 
-    // Create a deep copy of permissions
-    const newPermissions = JSON.parse(JSON.stringify(permissions));
+    const keys = (Array.isArray(path) ? path : path.split(".")).filter(
+      (k) => k !== "permission" && k !== "permissions"
+    );
 
-    // Navigate to the target and set the value
+    const newPermissions = JSON.parse(JSON.stringify(permissions));
     let current = newPermissions;
-    for (let i = 0; i < path.length; i++) {
-      if (i === path.length - 1) {
-        // Last key - set the action value
-        if (!current[path[i]]) {
-          current[path[i]] = {};
-        }
-        current[path[i]][action] = checked ? 1 : 0;
+
+    if (keys.length === 1) {
+      current[keys[0]] ??= {};
+      current[keys[0]][action] = checked ? 1 : 0;
+      onChange(newPermissions);
+      return;
+    }
+
+    current[keys[0]] ??= {};
+    current[keys[0]].permission ??= {};
+    current = current[keys[0]].permission;
+
+    for (let i = 1; i < keys.length; i++) {
+      current[keys[i]] ??= {};
+      if (i === keys.length - 1) {
+        current[keys[i]][action] = checked ? 1 : 0;
       } else {
-        // Navigate deeper
-        if (!current[path[i]]) {
-          current[path[i]] = {};
-        }
-        current = current[path[i]];
+        current = current[keys[i]];
       }
     }
 
@@ -138,26 +144,16 @@ const PermissionsCheckboxGroup = ({
       >
         <Thead>
           <Tr>
-            <Th width={{ base: "40%", md: "40%" }} rowSpan={2}>
-              Module
-            </Th>
+            <Th rowSpan={2}>Module</Th>
             <Th textAlign="center" colSpan={4} border="none">
               Permissions
             </Th>
           </Tr>
           <Tr>
-            <Th textAlign="center" width={{ base: "15%", md: "15%" }}>
-              Create
-            </Th>
-            <Th textAlign="center" width={{ base: "15%", md: "15%" }}>
-              Read
-            </Th>
-            <Th textAlign="center" width={{ base: "15%", md: "15%" }}>
-              Update
-            </Th>
-            <Th textAlign="center" width={{ base: "15%", md: "15%" }}>
-              Delete
-            </Th>
+            <Th textAlign="center">Create</Th>
+            <Th textAlign="center">Read</Th>
+            <Th textAlign="center">Update</Th>
+            <Th textAlign="center">Delete</Th>
           </Tr>
         </Thead>
         <Tbody>
@@ -188,7 +184,7 @@ const PermissionsCheckboxGroup = ({
                 return (
                   <Td key={action} textAlign="center">
                     <Tooltip
-                      label={`${action.toUpperCase()} - ${PERMISSION_LABELS[action]}`}
+                      label={`${PERMISSION_LABELS[action]} ${module.label}`}
                       placement="top"
                       hasArrow
                     >
