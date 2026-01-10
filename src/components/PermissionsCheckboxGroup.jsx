@@ -1,6 +1,6 @@
 import {
   Box,
-  Switch,
+  Button,
   Table,
   Tbody,
   Td,
@@ -183,38 +183,49 @@ const PermissionsCheckboxGroup = ({
                   </Text>
                 </VStack>
               </Td>
-              {["c", "r", "u", "d"].map((action) => (
-                <Td key={action} textAlign="center">
-                  <Tooltip
-                    label={`${PERMISSION_LABELS[action]} ${module.label}`}
-                    placement="top"
-                    hasArrow
-                  >
-                    <Box
-                      display="inline-flex"
-                      flexDirection="column"
-                      alignItems="center"
-                      gap={1}
+              {["c", "r", "u", "d"].map((action) => {
+                const isActive = getPermissionValue(module.path, action);
+                return (
+                  <Td key={action} textAlign="center">
+                    <Tooltip
+                      label={`${action.toUpperCase()} - ${PERMISSION_LABELS[action]}`}
+                      placement="top"
+                      hasArrow
                     >
-                      <Switch
+                      <Button
                         size="sm"
-                        isChecked={getPermissionValue(module.path, action)}
-                        onChange={(e) => {
+                        borderRadius="full"
+                        variant={isActive ? "solid" : "outline"}
+                        colorScheme={isActive ? "brandPrimary" : "gray"}
+                        onClick={() => {
                           if (!readOnly) {
                             handlePermissionChange(
                               module.path,
                               action,
-                              e.target.checked
+                              !isActive
                             );
                           }
                         }}
-                        colorScheme="brandPrimary"
                         isDisabled={readOnly}
-                      />
-                    </Box>
-                  </Tooltip>
-                </Td>
-              ))}
+                        minW="40px"
+                        h="40px"
+                        fontWeight="semibold"
+                        fontSize="sm"
+                        _hover={
+                          !readOnly
+                            ? {
+                                transform: "scale(1.05)",
+                                transition: "all 0.2s",
+                              }
+                            : {}
+                        }
+                      >
+                        {action.toUpperCase()}
+                      </Button>
+                    </Tooltip>
+                  </Td>
+                );
+              })}
             </Tr>
           ))}
         </Tbody>
