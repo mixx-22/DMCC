@@ -334,23 +334,24 @@ const RolePage = () => {
           {isNewRole ? "Create New Role" : formData.title}
         </Heading>
       </PageHeader>
-      <HStack mb={6} spacing={4}>
-        <Spacer />
+      <Flex mb={6} gap={4} flexWrap="wrap" justifyContent={{ base: "stretch", sm: "flex-end" }}>
         {!isEditMode && !isNewRole ? (
           <Button
             leftIcon={<FiEdit />}
             colorScheme="brandPrimary"
             onClick={handleEdit}
+            w={{ base: "full", sm: "auto" }}
           >
             Edit Role
           </Button>
         ) : (
-          <HStack spacing={2}>
+          <Flex gap={2} w={{ base: "full", sm: "auto" }}>
             <Button
               leftIcon={<FiX />}
               variant="outline"
               onClick={handleCancel}
               isDisabled={saving}
+              flex={{ base: 1, sm: "auto" }}
             >
               Cancel
             </Button>
@@ -360,12 +361,13 @@ const RolePage = () => {
               onClick={handleSave}
               isLoading={saving}
               loadingText="Saving..."
+              flex={{ base: 1, sm: "auto" }}
             >
               {isNewRole ? "Create Role" : "Save Changes"}
             </Button>
-          </HStack>
+          </Flex>
         )}
-      </HStack>
+      </Flex>
       <Flex gap={6} flexWrap={{ base: "wrap", md: "nowrap" }}>
         <Box w={{ base: "full", md: "xs" }}>
           <Card>
@@ -441,12 +443,12 @@ const RolePage = () => {
                 {!isEditMode && !isNewRole && (
                   <>
                     <Divider />
-                    <HStack spacing={8} flexWrap="wrap">
+                    <VStack spacing={4} align="stretch">
                       <Box>
                         <Text fontSize="sm" color="gray.500" mb={1}>
                           Created At
                         </Text>
-                        <Text fontWeight="medium">
+                        <Text fontWeight="medium" fontSize={{ base: "sm", md: "md" }}>
                           {new Date(role.createdAt).toLocaleDateString()}{" "}
                           <Text as="span" fontSize="sm" color="gray.500">
                             (
@@ -461,7 +463,7 @@ const RolePage = () => {
                         <Text fontSize="sm" color="gray.500" mb={1}>
                           Updated At
                         </Text>
-                        <Text fontWeight="medium">
+                        <Text fontWeight="medium" fontSize={{ base: "sm", md: "md" }}>
                           {new Date(role.updatedAt).toLocaleDateString()}{" "}
                           <Text as="span" fontSize="sm" color="gray.500">
                             (
@@ -480,7 +482,7 @@ const RolePage = () => {
                           {role.isSystemRole ? "Yes" : "No"}
                         </Text>
                       </Box>
-                    </HStack>
+                    </VStack>
                   </>
                 )}
               </VStack>

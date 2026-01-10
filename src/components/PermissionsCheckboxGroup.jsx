@@ -92,51 +92,53 @@ const PermissionEntity = ({ label, perms, onPermissionChange, readOnly }) => {
   };
 
   return (
-    <Table variant="simple" size="sm">
-      <Thead>
-        <Tr>
-          <Th width="40%">{label}</Th>
-          <Th textAlign="center" width="15%">Create</Th>
-          <Th textAlign="center" width="15%">Read</Th>
-          <Th textAlign="center" width="15%">Update</Th>
-          <Th textAlign="center" width="15%">Delete</Th>
-        </Tr>
-      </Thead>
-      <Tbody>
-        <Tr>
-          <Td fontWeight="medium">
-            {!readOnly && (
-              <HStack>
+    <Box overflowX="auto" w="full">
+      <Table variant="simple" size="sm" w="full" minW={{ base: "500px", md: "full" }}>
+        <Thead>
+          <Tr>
+            <Th width={{ base: "35%", md: "40%" }}>{label}</Th>
+            <Th textAlign="center" width={{ base: "16.25%", md: "15%" }}>Create</Th>
+            <Th textAlign="center" width={{ base: "16.25%", md: "15%" }}>Read</Th>
+            <Th textAlign="center" width={{ base: "16.25%", md: "15%" }}>Update</Th>
+            <Th textAlign="center" width={{ base: "16.25%", md: "15%" }}>Delete</Th>
+          </Tr>
+        </Thead>
+        <Tbody>
+          <Tr>
+            <Td fontWeight="medium">
+              {!readOnly && (
+                <HStack spacing={2}>
+                  <Switch
+                    size="sm"
+                    isChecked={isAllSelected()}
+                    onChange={(e) => handleSelectAll(e.target.checked)}
+                    colorScheme="brandPrimary"
+                    isDisabled={readOnly}
+                  />
+                  <Text fontSize={{ base: "xs", md: "sm" }} noOfLines={1}>All Permissions</Text>
+                </HStack>
+              )}
+              {readOnly && <Text fontSize={{ base: "xs", md: "sm" }} color="gray.500">Permissions</Text>}
+            </Td>
+            {Object.entries(PERMISSION_LABELS).map(([action]) => (
+              <Td key={action} textAlign="center">
                 <Switch
                   size="sm"
-                  isChecked={isAllSelected()}
-                  onChange={(e) => handleSelectAll(e.target.checked)}
+                  isChecked={perms[action]}
+                  onChange={(e) => {
+                    if (!readOnly) {
+                      onPermissionChange({ ...perms, [action]: e.target.checked });
+                    }
+                  }}
                   colorScheme="brandPrimary"
                   isDisabled={readOnly}
                 />
-                <Text fontSize="sm">All Permissions</Text>
-              </HStack>
-            )}
-            {readOnly && <Text fontSize="sm" color="gray.500">Permissions</Text>}
-          </Td>
-          {Object.entries(PERMISSION_LABELS).map(([action]) => (
-            <Td key={action} textAlign="center">
-              <Switch
-                size="sm"
-                isChecked={perms[action]}
-                onChange={(e) => {
-                  if (!readOnly) {
-                    onPermissionChange({ ...perms, [action]: e.target.checked });
-                  }
-                }}
-                colorScheme="brandPrimary"
-                isDisabled={readOnly}
-              />
-            </Td>
-          ))}
-        </Tr>
-      </Tbody>
-    </Table>
+              </Td>
+            ))}
+          </Tr>
+        </Tbody>
+      </Table>
+    </Box>
   );
 };
 
@@ -191,12 +193,12 @@ const NestedPermissionGroup = ({
 
   return (
     <Box
-      p={4}
+      p={{ base: 3, md: 4 }}
       borderWidth="1px"
       borderColor={borderColor}
       borderRadius="md"
       bg={level > 0 ? nestedBgColor : bgColor}
-      ml={level > 0 ? 4 : 0}
+      ml={level > 0 ? { base: 2, md: 4 } : 0}
     >
       <VStack align="stretch" spacing={3}>
         {hasNested ? (
@@ -210,7 +212,8 @@ const NestedPermissionGroup = ({
                 mb={0}
                 cursor="pointer"
                 fontWeight="bold"
-                fontSize={level === 0 ? "md" : "sm"}
+                fontSize={{ base: "sm", md: level === 0 ? "md" : "sm" }}
+                noOfLines={1}
               >
                 {label}
               </FormLabel>
