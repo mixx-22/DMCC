@@ -23,6 +23,7 @@ import {
   MenuList,
   MenuItem,
   Portal,
+  MenuGroup,
 } from "@chakra-ui/react";
 import { NavLink, useLocation } from "react-router-dom";
 import {
@@ -38,6 +39,8 @@ import {
 } from "react-icons/fi";
 import logoDefault from "../images/auptilyze.png";
 import logoWhite from "../images/auptilyze-white.png";
+import logoIconDefault from "../images/auptilyze-icon.svg";
+import logoIconWhite from "../images/auptilyze-icon-white.svg";
 
 const isRouteMatch = (location, target) => {
   const [targetPath, targetQuery] = target.split("?");
@@ -81,7 +84,6 @@ const SidebarRow = ({
       pr={isCollapsed && !isMobile ? 0 : isChild ? 8 : 4}
       gap={isCollapsed && !isMobile ? 0 : 3}
       borderRadius="0"
-      cursor="pointer"
       bg={isActive ? activeBg : "transparent"}
       color={isActive ? activeColor : isChild ? childTextColor : textColor}
       fontWeight={isActive ? "semibold" : "normal"}
@@ -91,6 +93,7 @@ const SidebarRow = ({
       w="full"
       position="relative"
       onClick={onClick}
+      cursor="pointer !important"
     >
       {isActive && !isMobile && !isChild && (
         <Box
@@ -142,6 +145,7 @@ const Sidebar = () => {
   const { isOpen, onOpen, onClose } = useDisclosure();
 
   const logoSrc = useColorModeValue(logoDefault, logoWhite);
+  const logoIconSrc = useColorModeValue(logoIconDefault, logoIconWhite);
   const textColor = useColorModeValue("gray.700", "gray.300");
   const bgColor = useColorModeValue("white", "gray.900");
   const borderColor = useColorModeValue("gray.100", "gray.800");
@@ -150,6 +154,7 @@ const Sidebar = () => {
   const activeBg = useColorModeValue("brandPrimary.50", "whiteAlpha.200");
   const activeColor = useColorModeValue("brandPrimary.600", "brandPrimary.200");
   const hoverBg = useColorModeValue("gray.50", "whiteAlpha.100");
+  const menuHeaderColor = useColorModeValue("gray.500", "gray.400");
 
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
@@ -267,8 +272,13 @@ const Sidebar = () => {
       // Show popup menu for items with children when collapsed
       if (hasChildren && isCollapsed && !mobileMode) {
         return (
-          <Menu key={item.id} placement="right-start" offset={[8, 0]} strategy="fixed">
-            <MenuButton as={Box} w="full">
+          <Menu
+            key={item.id}
+            placement="right-start"
+            offset={[8, 0]}
+            strategy="fixed"
+          >
+            <MenuButton as={Box} w="full" cursor="pointer">
               <SidebarRow
                 icon={item.icon}
                 label={item.label}
@@ -280,23 +290,42 @@ const Sidebar = () => {
               />
             </MenuButton>
             <Portal>
-              <MenuList minW="200px" py={2}>
-                {item.children.map((child) => (
-                  <MenuItem
-                    key={child.path}
-                    as={NavLink}
-                    to={child.path}
-                    px={4}
-                    py={2}
-                    fontSize="sm"
-                    fontWeight={isRouteMatch(location, child.path) ? "semibold" : "normal"}
-                    color={isRouteMatch(location, child.path) ? activeColor : textColor}
-                    bg={isRouteMatch(location, child.path) ? activeBg : "transparent"}
-                    _hover={{ bg: hoverBg }}
-                  >
-                    {child.label}
-                  </MenuItem>
-                ))}
+              <MenuList minW="200px">
+                <MenuGroup
+                  color={menuHeaderColor}
+                  title={item.label}
+                  fontFamily={"heading"}
+                  textTransform="lowercase"
+                >
+                  {item.children.map((child) => (
+                    <MenuItem
+                      key={child.path}
+                      as={NavLink}
+                      to={child.path}
+                      px={4}
+                      py={2}
+                      fontSize="sm"
+                      fontWeight={
+                        isRouteMatch(location, child.path)
+                          ? "semibold"
+                          : "normal"
+                      }
+                      color={
+                        isRouteMatch(location, child.path)
+                          ? activeColor
+                          : textColor
+                      }
+                      bg={
+                        isRouteMatch(location, child.path)
+                          ? activeBg
+                          : "transparent"
+                      }
+                      _hover={{ bg: hoverBg }}
+                    >
+                      {child.label}
+                    </MenuItem>
+                  ))}
+                </MenuGroup>
               </MenuList>
             </Portal>
           </Menu>
@@ -410,6 +439,23 @@ const Sidebar = () => {
       transition="width 0.3s cubic-bezier(0.4, 0, 0.2, 1)"
       overflowX="hidden"
     >
+      {isCollapsed && (
+        <Flex
+          align="center"
+          h="sidebar.row"
+          justify={isCollapsed ? "center" : "flex-start"}
+          pl={isCollapsed ? 0 : 4}
+          pr={isCollapsed ? 0 : 2}
+          transition="all 0.3s cubic-bezier(0.4, 0, 0.2, 1)"
+          cursor="pointer"
+        >
+          <Image
+            boxSize={5}
+            src={logoIconSrc}
+            alt={import.meta.env.VITE_PROJECT_NAME}
+          />
+        </Flex>
+      )}
       <Flex
         align="center"
         h="sidebar.row"
@@ -418,6 +464,7 @@ const Sidebar = () => {
         pr={isCollapsed ? 0 : 2}
         mb={"sidebar.row"}
         transition="all 0.3s cubic-bezier(0.4, 0, 0.2, 1)"
+        cursor="pointer"
       >
         {!isCollapsed && (
           <>
