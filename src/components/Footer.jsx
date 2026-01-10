@@ -9,11 +9,11 @@ const Footer = () => {
     <Flex
       bg={bgColor}
       borderTop="1px"
-      borderColor="gray.200"
+      border="none"
       position="sticky"
       bottom={0}
       zIndex="sticky"
-      minH="sidebar.row"
+      h="sidebar.row"
       justify="center"
     >
       <Flex
@@ -21,7 +21,6 @@ const Footer = () => {
         px="page.padding"
         maxW="page.maxContent"
         alignItems="center"
-        py={2}
       >
         <Box w="full" flex={1} ref={footerRef}></Box>
       </Flex>
