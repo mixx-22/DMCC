@@ -30,7 +30,7 @@ import PageHeader from "../../components/PageHeader";
 const RolePage = () => {
   const navigate = useNavigate();
   const { id } = useParams();
-  const { role, loading, saving, error, updateRole, createRole } = useRole();
+  const { role, loading, saving, updateRole, createRole } = useRole();
 
   const isNewRole = id === "new";
   const [isEditMode, setIsEditMode] = useState(isNewRole);
@@ -290,17 +290,6 @@ const RolePage = () => {
       <Box p={8} textAlign="center">
         <Spinner size="xl" />
         <Text mt={4}>Loading role...</Text>
-      </Box>
-    );
-  }
-
-  if (error && !isNewRole) {
-    return (
-      <Box p={4}>
-        <Text color="red.500">Error: {error}</Text>
-        <Button mt={4} onClick={() => navigate("/roles")}>
-          Back to Roles
-        </Button>
       </Box>
     );
   }
