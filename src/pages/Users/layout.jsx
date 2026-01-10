@@ -12,21 +12,22 @@ import {
   Avatar,
   Badge,
   Spacer,
-  Button,
   InputGroup,
   InputLeftElement,
+  LinkBox,
+  LinkOverlay,
 } from "@chakra-ui/react";
 import { motion } from "framer-motion";
 import { useEffect } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { useSearchParams, Link as RouterLink } from "react-router-dom";
 import { useUsers } from "../../context/_useContext";
 import Pagination from "../../components/Pagination";
 import UsersSkeleton from "../../components/UsersSkeleton";
-import { FiPlus, FiSearch } from "react-icons/fi";
+import { FiSearch } from "react-icons/fi";
 
 const MotionBox = motion(Box);
 
-const Layout = () => {
+const UsersList = () => {
   const {
     users,
     loading,
@@ -38,7 +39,6 @@ const Layout = () => {
     setPage,
     setSearch,
   } = useUsers();
-  const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   // Use users?.data or empty array if not present
   const userList = Array.isArray(users?.data) ? users.data : [];
@@ -80,16 +80,6 @@ const Layout = () => {
 
   return (
     <Box>
-      <HStack mb={4} justify="space-between">
-        <Spacer />
-        <Button
-          leftIcon={<FiPlus />}
-          colorScheme="brandPrimary"
-          onClick={() => navigate("/users/new")}
-        >
-          Create New User
-        </Button>
-      </HStack>
       <HStack
         mb={4}
         justify="space-between"
@@ -161,19 +151,22 @@ const Layout = () => {
                   const fullName = `${user.firstName || ""} ${
                     user.middleName || ""
                   } ${user.lastName || ""}`.trim();
+                  const userId = user._id || user.userId || user.employeeId;
                   return (
-                    <Tr key={user.userId || user.employeeId}>
+                    <LinkBox as={Tr} key={userId}>
                       <Td>
-                        <HStack>
-                          <Avatar size="sm" name={fullName} />
-                          <span>{fullName}</span>
-                        </HStack>
+                        <LinkOverlay as={RouterLink} to={`/users/${userId}`}>
+                          <HStack>
+                            <Avatar size="sm" name={fullName} />
+                            <span>{fullName}</span>
+                          </HStack>
+                        </LinkOverlay>
                       </Td>
                       <Td>{user.email}</Td>
                       <Td>
                         {user.role && user.role.length > 0 ? (
-                          user.role.map((r) => (
-                            <Badge key={r} colorScheme="purple" mr={1}>
+                          user.role.map((r, idx) => (
+                            <Badge key={idx} colorScheme="purple" mr={1}>
                               {r}
                             </Badge>
                           ))
@@ -186,7 +179,7 @@ const Layout = () => {
                           {user.isActive ? "Active" : "Inactive"}
                         </Badge>
                       </Td>
-                    </Tr>
+                    </LinkBox>
                   );
                 })
               )}
@@ -207,4 +200,4 @@ const Layout = () => {
   );
 };
 
-export default Layout;
+export default UsersList;

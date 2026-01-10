@@ -18,31 +18,43 @@ function getCrudSummary(crud = {}) {
   if (enabled.length === 0) return "no access";
   if (enabled.length === 1 && enabled[0] === "r") return "view-only access";
 
-  return `limited access (${enabled.map((a) => ACTIONS[a]).join(", ")})`;
+  return `Limited access (${enabled.map((a) => ACTIONS[a]).join(", ")})`;
+}
+
+function joinList(items) {
+  if (items.length === 1) return items[0];
+  if (items.length === 2) return `${items[0]} and ${items[1]}`;
+  return `${items.slice(0, -1).join(", ")}, and ${items.at(-1)}`;
 }
 
 function generateRoleDescriptions(permissions = {}) {
-  const longLines = [];
-  const shortParts = [];
+  // Catch: no permissions object or empty
+  if (!permissions || Object.keys(permissions).length === 0) {
+    return {
+      short: "No permissions assigned.",
+      long: "This role currently has no permissions configured.",
+    };
+  }
 
-  let fullControlCount = 0;
+  const summaryGroups = {}; // { summary: [ModuleName] }
+  const longLines = [];
   let moduleCount = 0;
+  let fullControlCount = 0;
 
   Object.entries(permissions).forEach(([module, config]) => {
-    const { permission, ...crud } = config;
+    const { permission, ...crud } = config || {};
     const moduleName = prettify(module);
     const summary = getCrudSummary(crud);
 
     moduleCount++;
     if (summary === "full control") fullControlCount++;
 
-    longLines.push(`• ${moduleName}: ${summary}`);
+    // Group for short description
+    if (!summaryGroups[summary]) summaryGroups[summary] = [];
+    summaryGroups[summary].push(moduleName);
 
-    if (summary !== "no access") {
-      shortParts.push(
-        summary === "full control" ? moduleName : `${moduleName} (${summary})`
-      );
-    }
+    // Long description (per module)
+    longLines.push(`• ${moduleName}: ${summary}`);
 
     if (permission) {
       Object.entries(permission).forEach(([sub, subCrud]) => {
@@ -53,24 +65,43 @@ function generateRoleDescriptions(permissions = {}) {
     }
   });
 
-  // Short description logic
+  // ---------- SHORT DESCRIPTION ----------
   let shortDescription;
+
   if (fullControlCount === moduleCount) {
     shortDescription = "Full control across all system modules.";
-  } else if (shortParts.length <= 3) {
-    shortDescription = `Manages ${shortParts.join(", ")}.`;
   } else {
-    shortDescription = `Manages ${shortParts
-      .slice(0, 3)
-      .join(", ")}, and more.`;
+    const parts = [];
+
+    Object.entries(summaryGroups).forEach(([summary, modules]) => {
+      if (summary === "no access") return;
+
+      const moduleList = joinList(modules);
+
+      if (summary === "full control") {
+        parts.push(`Full control over ${moduleList}`);
+      } else if (summary === "view-only access") {
+        parts.push(`View-only access to ${moduleList}`);
+      } else {
+        parts.push(`${summary} for ${moduleList}`);
+      }
+    });
+
+    shortDescription =
+      parts.length > 0
+        ? parts.join(". ") + "."
+        : "No effective permissions assigned.";
   }
+
+  // ---------- LONG DESCRIPTION ----------
+  const longDescription =
+    fullControlCount === moduleCount
+      ? "Full control over all system modules and records."
+      : "Access permissions include:\n" + longLines.join("\n");
 
   return {
     short: shortDescription,
-    long:
-      fullControlCount === moduleCount
-        ? "Full control over all system modules and records."
-        : "Access permissions include:\n" + longLines.join("\n"),
+    long: longDescription,
   };
 }
 

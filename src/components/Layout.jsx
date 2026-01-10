@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { Box, Flex, useColorModeValue } from "@chakra-ui/react";
 import Sidebar from "./Sidebar";
 import Header from "./Header";
+import Footer from "./Footer";
 
 const Layout = ({ children }) => {
   const contentBg = useColorModeValue("gray.50", "gray.900");
@@ -31,6 +32,7 @@ const Layout = ({ children }) => {
             {children}
           </Box>
         </Box>
+        <Footer />
       </Flex>
     </Flex>
   );

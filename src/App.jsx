@@ -107,14 +107,6 @@ function App() {
                       }
                     />
                     <Route
-                      path="/roles/new"
-                      element={
-                        <RoleProvider>
-                          <RolePage />
-                        </RoleProvider>
-                      }
-                    />
-                    <Route
                       path="/roles/:id"
                       element={
                         <RoleProvider>

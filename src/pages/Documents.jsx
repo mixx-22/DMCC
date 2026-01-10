@@ -44,6 +44,8 @@ import {
 import { useApp } from "../context/AppContext";
 import { useNavigate } from "react-router-dom";
 import DocumentUploadModal from "../components/DocumentUploadModal";
+import PageHeader from "../components/PageHeader";
+import PageFooter from "../components/PageFooter";
 import { formatDistanceToNow } from "date-fns";
 
 const Documents = () => {
@@ -192,12 +194,16 @@ const Documents = () => {
 
   return (
     <Box>
-      <Flex justify="space-between" align="center" mb={6}>
-        <Heading>Documents</Heading>
-        <Button leftIcon={<FiPlus />} colorScheme="blue" onClick={onOpen}>
-          Upload New Document
-        </Button>
-      </Flex>
+      <PageHeader>
+        <Heading variant="pageTitle">Documents</Heading>
+      </PageHeader>
+      <PageFooter>
+        <Flex gap={4} justifyContent="flex-end">
+          <Button leftIcon={<FiPlus />} colorScheme="blue" onClick={onOpen}>
+            Upload New Document
+          </Button>
+        </Flex>
+      </PageFooter>
 
       {/* Search Bar */}
       <Box mb={6}>

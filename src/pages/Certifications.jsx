@@ -16,11 +16,14 @@ import {
   VStack,
   Text,
   IconButton,
+  Flex,
 } from "@chakra-ui/react";
 import { FiPlus, FiSearch, FiEdit, FiTrash2, FiEye } from "react-icons/fi";
 import { useApp } from "../context/AppContext";
 import { useNavigate } from "react-router-dom";
 import CertificationUploadModal from "../components/CertificationUploadModal";
+import PageHeader from "../components/PageHeader";
+import PageFooter from "../components/PageFooter";
 import { formatDistanceToNow, differenceInCalendarDays } from "date-fns";
 
 const Certifications = () => {
@@ -87,12 +90,16 @@ const Certifications = () => {
 
   return (
     <Box>
-      <HStack justify="space-between" mb={6}>
-        <Heading>Certifications & Permits</Heading>
-        <Button leftIcon={<FiPlus />} colorScheme="blue" onClick={onOpen}>
-          Add Certification
-        </Button>
-      </HStack>
+      <PageHeader>
+        <Heading variant="pageTitle">Certifications & Permits</Heading>
+      </PageHeader>
+      <PageFooter>
+        <Flex gap={4} justifyContent="flex-end">
+          <Button leftIcon={<FiPlus />} colorScheme="blue" onClick={onOpen}>
+            Add Certification
+          </Button>
+        </Flex>
+      </PageFooter>
 
       {expiringCerts.length > 0 && (
         <Box
