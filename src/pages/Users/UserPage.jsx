@@ -14,7 +14,6 @@ import {
   CardBody,
   Card,
   Flex,
-  Select,
   Switch,
   Badge,
   HStack,
@@ -174,7 +173,7 @@ const UserPage = () => {
     );
   }
 
-  if (!user && !isNewUser && !loading) {
+  if (!user && !isNewUser) {
     return (
       <Box p={4}>
         <Text>User not found</Text>
