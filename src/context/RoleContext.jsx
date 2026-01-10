@@ -1,4 +1,10 @@
-import { useEffect, useCallback, useReducer, createContext, useContext } from "react";
+import {
+  useEffect,
+  useCallback,
+  useReducer,
+  createContext,
+  useContext,
+} from "react";
 import { useParams } from "react-router-dom";
 import apiService from "../services/api";
 
@@ -15,19 +21,19 @@ const MOCK_ROLE = {
       c: 1,
       r: 1,
       u: 1,
-      d: 1
+      d: 1,
     },
     teams: {
       c: 1,
       r: 1,
       u: 1,
-      d: 1
+      d: 1,
     },
     roles: {
       c: 1,
       r: 1,
       u: 1,
-      d: 1
+      d: 1,
     },
     document: {
       c: 1,
@@ -39,22 +45,22 @@ const MOCK_ROLE = {
           c: 1,
           r: 1,
           u: 1,
-          d: 1
+          d: 1,
         },
         download: {
           c: 1,
           r: 1,
           u: 1,
-          d: 1
-        }
-      }
+          d: 1,
+        },
+      },
     },
     audit: {
       c: 1,
       r: 1,
       u: 1,
-      d: 1
-    }
+      d: 1,
+    },
   },
   isSystemRole: false,
   createdAt: "2024-01-15T10:00:00.000Z",
@@ -105,7 +111,7 @@ export const RoleProvider = ({ children }) => {
   const fetchRole = useCallback(async (roleId) => {
     dispatch({ type: "SET_LOADING", value: true });
     dispatch({ type: "SET_ERROR", value: null });
-    
+
     if (!USE_API) {
       // Mock API call
       setTimeout(() => {
@@ -117,70 +123,79 @@ export const RoleProvider = ({ children }) => {
       }, 500);
       return;
     }
-    
+
     try {
       const data = await apiService.request(`${ROLES_ENDPOINT}/${roleId}`, {
         method: "GET",
       });
-      
+
       dispatch({
         type: "SET_ROLE",
         role: data.data || data,
       });
     } catch (err) {
-      dispatch({ type: "SET_ERROR", value: err.message || "Failed to fetch role" });
+      dispatch({
+        type: "SET_ERROR",
+        value: err.message || "Failed to fetch role",
+      });
     } finally {
       dispatch({ type: "SET_LOADING", value: false });
     }
   }, []);
 
-  const updateRole = useCallback(async (roleId, updates) => {
-    dispatch({ type: "SET_SAVING", value: true });
-    dispatch({ type: "SET_ERROR", value: null });
-    
-    if (!USE_API) {
-      // Mock API call
-      setTimeout(() => {
+  const updateRole = useCallback(
+    async (roleId, updates) => {
+      dispatch({ type: "SET_SAVING", value: true });
+      dispatch({ type: "SET_ERROR", value: null });
+
+      if (!USE_API) {
+        // Mock API call
+        setTimeout(() => {
+          dispatch({
+            type: "SET_ROLE",
+            role: { ...state.role, ...updates },
+          });
+          dispatch({ type: "SET_SAVING", value: false });
+        }, 500);
+        return { success: true };
+      }
+
+      try {
+        const data = await apiService.request(`${ROLES_ENDPOINT}/${roleId}`, {
+          method: "PUT",
+          body: JSON.stringify(updates),
+        });
+
         dispatch({
           type: "SET_ROLE",
-          role: { ...state.role, ...updates },
+          role: data.data || data,
         });
         dispatch({ type: "SET_SAVING", value: false });
-      }, 500);
-      return { success: true };
-    }
-    
-    try {
-      const data = await apiService.request(`${ROLES_ENDPOINT}/${roleId}`, {
-        method: "PUT",
-        body: JSON.stringify(updates),
-      });
-      
-      dispatch({
-        type: "SET_ROLE",
-        role: data.data || data,
-      });
-      dispatch({ type: "SET_SAVING", value: false });
-      return { success: true };
-    } catch (err) {
-      dispatch({ type: "SET_ERROR", value: err.message || "Failed to update role" });
-      dispatch({ type: "SET_SAVING", value: false });
-      return { success: false, error: err.message };
-    }
-  }, [state.role]);
+        return { success: true };
+      } catch (err) {
+        dispatch({
+          type: "SET_ERROR",
+          value: err.message || "Failed to update role",
+        });
+        dispatch({ type: "SET_SAVING", value: false });
+        return { success: false, error: err.message };
+      }
+    },
+    [state.role]
+  );
 
   const createRole = useCallback(async (roleData) => {
     dispatch({ type: "SET_SAVING", value: true });
     dispatch({ type: "SET_ERROR", value: null });
-    
+
     if (!USE_API) {
       // Mock API call
       const newId = `role-${Date.now()}`;
       setTimeout(() => {
         dispatch({
           type: "SET_ROLE",
-          role: { 
-            ...roleData, 
+          role: {
+            ...roleData,
             _id: newId,
             createdAt: new Date().toISOString(),
             updatedAt: new Date().toISOString(),
@@ -190,22 +205,29 @@ export const RoleProvider = ({ children }) => {
       }, 500);
       return { success: true, id: newId };
     }
-    
+
     try {
       const data = await apiService.request(ROLES_ENDPOINT, {
         method: "POST",
         body: JSON.stringify(roleData),
       });
-      
-      const newRole = data.data || data;
+
+      const newRole = data.role || data;
       dispatch({
         type: "SET_ROLE",
-        role: newRole,
+        role: {
+          ...newRole,
+          createdAt: newRole.createdAt || new Date().toISOString(),
+          updatedAt: newRole.updatedAt || new Date().toISOString(),
+        },
       });
       dispatch({ type: "SET_SAVING", value: false });
       return { success: true, id: newRole._id || newRole.id };
     } catch (err) {
-      dispatch({ type: "SET_ERROR", value: err.message || "Failed to create role" });
+      dispatch({
+        type: "SET_ERROR",
+        value: err.message || "Failed to create role",
+      });
       dispatch({ type: "SET_SAVING", value: false });
       return { success: false, error: err.message };
     }
