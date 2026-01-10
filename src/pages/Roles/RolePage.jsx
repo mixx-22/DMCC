@@ -13,7 +13,12 @@ import {
   Textarea,
   VStack,
   Divider,
-  useColorModeValue,
+  IconButton,
+  Spacer,
+  CardBody,
+  Card,
+  Flex,
+  CardHeader,
 } from "@chakra-ui/react";
 import { FiEdit, FiArrowLeft, FiSave, FiX } from "react-icons/fi";
 import { useNavigate, useParams } from "react-router-dom";
@@ -23,6 +28,7 @@ import Swal from "sweetalert2";
 import { useState, useEffect } from "react";
 import PermissionsCheckboxGroup from "../../components/PermissionsCheckboxGroup";
 import { useRole } from "../../context/RoleContext";
+import PageHeader from "../../components/PageHeader";
 
 const RolePage = () => {
   const navigate = useNavigate();
@@ -54,9 +60,6 @@ const RolePage = () => {
   });
   const [validationErrors, setValidationErrors] = useState({});
 
-  const bgColor = useColorModeValue("white", "gray.800");
-  const borderColor = useColorModeValue("gray.200", "gray.700");
-
   // Initialize form data when role loads
   useEffect(() => {
     if (role && !isNewRole) {
@@ -85,18 +88,21 @@ const RolePage = () => {
 
   const handlePermissionsChange = async (newPermissions) => {
     // Check if any delete permission was toggled ON
-    const hasNewDeleteEnabled = checkIfDeleteWasEnabled(formData.permissions, newPermissions);
-    
+    const hasNewDeleteEnabled = checkIfDeleteWasEnabled(
+      formData.permissions,
+      newPermissions
+    );
+
     // If delete was enabled and not a system role, prompt to make it a system role
     if (hasNewDeleteEnabled && !formData.isSystemRole) {
       const result = await Swal.fire({
-        title: 'Enable System Role?',
-        text: 'A delete permission was enabled. Do you want to make this a system role?',
-        icon: 'question',
+        title: "Enable System Role?",
+        text: "A delete permission was enabled. Do you want to make this a system role?",
+        icon: "question",
         showCancelButton: true,
-        confirmButtonText: 'Yes, make system role',
-        cancelButtonText: 'No, keep as is',
-        confirmButtonColor: '#3182ce',
+        confirmButtonText: "Yes, make system role",
+        cancelButtonText: "No, keep as is",
+        confirmButtonColor: "#3182ce",
       });
 
       setFormData((prev) => ({
@@ -110,7 +116,7 @@ const RolePage = () => {
         permissions: newPermissions,
       }));
     }
-    
+
     if (validationErrors.permissions) {
       setValidationErrors((prev) => ({
         ...prev,
@@ -123,12 +129,16 @@ const RolePage = () => {
   const checkIfDeleteWasEnabled = (oldPerms, newPerms) => {
     const checkObject = (oldObj, newObj) => {
       for (const key in newObj) {
-        if (key === 'd') {
+        if (key === "d") {
           // Check if delete was toggled from 0 to 1
           if (oldObj?.[key] === 0 && newObj[key] === 1) {
             return true;
           }
-        } else if (typeof newObj[key] === 'object' && newObj[key] !== null && !['c', 'r', 'u', 'd'].includes(key)) {
+        } else if (
+          typeof newObj[key] === "object" &&
+          newObj[key] !== null &&
+          !["c", "r", "u", "d"].includes(key)
+        ) {
           if (checkObject(oldObj?.[key] || {}, newObj[key])) {
             return true;
           }
@@ -136,24 +146,28 @@ const RolePage = () => {
       }
       return false;
     };
-    
+
     return checkObject(oldPerms, newPerms);
   };
 
   // Helper function to set all delete permissions
   const setAllDeletePermissions = (permissions, value) => {
     const updatedPermissions = JSON.parse(JSON.stringify(permissions));
-    
+
     const updateDelete = (obj) => {
-      Object.keys(obj).forEach(key => {
-        if (key === 'd') {
+      Object.keys(obj).forEach((key) => {
+        if (key === "d") {
           obj[key] = value ? 1 : 0;
-        } else if (typeof obj[key] === 'object' && obj[key] !== null && !['c', 'r', 'u', 'd'].includes(key)) {
+        } else if (
+          typeof obj[key] === "object" &&
+          obj[key] !== null &&
+          !["c", "r", "u", "d"].includes(key)
+        ) {
           updateDelete(obj[key]);
         }
       });
     };
-    
+
     updateDelete(updatedPermissions);
     return updatedPermissions;
   };
@@ -162,18 +176,21 @@ const RolePage = () => {
     if (checked) {
       // When turning ON, ask if they want to allow delete on all modules
       const result = await Swal.fire({
-        title: 'Enable System Role',
-        text: 'Do you want to allow delete permissions on all modules?',
-        icon: 'question',
+        title: "Enable System Role",
+        text: "Do you want to allow delete permissions on all modules?",
+        icon: "question",
         showCancelButton: true,
-        confirmButtonText: 'Yes, allow delete',
-        cancelButtonText: 'No, keep current',
-        confirmButtonColor: '#3182ce',
+        confirmButtonText: "Yes, allow delete",
+        cancelButtonText: "No, keep current",
+        confirmButtonColor: "#3182ce",
       });
 
       if (result.isConfirmed) {
         // Set all delete permissions to 1
-        const updatedPermissions = setAllDeletePermissions(formData.permissions, true);
+        const updatedPermissions = setAllDeletePermissions(
+          formData.permissions,
+          true
+        );
         setFormData((prev) => ({
           ...prev,
           isSystemRole: true,
@@ -188,7 +205,10 @@ const RolePage = () => {
       }
     } else {
       // When turning OFF, turn off all delete permissions without confirmation
-      const updatedPermissions = setAllDeletePermissions(formData.permissions, false);
+      const updatedPermissions = setAllDeletePermissions(
+        formData.permissions,
+        false
+      );
       setFormData((prev) => ({
         ...prev,
         isSystemRole: false,
@@ -219,7 +239,7 @@ const RolePage = () => {
 
     if (isNewRole) {
       const result = await createRole(formData);
-      
+
       if (result.success) {
         toast.success("Role Created", {
           description: "Role has been created successfully",
@@ -232,7 +252,7 @@ const RolePage = () => {
       }
     } else {
       const result = await updateRole(role._id || role.id, formData);
-      
+
       if (result.success) {
         toast.success("Role Updated", {
           description: "Role has been updated successfully",
@@ -301,14 +321,21 @@ const RolePage = () => {
 
   return (
     <Box>
-      <HStack mb={6} justify="space-between">
-        <Button
-          leftIcon={<FiArrowLeft />}
-          variant="ghost"
-          onClick={() => navigate("/roles")}
-        >
-          Back
-        </Button>
+      <PageHeader>
+        <Heading variant="pageTitle" noOfLines={1}>
+          <IconButton
+            isRound
+            as="span"
+            variant="ghost"
+            cursor="pointer"
+            icon={<FiArrowLeft />}
+            onClick={() => navigate("/roles")}
+          />
+          {isNewRole ? "Create New Role" : formData.title}
+        </Heading>
+      </PageHeader>
+      <HStack mb={6} spacing={4}>
+        <Spacer />
         {!isEditMode && !isNewRole ? (
           <Button
             leftIcon={<FiEdit />}
@@ -339,137 +366,144 @@ const RolePage = () => {
           </HStack>
         )}
       </HStack>
+      <Flex gap={6} flexWrap={{ base: "wrap", md: "nowrap" }}>
+        <Box w={{ base: "full", md: "xs" }}>
+          <Card>
+            <CardBody>
+              <VStack align="stretch" spacing={4}>
+                {isEditMode ? (
+                  <>
+                    <FormControl isInvalid={validationErrors.title}>
+                      <FormLabel>Role Title</FormLabel>
+                      <Input
+                        value={formData.title}
+                        onChange={(e) =>
+                          handleFieldChange("title", e.target.value)
+                        }
+                        placeholder="Enter role title"
+                      />
+                      <FormErrorMessage>
+                        {validationErrors.title}
+                      </FormErrorMessage>
+                    </FormControl>
 
-      <VStack align="stretch" spacing={6}>
-        <Box
-          p={6}
-          bg={bgColor}
-          borderWidth="1px"
-          borderColor={borderColor}
-          borderRadius="md"
-        >
-          <VStack align="stretch" spacing={4}>
-            {isEditMode ? (
-              <>
-                <FormControl isInvalid={validationErrors.title}>
-                  <FormLabel>Role Title</FormLabel>
-                  <Input
-                    value={formData.title}
-                    onChange={(e) => handleFieldChange("title", e.target.value)}
-                    placeholder="Enter role title"
-                  />
-                  <FormErrorMessage>{validationErrors.title}</FormErrorMessage>
-                </FormControl>
+                    <FormControl isInvalid={validationErrors.description}>
+                      <FormLabel>Description</FormLabel>
+                      <Textarea
+                        value={formData.description}
+                        onChange={(e) =>
+                          handleFieldChange("description", e.target.value)
+                        }
+                        placeholder="Enter role description"
+                        rows={3}
+                      />
+                      <FormErrorMessage>
+                        {validationErrors.description}
+                      </FormErrorMessage>
+                    </FormControl>
 
-                <FormControl isInvalid={validationErrors.description}>
-                  <FormLabel>Description</FormLabel>
-                  <Textarea
-                    value={formData.description}
-                    onChange={(e) => handleFieldChange("description", e.target.value)}
-                    placeholder="Enter role description"
-                    rows={3}
-                  />
-                  <FormErrorMessage>{validationErrors.description}</FormErrorMessage>
-                </FormControl>
-
-                <FormControl>
-                  <Checkbox
-                    isChecked={formData.isSystemRole}
-                    onChange={(e) => handleSystemRoleChange(e.target.checked)}
-                    colorScheme="brandPrimary"
-                  >
-                    System Role
-                  </Checkbox>
-                  <Text fontSize="sm" color="gray.500" mt={1}>
-                    System roles have special privileges. Toggling this will affect delete permissions.
-                  </Text>
-                </FormControl>
-              </>
-            ) : (
-              <>
-                <Box>
-                  <Text fontSize="sm" color="gray.500" mb={1}>
-                    Role Title
-                  </Text>
-                  <Heading size="lg">{role.title}</Heading>
-                </Box>
-
-                <Divider />
-
-                <Box>
-                  <Text fontSize="sm" color="gray.500" mb={1}>
-                    Description
-                  </Text>
-                  <Text>{role.description}</Text>
-                </Box>
-              </>
-            )}
-
-            {!isEditMode && !isNewRole && (
-              <>
-                <Divider />
-                <HStack spacing={8} flexWrap="wrap">
-                  <Box>
-                    <Text fontSize="sm" color="gray.500" mb={1}>
-                      Created At
-                    </Text>
-                    <Text fontWeight="medium">
-                      {new Date(role.createdAt).toLocaleDateString()}{" "}
-                      <Text as="span" fontSize="sm" color="gray.500">
-                        (
-                        {formatDistanceToNow(new Date(role.createdAt), {
-                          addSuffix: true,
-                        })}
-                        )
+                    <FormControl>
+                      <Checkbox
+                        isChecked={formData.isSystemRole}
+                        onChange={(e) =>
+                          handleSystemRoleChange(e.target.checked)
+                        }
+                        colorScheme="brandPrimary"
+                      >
+                        System Role
+                      </Checkbox>
+                      <Text fontSize="sm" color="gray.500" mt={1}>
+                        System roles have special privileges. Toggling this will
+                        affect delete permissions.
                       </Text>
-                    </Text>
-                  </Box>
-                  <Box>
-                    <Text fontSize="sm" color="gray.500" mb={1}>
-                      Updated At
-                    </Text>
-                    <Text fontWeight="medium">
-                      {new Date(role.updatedAt).toLocaleDateString()}{" "}
-                      <Text as="span" fontSize="sm" color="gray.500">
-                        (
-                        {formatDistanceToNow(new Date(role.updatedAt), {
-                          addSuffix: true,
-                        })}
-                        )
+                    </FormControl>
+                  </>
+                ) : (
+                  <>
+                    <Box>
+                      <Text fontSize="sm" color="gray.500" mb={1}>
+                        Role Title
                       </Text>
-                    </Text>
-                  </Box>
-                  <Box>
-                    <Text fontSize="sm" color="gray.500" mb={1}>
-                      System Role
-                    </Text>
-                    <Text fontWeight="medium">
-                      {role.isSystemRole ? "Yes" : "No"}
-                    </Text>
-                  </Box>
-                </HStack>
-              </>
-            )}
-          </VStack>
-        </Box>
+                      <Heading size="lg">{role.title}</Heading>
+                    </Box>
 
-        <Box
-          p={6}
-          bg={bgColor}
-          borderWidth="1px"
-          borderColor={borderColor}
-          borderRadius="md"
-        >
-          <Heading size="md" mb={4}>
-            Permissions
-          </Heading>
-          <PermissionsCheckboxGroup
-            permissions={isEditMode ? formData.permissions : role.permissions}
-            onChange={isEditMode ? handlePermissionsChange : undefined}
-            readOnly={!isEditMode}
-          />
+                    <Divider />
+
+                    <Box>
+                      <Text fontSize="sm" color="gray.500" mb={1}>
+                        Description
+                      </Text>
+                      <Text>{role.description}</Text>
+                    </Box>
+                  </>
+                )}
+
+                {!isEditMode && !isNewRole && (
+                  <>
+                    <Divider />
+                    <HStack spacing={8} flexWrap="wrap">
+                      <Box>
+                        <Text fontSize="sm" color="gray.500" mb={1}>
+                          Created At
+                        </Text>
+                        <Text fontWeight="medium">
+                          {new Date(role.createdAt).toLocaleDateString()}{" "}
+                          <Text as="span" fontSize="sm" color="gray.500">
+                            (
+                            {formatDistanceToNow(new Date(role.createdAt), {
+                              addSuffix: true,
+                            })}
+                            )
+                          </Text>
+                        </Text>
+                      </Box>
+                      <Box>
+                        <Text fontSize="sm" color="gray.500" mb={1}>
+                          Updated At
+                        </Text>
+                        <Text fontWeight="medium">
+                          {new Date(role.updatedAt).toLocaleDateString()}{" "}
+                          <Text as="span" fontSize="sm" color="gray.500">
+                            (
+                            {formatDistanceToNow(new Date(role.updatedAt), {
+                              addSuffix: true,
+                            })}
+                            )
+                          </Text>
+                        </Text>
+                      </Box>
+                      <Box>
+                        <Text fontSize="sm" color="gray.500" mb={1}>
+                          System Role
+                        </Text>
+                        <Text fontWeight="medium">
+                          {role.isSystemRole ? "Yes" : "No"}
+                        </Text>
+                      </Box>
+                    </HStack>
+                  </>
+                )}
+              </VStack>
+            </CardBody>
+          </Card>
         </Box>
-      </VStack>
+        <Box w={{ base: "full", md: "auto" }} flex={{ base: 0, md: "1" }}>
+          <Card w="full">
+            <CardHeader>
+              <Heading size="md">Permissions</Heading>
+            </CardHeader>
+            <CardBody>
+              <PermissionsCheckboxGroup
+                permissions={
+                  isEditMode ? formData.permissions : role.permissions
+                }
+                onChange={isEditMode ? handlePermissionsChange : undefined}
+                readOnly={!isEditMode}
+              />
+            </CardBody>
+          </Card>
+        </Box>
+      </Flex>
     </Box>
   );
 };
