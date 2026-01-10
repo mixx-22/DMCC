@@ -96,10 +96,11 @@ const RoleAsyncSelect = ({ value = [], onChange, isInvalid, ...props }) => {
   };
 
   const handleSelectRole = (role) => {
-    const roleTitle = role.title;
-    // Prevent duplicate selection - check if role title already exists
-    if (!value.includes(roleTitle)) {
-      onChange([...value, roleTitle]);
+    // Store full role object with id and title
+    // Prevent duplicate selection by checking if id already exists
+    const isDuplicate = value.some((r) => r.id === role.id || r.id === role._id);
+    if (!isDuplicate) {
+      onChange([...value, { id: role.id || role._id, title: role.title }]);
     }
     setInputValue("");
     setOptions([]);
@@ -107,11 +108,12 @@ const RoleAsyncSelect = ({ value = [], onChange, isInvalid, ...props }) => {
   };
 
   const handleRemoveRole = (roleToRemove) => {
-    onChange(value.filter((role) => role !== roleToRemove));
+    onChange(value.filter((role) => role.id !== roleToRemove.id));
   };
 
+  // Filter out already selected roles by checking IDs
   const filteredOptions = options.filter(
-    (option) => !value.includes(option.title)
+    (option) => !value.some((r) => r.id === option.id || r.id === option._id)
   );
 
   return (
@@ -123,7 +125,7 @@ const RoleAsyncSelect = ({ value = [], onChange, isInvalid, ...props }) => {
             <HStack spacing={2} wrap="wrap">
               {value.map((role) => (
                 <Tag
-                  key={role}
+                  key={role.id}
                   size="md"
                   borderRadius="full"
                   variant="solid"

@@ -20,13 +20,30 @@ const MOCK_USER = {
   middleName: "M",
   lastName: "Doe",
   email: "john.doe@example.com",
-  role: ["User", "Manager"],
+  role: ["1", "2"], // Role IDs (User, Manager)
   isActive: true,
   department: "Engineering",
   position: "Senior Developer",
-  phone: "+1234567890",
+  phone: "09171234567",
   createdAt: "2024-01-15T10:00:00.000Z",
   updatedAt: "2024-01-15T10:00:00.000Z",
+};
+
+// Mock roles mapping for development
+const MOCK_ROLES_MAP = {
+  "1": { id: "1", title: "Admin" },
+  "2": { id: "2", title: "Manager" },
+  "3": { id: "3", title: "User" },
+  "4": { id: "4", title: "Supervisor" },
+  "5": { id: "5", title: "Analyst" },
+};
+
+// Helper to convert role IDs to role objects with title
+const convertRoleIdsToObjects = (roleIds) => {
+  if (!Array.isArray(roleIds)) return [];
+  return roleIds
+    .map((id) => MOCK_ROLES_MAP[id] || { id, title: `Role ${id}` })
+    .filter(Boolean);
 };
 
 const UserProfileContext = createContext();
@@ -219,6 +236,7 @@ export const UserProfileProvider = ({ children }) => {
         updateUser,
         createUser,
         initialUserData,
+        convertRoleIdsToObjects,
       }}
     >
       {children}

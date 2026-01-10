@@ -38,8 +38,15 @@ const isValidDate = (dateString) => {
 const UserPage = () => {
   const navigate = useNavigate();
   const { id } = useParams();
-  const { user, initialUserData, loading, saving, updateUser, createUser } =
-    useUserProfile();
+  const {
+    user,
+    initialUserData,
+    loading,
+    saving,
+    updateUser,
+    createUser,
+    convertRoleIdsToObjects,
+  } = useUserProfile();
 
   const isNewUser = id === "new";
   const [isEditMode, setIsEditMode] = useState(isNewUser);
@@ -53,9 +60,11 @@ const UserPage = () => {
         ...initialUserData,
         ...user,
         isActive: user.isActive !== undefined ? user.isActive : true,
+        // Convert role IDs to objects for the async select component
+        role: convertRoleIdsToObjects(user.role || []),
       });
     }
-  }, [user, isNewUser, initialUserData]);
+  }, [user, isNewUser, initialUserData, convertRoleIdsToObjects]);
 
   const handleFieldChange = (field, value) => {
     setFormData((prev) => ({
@@ -87,12 +96,15 @@ const UserPage = () => {
     if (!formData.employeeId.trim()) {
       errors.employeeId = "Employee ID is required";
     }
-    // Phone number validation (optional but if provided, must be valid)
+    // Philippine phone number validation (optional but if provided, must be valid)
+    // Formats: 09XX XXX XXXX, +639XX XXX XXXX, 63 9XX XXX XXXX, (02) XXXX XXXX, etc.
     if (formData.phone && formData.phone.trim()) {
-      // Accepts formats: +1234567890, (123) 456-7890, 123-456-7890, 123.456.7890, etc.
-      const phoneRegex = /^[\+]?[(]?[0-9]{1,4}[)]?[-\s\.]?[(]?[0-9]{1,4}[)]?[-\s\.]?[0-9]{1,9}$/;
-      if (!phoneRegex.test(formData.phone.replace(/[\s\-\.\(\)]/g, ''))) {
-        errors.phone = "Please enter a valid phone number";
+      const cleanedPhone = formData.phone.replace(/[\s\-\.\(\)]/g, '');
+      // Philippine mobile: starts with 09 or +639 or 639 (10-13 digits total)
+      // Philippine landline: starts with 02 or area code (7-10 digits)
+      const phoneRegex = /^(\+?63|0)?[2-9]\d{8,10}$/;
+      if (!phoneRegex.test(cleanedPhone)) {
+        errors.phone = "Please enter a valid Philippine phone number (e.g., 09XX XXX XXXX or (02) XXXX XXXX)";
       }
     }
     setValidationErrors(errors);
@@ -107,10 +119,18 @@ const UserPage = () => {
       return;
     }
 
+    // Transform roles to array of IDs for submission
+    const dataToSubmit = {
+      ...formData,
+      role: Array.isArray(formData.role)
+        ? formData.role.map((r) => (typeof r === "object" ? r.id : r))
+        : [],
+    };
+
     if (isNewUser) {
-      delete formData.createdAt;
-      delete formData.updatedAt;
-      const result = await createUser(formData);
+      delete dataToSubmit.createdAt;
+      delete dataToSubmit.updatedAt;
+      const result = await createUser(dataToSubmit);
 
       if (result.success) {
         toast.success("User Created", {
@@ -123,7 +143,7 @@ const UserPage = () => {
         });
       }
     } else {
-      const result = await updateUser(user._id || user.id, formData);
+      const result = await updateUser(user._id || user.id, dataToSubmit);
 
       if (result.success) {
         toast.success("User Updated", {
@@ -491,9 +511,9 @@ const UserPage = () => {
                       </Text>
                       <HStack wrap="wrap" spacing={2}>
                         {user.role && user.role.length > 0 ? (
-                          user.role.map((r, idx) => (
+                          convertRoleIdsToObjects(user.role).map((r, idx) => (
                             <Badge key={idx} colorScheme="purple">
-                              {r.title || r}
+                              {r.title}
                             </Badge>
                           ))
                         ) : (
