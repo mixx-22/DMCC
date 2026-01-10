@@ -1,4 +1,10 @@
-import { useEffect, useCallback, useReducer, createContext, useContext } from "react";
+import {
+  useEffect,
+  useCallback,
+  useReducer,
+  createContext,
+  useContext,
+} from "react";
 import { useParams } from "react-router-dom";
 import apiService from "../services/api";
 
@@ -53,8 +59,23 @@ const reducer = (state, action) => {
   }
 };
 
+const initialUserData = {
+  firstName: "",
+  middleName: "",
+  lastName: "",
+  email: "",
+  employeeId: "",
+  department: "",
+  position: "",
+  phone: "",
+  role: [],
+  isActive: true,
+  createdAt: null,
+  updatedAt: null,
+};
+
 const initialState = {
-  user: null,
+  user: initialUserData,
   loading: false,
   error: null,
   saving: false,
@@ -67,9 +88,8 @@ export const UserProfileProvider = ({ children }) => {
   const fetchUser = useCallback(async (userId) => {
     dispatch({ type: "SET_LOADING", value: true });
     dispatch({ type: "SET_ERROR", value: null });
-    
+
     if (!USE_API) {
-      // Mock API call
       setTimeout(() => {
         dispatch({
           type: "SET_USER",
@@ -79,70 +99,78 @@ export const UserProfileProvider = ({ children }) => {
       }, 500);
       return;
     }
-    
+
     try {
       const data = await apiService.request(`${USERS_ENDPOINT}/${userId}`, {
         method: "GET",
       });
-      
+
       dispatch({
         type: "SET_USER",
-        user: data.data || data,
+        user: data.user || data,
       });
     } catch (err) {
-      dispatch({ type: "SET_ERROR", value: err.message || "Failed to fetch user" });
+      dispatch({
+        type: "SET_ERROR",
+        value: err.message || "Failed to fetch user",
+      });
     } finally {
       dispatch({ type: "SET_LOADING", value: false });
     }
   }, []);
 
-  const updateUser = useCallback(async (userId, updates) => {
-    dispatch({ type: "SET_SAVING", value: true });
-    dispatch({ type: "SET_ERROR", value: null });
-    
-    if (!USE_API) {
-      // Mock API call
-      setTimeout(() => {
+  const updateUser = useCallback(
+    async (userId, updates) => {
+      dispatch({ type: "SET_SAVING", value: true });
+      dispatch({ type: "SET_ERROR", value: null });
+
+      if (!USE_API) {
+        // Mock API call
+        setTimeout(() => {
+          dispatch({
+            type: "SET_USER",
+            user: { ...state.user, ...updates },
+          });
+          dispatch({ type: "SET_SAVING", value: false });
+        }, 500);
+        return { success: true };
+      }
+
+      try {
+        const data = await apiService.request(`${USERS_ENDPOINT}/${userId}`, {
+          method: "PUT",
+          body: JSON.stringify(updates),
+        });
+
         dispatch({
           type: "SET_USER",
-          user: { ...state.user, ...updates },
+          user: data.data || data,
         });
         dispatch({ type: "SET_SAVING", value: false });
-      }, 500);
-      return { success: true };
-    }
-    
-    try {
-      const data = await apiService.request(`${USERS_ENDPOINT}/${userId}`, {
-        method: "PUT",
-        body: JSON.stringify(updates),
-      });
-      
-      dispatch({
-        type: "SET_USER",
-        user: data.data || data,
-      });
-      dispatch({ type: "SET_SAVING", value: false });
-      return { success: true };
-    } catch (err) {
-      dispatch({ type: "SET_ERROR", value: err.message || "Failed to update user" });
-      dispatch({ type: "SET_SAVING", value: false });
-      return { success: false, error: err.message };
-    }
-  }, [state.user]);
+        return { success: true };
+      } catch (err) {
+        dispatch({
+          type: "SET_ERROR",
+          value: err.message || "Failed to update user",
+        });
+        dispatch({ type: "SET_SAVING", value: false });
+        return { success: false, error: err.message };
+      }
+    },
+    [state.user]
+  );
 
   const createUser = useCallback(async (userData) => {
     dispatch({ type: "SET_SAVING", value: true });
     dispatch({ type: "SET_ERROR", value: null });
-    
+
     if (!USE_API) {
-      // Mock API call
       const newId = `user-${Date.now()}`;
       setTimeout(() => {
         dispatch({
           type: "SET_USER",
-          user: { 
-            ...userData, 
+          user: {
+            ...userData,
             _id: newId,
             createdAt: new Date().toISOString(),
             updatedAt: new Date().toISOString(),
@@ -152,13 +180,13 @@ export const UserProfileProvider = ({ children }) => {
       }, 500);
       return { success: true, id: newId };
     }
-    
+
     try {
       const data = await apiService.request(USERS_ENDPOINT, {
         method: "POST",
         body: JSON.stringify(userData),
       });
-      
+
       const newUser = data.data || data;
       dispatch({
         type: "SET_USER",
@@ -167,7 +195,10 @@ export const UserProfileProvider = ({ children }) => {
       dispatch({ type: "SET_SAVING", value: false });
       return { success: true, id: newUser._id || newUser.id };
     } catch (err) {
-      dispatch({ type: "SET_ERROR", value: err.message || "Failed to create user" });
+      dispatch({
+        type: "SET_ERROR",
+        value: err.message || "Failed to create user",
+      });
       dispatch({ type: "SET_SAVING", value: false });
       return { success: false, error: err.message };
     }
@@ -187,6 +218,7 @@ export const UserProfileProvider = ({ children }) => {
         fetchUser,
         updateUser,
         createUser,
+        initialUserData,
       }}
     >
       {children}

@@ -29,41 +29,24 @@ import PageHeader from "../../components/PageHeader";
 const UserPage = () => {
   const navigate = useNavigate();
   const { id } = useParams();
-  const { user, loading, saving, updateUser, createUser } = useUserProfile();
+  const { user, initialUserData, loading, saving, updateUser, createUser } =
+    useUserProfile();
 
   const isNewUser = id === "new";
   const [isEditMode, setIsEditMode] = useState(isNewUser);
-  const [formData, setFormData] = useState({
-    firstName: "",
-    middleName: "",
-    lastName: "",
-    email: "",
-    employeeId: "",
-    department: "",
-    position: "",
-    phone: "",
-    role: [],
-    isActive: true,
-  });
+  const [formData, setFormData] = useState(initialUserData);
   const [validationErrors, setValidationErrors] = useState({});
 
   // Initialize form data when user loads
   useEffect(() => {
     if (user && !isNewUser) {
       setFormData({
-        firstName: user.firstName || "",
-        middleName: user.middleName || "",
-        lastName: user.lastName || "",
-        email: user.email || "",
-        employeeId: user.employeeId || "",
-        department: user.department || "",
-        position: user.position || "",
-        phone: user.phone || "",
-        role: user.role || [],
+        ...initialUserData,
+        ...user,
         isActive: user.isActive !== undefined ? user.isActive : true,
       });
     }
-  }, [user, isNewUser]);
+  }, [user, isNewUser, initialUserData]);
 
   const handleFieldChange = (field, value) => {
     setFormData((prev) => ({
@@ -140,18 +123,10 @@ const UserPage = () => {
     if (isNewUser) {
       navigate("/users");
     } else {
-      // Reset form data to original user data
       if (user) {
         setFormData({
-          firstName: user.firstName || "",
-          middleName: user.middleName || "",
-          lastName: user.lastName || "",
-          email: user.email || "",
-          employeeId: user.employeeId || "",
-          department: user.department || "",
-          position: user.position || "",
-          phone: user.phone || "",
-          role: user.role || [],
+          ...initialUserData,
+          ...user,
           isActive: user.isActive !== undefined ? user.isActive : true,
         });
       }
@@ -173,23 +148,15 @@ const UserPage = () => {
     );
   }
 
-  if (!user && !isNewUser) {
-    return (
-      <Box p={4}>
-        <Text>User not found</Text>
-        <Button mt={4} onClick={() => navigate("/users")}>
-          Back to Users
-        </Button>
-      </Box>
-    );
-  }
-
   const fullName = isEditMode
     ? `${formData.firstName} ${formData.middleName} ${formData.lastName}`.trim()
     : user
-    ? `${user.firstName || ""} ${user.middleName || ""} ${user.lastName || ""}`.trim()
+    ? `${user.firstName || ""} ${user.middleName || ""} ${
+        user.lastName || ""
+      }`.trim()
     : "";
 
+  console.log(user);
   return (
     <Box>
       <PageHeader>
