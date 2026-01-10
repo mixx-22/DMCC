@@ -26,49 +26,49 @@ const MODULES = [
     label: "Users",
     description: "Manage user accounts and profiles",
     level: 0,
-    path: ["users"],
+    path: "users",
   },
   {
     key: "teams",
     label: "Teams",
     description: "Manage teams and team memberships",
     level: 0,
-    path: ["teams"],
+    path: "teams",
   },
   {
     key: "roles",
     label: "Roles",
     description: "Manage roles and permissions",
     level: 0,
-    path: ["roles"],
+    path: "roles",
   },
   {
     key: "document",
     label: "Document",
     description: "Manage documents",
     level: 0,
-    path: ["document"],
+    path: "document",
   },
   {
     key: "document.permissions.archive",
     label: "Archive",
     description: "Archive and unarchive documents",
     level: 1,
-    path: ["document", "permissions", "archive"],
+    path: "document.archive",
   },
   {
     key: "document.permissions.download",
     label: "Download",
     description: "Download documents",
     level: 1,
-    path: ["document", "permissions", "download"],
+    path: "document.download",
   },
   {
     key: "audit",
     label: "Audit",
     description: "View audit logs and history",
     level: 0,
-    path: ["audit"],
+    path: "audit",
   },
 ];
 
@@ -84,12 +84,20 @@ const PermissionsCheckboxGroup = ({
   readOnly = false,
 }) => {
   // Get permission value from nested object
-  const getPermissionValue = (path, action) => {
+  const getPermissionValue = (path, action = "r") => {
+    if (!permissions || !path) return false;
+
+    const keys = (Array.isArray(path) ? path : path.split(".")).filter(
+      (k) => k !== "permission" && k !== "permissions"
+    );
+
     let current = permissions;
-    for (const key of path) {
+
+    for (let i = 0; i < keys.length; i++) {
       if (!current || typeof current !== "object") return false;
-      current = current[key];
+      current = i === 0 ? current[keys[i]] : current.permission?.[keys[i]];
     }
+
     return current?.[action] === 1;
   };
 
@@ -168,6 +176,8 @@ const PermissionsCheckboxGroup = ({
                     fontSize={{ base: "xs", md: "sm" }}
                     color="gray.600"
                     pl={module.level * 6}
+                    opacity={0.6}
+                    _hover={{ opacity: 1 }}
                   >
                     {module.description}
                   </Text>
@@ -176,7 +186,7 @@ const PermissionsCheckboxGroup = ({
               {["c", "r", "u", "d"].map((action) => (
                 <Td key={action} textAlign="center">
                   <Tooltip
-                    label={`${action.toUpperCase()} - ${PERMISSION_LABELS[action]}`}
+                    label={`${PERMISSION_LABELS[action]} ${module.label}`}
                     placement="top"
                     hasArrow
                   >
@@ -186,9 +196,6 @@ const PermissionsCheckboxGroup = ({
                       alignItems="center"
                       gap={1}
                     >
-                      <Text fontSize="xs" fontWeight="semibold" color="gray.600">
-                        {action.toUpperCase()}
-                      </Text>
                       <Switch
                         size="sm"
                         isChecked={getPermissionValue(module.path, action)}
