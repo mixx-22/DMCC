@@ -2,7 +2,6 @@ import {
   Box,
   Switch,
   Collapse,
-  FormControl,
   FormLabel,
   HStack,
   IconButton,
@@ -15,7 +14,9 @@ import {
   Thead,
   Tr,
   VStack,
-  useColorModeValue,
+  Card,
+  CardBody,
+  Checkbox,
 } from "@chakra-ui/react";
 import { FiChevronDown, FiChevronUp } from "react-icons/fi";
 import { useState } from "react";
@@ -66,7 +67,13 @@ const extractCrudPerms = (obj) => {
 /**
  * Component to render a single permission entity with its CRUD switches in table format
  */
-const PermissionEntity = ({ label, perms, onPermissionChange, readOnly }) => {
+const PermissionEntity = ({
+  label,
+  perms,
+  onPermissionChange,
+  readOnly,
+  isChild = false,
+}) => {
   const handleSelectAll = (checked) => {
     if (readOnly) return;
     const allPerms = {
@@ -82,8 +89,33 @@ const PermissionEntity = ({ label, perms, onPermissionChange, readOnly }) => {
     return perms.c && perms.r && perms.u && perms.d;
   };
 
+  const isSomeSelected = () => {
+    const selected = [perms.c, perms.r, perms.u, perms.d].filter(
+      Boolean
+    ).length;
+    return selected > 0 && selected < 4;
+  };
+
   return (
     <Box overflowX="auto" w="full">
+      <HStack mb={2} spacing={2}>
+        <FormLabel fontWeight="bold" mb={0}>
+          {isChild ? "" : label}
+        </FormLabel>
+        <Spacer />
+        <HStack spacing={1}>
+          {!readOnly && (
+            <Checkbox
+              isChecked={isAllSelected()}
+              isIndeterminate={isSomeSelected()}
+              onChange={(e) => handleSelectAll(e.target.checked)}
+              colorScheme="brandPrimary"
+            >
+              <Text fontSize="sm">Select All</Text>
+            </Checkbox>
+          )}
+        </HStack>
+      </HStack>
       <Table
         variant="simple"
         size="sm"
@@ -92,44 +124,14 @@ const PermissionEntity = ({ label, perms, onPermissionChange, readOnly }) => {
       >
         <Thead>
           <Tr>
-            <Th width={{ base: "35%", md: "40%" }}>{label}</Th>
-            <Th textAlign="center" width={{ base: "16.25%", md: "15%" }}>
-              Create
-            </Th>
-            <Th textAlign="center" width={{ base: "16.25%", md: "15%" }}>
-              Read
-            </Th>
-            <Th textAlign="center" width={{ base: "16.25%", md: "15%" }}>
-              Update
-            </Th>
-            <Th textAlign="center" width={{ base: "16.25%", md: "15%" }}>
-              Delete
-            </Th>
+            <Th textAlign="center">Create</Th>
+            <Th textAlign="center">Read</Th>
+            <Th textAlign="center">Update</Th>
+            <Th textAlign="center">Delete</Th>
           </Tr>
         </Thead>
         <Tbody>
           <Tr>
-            <Td fontWeight="medium">
-              {!readOnly && (
-                <HStack spacing={2}>
-                  <Switch
-                    size="sm"
-                    isChecked={isAllSelected()}
-                    onChange={(e) => handleSelectAll(e.target.checked)}
-                    colorScheme="brandPrimary"
-                    isDisabled={readOnly}
-                  />
-                  <Text fontSize={{ base: "xs", md: "sm" }} noOfLines={1}>
-                    All Permissions
-                  </Text>
-                </HStack>
-              )}
-              {readOnly && (
-                <Text fontSize={{ base: "xs", md: "sm" }} color="gray.500">
-                  Permissions
-                </Text>
-              )}
-            </Td>
             {Object.entries(PERMISSION_LABELS).map(([action]) => (
               <Td key={action} textAlign="center">
                 <Switch
@@ -168,9 +170,6 @@ const NestedPermissionGroup = ({
   parentKey = null,
 }) => {
   const [isOpen, setIsOpen] = useState(true);
-  const bgColor = useColorModeValue("white", "gray.800");
-  const borderColor = useColorModeValue("gray.200", "gray.700");
-  const nestedBgColor = useColorModeValue("gray.50", "gray.700");
 
   const label = prettifyLabel(entityKey, parentKey);
   const currentPath = [...path, entityKey];
@@ -205,78 +204,77 @@ const NestedPermissionGroup = ({
   };
 
   return (
-    <Box
-      p={{ base: 3, md: 4 }}
-      borderWidth="1px"
-      borderColor={borderColor}
-      borderRadius="md"
-      bg={level > 0 ? nestedBgColor : bgColor}
-      ml={level > 0 ? { base: 2, md: 4 } : 0}
-    >
-      <VStack align="stretch" spacing={3}>
-        {hasNested ? (
-          <>
-            <HStack
-              spacing={2}
-              cursor="pointer"
-              onClick={() => setIsOpen(!isOpen)}
-            >
-              <FormLabel
-                mb={0}
+    <Card variant={level > 0 ? "outline" : "filled"} boxShadow="none">
+      <CardBody>
+        <VStack align="stretch" spacing={3}>
+          {hasNested ? (
+            <>
+              <HStack
+                spacing={2}
                 cursor="pointer"
-                fontWeight="bold"
-                fontSize={{ base: "sm", md: level === 0 ? "md" : "sm" }}
-                noOfLines={1}
+                onClick={() => setIsOpen(!isOpen)}
               >
-                {label}
-              </FormLabel>
-              <Spacer />
-              <IconButton
-                size="sm"
-                variant="ghost"
-                icon={isOpen ? <FiChevronDown /> : <FiChevronUp />}
-                aria-label={isOpen ? "Collapse" : "Expand"}
-              />
-            </HStack>
+                <FormLabel
+                  mb={0}
+                  cursor="pointer"
+                  fontWeight="bold"
+                  fontSize={{ base: "sm", md: level === 0 ? "md" : "sm" }}
+                  noOfLines={1}
+                >
+                  {label}
+                </FormLabel>
+                <Spacer />
+                <IconButton
+                  size="sm"
+                  variant="ghost"
+                  icon={isOpen ? <FiChevronDown /> : <FiChevronUp />}
+                  aria-label={isOpen ? "Collapse" : "Expand"}
+                />
+              </HStack>
 
-            <Collapse in={isOpen} animateOpacity>
-              <VStack align="stretch" spacing={4}>
-                {/* Only show parent CRUD if it has meaningful permissions (not all zeros) */}
-                {(crudPerms.c || crudPerms.r || crudPerms.u || crudPerms.d) && (
-                  <PermissionEntity
-                    label={label}
-                    perms={crudPerms}
-                    onPermissionChange={handleCrudChange}
-                    readOnly={readOnly}
-                  />
-                )}
+              <Collapse in={isOpen} animateOpacity>
+                <VStack align="stretch" spacing={4}>
+                  {/* Only show parent CRUD if it has meaningful permissions (not all zeros) */}
+                  {(crudPerms.c ||
+                    crudPerms.r ||
+                    crudPerms.u ||
+                    crudPerms.d) && (
+                    <PermissionEntity
+                      isChild
+                      label={label}
+                      perms={crudPerms}
+                      onPermissionChange={handleCrudChange}
+                      readOnly={readOnly}
+                    />
+                  )}
 
-                {/* Render nested entities */}
-                {nestedEntities.map(([nestedKey, nestedValue]) => (
-                  <NestedPermissionGroup
-                    key={nestedKey}
-                    entityKey={nestedKey}
-                    entityValue={nestedValue}
-                    path={currentPath}
-                    onChange={handleNestedChange}
-                    readOnly={readOnly}
-                    level={level + 1}
-                    parentKey={entityKey}
-                  />
-                ))}
-              </VStack>
-            </Collapse>
-          </>
-        ) : (
-          <PermissionEntity
-            label={label}
-            perms={crudPerms}
-            onPermissionChange={handleCrudChange}
-            readOnly={readOnly}
-          />
-        )}
-      </VStack>
-    </Box>
+                  {/* Render nested entities */}
+                  {nestedEntities.map(([nestedKey, nestedValue]) => (
+                    <NestedPermissionGroup
+                      key={nestedKey}
+                      entityKey={nestedKey}
+                      entityValue={nestedValue}
+                      path={currentPath}
+                      onChange={handleNestedChange}
+                      readOnly={readOnly}
+                      level={level + 1}
+                      parentKey={entityKey}
+                    />
+                  ))}
+                </VStack>
+              </Collapse>
+            </>
+          ) : (
+            <PermissionEntity
+              label={label}
+              perms={crudPerms}
+              onPermissionChange={handleCrudChange}
+              readOnly={readOnly}
+            />
+          )}
+        </VStack>
+      </CardBody>
+    </Card>
   );
 };
 
