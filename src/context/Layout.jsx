@@ -12,11 +12,13 @@ export const useLayout = () => {
 
 export const LayoutProvider = ({ children }) => {
   const headerRef = useRef();
+  const footerRef = useRef();
 
   return (
     <Layout.Provider
       value={{
         headerRef,
+        footerRef,
       }}
     >
       {children}

@@ -23,12 +23,15 @@ import {
   AlertDialogHeader,
   AlertDialogContent,
   AlertDialogOverlay,
+  Flex,
 } from "@chakra-ui/react";
 import { toast } from "sonner";
 import { FiPlus, FiEdit, FiTrash2, FiSearch, FiUser } from "react-icons/fi";
 import { useApp } from "../context/AppContext";
 import { useNavigate } from "react-router-dom";
 import AccountModal from "../components/AccountModal";
+import PageHeader from "../components/PageHeader";
+import PageFooter from "../components/PageFooter";
 
 const Accounts = () => {
   const { accounts, deleteAccount, currentUser } = useApp();
@@ -110,12 +113,16 @@ const Accounts = () => {
 
   return (
     <Box>
-      <HStack justify="space-between" mb={6}>
-        <Heading>Accounts</Heading>
-        <Button leftIcon={<FiPlus />} colorScheme="blue" onClick={handleCreate}>
-          Create New Account
-        </Button>
-      </HStack>
+      <PageHeader>
+        <Heading variant="pageTitle">Accounts</Heading>
+      </PageHeader>
+      <PageFooter>
+        <Flex gap={4} justifyContent="flex-end">
+          <Button leftIcon={<FiPlus />} colorScheme="blue" onClick={handleCreate}>
+            Create New Account
+          </Button>
+        </Flex>
+      </PageFooter>
 
       {/* Search Bar */}
       <Box mb={6}>

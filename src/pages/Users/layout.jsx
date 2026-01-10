@@ -12,7 +12,6 @@ import {
   Avatar,
   Badge,
   Spacer,
-  Button,
   InputGroup,
   InputLeftElement,
 } from "@chakra-ui/react";
@@ -22,7 +21,7 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import { useUsers } from "../../context/_useContext";
 import Pagination from "../../components/Pagination";
 import UsersSkeleton from "../../components/UsersSkeleton";
-import { FiPlus, FiSearch } from "react-icons/fi";
+import { FiSearch } from "react-icons/fi";
 
 const MotionBox = motion(Box);
 
@@ -80,16 +79,6 @@ const Layout = () => {
 
   return (
     <Box>
-      <HStack mb={4} justify="space-between">
-        <Spacer />
-        <Button
-          leftIcon={<FiPlus />}
-          colorScheme="brandPrimary"
-          onClick={() => navigate("/users/new")}
-        >
-          Create New User
-        </Button>
-      </HStack>
       <HStack
         mb={4}
         justify="space-between"
