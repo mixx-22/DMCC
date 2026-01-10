@@ -26,6 +26,7 @@ import { useState, useEffect } from "react";
 import PermissionsCheckboxGroup from "../../components/PermissionsCheckboxGroup";
 import { useRole } from "../../context/RoleContext";
 import PageHeader from "../../components/PageHeader";
+import PageFooter from "../../components/PageFooter";
 
 const RolePage = () => {
   const navigate = useNavigate();
@@ -320,45 +321,46 @@ const RolePage = () => {
           {isNewRole ? "Create New Role" : formData.title}
         </Heading>
       </PageHeader>
-      <Flex
-        mb={6}
-        gap={4}
-        flexWrap="wrap"
-        justifyContent={{ base: "stretch", sm: "flex-end" }}
-      >
-        {!isEditMode && !isNewRole ? (
-          <Button
-            leftIcon={<FiEdit />}
-            colorScheme="brandPrimary"
-            onClick={handleEdit}
-            w={{ base: "full", sm: "auto" }}
-          >
-            Edit Role
-          </Button>
-        ) : (
-          <Flex gap={2} w={{ base: "full", sm: "auto" }}>
+      <PageFooter>
+        <Flex
+          gap={4}
+          flexWrap="wrap"
+          justifyContent={{ base: "stretch", sm: "flex-end" }}
+        >
+          {!isEditMode && !isNewRole ? (
             <Button
-              leftIcon={<FiX />}
-              variant="outline"
-              onClick={handleCancel}
-              isDisabled={saving}
-              flex={{ base: 1, sm: "auto" }}
-            >
-              Cancel
-            </Button>
-            <Button
-              leftIcon={<FiSave />}
+              leftIcon={<FiEdit />}
               colorScheme="brandPrimary"
-              onClick={handleSave}
-              isLoading={saving}
-              loadingText="Saving..."
-              flex={{ base: 1, sm: "auto" }}
+              onClick={handleEdit}
+              w={{ base: "full", sm: "auto" }}
             >
-              {isNewRole ? "Create Role" : "Save Changes"}
+              Edit Role
             </Button>
-          </Flex>
-        )}
-      </Flex>
+          ) : (
+            <Flex gap={2} w={{ base: "full", sm: "auto" }}>
+              <Button
+                leftIcon={<FiX />}
+                variant="outline"
+                onClick={handleCancel}
+                isDisabled={saving}
+                flex={{ base: 1, sm: "auto" }}
+              >
+                Cancel
+              </Button>
+              <Button
+                leftIcon={<FiSave />}
+                colorScheme="brandPrimary"
+                onClick={handleSave}
+                isLoading={saving}
+                loadingText="Saving..."
+                flex={{ base: 1, sm: "auto" }}
+              >
+                {isNewRole ? "Create Role" : "Save Changes"}
+              </Button>
+            </Flex>
+          )}
+        </Flex>
+      </PageFooter>
       <Flex gap={6} flexWrap={{ base: "wrap", lg: "nowrap" }}>
         <Box w={{ base: "full", lg: "xs" }}>
           <Card>
