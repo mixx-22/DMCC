@@ -1,6 +1,5 @@
 import {
   Box,
-  Button,
   HStack,
   Input,
   Table,
@@ -17,7 +16,7 @@ import {
   InputGroup,
   InputLeftElement,
 } from "@chakra-ui/react";
-import { FiPlus, FiSearch } from "react-icons/fi";
+import { FiSearch } from "react-icons/fi";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { formatDistanceToNow } from "date-fns";
 import { motion } from "framer-motion";
@@ -81,16 +80,6 @@ const RolesList = () => {
 
   return (
     <Box>
-      <HStack mb={4} justify="space-between">
-        <Spacer />
-        <Button
-          leftIcon={<FiPlus />}
-          colorScheme="brandPrimary"
-          onClick={() => navigate("/roles/new")}
-        >
-          Create New Role
-        </Button>
-      </HStack>
       <HStack
         mb={4}
         justify="space-between"
