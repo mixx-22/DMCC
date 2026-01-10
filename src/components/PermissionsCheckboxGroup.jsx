@@ -67,8 +67,6 @@ const extractCrudPerms = (obj) => {
  * Component to render a single permission entity with its CRUD switches in table format
  */
 const PermissionEntity = ({ label, perms, onPermissionChange, readOnly }) => {
-  const borderColor = useColorModeValue("gray.200", "gray.700");
-
   const handleSelectAll = (checked) => {
     if (readOnly) return;
     const allPerms = {
@@ -84,23 +82,29 @@ const PermissionEntity = ({ label, perms, onPermissionChange, readOnly }) => {
     return perms.c && perms.r && perms.u && perms.d;
   };
 
-  const isSomeSelected = () => {
-    const selected = [perms.c, perms.r, perms.u, perms.d].filter(
-      Boolean
-    ).length;
-    return selected > 0 && selected < 4;
-  };
-
   return (
     <Box overflowX="auto" w="full">
-      <Table variant="simple" size="sm" w="full" minW={{ base: "500px", md: "full" }}>
+      <Table
+        variant="simple"
+        size="sm"
+        w="full"
+        minW={{ base: "500px", md: "full" }}
+      >
         <Thead>
           <Tr>
             <Th width={{ base: "35%", md: "40%" }}>{label}</Th>
-            <Th textAlign="center" width={{ base: "16.25%", md: "15%" }}>Create</Th>
-            <Th textAlign="center" width={{ base: "16.25%", md: "15%" }}>Read</Th>
-            <Th textAlign="center" width={{ base: "16.25%", md: "15%" }}>Update</Th>
-            <Th textAlign="center" width={{ base: "16.25%", md: "15%" }}>Delete</Th>
+            <Th textAlign="center" width={{ base: "16.25%", md: "15%" }}>
+              Create
+            </Th>
+            <Th textAlign="center" width={{ base: "16.25%", md: "15%" }}>
+              Read
+            </Th>
+            <Th textAlign="center" width={{ base: "16.25%", md: "15%" }}>
+              Update
+            </Th>
+            <Th textAlign="center" width={{ base: "16.25%", md: "15%" }}>
+              Delete
+            </Th>
           </Tr>
         </Thead>
         <Tbody>
@@ -115,10 +119,16 @@ const PermissionEntity = ({ label, perms, onPermissionChange, readOnly }) => {
                     colorScheme="brandPrimary"
                     isDisabled={readOnly}
                   />
-                  <Text fontSize={{ base: "xs", md: "sm" }} noOfLines={1}>All Permissions</Text>
+                  <Text fontSize={{ base: "xs", md: "sm" }} noOfLines={1}>
+                    All Permissions
+                  </Text>
                 </HStack>
               )}
-              {readOnly && <Text fontSize={{ base: "xs", md: "sm" }} color="gray.500">Permissions</Text>}
+              {readOnly && (
+                <Text fontSize={{ base: "xs", md: "sm" }} color="gray.500">
+                  Permissions
+                </Text>
+              )}
             </Td>
             {Object.entries(PERMISSION_LABELS).map(([action]) => (
               <Td key={action} textAlign="center">
@@ -127,7 +137,10 @@ const PermissionEntity = ({ label, perms, onPermissionChange, readOnly }) => {
                   isChecked={perms[action]}
                   onChange={(e) => {
                     if (!readOnly) {
-                      onPermissionChange({ ...perms, [action]: e.target.checked });
+                      onPermissionChange({
+                        ...perms,
+                        [action]: e.target.checked,
+                      });
                     }
                   }}
                   colorScheme="brandPrimary"

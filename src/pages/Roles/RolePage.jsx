@@ -334,7 +334,12 @@ const RolePage = () => {
           {isNewRole ? "Create New Role" : formData.title}
         </Heading>
       </PageHeader>
-      <Flex mb={6} gap={4} flexWrap="wrap" justifyContent={{ base: "stretch", sm: "flex-end" }}>
+      <Flex
+        mb={6}
+        gap={4}
+        flexWrap="wrap"
+        justifyContent={{ base: "stretch", sm: "flex-end" }}
+      >
         {!isEditMode && !isNewRole ? (
           <Button
             leftIcon={<FiEdit />}
@@ -368,8 +373,8 @@ const RolePage = () => {
           </Flex>
         )}
       </Flex>
-      <Flex gap={6} flexWrap={{ base: "wrap", md: "nowrap" }}>
-        <Box w={{ base: "full", md: "xs" }}>
+      <Flex gap={6} flexWrap={{ base: "wrap", lg: "nowrap" }}>
+        <Box w={{ base: "full", lg: "xs" }}>
           <Card>
             <CardBody>
               <VStack align="stretch" spacing={4}>
@@ -448,7 +453,10 @@ const RolePage = () => {
                         <Text fontSize="sm" color="gray.500" mb={1}>
                           Created At
                         </Text>
-                        <Text fontWeight="medium" fontSize={{ base: "sm", md: "md" }}>
+                        <Text
+                          fontWeight="medium"
+                          fontSize={{ base: "sm", md: "md" }}
+                        >
                           {new Date(role.createdAt).toLocaleDateString()}{" "}
                           <Text as="span" fontSize="sm" color="gray.500">
                             (
@@ -463,7 +471,10 @@ const RolePage = () => {
                         <Text fontSize="sm" color="gray.500" mb={1}>
                           Updated At
                         </Text>
-                        <Text fontWeight="medium" fontSize={{ base: "sm", md: "md" }}>
+                        <Text
+                          fontWeight="medium"
+                          fontSize={{ base: "sm", md: "md" }}
+                        >
                           {new Date(role.updatedAt).toLocaleDateString()}{" "}
                           <Text as="span" fontSize="sm" color="gray.500">
                             (
