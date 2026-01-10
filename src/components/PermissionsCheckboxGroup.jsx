@@ -1,14 +1,19 @@
 import {
   Box,
-  Checkbox,
+  Switch,
   Collapse,
   FormControl,
   FormLabel,
-  Grid,
   HStack,
   IconButton,
   Spacer,
+  Table,
+  Tbody,
+  Td,
   Text,
+  Th,
+  Thead,
+  Tr,
   VStack,
   useColorModeValue,
 } from "@chakra-ui/react";
@@ -59,9 +64,11 @@ const extractCrudPerms = (obj) => {
 };
 
 /**
- * Component to render a single permission entity with its CRUD checkboxes
+ * Component to render a single permission entity with its CRUD switches in table format
  */
 const PermissionEntity = ({ label, perms, onPermissionChange, readOnly }) => {
+  const borderColor = useColorModeValue("gray.200", "gray.700");
+
   const handleSelectAll = (checked) => {
     if (readOnly) return;
     const allPerms = {
@@ -85,42 +92,51 @@ const PermissionEntity = ({ label, perms, onPermissionChange, readOnly }) => {
   };
 
   return (
-    <VStack align="stretch" spacing={3}>
-      <HStack justify="space-between">
-        <FormLabel mb={0} fontWeight="semibold" fontSize="md">
-          {label}
-        </FormLabel>
-        {!readOnly && (
-          <Checkbox
-            isChecked={isAllSelected()}
-            isIndeterminate={isSomeSelected()}
-            onChange={(e) => handleSelectAll(e.target.checked)}
-            colorScheme="brandPrimary"
-          >
-            <Text fontSize="sm">Select All</Text>
-          </Checkbox>
-        )}
-      </HStack>
-
-      <Grid templateColumns="repeat(auto-fill, minmax(120px, 1fr))" gap={3}>
-        {Object.entries(PERMISSION_LABELS).map(([action, actionLabel]) => (
-          <FormControl key={action}>
-            <Checkbox
-              isChecked={perms[action]}
-              onChange={(e) => {
-                if (!readOnly) {
-                  onPermissionChange({ ...perms, [action]: e.target.checked });
-                }
-              }}
-              colorScheme="brandPrimary"
-              isDisabled={readOnly}
-            >
-              <Text fontSize="sm">{actionLabel}</Text>
-            </Checkbox>
-          </FormControl>
-        ))}
-      </Grid>
-    </VStack>
+    <Table variant="simple" size="sm">
+      <Thead>
+        <Tr>
+          <Th width="40%">{label}</Th>
+          <Th textAlign="center" width="15%">Create</Th>
+          <Th textAlign="center" width="15%">Read</Th>
+          <Th textAlign="center" width="15%">Update</Th>
+          <Th textAlign="center" width="15%">Delete</Th>
+        </Tr>
+      </Thead>
+      <Tbody>
+        <Tr>
+          <Td fontWeight="medium">
+            {!readOnly && (
+              <HStack>
+                <Switch
+                  size="sm"
+                  isChecked={isAllSelected()}
+                  onChange={(e) => handleSelectAll(e.target.checked)}
+                  colorScheme="brandPrimary"
+                  isDisabled={readOnly}
+                />
+                <Text fontSize="sm">All Permissions</Text>
+              </HStack>
+            )}
+            {readOnly && <Text fontSize="sm" color="gray.500">Permissions</Text>}
+          </Td>
+          {Object.entries(PERMISSION_LABELS).map(([action]) => (
+            <Td key={action} textAlign="center">
+              <Switch
+                size="sm"
+                isChecked={perms[action]}
+                onChange={(e) => {
+                  if (!readOnly) {
+                    onPermissionChange({ ...perms, [action]: e.target.checked });
+                  }
+                }}
+                colorScheme="brandPrimary"
+                isDisabled={readOnly}
+              />
+            </Td>
+          ))}
+        </Tr>
+      </Tbody>
+    </Table>
   );
 };
 
