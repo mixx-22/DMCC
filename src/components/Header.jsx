@@ -72,48 +72,27 @@ const Header = () => {
         <Box w="full" flex={1} ref={headerRef}></Box>
         {showDesktopMenu && (
           <Flex align="center" gap={0}>
-            <Menu>
-              <MenuButton
-                as={IconButton}
-                icon={<FiBell />}
-                variant="ghost"
-                position="relative"
-                isRound
-              >
-                {expiringCerts.length > 0 && (
-                  <Badge
-                    position="absolute"
-                    top={0}
-                    right={0}
-                    colorScheme="red"
-                    borderRadius="full"
-                    fontSize="xs"
-                  >
-                    {expiringCerts.length}
-                  </Badge>
-                )}
-              </MenuButton>
-              <MenuList>
-                {expiringCerts.length === 0 ? (
-                  <MenuItem>No notifications</MenuItem>
-                ) : (
-                  <>
-                    <MenuItem fontWeight="bold" isDisabled>
-                      Expiring Certifications ({expiringCerts.length})
-                    </MenuItem>
-                    {expiringCerts.map((cert) => (
-                      <MenuItem
-                        key={`expiring-cert-${cert.id}`}
-                        onClick={() => navigate(`/certifications/${cert.id}`)}
-                      >
-                        {cert.name} - Expires:{" "}
-                        {new Date(cert.expirationDate).toLocaleDateString()}
-                      </MenuItem>
-                    ))}
-                  </>
-                )}
-              </MenuList>
-            </Menu>
+            <IconButton
+              aria-label="Notifications"
+              icon={<FiBell />}
+              variant="ghost"
+              position="relative"
+              isRound
+              onClick={() => navigate("/notifications")}
+            >
+              {expiringCerts.length > 0 && (
+                <Badge
+                  position="absolute"
+                  top={0}
+                  right={0}
+                  colorScheme="red"
+                  borderRadius="full"
+                  fontSize="xs"
+                >
+                  {expiringCerts.length}
+                </Badge>
+              )}
+            </IconButton>
             <Menu>
               <MenuButton
                 as={IconButton}

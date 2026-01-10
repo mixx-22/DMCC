@@ -466,135 +466,62 @@ const Sidebar = () => {
             />
 
             {/* Notifications Button */}
-            <Box position="relative">
-              <Menu>
-                <MenuButton
-                  as={IconButton}
-                  icon={<FiBell size={24} />}
-                  variant="ghost"
-                  position="relative"
-                  aria-label="Notifications"
-                  h="auto"
-                  py={2}
-                  color={textColor}
-                  _hover={{ bg: hoverBg }}
-                  borderRadius="md"
+            <IconButton
+              aria-label="Notifications"
+              icon={<FiBell size={24} />}
+              variant="ghost"
+              onClick={() => navigate("/notifications")}
+              position="relative"
+              h="auto"
+              py={2}
+              color={location.pathname === "/notifications" ? activeColor : textColor}
+              _hover={{ bg: hoverBg }}
+              borderRadius="md"
+            >
+              {expiringCerts.length > 0 && (
+                <Badge
+                  position="absolute"
+                  top={0}
+                  right={0}
+                  colorScheme="red"
+                  borderRadius="full"
+                  fontSize="xs"
                 >
-                  {expiringCerts.length > 0 && (
-                    <Badge
-                      position="absolute"
-                      top={0}
-                      right={0}
-                      colorScheme="red"
-                      borderRadius="full"
-                      fontSize="xs"
-                    >
-                      {expiringCerts.length}
-                    </Badge>
-                  )}
-                </MenuButton>
-                <Portal>
-                  <MenuList maxH="300px" overflowY="auto" zIndex="modal">
-                    {expiringCerts.length === 0 ? (
-                      <MenuItem>No notifications</MenuItem>
-                    ) : (
-                      <>
-                        <MenuItem fontWeight="bold" isDisabled>
-                          Expiring Certifications ({expiringCerts.length})
-                        </MenuItem>
-                        {expiringCerts.map((cert) => (
-                          <MenuItem
-                            key={`expiring-cert-${cert.id}`}
-                            onClick={() => handleNotificationClick(cert.id)}
-                            fontSize="sm"
-                          >
-                            {cert.name} - Expires:{" "}
-                            {new Date(cert.expirationDate).toLocaleDateString()}
-                          </MenuItem>
-                        ))}
-                      </>
-                    )}
-                  </MenuList>
-                </Portal>
-              </Menu>
-            </Box>
+                  {expiringCerts.length}
+                </Badge>
+              )}
+            </IconButton>
 
             {/* User Menu Button */}
-            <Menu>
-              <MenuButton
-                as={IconButton}
-                variant="ghost"
-                icon={
-                  <Avatar
-                    src={currentUser?.profilePicture}
-                    name={
-                      currentUser
-                        ? [
-                            currentUser.firstName,
-                            currentUser.middleName,
-                            currentUser.lastName,
-                          ]
-                            .filter(Boolean)
-                            .join(" ") ||
-                          currentUser.name ||
-                          "User"
-                        : "User"
-                    }
-                    size="sm"
-                  />
-                }
-                aria-label="User menu"
-                h="auto"
-                py={2}
-                _hover={{ bg: hoverBg }}
-                borderRadius="md"
-              />
-              <Portal>
-                <MenuList zIndex="modal">
-                  <MenuItem>
-                    <HStack spacing={3}>
-                      <Avatar
-                        src={currentUser?.profilePicture}
-                        name={currentUser?.name || "User"}
-                        size="sm"
-                      />
-                      <VStack spacing={0} align="start">
-                        <Text fontSize="sm" fontWeight="semibold">
-                          {currentUser
-                            ? [
-                                currentUser.firstName,
-                                currentUser.middleName,
-                                currentUser.lastName,
-                              ]
-                                .filter(Boolean)
-                                .join(" ") ||
-                              currentUser.name ||
-                              "User"
-                            : "User"}
-                        </Text>
-                        <Text fontSize="xs" color="gray.500">
-                          {currentUser?.position || ""}
-                        </Text>
-                      </VStack>
-                    </HStack>
-                  </MenuItem>
-                  <MenuItem>Settings</MenuItem>
-                  <Divider />
-                  <MenuItem onClick={toggleColorMode}>
-                    Appearance: {colorMode === "dark" ? "Dark" : "Light"}
-                  </MenuItem>
-                  <Divider />
-                  <MenuItem
-                    icon={<FiLogOut />}
-                    onClick={handleLogout}
-                    color="error.500"
-                  >
-                    Log Out
-                  </MenuItem>
-                  <Divider />
-                </MenuList>
-              </Portal>
-            </Menu>
+            <IconButton
+              aria-label="Profile"
+              icon={
+                <Avatar
+                  src={currentUser?.profilePicture}
+                  name={
+                    currentUser
+                      ? [
+                          currentUser.firstName,
+                          currentUser.middleName,
+                          currentUser.lastName,
+                        ]
+                          .filter(Boolean)
+                          .join(" ") ||
+                        currentUser.name ||
+                        "User"
+                      : "User"
+                  }
+                  size="sm"
+                />
+              }
+              variant="ghost"
+              onClick={() => navigate("/profile")}
+              h="auto"
+              py={2}
+              color={location.pathname === "/profile" ? activeColor : textColor}
+              _hover={{ bg: hoverBg }}
+              borderRadius="md"
+            />
           </Flex>
         </Box>
 
