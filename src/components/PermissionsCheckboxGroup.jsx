@@ -48,6 +48,8 @@ const extractCrudPerms = (obj) => {
 
 /**
  * Flatten permissions into a list of rows with indentation levels
+ * Note: "permissions" is a special fixed key that indicates nested permissions
+ * It should not appear as a row itself, only its children should be rendered
  */
 const flattenPermissions = (permissions, level = 0, path = []) => {
   const rows = [];
@@ -70,10 +72,28 @@ const flattenPermissions = (permissions, level = 0, path = []) => {
 
     // Recursively process nested entities (non-CRUD keys)
     Object.entries(value).forEach(([nestedKey, nestedValue]) => {
-      if (
-        !["c", "r", "u", "d"].includes(nestedKey) &&
-        isNestedPermission(nestedValue)
-      ) {
+      if (["c", "r", "u", "d"].includes(nestedKey)) {
+        // Skip CRUD keys
+        return;
+      }
+
+      if (nestedKey === "permissions" && typeof nestedValue === "object") {
+        // Special handling for "permissions" key
+        // Don't create a row for "permissions" itself, process its children directly
+        // Children should be at the same level + 1, but use the parent's path
+        Object.entries(nestedValue).forEach(([childKey, childValue]) => {
+          if (isNestedPermission(childValue)) {
+            rows.push(
+              ...flattenPermissions(
+                { [childKey]: childValue },
+                level + 1,
+                currentPath
+              )
+            );
+          }
+        });
+      } else if (isNestedPermission(nestedValue)) {
+        // Regular nested entity (not "permissions")
         rows.push(
           ...flattenPermissions(
             { [nestedKey]: nestedValue },
@@ -85,7 +105,6 @@ const flattenPermissions = (permissions, level = 0, path = []) => {
     });
   });
 
-  console.log(rows);
   return rows;
 };
 
@@ -109,19 +128,37 @@ const PermissionsCheckboxGroup = ({
     const newPermissions = JSON.parse(JSON.stringify(permissions));
 
     // Navigate to the target and update it
+    // Special handling: if path length is 2, the second item is nested under "permissions"
     let current = newPermissions;
-    for (let i = 0; i < path.length - 1; i++) {
-      if (!current[path[i]]) {
-        current[path[i]] = {};
+    
+    if (path.length === 2) {
+      // This is a nested permission like ["document", "archive"]
+      // We need to navigate: newPermissions[path[0]].permissions[path[1]]
+      if (!current[path[0]]) {
+        current[path[0]] = {};
       }
-      current = current[path[i]];
+      if (!current[path[0]].permissions) {
+        current[path[0]].permissions = {};
+      }
+      if (!current[path[0]].permissions[path[1]]) {
+        current[path[0]].permissions[path[1]] = {};
+      }
+      current[path[0]].permissions[path[1]][action] = checked;
+    } else {
+      // Root level permission like ["users"], ["teams"], etc.
+      for (let i = 0; i < path.length - 1; i++) {
+        if (!current[path[i]]) {
+          current[path[i]] = {};
+        }
+        current = current[path[i]];
+      }
+      
+      // Update the specific permission
+      if (!current[path[path.length - 1]]) {
+        current[path[path.length - 1]] = {};
+      }
+      current[path[path.length - 1]][action] = checked;
     }
-
-    // Update the specific permission
-    if (!current[path[path.length - 1]]) {
-      current[path[path.length - 1]] = {};
-    }
-    current[path[path.length - 1]][action] = checked;
 
     onChange(newPermissions);
   };
