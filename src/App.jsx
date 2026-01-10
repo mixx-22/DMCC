@@ -17,8 +17,7 @@ import Users from "./pages/Users";
 import { UsersProvider } from "./context/UsersContext";
 import Archive from "./pages/Archive";
 import Roles from "./pages/Roles";
-import RoleView from "./pages/Roles/RoleView";
-import RoleEdit from "./pages/Roles/RoleEdit";
+import RolePage from "./pages/Roles/RolePage";
 import { RolesProvider } from "./context/RolesContext";
 import { RoleProvider } from "./context/RoleContext";
 import { useBreakpointValue } from "@chakra-ui/react";
@@ -93,7 +92,7 @@ function App() {
                       path="/roles/new"
                       element={
                         <RoleProvider>
-                          <RoleView />
+                          <RolePage />
                         </RoleProvider>
                       }
                     />
@@ -101,16 +100,8 @@ function App() {
                       path="/roles/:id"
                       element={
                         <RoleProvider>
-                          <RoleView />
+                          <RolePage />
                         </RoleProvider>
-                      }
-                    />
-                    <Route
-                      path="/roles/:id/edit"
-                      element={
-                        <RolesProvider>
-                          <RoleEdit />
-                        </RolesProvider>
                       }
                     />
                   </Routes>

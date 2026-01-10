@@ -34,17 +34,19 @@ const MOCK_ROLE = {
       r: 1,
       u: 1,
       d: 1,
-      archive: {
-        c: 1,
-        r: 1,
-        u: 1,
-        d: 1
-      },
-      download: {
-        c: 1,
-        r: 1,
-        u: 1,
-        d: 1
+      permissions: {
+        archive: {
+          c: 1,
+          r: 1,
+          u: 1,
+          d: 1
+        },
+        download: {
+          c: 1,
+          r: 1,
+          u: 1,
+          d: 1
+        }
       }
     },
     audit: {

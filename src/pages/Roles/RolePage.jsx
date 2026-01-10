@@ -24,7 +24,7 @@ import { useState, useEffect } from "react";
 import PermissionsCheckboxGroup from "../../components/PermissionsCheckboxGroup";
 import { useRole } from "../../context/RoleContext";
 
-const RoleView = () => {
+const RolePage = () => {
   const navigate = useNavigate();
   const { id } = useParams();
   const { role, loading, saving, error, updateRole, createRole } = useRole();
@@ -38,10 +38,15 @@ const RoleView = () => {
       users: { c: 0, r: 0, u: 0, d: 0 },
       teams: { c: 0, r: 0, u: 0, d: 0 },
       roles: { c: 0, r: 0, u: 0, d: 0 },
-      document: { 
-        c: 0, r: 0, u: 0, d: 0,
-        archive: { c: 0, r: 0, u: 0, d: 0 },
-        download: { c: 0, r: 0, u: 0, d: 0 }
+      document: {
+        c: 0,
+        r: 0,
+        u: 0,
+        d: 0,
+        permissions: {
+          archive: { c: 0, r: 0, u: 0, d: 0 },
+          download: { c: 0, r: 0, u: 0, d: 0 },
+        },
       },
       audit: { c: 0, r: 0, u: 0, d: 0 },
     },
@@ -469,4 +474,4 @@ const RoleView = () => {
   );
 };
 
-export default RoleView;
+export default RolePage;
