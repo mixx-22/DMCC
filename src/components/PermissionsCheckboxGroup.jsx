@@ -70,12 +70,22 @@ const flattenPermissions = (permissions, level = 0, path = []) => {
 
     // Recursively process nested entities (non-CRUD keys)
     Object.entries(value).forEach(([nestedKey, nestedValue]) => {
-      if (!["c", "r", "u", "d"].includes(nestedKey) && isNestedPermission(nestedValue)) {
-        rows.push(...flattenPermissions({ [nestedKey]: nestedValue }, level + 1, currentPath));
+      if (
+        !["c", "r", "u", "d"].includes(nestedKey) &&
+        isNestedPermission(nestedValue)
+      ) {
+        rows.push(
+          ...flattenPermissions(
+            { [nestedKey]: nestedValue },
+            level + 1,
+            currentPath
+          )
+        );
       }
     });
   });
 
+  console.log(rows);
   return rows;
 };
 
@@ -126,19 +136,18 @@ const PermissionsCheckboxGroup = ({
       >
         <Thead>
           <Tr>
-            <Th width={{ base: "40%", md: "40%" }}>Module</Th>
-            <Th textAlign="center" width={{ base: "15%", md: "15%" }}>
-              Create
+            <Th width={{ base: "40%", md: "40%" }} rowSpan={2}>
+              Module
             </Th>
-            <Th textAlign="center" width={{ base: "15%", md: "15%" }}>
-              Read
+            <Th textAlign="center" colSpan={4} border="none">
+              Permissions
             </Th>
-            <Th textAlign="center" width={{ base: "15%", md: "15%" }}>
-              Update
-            </Th>
-            <Th textAlign="center" width={{ base: "15%", md: "15%" }}>
-              Delete
-            </Th>
+          </Tr>
+          <Tr>
+            <Th textAlign="center">Create</Th>
+            <Th textAlign="center">Read</Th>
+            <Th textAlign="center">Update</Th>
+            <Th textAlign="center">Delete</Th>
           </Tr>
         </Thead>
         <Tbody>
@@ -156,14 +165,16 @@ const PermissionsCheckboxGroup = ({
               {["c", "r", "u", "d"].map((action) => (
                 <Td key={action} textAlign="center">
                   <Tooltip
-                    label={`${action.toUpperCase()} - ${PERMISSION_LABELS[action]}`}
+                    label={`${PERMISSION_LABELS[action]} ${row.label}`}
                     placement="top"
                     hasArrow
                   >
-                    <Box display="inline-flex" flexDirection="column" alignItems="center" gap={1}>
-                      <Text fontSize="xs" fontWeight="semibold" color="gray.600">
-                        {action.toUpperCase()}
-                      </Text>
+                    <Box
+                      display="inline-flex"
+                      flexDirection="column"
+                      alignItems="center"
+                      gap={1}
+                    >
                       <Switch
                         size="sm"
                         isChecked={row.perms[action]}

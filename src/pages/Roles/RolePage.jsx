@@ -16,7 +16,6 @@ import {
   CardBody,
   Card,
   Flex,
-  CardHeader,
 } from "@chakra-ui/react";
 import { FiEdit, FiArrowLeft, FiSave, FiX } from "react-icons/fi";
 import { useNavigate, useParams } from "react-router-dom";
@@ -391,22 +390,6 @@ const RolePage = () => {
                         {validationErrors.title}
                       </FormErrorMessage>
                     </FormControl>
-
-                    <FormControl isInvalid={validationErrors.description}>
-                      <FormLabel>Description</FormLabel>
-                      <Textarea
-                        value={formData.description}
-                        onChange={(e) =>
-                          handleFieldChange("description", e.target.value)
-                        }
-                        placeholder="Enter role description"
-                        rows={3}
-                      />
-                      <FormErrorMessage>
-                        {validationErrors.description}
-                      </FormErrorMessage>
-                    </FormControl>
-
                     <FormControl>
                       <Checkbox
                         isChecked={formData.isSystemRole}
@@ -422,6 +405,20 @@ const RolePage = () => {
                         affect delete permissions.
                       </Text>
                     </FormControl>
+                    <FormControl isInvalid={validationErrors.description}>
+                      <FormLabel>Description</FormLabel>
+                      <Textarea
+                        value={formData.description}
+                        onChange={(e) =>
+                          handleFieldChange("description", e.target.value)
+                        }
+                        placeholder="Enter role description"
+                        rows={3}
+                      />
+                      <FormErrorMessage>
+                        {validationErrors.description}
+                      </FormErrorMessage>
+                    </FormControl>
                   </>
                 ) : (
                   <>
@@ -431,9 +428,16 @@ const RolePage = () => {
                       </Text>
                       <Heading size="lg">{role.title}</Heading>
                     </Box>
-
                     <Divider />
-
+                    <Box>
+                      <Text fontSize="sm" color="gray.500" mb={1}>
+                        System Role
+                      </Text>
+                      <Text fontWeight="medium">
+                        {role.isSystemRole ? "Yes" : "No"}
+                      </Text>
+                    </Box>
+                    <Divider />
                     <Box>
                       <Text fontSize="sm" color="gray.500" mb={1}>
                         Description
@@ -483,14 +487,6 @@ const RolePage = () => {
                           </Text>
                         </Text>
                       </Box>
-                      <Box>
-                        <Text fontSize="sm" color="gray.500" mb={1}>
-                          System Role
-                        </Text>
-                        <Text fontWeight="medium">
-                          {role.isSystemRole ? "Yes" : "No"}
-                        </Text>
-                      </Box>
                     </VStack>
                   </>
                 )}
@@ -500,10 +496,7 @@ const RolePage = () => {
         </Box>
         <Box w={{ base: "full", md: "auto" }} flex={{ base: 0, md: "1" }}>
           <Card w="full">
-            <CardHeader>
-              <Heading size="md">Permissions</Heading>
-            </CardHeader>
-            <CardBody>
+            <CardBody px={0}>
               <PermissionsCheckboxGroup
                 permissions={
                   isEditMode ? formData.permissions : role.permissions
