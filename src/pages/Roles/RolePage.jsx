@@ -242,7 +242,17 @@ const RolePage = () => {
         toast.success("Role Created", {
           description: "Role has been created successfully",
         });
-        navigate(`/roles/${result.id}`);
+        if (result.id) {
+          navigate(`/roles/${result.id}`);
+          setIsEditMode(false);
+          return;
+        } else {
+          navigate("/roles");
+          toast.error("Navigation Error", {
+            description: "Could not navigate to the new role page",
+          });
+          return;
+        }
       } else {
         toast.error("Create Failed", {
           description: result.error || "Failed to create role",
