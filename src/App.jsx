@@ -83,14 +83,6 @@ function App() {
                       }
                     />
                     <Route
-                      path="/users/new"
-                      element={
-                        <UserProfileProvider>
-                          <UserPage />
-                        </UserProfileProvider>
-                      }
-                    />
-                    <Route
                       path="/users/:id"
                       element={
                         <UserProfileProvider>

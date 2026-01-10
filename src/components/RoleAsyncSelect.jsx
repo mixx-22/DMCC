@@ -47,7 +47,7 @@ const RoleAsyncSelect = ({ value = [], onChange, isInvalid, ...props }) => {
     }
 
     setLoading(true);
-    
+
     if (!USE_API) {
       // Mock API call with delay
       setTimeout(() => {
@@ -96,9 +96,9 @@ const RoleAsyncSelect = ({ value = [], onChange, isInvalid, ...props }) => {
   };
 
   const handleSelectRole = (role) => {
-    const roleTitle = role.title;
-    if (!value.includes(roleTitle)) {
-      onChange([...value, roleTitle]);
+    const { id, title } = role;
+    if (!value.includes(title)) {
+      onChange([...value, { id, title }]);
     }
     setInputValue("");
     setOptions([]);
@@ -128,7 +128,7 @@ const RoleAsyncSelect = ({ value = [], onChange, isInvalid, ...props }) => {
                   variant="solid"
                   colorScheme="purple"
                 >
-                  <TagLabel>{role}</TagLabel>
+                  <TagLabel>{role.title}</TagLabel>
                   <TagCloseButton onClick={() => handleRemoveRole(role)} />
                 </Tag>
               ))}

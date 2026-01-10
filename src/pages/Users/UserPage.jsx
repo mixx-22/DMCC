@@ -100,6 +100,8 @@ const UserPage = () => {
     }
 
     if (isNewUser) {
+      delete formData.createdAt;
+      delete formData.updatedAt;
       const result = await createUser(formData);
 
       if (result.success) {
@@ -480,7 +482,7 @@ const UserPage = () => {
                         {user.role && user.role.length > 0 ? (
                           user.role.map((r, idx) => (
                             <Badge key={idx} colorScheme="purple">
-                              {r}
+                              {r.title || r}
                             </Badge>
                           ))
                         ) : (
