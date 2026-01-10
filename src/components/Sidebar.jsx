@@ -102,16 +102,26 @@ const SidebarRow = ({
           w="3px"
           h="full"
           bg={activeColor}
-          transition="all 0.2s"
+          transition="all 0.3s cubic-bezier(0.4, 0, 0.2, 1)"
         />
       )}
 
       {icon !== null && (
-        <Icon as={icon} boxSize={isChild ? 4 : 5} minW={isChild ? 4 : 5} />
+        <Icon 
+          as={icon} 
+          boxSize={isChild ? 4 : 5} 
+          minW={isChild ? 4 : 5}
+          transition="all 0.3s cubic-bezier(0.4, 0, 0.2, 1)"
+        />
       )}
       {(!isCollapsed || isMobile) && (
         <>
-          <Text flex={1} noOfLines={1} fontSize={isChild ? "xs" : "sm"}>
+          <Text 
+            flex={1} 
+            noOfLines={1} 
+            fontSize={isChild ? "xs" : "sm"}
+            transition="opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1)"
+          >
             {label}
           </Text>
           {hasChildren && (
@@ -123,6 +133,8 @@ const SidebarRow = ({
                 e.stopPropagation();
                 onToggle?.();
               }}
+              transition="transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)"
+              transform={isExpanded ? "rotate(180deg)" : "rotate(0deg)"}
             />
           )}
         </>
@@ -277,8 +289,15 @@ const Sidebar = () => {
             placement="right-start"
             offset={[8, 0]}
             strategy="fixed"
+            gutter={8}
           >
-            <MenuButton as={Box} w="full" cursor="pointer">
+            <MenuButton 
+              as={Box} 
+              w="full" 
+              cursor="pointer"
+              transition="all 0.2s cubic-bezier(0.4, 0, 0.2, 1)"
+              _hover={{ transform: "translateX(2px)" }}
+            >
               <SidebarRow
                 icon={item.icon}
                 label={item.label}
@@ -290,7 +309,15 @@ const Sidebar = () => {
               />
             </MenuButton>
             <Portal>
-              <MenuList minW="200px">
+              <MenuList 
+                minW="200px"
+                motionProps={{
+                  initial: { opacity: 0, x: -10 },
+                  animate: { opacity: 1, x: 0 },
+                  exit: { opacity: 0, x: -10 },
+                  transition: { duration: 0.2, ease: [0.4, 0, 0.2, 1] }
+                }}
+              >
                 <MenuGroup
                   color={menuHeaderColor}
                   title={item.label}
@@ -320,7 +347,11 @@ const Sidebar = () => {
                           ? activeBg
                           : "transparent"
                       }
-                      _hover={{ bg: hoverBg }}
+                      _hover={{ 
+                        bg: hoverBg,
+                        transform: "translateX(4px)"
+                      }}
+                      transition="all 0.2s cubic-bezier(0.4, 0, 0.2, 1)"
                     >
                       {child.label}
                     </MenuItem>
@@ -349,7 +380,12 @@ const Sidebar = () => {
 
           {hasChildren && (
             <Collapse in={isExpanded} animateOpacity>
-              <VStack align="stretch" spacing={0} bg={subMenuBg}>
+              <VStack 
+                align="stretch" 
+                spacing={0} 
+                bg={subMenuBg}
+                transition="background-color 0.3s cubic-bezier(0.4, 0, 0.2, 1)"
+              >
                 {item.children.map((child) => (
                   <SidebarRow
                     key={child.path}
@@ -453,6 +489,7 @@ const Sidebar = () => {
             boxSize={5}
             src={logoIconSrc}
             alt={import.meta.env.VITE_PROJECT_NAME}
+            transition="all 0.3s cubic-bezier(0.4, 0, 0.2, 1)"
           />
         </Flex>
       )}
@@ -472,18 +509,29 @@ const Sidebar = () => {
               w={24}
               src={logoSrc}
               alt={import.meta.env.VITE_PROJECT_NAME}
+              transition="opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1)"
             />
             <Spacer />
           </>
         )}
         <IconButton
           aria-label="Toggle Sidebar"
-          icon={<Icon as={isCollapsed ? FiChevronRight : FiChevronLeft} />}
+          icon={
+            <Icon 
+              as={isCollapsed ? FiChevronRight : FiChevronLeft}
+              transition="transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)"
+            />
+          }
           size="sm"
           variant="ghost"
           color={textColor}
           onClick={() => setIsCollapsed(!isCollapsed)}
           isRound
+          transition="all 0.2s cubic-bezier(0.4, 0, 0.2, 1)"
+          _hover={{ 
+            transform: "scale(1.1)",
+            bg: hoverBg
+          }}
         />
       </Flex>
 
