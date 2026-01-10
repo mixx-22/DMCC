@@ -156,7 +156,6 @@ const UserPage = () => {
       }`.trim()
     : "";
 
-  console.log(user);
   return (
     <Box>
       <PageHeader>
