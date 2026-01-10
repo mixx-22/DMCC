@@ -1,13 +1,19 @@
 import {
   Box,
-  Checkbox,
-  FormControl,
-  FormLabel,
-  Grid,
-  HStack,
+  Button,
+  Table,
+  Tbody,
+  Td,
   Text,
+  Th,
+  Thead,
+  Tr,
+  Tooltip,
   VStack,
+  Hide,
+  Show,
 } from "@chakra-ui/react";
+import { Fragment } from "react";
 
 const PERMISSION_LABELS = {
   c: "Create",
@@ -16,104 +22,247 @@ const PERMISSION_LABELS = {
   d: "Delete",
 };
 
-const ENTITY_LABELS = {
-  documents: "Documents",
-  certifications: "Certifications",
-  users: "Users",
-  roles: "Roles",
-  accounts: "Accounts",
-  archive: "Archive",
-};
+const MODULES = [
+  {
+    key: "users",
+    label: "Users",
+    description: "Manage user accounts and profiles",
+    level: 0,
+    path: "users",
+  },
+  {
+    key: "teams",
+    label: "Teams",
+    description: "Manage teams and team memberships",
+    level: 0,
+    path: "teams",
+  },
+  {
+    key: "roles",
+    label: "Roles",
+    description: "Manage roles and permissions",
+    level: 0,
+    path: "roles",
+  },
+  {
+    key: "document",
+    label: "Document",
+    description: "Manage documents",
+    level: 0,
+    path: "document",
+  },
+  {
+    key: "document.permissions.archive",
+    label: "Archive",
+    description: "Archive and unarchive documents",
+    level: 1,
+    path: "document.archive",
+  },
+  {
+    key: "document.permissions.download",
+    label: "Download",
+    description: "Download documents",
+    level: 1,
+    path: "document.download",
+  },
+  {
+    key: "audit",
+    label: "Audit",
+    description: "View audit logs and history",
+    level: 0,
+    path: "audit",
+  },
+];
 
-/**
- * Reusable component for displaying and editing nested permissions
- * @param {Object} permissions - Nested permissions object { entity: { c, r, u, d } }
- * @param {Function} onChange - Callback when permissions change
- * @param {Boolean} readOnly - Whether the component is read-only
- */
-const PermissionsCheckboxGroup = ({ permissions = {}, onChange, readOnly = false }) => {
-  const handlePermissionChange = (entity, action, checked) => {
+const PermissionsCheckboxGroup = ({
+  permissions = {},
+  onChange,
+  readOnly = false,
+}) => {
+  const getPermissionValue = (path, action = "r") => {
+    if (!permissions || !path) return false;
+
+    const keys = (Array.isArray(path) ? path : path.split(".")).filter(
+      (k) => k !== "permission" && k !== "permissions"
+    );
+
+    let current = permissions;
+
+    for (let i = 0; i < keys.length; i++) {
+      if (!current || typeof current !== "object") return false;
+      current = i === 0 ? current[keys[i]] : current.permission?.[keys[i]];
+    }
+
+    return current?.[action] === 1;
+  };
+
+  const handlePermissionChange = (path, action, checked) => {
     if (readOnly || !onChange) return;
 
-    const updatedPermissions = {
-      ...permissions,
-      [entity]: {
-        ...permissions[entity],
-        [action]: checked,
-      },
-    };
-    onChange(updatedPermissions);
-  };
+    const keys = (Array.isArray(path) ? path : path.split(".")).filter(
+      (k) => k !== "permission" && k !== "permissions"
+    );
 
-  const handleSelectAll = (entity, checked) => {
-    if (readOnly || !onChange) return;
+    const newPermissions = JSON.parse(JSON.stringify(permissions));
+    let current = newPermissions;
 
-    const updatedPermissions = {
-      ...permissions,
-      [entity]: {
-        c: checked,
-        r: checked,
-        u: checked,
-        d: checked,
-      },
-    };
-    onChange(updatedPermissions);
-  };
+    if (keys.length === 1) {
+      current[keys[0]] ??= {};
+      current[keys[0]][action] = checked ? 1 : 0;
+      onChange(newPermissions);
+      return;
+    }
 
-  const isAllSelected = (entity) => {
-    const entityPerms = permissions[entity] || {};
-    return entityPerms.c && entityPerms.r && entityPerms.u && entityPerms.d;
-  };
+    current[keys[0]] ??= {};
+    current[keys[0]].permission ??= {};
+    current = current[keys[0]].permission;
 
-  const isSomeSelected = (entity) => {
-    const entityPerms = permissions[entity] || {};
-    const selected = [entityPerms.c, entityPerms.r, entityPerms.u, entityPerms.d].filter(Boolean).length;
-    return selected > 0 && selected < 4;
+    for (let i = 1; i < keys.length; i++) {
+      current[keys[i]] ??= {};
+      if (i === keys.length - 1) {
+        current[keys[i]][action] = checked ? 1 : 0;
+      } else {
+        current = current[keys[i]];
+      }
+    }
+
+    onChange(newPermissions);
   };
 
   return (
-    <VStack align="stretch" spacing={4}>
-      {Object.entries(ENTITY_LABELS).map(([entity, label]) => {
-        const entityPerms = permissions[entity] || { c: false, r: false, u: false, d: false };
-        
-        return (
-          <Box key={entity} p={4} borderWidth="1px" borderRadius="md">
-            <VStack align="stretch" spacing={3}>
-              <HStack justify="space-between">
-                <FormLabel mb={0} fontWeight="semibold" fontSize="md">
-                  {label}
-                </FormLabel>
-                {!readOnly && (
-                  <Checkbox
-                    isChecked={isAllSelected(entity)}
-                    isIndeterminate={isSomeSelected(entity)}
-                    onChange={(e) => handleSelectAll(entity, e.target.checked)}
-                    colorScheme="brandPrimary"
-                  >
-                    <Text fontSize="sm">Select All</Text>
-                  </Checkbox>
-                )}
-              </HStack>
-              
-              <Grid templateColumns="repeat(auto-fill, minmax(120px, 1fr))" gap={3}>
-                {Object.entries(PERMISSION_LABELS).map(([action, actionLabel]) => (
-                  <FormControl key={action}>
-                    <Checkbox
-                      isChecked={entityPerms[action]}
-                      onChange={(e) => handlePermissionChange(entity, action, e.target.checked)}
-                      colorScheme="brandPrimary"
-                      isDisabled={readOnly}
+    <Box overflowX="auto" w="full">
+      <Table
+        variant="simple"
+        size="sm"
+        w="full"
+        minW={{ base: "600px", md: "full" }}
+      >
+        <Hide below="md">
+          <Thead>
+            <Tr>
+              <Th rowSpan={2}>Module</Th>
+              <Th textAlign="center" colSpan={4} border="none">
+                Permissions
+              </Th>
+            </Tr>
+            <Tr>
+              <Th textAlign="center">Create</Th>
+              <Th textAlign="center">Read</Th>
+              <Th textAlign="center">Update</Th>
+              <Th textAlign="center">Delete</Th>
+            </Tr>
+          </Thead>
+        </Hide>
+
+        <Tbody>
+          {MODULES.map((module) => (
+            <Fragment key={module.key}>
+              <Show below="md">
+                <Tr>
+                  <Td colSpan={5}>
+                    <VStack align="stretch" spacing={0}>
+                      <Text
+                        fontWeight={module.level === 0 ? "semibold" : "normal"}
+                        fontSize={{ base: "sm", md: "md" }}
+                        pl={module.level * 6}
+                      >
+                        {module.label}
+                      </Text>
+                      <Text
+                        fontSize={{ base: "xs", md: "sm" }}
+                        color="gray.600"
+                        pl={module.level * 6}
+                        opacity={0.6}
+                        _hover={{ opacity: 1 }}
+                      >
+                        {module.description}
+                      </Text>
+                    </VStack>
+                  </Td>
+                </Tr>
+              </Show>
+
+              <Tr>
+                <Hide below="md">
+                  <Td>
+                    <VStack align="stretch" spacing={0}>
+                      <Text
+                        fontWeight={module.level === 0 ? "semibold" : "normal"}
+                        fontSize={{ base: "sm", md: "md" }}
+                        pl={module.level * 6}
+                      >
+                        {module.label}
+                      </Text>
+                      <Text
+                        fontSize={{ base: "xs", md: "sm" }}
+                        color="gray.600"
+                        pl={module.level * 6}
+                        opacity={0.6}
+                        _hover={{ opacity: 1 }}
+                      >
+                        {module.description}
+                      </Text>
+                    </VStack>
+                  </Td>
+                </Hide>
+
+                {["c", "r", "u", "d"].map((action) => {
+                  const isActive = getPermissionValue(module.path, action);
+                  return (
+                    <Td
+                      key={action}
+                      textAlign="center"
+                      w={{ base: "25%", md: "auto" }}
+                      px={{ base: 1, md: 3 }}
                     >
-                      <Text fontSize="sm">{actionLabel}</Text>
-                    </Checkbox>
-                  </FormControl>
-                ))}
-              </Grid>
-            </VStack>
-          </Box>
-        );
-      })}
-    </VStack>
+                      <Tooltip
+                        label={`${PERMISSION_LABELS[action]} ${module.label}`}
+                        placement="top"
+                        hasArrow
+                      >
+                        <Button
+                          size="sm"
+                          borderRadius="full"
+                          variant={isActive ? "solid" : "outline"}
+                          colorScheme={isActive ? "brandPrimary" : "gray"}
+                          onClick={() => {
+                            if (!readOnly) {
+                              handlePermissionChange(
+                                module.path,
+                                action,
+                                !isActive
+                              );
+                            }
+                          }}
+                          pointerEvents={readOnly ? "none" : "initial"}
+                          minW="40px"
+                          h="40px"
+                          fontWeight="semibold"
+                          fontSize="sm"
+                          _hover={
+                            !readOnly
+                              ? {
+                                  transform: "scale(1.05)",
+                                  transition: "all 0.2s",
+                                  colorScheme: isActive
+                                    ? "gray"
+                                    : "brandPrimary",
+                                }
+                              : {}
+                          }
+                        >
+                          {action.toUpperCase()}
+                        </Button>
+                      </Tooltip>
+                    </Td>
+                  );
+                })}
+              </Tr>
+            </Fragment>
+          ))}
+        </Tbody>
+      </Table>
+    </Box>
   );
 };
 

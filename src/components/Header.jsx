@@ -13,7 +13,6 @@ import {
   HStack,
   Divider,
   useColorMode,
-  Spacer,
   useColorModeValue,
 } from "@chakra-ui/react";
 import { FiBell, FiLogOut } from "react-icons/fi";
@@ -64,11 +63,9 @@ const Header = () => {
         w="full"
         px="page.padding"
         maxW="page.maxContent"
-        justify="space-between"
-        align="center"
+        alignItems="center"
       >
-        <Box ref={headerRef}></Box>
-        <Spacer />
+        <Box w="full" flex={1} ref={headerRef}></Box>
         <Flex align="center" gap={0}>
           <Menu>
             <MenuButton

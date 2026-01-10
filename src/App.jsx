@@ -17,9 +17,9 @@ import Users from "./pages/Users";
 import { UsersProvider } from "./context/UsersContext";
 import Archive from "./pages/Archive";
 import Roles from "./pages/Roles";
-import RoleView from "./pages/Roles/RoleView";
-import RoleEdit from "./pages/Roles/RoleEdit";
+import RolePage from "./pages/Roles/RolePage";
 import { RolesProvider } from "./context/RolesContext";
+import { RoleProvider } from "./context/RoleContext";
 import { useBreakpointValue } from "@chakra-ui/react";
 
 const ProtectedRoute = ({ children }) => {
@@ -89,19 +89,19 @@ function App() {
                       }
                     />
                     <Route
-                      path="/roles/:id/view"
+                      path="/roles/new"
                       element={
-                        <RolesProvider>
-                          <RoleView />
-                        </RolesProvider>
+                        <RoleProvider>
+                          <RolePage />
+                        </RoleProvider>
                       }
                     />
                     <Route
-                      path="/roles/:id/edit"
+                      path="/roles/:id"
                       element={
-                        <RolesProvider>
-                          <RoleEdit />
-                        </RolesProvider>
+                        <RoleProvider>
+                          <RolePage />
+                        </RoleProvider>
                       }
                     />
                   </Routes>
