@@ -23,6 +23,10 @@ const PERMISSION_LABELS = {
 
 // Helper to convert entity key to readable label
 const prettifyLabel = (key) => {
+  // Special case for "permissions" key - show as "More"
+  if (key.toLowerCase() === 'permissions') {
+    return 'More';
+  }
   return key
     .replace(/_/g, " ")
     .replace(/([a-z])([A-Z])/g, "$1 $2")
