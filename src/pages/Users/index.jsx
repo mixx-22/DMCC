@@ -1,5 +1,5 @@
 import { Box, Heading } from "@chakra-ui/react";
-import Layout from "./layout";
+import UsersList from "./UsersList";
 import PageHeader from "../../components/PageHeader";
 
 const Users = () => {
@@ -8,7 +8,9 @@ const Users = () => {
       <PageHeader>
         <Heading variant="pageTitle">Users</Heading>
       </PageHeader>
-      <Layout />
+      <Box>
+        <UsersList />
+      </Box>
     </Box>
   );
 };
