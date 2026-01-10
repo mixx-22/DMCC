@@ -24,8 +24,13 @@ import {
   MenuItem,
   Portal,
   MenuGroup,
+  Badge,
+  Avatar,
+  HStack,
+  Divider,
+  useColorMode,
 } from "@chakra-ui/react";
-import { NavLink, useLocation } from "react-router-dom";
+import { NavLink, useLocation, useNavigate } from "react-router-dom";
 import {
   FiHome,
   FiFileText,
@@ -36,11 +41,17 @@ import {
   FiChevronDown,
   FiChevronUp,
   FiSettings,
+  FiBell,
+  FiLogOut,
+  FiUser,
 } from "react-icons/fi";
 import logoDefault from "../images/auptilyze.png";
 import logoWhite from "../images/auptilyze-white.png";
 import logoIconDefault from "../images/auptilyze-icon.svg";
 import logoIconWhite from "../images/auptilyze-icon-white.svg";
+import { useUser } from "../context/useUser";
+import { useApp } from "../context/AppContext";
+import Swal from "sweetalert2";
 
 const isRouteMatch = (location, target) => {
   const [targetPath, targetQuery] = target.split("?");
@@ -154,7 +165,12 @@ const SidebarRow = ({
 
 const Sidebar = () => {
   const location = useLocation();
+  const navigate = useNavigate();
   const { isOpen, onOpen, onClose } = useDisclosure();
+  const { user: currentUser, logout } = useUser();
+  const { getExpiringCertifications } = useApp();
+  const { colorMode, toggleColorMode } = useColorMode();
+  const expiringCerts = getExpiringCertifications();
 
   const logoSrc = useColorModeValue(logoDefault, logoWhite);
   const logoIconSrc = useColorModeValue(logoIconDefault, logoIconWhite);
@@ -175,6 +191,28 @@ const Sidebar = () => {
   const [lastScrollY, setLastScrollY] = useState(0);
 
   const isAdmin = true;
+
+  const handleLogout = async () => {
+    const result = await Swal.fire({
+      title: "Leaving so soon?",
+      text: "Upon proceeding, you will be logged out of your session.",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#3085d6",
+      cancelButtonColor: "#d33",
+      confirmButtonText: "Yes, Log Out",
+      cancelButtonText: "Cancel",
+    });
+    if (result.isConfirmed) {
+      logout();
+      navigate("/login");
+    }
+  };
+
+  const handleNotificationClick = (certId) => {
+    navigate(`/certifications/${certId}`);
+    onClose();
+  };
 
   const navItems = useMemo(() => {
     const items = [
@@ -419,46 +457,159 @@ const Sidebar = () => {
           zIndex="docked"
           transition="transform 0.3s ease"
           transform={isBottomNavVisible ? "translateY(0)" : "translateY(100%)"}
-          h="sidebar.row"
+          h="60px"
+          boxShadow="0 -2px 10px rgba(0, 0, 0, 0.1)"
         >
-          <Flex justify="center" py={3}>
+          <Flex justify="space-around" align="center" h="full" px={2}>
+            {/* Menu Button */}
             <IconButton
-              aria-label="Open Menu"
-              icon={<FiMenu size={20} />}
+              aria-label="Menu"
+              icon={<FiMenu size={24} />}
               variant="ghost"
-              onClick={onOpen}
+              onClick={() => navigate("/menu")}
               display="flex"
               flexDirection="column"
               h="auto"
-              gap={1}
-              color={textColor}
-              borderRadius="0"
-            >
-              <Text fontSize="xs">Menu</Text>
-            </IconButton>
+              py={2}
+              color={location.pathname === "/menu" ? activeColor : textColor}
+              _hover={{ bg: hoverBg }}
+              borderRadius="md"
+            />
+
+            {/* Notifications Button */}
+            <Box position="relative">
+              <Menu>
+                <MenuButton
+                  as={IconButton}
+                  icon={<FiBell size={24} />}
+                  variant="ghost"
+                  position="relative"
+                  aria-label="Notifications"
+                  h="auto"
+                  py={2}
+                  color={textColor}
+                  _hover={{ bg: hoverBg }}
+                  borderRadius="md"
+                >
+                  {expiringCerts.length > 0 && (
+                    <Badge
+                      position="absolute"
+                      top={0}
+                      right={0}
+                      colorScheme="red"
+                      borderRadius="full"
+                      fontSize="xs"
+                    >
+                      {expiringCerts.length}
+                    </Badge>
+                  )}
+                </MenuButton>
+                <Portal>
+                  <MenuList maxH="300px" overflowY="auto">
+                    {expiringCerts.length === 0 ? (
+                      <MenuItem>No notifications</MenuItem>
+                    ) : (
+                      <>
+                        <MenuItem fontWeight="bold" isDisabled>
+                          Expiring Certifications ({expiringCerts.length})
+                        </MenuItem>
+                        {expiringCerts.map((cert) => (
+                          <MenuItem
+                            key={`expiring-cert-${cert.id}`}
+                            onClick={() => handleNotificationClick(cert.id)}
+                            fontSize="sm"
+                          >
+                            {cert.name} - Expires:{" "}
+                            {new Date(cert.expirationDate).toLocaleDateString()}
+                          </MenuItem>
+                        ))}
+                      </>
+                    )}
+                  </MenuList>
+                </Portal>
+              </Menu>
+            </Box>
+
+            {/* User Menu Button */}
+            <Menu>
+              <MenuButton
+                as={IconButton}
+                variant="ghost"
+                icon={
+                  <Avatar
+                    src={currentUser?.profilePicture}
+                    name={
+                      currentUser
+                        ? [
+                            currentUser.firstName,
+                            currentUser.middleName,
+                            currentUser.lastName,
+                          ]
+                            .filter(Boolean)
+                            .join(" ") ||
+                          currentUser.name ||
+                          "User"
+                        : "User"
+                    }
+                    size="sm"
+                  />
+                }
+                aria-label="User menu"
+                h="auto"
+                py={2}
+                _hover={{ bg: hoverBg }}
+                borderRadius="md"
+              />
+              <Portal>
+                <MenuList>
+                  <MenuItem>
+                    <HStack spacing={3}>
+                      <Avatar
+                        src={currentUser?.profilePicture}
+                        name={currentUser?.name || "User"}
+                        size="sm"
+                      />
+                      <VStack spacing={0} align="start">
+                        <Text fontSize="sm" fontWeight="semibold">
+                          {currentUser
+                            ? [
+                                currentUser.firstName,
+                                currentUser.middleName,
+                                currentUser.lastName,
+                              ]
+                                .filter(Boolean)
+                                .join(" ") ||
+                              currentUser.name ||
+                              "User"
+                            : "User"}
+                        </Text>
+                        <Text fontSize="xs" color="gray.500">
+                          {currentUser?.position || ""}
+                        </Text>
+                      </VStack>
+                    </HStack>
+                  </MenuItem>
+                  <MenuItem>Settings</MenuItem>
+                  <Divider />
+                  <MenuItem onClick={toggleColorMode}>
+                    Appearance: {colorMode === "dark" ? "Dark" : "Light"}
+                  </MenuItem>
+                  <Divider />
+                  <MenuItem
+                    icon={<FiLogOut />}
+                    onClick={handleLogout}
+                    color="error.500"
+                  >
+                    Log Out
+                  </MenuItem>
+                  <Divider />
+                </MenuList>
+              </Portal>
+            </Menu>
           </Flex>
         </Box>
 
-        <Drawer isOpen={isOpen} placement="left" onClose={onClose} size="xs">
-          <DrawerOverlay />
-          <DrawerContent bg={bgColor}>
-            <DrawerCloseButton borderRadius="full" color={textColor} />
-            <DrawerBody px={0} py="sidebar.row">
-              <VStack spacing={0} align="stretch" h="full">
-                <Spacer />
-                <Heading
-                  fontSize="lg"
-                  mb={"sidebar.row"}
-                  color={brandColor}
-                  px={4}
-                >
-                  {import.meta.env.VITE_PROJECT_NAME}
-                </Heading>
-                {renderNavList(navItems, true)}
-              </VStack>
-            </DrawerBody>
-          </DrawerContent>
-        </Drawer>
+        {/* Old drawer removed - menu now opens as a page */}
       </>
     );
   }
