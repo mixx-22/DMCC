@@ -19,7 +19,13 @@ import {
 } from "@chakra-ui/react";
 import { FiCopy, FiCheck } from "react-icons/fi";
 
-const UserCredentialsModal = ({ isOpen, onClose, email, password, username }) => {
+const UserCredentialsModal = ({
+  isOpen,
+  onClose,
+  email,
+  password,
+  username,
+}) => {
   const { hasCopied: emailCopied, onCopy: onCopyEmail } = useClipboard(email);
 
   const { hasCopied: passwordCopied, onCopy: onCopyPassword } =
@@ -124,7 +130,7 @@ const UserCredentialsModal = ({ isOpen, onClose, email, password, username }) =>
 
         <ModalFooter>
           <Button colorScheme="brandPrimary" onClick={onClose}>
-            I have saved the credentials
+            Got It!
           </Button>
         </ModalFooter>
       </ModalContent>
