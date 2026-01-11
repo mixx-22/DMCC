@@ -34,7 +34,6 @@ import ProfileViewMode from "../../components/ProfileViewMode";
 import { generateKey as generatePassword } from "../../utils/passwordGenerator";
 import { generateUsername } from "../../utils/usernameGenerator";
 
-// Helper function to validate and format dates safely
 const isValidDate = (dateString) => {
   if (!dateString) return false;
   const date = new Date(dateString);
@@ -67,10 +66,8 @@ const UserPage = () => {
     onClose: onCloseCredentialsModal,
   } = useDisclosure();
 
-  // Initialize form data when user loads
   useEffect(() => {
     if (user && !isNewUser) {
-      // Strip +63 prefix from phone for display (user will see/edit 10 digits only)
       const phoneForDisplay =
         user.phone && user.phone.startsWith("+63")
           ? user.phone.slice(3)
@@ -80,25 +77,20 @@ const UserPage = () => {
         ...initialUserData,
         ...user,
         isActive: user.isActive !== undefined ? user.isActive : true,
-        // Convert role IDs to objects for the async select component
         role: convertRoleIdsToObjects(user.role || []),
         phone: phoneForDisplay,
       });
-      // If editing existing user, mark username as manually set
       setUsernameManuallyEdited(true);
     }
   }, [user, isNewUser, initialUserData, convertRoleIdsToObjects]);
 
-  // Debounced username generation for new users
   useEffect(() => {
     if (!isNewUser) return;
 
-    // Clear existing timer
     if (debounceTimerRef.current) {
       clearTimeout(debounceTimerRef.current);
     }
 
-    // Set new timer for debounced generation
     debounceTimerRef.current = setTimeout(() => {
       const generatedUsername = generateUsername(
         formData.firstName,
@@ -106,9 +98,6 @@ const UserPage = () => {
         formData.employeeId
       );
 
-      // Only auto-generate if:
-      // 1. Username is empty (was cleared)
-      // 2. OR username hasn't been manually edited and current value matches what would be generated
       const shouldAutoGenerate =
         !formData.username.trim() ||
         (!usernameManuallyEdited && formData.username === generatedUsername);
@@ -118,14 +107,12 @@ const UserPage = () => {
           ...prev,
           username: generatedUsername,
         }));
-        // Reset manual edit flag when auto-generating after clear
         if (!formData.username.trim()) {
           setUsernameManuallyEdited(false);
         }
       }
-    }, 500); // 500ms debounce
+    }, 500);
 
-    // Cleanup timer on unmount
     return () => {
       if (debounceTimerRef.current) {
         clearTimeout(debounceTimerRef.current);
@@ -146,9 +133,7 @@ const UserPage = () => {
       [field]: value,
     }));
 
-    // Track if username is manually edited (user typed something different from generated)
     if (field === "username" && value.trim()) {
-      // Check if value is different from what would be auto-generated
       const generatedUsername = generateUsername(
         formData.firstName,
         formData.lastName,
@@ -159,7 +144,6 @@ const UserPage = () => {
       }
     }
 
-    // Clear validation error for this field
     if (validationErrors[field]) {
       setValidationErrors((prev) => ({
         ...prev,
@@ -187,11 +171,8 @@ const UserPage = () => {
     if (!formData.username.trim()) {
       errors.username = "Username is required";
     }
-    // Philippine phone number validation (optional but if provided, must be valid)
-    // User enters 10 digits (9XX XXX XXXX), we validate the format
     if (formData.phone && formData.phone.trim()) {
       const cleanedPhone = formData.phone.replace(/\D/g, "");
-
       const phoneRegex = /^[2-9]\d{9}$/;
 
       if (!phoneRegex.test(cleanedPhone)) {
@@ -212,8 +193,6 @@ const UserPage = () => {
       return;
     }
 
-    // Transform roles to array of IDs for submission
-    // Transform phone to include +63 prefix if user entered a number
     const dataToSubmit = {
       ...formData,
       role: Array.isArray(formData.role)
@@ -226,7 +205,6 @@ const UserPage = () => {
     };
 
     if (isNewUser) {
-      // Generate a random password for new user
       const generatedPassword = generatePassword({ length: 12 });
       dataToSubmit.password = generatedPassword;
 
@@ -237,14 +215,12 @@ const UserPage = () => {
       console.log({ dataToSubmit, result });
 
       if (result.success) {
-        // Store credentials to show in modal
         setGeneratedCredentials({
           email: dataToSubmit.email,
           username: dataToSubmit.username,
           password: generatedPassword,
         });
 
-        // Open credentials modal
         onOpenCredentialsModal();
 
         toast.success("User Created", {
@@ -294,7 +270,6 @@ const UserPage = () => {
 
   const handleCredentialsModalClose = () => {
     onCloseCredentialsModal();
-    // Navigate to users list after closing the modal
     navigate("/users");
   };
 
@@ -319,7 +294,6 @@ const UserPage = () => {
       }`.trim()
     : "";
 
-  // Convert role IDs to objects for display in view mode
   const roleObjects = user && !isEditMode ? convertRoleIdsToObjects(user.role || []) : [];
 
   return (
@@ -378,7 +352,6 @@ const UserPage = () => {
         </Flex>
       </PageFooter>
 
-      {/* View Mode - Social Media Style Profile */}
       {!isEditMode && !isNewUser && user && (
         <ProfileViewMode 
           user={user} 
@@ -387,14 +360,12 @@ const UserPage = () => {
         />
       )}
 
-      {/* Edit Mode - Form Layout */}
       {(isEditMode || isNewUser) && (
         <Flex gap={6} flexWrap={{ base: "wrap", lg: "nowrap" }}>
-          <Box w={{ base: "full", lg: "xs" }}>
-            <Card>
+          <Box w={{ base: "full", lg: "50%" }}>
+            <Card mb={6}>
               <CardBody>
                 <VStack align="stretch" spacing={4}>
-                  {/* Profile Picture Upload */}
                   <FormControl>
                     <FormLabel>Profile Picture</FormLabel>
                     <ProfileImageUpload
@@ -402,8 +373,16 @@ const UserPage = () => {
                       onChange={(value) => handleFieldChange("profilePicture", value)}
                     />
                   </FormControl>
+                </VStack>
+              </CardBody>
+            </Card>
 
-                  <Divider />
+            <Card>
+              <CardBody>
+                <VStack align="stretch" spacing={4}>
+                  <Heading size="md" mb={2}>
+                    Basic Information
+                  </Heading>
 
                   <FormControl isInvalid={validationErrors.firstName}>
                     <FormLabel>First Name</FormLabel>
@@ -419,99 +398,52 @@ const UserPage = () => {
                     </FormErrorMessage>
                   </FormControl>
 
-                    <FormControl>
-                      <FormLabel>Middle Name</FormLabel>
-                      <Input
-                        value={formData.middleName}
-                        onChange={(e) =>
-                          handleFieldChange("middleName", e.target.value)
-                        }
-                        placeholder="Enter middle name (optional)"
-                      />
-                    </FormControl>
+                  <FormControl>
+                    <FormLabel>Middle Name</FormLabel>
+                    <Input
+                      value={formData.middleName}
+                      onChange={(e) =>
+                        handleFieldChange("middleName", e.target.value)
+                      }
+                      placeholder="Enter middle name (optional)"
+                    />
+                  </FormControl>
 
-                    <FormControl isInvalid={validationErrors.lastName}>
-                      <FormLabel>Last Name</FormLabel>
-                      <Input
-                        value={formData.lastName}
-                        onChange={(e) =>
-                          handleFieldChange("lastName", e.target.value)
-                        }
-                        placeholder="Enter last name"
-                      />
-                      <FormErrorMessage>
-                        {validationErrors.lastName}
-                      </FormErrorMessage>
-                    </FormControl>
+                  <FormControl isInvalid={validationErrors.lastName}>
+                    <FormLabel>Last Name</FormLabel>
+                    <Input
+                      value={formData.lastName}
+                      onChange={(e) =>
+                        handleFieldChange("lastName", e.target.value)
+                      }
+                      placeholder="Enter last name"
+                    />
+                    <FormErrorMessage>
+                      {validationErrors.lastName}
+                    </FormErrorMessage>
+                  </FormControl>
 
-                    <FormControl isInvalid={validationErrors.email}>
-                      <FormLabel>Email</FormLabel>
-                      <Input
-                        type="email"
-                        value={formData.email}
-                        onChange={(e) =>
-                          handleFieldChange("email", e.target.value)
-                        }
-                        placeholder="Enter email address"
-                      />
-                      <FormErrorMessage>
-                        {validationErrors.email}
-                      </FormErrorMessage>
-                    </FormControl>
+                  <Divider my={2} />
 
-                    <FormControl isInvalid={validationErrors.employeeId}>
-                      <FormLabel>Employee ID</FormLabel>
-                      <Input
-                        value={formData.employeeId}
-                        onChange={(e) =>
-                          handleFieldChange("employeeId", e.target.value)
-                        }
-                        placeholder="Enter employee ID"
-                      />
-                      <FormErrorMessage>
-                        {validationErrors.employeeId}
-                      </FormErrorMessage>
-                    </FormControl>
-
-                    <FormControl isInvalid={validationErrors.username}>
-                      <FormLabel>Username</FormLabel>
-                      <Input
-                        value={formData.username}
-                        onChange={(e) =>
-                          handleFieldChange("username", e.target.value)
-                        }
-                        placeholder={
-                          isNewUser
-                            ? "Auto-generated or enter custom username"
-                            : "Enter username"
-                        }
-                      />
-                      <FormErrorMessage>
-                        {validationErrors.username}
-                      </FormErrorMessage>
-                    </FormControl>
-
-                    <FormControl display="flex" alignItems="center">
-                      <FormLabel mb="0">Active Status</FormLabel>
-                      <Switch
-                        isChecked={formData.isActive}
-                        onChange={(e) =>
-                          handleFieldChange("isActive", e.target.checked)
-                        }
-                        colorScheme="brandPrimary"
-                      />
-                    </FormControl>
-                </VStack>
-              </CardBody>
-            </Card>
-          </Box>
-          <Box w={{ base: "full", md: "auto" }} flex={{ base: 0, md: "1" }}>
-            <Card w="full">
-              <CardBody>
-                <VStack align="stretch" spacing={4}>
-                  <Heading size="md" mb={2}>
-                    Additional Information
+                  <Heading size="sm" mb={2}>
+                    Contact Information
                   </Heading>
+
+                  <FormControl isInvalid={validationErrors.email}>
+                    <FormLabel>Email</FormLabel>
+                    <Input
+                      type="email"
+                      value={formData.email}
+                      onChange={(e) =>
+                        handleFieldChange("email", e.target.value)
+                      }
+                      placeholder="Enter email address"
+                    />
+                    <FormErrorMessage>
+                      {validationErrors.email}
+                    </FormErrorMessage>
+                  </FormControl>
+
                   <FormControl isInvalid={validationErrors.phone}>
                     <FormLabel>Phone</FormLabel>
                     <HStack>
@@ -528,14 +460,12 @@ const UserPage = () => {
                         type="tel"
                         value={formData.phone}
                         onChange={(e) => {
-                          // Only allow digits and limit to 10 characters
                           const value = e.target.value
                             .replace(/\D/g, "")
                             .slice(0, 10);
                           handleFieldChange("phone", value);
                         }}
                         onBlur={(e) => {
-                          // Format on blur: 999 999 9999
                           const value = e.target.value.replace(/\D/g, "");
                           if (value.length === 10) {
                             const formatted = `${value.slice(
@@ -546,13 +476,56 @@ const UserPage = () => {
                           }
                         }}
                         placeholder="917 123 4567"
-                        maxLength={12} // Account for spaces in formatted version
+                        maxLength={12}
                       />
                     </HStack>
                     <FormErrorMessage>
                       {validationErrors.phone}
                     </FormErrorMessage>
                   </FormControl>
+
+                  <FormControl isInvalid={validationErrors.employeeId}>
+                    <FormLabel>Employee ID</FormLabel>
+                    <Input
+                      value={formData.employeeId}
+                      onChange={(e) =>
+                        handleFieldChange("employeeId", e.target.value)
+                      }
+                      placeholder="Enter employee ID"
+                    />
+                    <FormErrorMessage>
+                      {validationErrors.employeeId}
+                    </FormErrorMessage>
+                  </FormControl>
+
+                  <FormControl isInvalid={validationErrors.username}>
+                    <FormLabel>Username</FormLabel>
+                    <Input
+                      value={formData.username}
+                      onChange={(e) =>
+                        handleFieldChange("username", e.target.value)
+                      }
+                      placeholder={
+                        isNewUser
+                          ? "Auto-generated or enter custom username"
+                          : "Enter username"
+                      }
+                    />
+                    <FormErrorMessage>
+                      {validationErrors.username}
+                    </FormErrorMessage>
+                  </FormControl>
+                </VStack>
+              </CardBody>
+            </Card>
+          </Box>
+          <Box w={{ base: "full", lg: "50%" }}>
+            <Card>
+              <CardBody>
+                <VStack align="stretch" spacing={4}>
+                  <Heading size="md" mb={2}>
+                    Professional Details
+                  </Heading>
 
                   <FormControl>
                     <FormLabel>Department</FormLabel>
@@ -582,6 +555,19 @@ const UserPage = () => {
                     value={formData.role || []}
                     onChange={(roles) => handleFieldChange("role", roles)}
                   />
+
+                  <Divider my={2} />
+
+                  <FormControl display="flex" alignItems="center">
+                    <FormLabel mb="0">Active Status</FormLabel>
+                    <Switch
+                      isChecked={formData.isActive}
+                      onChange={(e) =>
+                        handleFieldChange("isActive", e.target.checked)
+                      }
+                      colorScheme="brandPrimary"
+                    />
+                  </FormControl>
                 </VStack>
               </CardBody>
             </Card>
@@ -589,7 +575,6 @@ const UserPage = () => {
         </Flex>
       )}
 
-      {/* Credentials Modal for New User */}
       {generatedCredentials && (
         <UserCredentialsModal
           isOpen={isCredentialsModalOpen}

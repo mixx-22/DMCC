@@ -27,25 +27,20 @@ const ProfileViewMode = ({ user, roleObjects, isValidDate }) => {
       }`.trim()
     : "";
 
-  // Check if user has a system role (Admin = id "1")
   const hasSystemRole =
     user.role && Array.isArray(user.role) && user.role.includes("1");
 
   return (
     <Box>
-      {/* Profile Header Card */}
       <Card mb={6} overflow="hidden">
-        {/* Header Background */}
         <Box h="120px" bg={headerBg} position="relative" />
 
-        {/* Profile Content */}
         <CardBody mt="-60px" position="relative">
           <Flex
             direction={{ base: "column", md: "row" }}
             align={{ base: "center", md: "flex-start" }}
             gap={6}
           >
-            {/* Profile Picture with Badge */}
             <Box position="relative">
               <Avatar
                 size="2xl"
@@ -72,19 +67,15 @@ const ProfileViewMode = ({ user, roleObjects, isValidDate }) => {
               )}
             </Box>
 
-            {/* Profile Info */}
             <VStack align={{ base: "center", md: "flex-start" }} flex={1} spacing={2}>
               <Heading size="xl">{fullName}</Heading>
-              <HStack spacing={4} flexWrap="wrap" justify={{ base: "center", md: "flex-start" }}>
-                <HStack>
-                  <Icon as={FiMail} color="gray.500" />
-                  <Text color="gray.600">{user.email}</Text>
-                </HStack>
-                <Badge colorScheme={user.isActive ? "green" : "red"} fontSize="sm">
-                  {user.isActive ? "Active" : "Inactive"}
-                </Badge>
-              </HStack>
+              <Text color="gray.600" fontSize="md" fontWeight="medium">{user.employeeId}</Text>
               <HStack spacing={2} flexWrap="wrap" justify={{ base: "center", md: "flex-start" }}>
+                {!user.isActive && (
+                  <Badge colorScheme="red" fontSize="sm">
+                    Inactive
+                  </Badge>
+                )}
                 {roleObjects && roleObjects.length > 0 ? (
                   roleObjects.map((r, idx) => (
                     <Badge key={idx} colorScheme="purple" fontSize="sm">
@@ -102,9 +93,7 @@ const ProfileViewMode = ({ user, roleObjects, isValidDate }) => {
         </CardBody>
       </Card>
 
-      {/* Details Grid */}
       <Flex gap={6} flexWrap={{ base: "wrap", lg: "nowrap" }}>
-        {/* Left Column */}
         <Box w={{ base: "full", lg: "50%" }}>
           <Card>
             <CardBody>
@@ -139,15 +128,6 @@ const ProfileViewMode = ({ user, roleObjects, isValidDate }) => {
 
                 <Box>
                   <Text fontSize="sm" color="gray.500" mb={1}>
-                    Employee ID
-                  </Text>
-                  <Text fontWeight="medium">{user.employeeId}</Text>
-                </Box>
-
-                <Divider />
-
-                <Box>
-                  <Text fontSize="sm" color="gray.500" mb={1}>
                     Username
                   </Text>
                   <Text fontWeight="medium">@{user.username}</Text>
@@ -157,7 +137,6 @@ const ProfileViewMode = ({ user, roleObjects, isValidDate }) => {
           </Card>
         </Box>
 
-        {/* Right Column */}
         <Box w={{ base: "full", lg: "50%" }}>
           <Card>
             <CardBody>
