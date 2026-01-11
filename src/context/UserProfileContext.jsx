@@ -89,6 +89,7 @@ const initialUserData = {
   phone: "",
   role: [],
   isActive: true,
+  profilePicture: "",
   createdAt: null,
   updatedAt: null,
 };
