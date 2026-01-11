@@ -22,11 +22,13 @@ import {
   InputGroup,
   InputLeftAddon,
   FormHelperText,
+  Collapse,
+  useColorModeValue,
 } from "@chakra-ui/react";
 import { FiEdit, FiArrowLeft, FiSave, FiX } from "react-icons/fi";
 import { useNavigate, useParams } from "react-router-dom";
 import { toast } from "sonner";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useUserProfile } from "../../context/UserProfileContext";
 import PageHeader from "../../components/PageHeader";
 import PageFooter from "../../components/PageFooter";
@@ -55,14 +57,16 @@ const UserPage = () => {
     createUser,
     normalizeRoles,
   } = useUserProfile();
+  const suggestionColor = useColorModeValue(
+    "brandPrimary.600",
+    "brandPrimary.400"
+  );
 
   const isNewUser = id === "new";
   const [isEditMode, setIsEditMode] = useState(isNewUser);
   const [formData, setFormData] = useState(initialUserData);
   const [validationErrors, setValidationErrors] = useState({});
   const [generatedCredentials, setGeneratedCredentials] = useState(null);
-  const [usernameManuallyEdited, setUsernameManuallyEdited] = useState(false);
-  const debounceTimerRef = useRef(null);
   const {
     isOpen: isCredentialsModalOpen,
     onOpen: onOpenCredentialsModal,
@@ -83,69 +87,22 @@ const UserPage = () => {
         role: normalizeRoles(user.role || []),
         contactNumber: contactNumberForDisplay,
       });
-      setUsernameManuallyEdited(true);
     }
   }, [user, isNewUser, initialUserData, normalizeRoles]);
 
-  useEffect(() => {
-    if (!isNewUser) return;
+  const generatedUsername = useMemo(() => {
+    return generateUsername(formData);
+  }, [formData]);
 
-    if (debounceTimerRef.current) {
-      clearTimeout(debounceTimerRef.current);
-    }
-
-    debounceTimerRef.current = setTimeout(() => {
-      const generatedUsername = generateUsername(
-        formData.firstName,
-        formData.lastName,
-        formData.employeeId
-      );
-
-      const shouldAutoGenerate =
-        !formData.username.trim() ||
-        (!usernameManuallyEdited && formData.username === generatedUsername);
-
-      if (generatedUsername && shouldAutoGenerate) {
-        setFormData((prev) => ({
-          ...prev,
-          username: generatedUsername,
-        }));
-        if (!formData.username.trim()) {
-          setUsernameManuallyEdited(false);
-        }
-      }
-    }, 500);
-
-    return () => {
-      if (debounceTimerRef.current) {
-        clearTimeout(debounceTimerRef.current);
-      }
-    };
-  }, [
-    formData.firstName,
-    formData.lastName,
-    formData.employeeId,
-    formData.username,
-    isNewUser,
-    usernameManuallyEdited,
-  ]);
+  const isCustomUsername = useMemo(() => {
+    return formData.username && formData.username !== generatedUsername;
+  }, [formData.username, generatedUsername]);
 
   const handleFieldChange = (field, value) => {
     setFormData((prev) => ({
       ...prev,
       [field]: value,
     }));
-
-    if (field === "username" && value.trim()) {
-      const generatedUsername = generateUsername(
-        formData.firstName,
-        formData.lastName,
-        formData.employeeId
-      );
-      if (value !== generatedUsername) {
-        setUsernameManuallyEdited(true);
-      }
-    }
 
     if (validationErrors[field]) {
       setValidationErrors((prev) => ({
@@ -412,11 +369,34 @@ const UserPage = () => {
                         }
                         placeholder={
                           isNewUser
-                            ? "Auto-generated or enter custom username"
+                            ? generatedUsername || "Enter username"
                             : "Enter username"
                         }
                       />
                     </InputGroup>
+                    <Collapse
+                      in={
+                        isNewUser &&
+                        !isCustomUsername &&
+                        generatedUsername?.length > 0 &&
+                        formData.username !== generatedUsername
+                      }
+                      unmountOnExit
+                    >
+                      <FormHelperText>
+                        Suggested username:{" "}
+                        <Text
+                          as="span"
+                          cursor="pointer"
+                          color={suggestionColor}
+                          onClick={() =>
+                            handleFieldChange("username", generatedUsername)
+                          }
+                        >
+                          {generatedUsername}
+                        </Text>
+                      </FormHelperText>
+                    </Collapse>
                     <FormErrorMessage>
                       {validationErrors.username}
                     </FormErrorMessage>
