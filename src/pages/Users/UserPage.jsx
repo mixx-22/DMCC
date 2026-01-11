@@ -17,6 +17,7 @@ import {
   Switch,
   Badge,
   HStack,
+  useDisclosure,
 } from "@chakra-ui/react";
 import { FiEdit, FiArrowLeft, FiSave, FiX } from "react-icons/fi";
 import { useNavigate, useParams } from "react-router-dom";
@@ -27,6 +28,8 @@ import { useUserProfile } from "../../context/UserProfileContext";
 import PageHeader from "../../components/PageHeader";
 import PageFooter from "../../components/PageFooter";
 import RoleAsyncSelect from "../../components/RoleAsyncSelect";
+import UserCredentialsModal from "../../components/UserCredentialsModal";
+import { generatePassword } from "../../utils/passwordGenerator";
 
 // Helper function to validate and format dates safely
 const isValidDate = (dateString) => {
@@ -52,6 +55,8 @@ const UserPage = () => {
   const [isEditMode, setIsEditMode] = useState(isNewUser);
   const [formData, setFormData] = useState(initialUserData);
   const [validationErrors, setValidationErrors] = useState({});
+  const [generatedCredentials, setGeneratedCredentials] = useState(null);
+  const { isOpen: isCredentialsModalOpen, onOpen: onOpenCredentialsModal, onClose: onCloseCredentialsModal } = useDisclosure();
 
   // Initialize form data when user loads
   useEffect(() => {
@@ -142,6 +147,10 @@ const UserPage = () => {
     };
 
     if (isNewUser) {
+      // Generate a random password for new user
+      const generatedPassword = generatePassword();
+      dataToSubmit.password = generatedPassword;
+      
       delete dataToSubmit.createdAt;
       delete dataToSubmit.updatedAt;
       const result = await createUser(dataToSubmit);
@@ -149,10 +158,18 @@ const UserPage = () => {
       console.log({ dataToSubmit, result });
 
       if (result.success) {
+        // Store credentials to show in modal
+        setGeneratedCredentials({
+          email: dataToSubmit.email,
+          password: generatedPassword,
+        });
+        
+        // Open credentials modal
+        onOpenCredentialsModal();
+        
         toast.success("User Created", {
           description: "User has been created successfully",
         });
-        navigate(`/users/${result.id}`);
       } else {
         toast.error("Create Failed", {
           description: result.error || "Failed to create user",
@@ -181,6 +198,27 @@ const UserPage = () => {
       if (user) {
         setFormData({
           ...initialUserData,
+          ...user,
+          isActive: user.isActive !== undefined ? user.isActive : true,
+          role: convertRoleIdsToObjects(user.role || []),
+          phone:
+            user.phone && user.phone.startsWith("+63")
+              ? user.phone.slice(3)
+              : user.phone,
+        });
+      }
+      setIsEditMode(false);
+      setValidationErrors({});
+    }
+  };
+
+  const handleCredentialsModalClose = () => {
+    onCloseCredentialsModal();
+    // Navigate to users list after closing the modal
+    navigate("/users");
+  };
+
+  const handleEdit = () => {
           ...user,
           isActive: user.isActive !== undefined ? user.isActive : true,
         });
@@ -570,6 +608,16 @@ const UserPage = () => {
           </Card>
         </Box>
       </Flex>
+
+      {/* Credentials Modal for New User */}
+      {generatedCredentials && (
+        <UserCredentialsModal
+          isOpen={isCredentialsModalOpen}
+          onClose={handleCredentialsModalClose}
+          email={generatedCredentials.email}
+          password={generatedCredentials.password}
+        />
+      )}
     </Box>
   );
 };
