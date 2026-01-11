@@ -42,6 +42,8 @@ import { useUser } from "../context/useUser";
 import { useApp } from "../context/AppContext";
 import { useLayout } from "../context/Layout";
 
+const MOBILE_NAV_HEIGHT = 60; // Height of mobile bottom navigation bar
+
 const isRouteMatch = (location, target) => {
   const [targetPath, targetQuery] = target.split("?");
   const targetParams = new URLSearchParams(targetQuery);
@@ -432,7 +434,7 @@ const Sidebar = () => {
           zIndex="modal"
           transition="transform 0.3s ease"
           transform={isBottomNavVisible ? "translateY(0)" : "translateY(100%)"}
-          h="60px"
+          h={`${MOBILE_NAV_HEIGHT}px`}
           boxShadow="0 -2px 10px rgba(0, 0, 0, 0.1)"
         >
           <Flex justify="space-around" align="center" h="full" px={2}>

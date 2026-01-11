@@ -6,6 +6,9 @@ import Footer from "./Footer";
 import { useLocation } from "react-router-dom";
 import { useLayout } from "../context/Layout";
 
+const MOBILE_NAV_HEIGHT = 60; // Must match value in Sidebar.jsx
+const FOOTER_HEIGHT = 48; // From theme sidebar.row
+
 const Layout = ({ children }) => {
   const location = useLocation();
   const { isBottomNavVisible } = useLayout();
@@ -34,7 +37,13 @@ const Layout = ({ children }) => {
           flex={1}
           bg={contentBg}
           overflowY="auto"
-          pb={isMobile ? (isBottomNavVisible ? "108px" : "48px") : "48px"}
+          pb={
+            isMobile
+              ? isBottomNavVisible
+                ? `${MOBILE_NAV_HEIGHT + FOOTER_HEIGHT}px`
+                : `${FOOTER_HEIGHT}px`
+              : `${FOOTER_HEIGHT}px`
+          }
         >
           <Box
             maxW={smallMaxContent ? "page.maxContent-sm" : "page.maxContent"}
