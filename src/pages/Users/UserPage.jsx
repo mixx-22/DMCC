@@ -29,6 +29,8 @@ import PageHeader from "../../components/PageHeader";
 import PageFooter from "../../components/PageFooter";
 import RoleAsyncSelect from "../../components/RoleAsyncSelect";
 import UserCredentialsModal from "../../components/UserCredentialsModal";
+import ProfileImageUpload from "../../components/ProfileImageUpload";
+import ProfileViewMode from "../../components/ProfileViewMode";
 import { generateKey as generatePassword } from "../../utils/passwordGenerator";
 import { generateUsername } from "../../utils/usernameGenerator";
 
@@ -317,6 +319,9 @@ const UserPage = () => {
       }`.trim()
     : "";
 
+  // Convert role IDs to objects for display in view mode
+  const roleObjects = user && !isEditMode ? convertRoleIdsToObjects(user.role || []) : [];
+
   return (
     <Box>
       <PageHeader>
@@ -372,26 +377,47 @@ const UserPage = () => {
           )}
         </Flex>
       </PageFooter>
-      <Flex gap={6} flexWrap={{ base: "wrap", lg: "nowrap" }}>
-        <Box w={{ base: "full", lg: "xs" }}>
-          <Card>
-            <CardBody>
-              <VStack align="stretch" spacing={4}>
-                {isEditMode ? (
-                  <>
-                    <FormControl isInvalid={validationErrors.firstName}>
-                      <FormLabel>First Name</FormLabel>
-                      <Input
-                        value={formData.firstName}
-                        onChange={(e) =>
-                          handleFieldChange("firstName", e.target.value)
-                        }
-                        placeholder="Enter first name"
-                      />
-                      <FormErrorMessage>
-                        {validationErrors.firstName}
-                      </FormErrorMessage>
-                    </FormControl>
+
+      {/* View Mode - Social Media Style Profile */}
+      {!isEditMode && !isNewUser && user && (
+        <ProfileViewMode 
+          user={user} 
+          roleObjects={roleObjects}
+          isValidDate={isValidDate}
+        />
+      )}
+
+      {/* Edit Mode - Form Layout */}
+      {(isEditMode || isNewUser) && (
+        <Flex gap={6} flexWrap={{ base: "wrap", lg: "nowrap" }}>
+          <Box w={{ base: "full", lg: "xs" }}>
+            <Card>
+              <CardBody>
+                <VStack align="stretch" spacing={4}>
+                  {/* Profile Picture Upload */}
+                  <FormControl>
+                    <FormLabel>Profile Picture</FormLabel>
+                    <ProfileImageUpload
+                      value={formData.profilePicture}
+                      onChange={(value) => handleFieldChange("profilePicture", value)}
+                    />
+                  </FormControl>
+
+                  <Divider />
+
+                  <FormControl isInvalid={validationErrors.firstName}>
+                    <FormLabel>First Name</FormLabel>
+                    <Input
+                      value={formData.firstName}
+                      onChange={(e) =>
+                        handleFieldChange("firstName", e.target.value)
+                      }
+                      placeholder="Enter first name"
+                    />
+                    <FormErrorMessage>
+                      {validationErrors.firstName}
+                    </FormErrorMessage>
+                  </FormControl>
 
                     <FormControl>
                       <FormLabel>Middle Name</FormLabel>
@@ -475,232 +501,93 @@ const UserPage = () => {
                         colorScheme="brandPrimary"
                       />
                     </FormControl>
-                  </>
-                ) : (
-                  <>
-                    <Box>
-                      <Text fontSize="sm" color="gray.500" mb={1}>
-                        Full Name
+                </VStack>
+              </CardBody>
+            </Card>
+          </Box>
+          <Box w={{ base: "full", md: "auto" }} flex={{ base: 0, md: "1" }}>
+            <Card w="full">
+              <CardBody>
+                <VStack align="stretch" spacing={4}>
+                  <Heading size="md" mb={2}>
+                    Additional Information
+                  </Heading>
+                  <FormControl isInvalid={validationErrors.phone}>
+                    <FormLabel>Phone</FormLabel>
+                    <HStack>
+                      <Text
+                        px={3}
+                        py={2}
+                        bg="gray.100"
+                        borderRadius="md"
+                        fontWeight="medium"
+                      >
+                        +63
                       </Text>
-                      <Heading size="lg">{fullName}</Heading>
-                    </Box>
-                    <Divider />
-                    <Box>
-                      <Text fontSize="sm" color="gray.500" mb={1}>
-                        Email
-                      </Text>
-                      <Text fontWeight="medium">{user.email}</Text>
-                    </Box>
-                    <Divider />
-                    <Box>
-                      <Text fontSize="sm" color="gray.500" mb={1}>
-                        Employee ID
-                      </Text>
-                      <Text fontWeight="medium">{user.employeeId}</Text>
-                    </Box>
-                    <Divider />
-                    <Box>
-                      <Text fontSize="sm" color="gray.500" mb={1}>
-                        Username
-                      </Text>
-                      <Text fontWeight="medium">{user.username}</Text>
-                    </Box>
-                    <Divider />
-                    <Box>
-                      <Text fontSize="sm" color="gray.500" mb={1}>
-                        Status
-                      </Text>
-                      <Badge colorScheme={user.isActive ? "green" : "red"}>
-                        {user.isActive ? "Active" : "Inactive"}
-                      </Badge>
-                    </Box>
-                  </>
-                )}
-
-                {!isEditMode && !isNewUser && isValidDate(user.createdAt) && (
-                  <>
-                    <Divider />
-                    <VStack spacing={4} align="stretch">
-                      <Box>
-                        <Text fontSize="sm" color="gray.500" mb={1}>
-                          Created At
-                        </Text>
-                        <Text
-                          fontWeight="medium"
-                          fontSize={{ base: "sm", md: "md" }}
-                        >
-                          {new Date(user.createdAt).toLocaleDateString()}{" "}
-                          <Text as="span" fontSize="sm" color="gray.500">
-                            (
-                            {formatDistanceToNow(new Date(user.createdAt), {
-                              addSuffix: true,
-                            })}
-                            )
-                          </Text>
-                        </Text>
-                      </Box>
-                      {isValidDate(user.updatedAt) && (
-                        <Box>
-                          <Text fontSize="sm" color="gray.500" mb={1}>
-                            Updated At
-                          </Text>
-                          <Text
-                            fontWeight="medium"
-                            fontSize={{ base: "sm", md: "md" }}
-                          >
-                            {new Date(user.updatedAt).toLocaleDateString()}{" "}
-                            <Text as="span" fontSize="sm" color="gray.500">
-                              (
-                              {formatDistanceToNow(new Date(user.updatedAt), {
-                                addSuffix: true,
-                              })}
-                              )
-                            </Text>
-                          </Text>
-                        </Box>
-                      )}
-                    </VStack>
-                  </>
-                )}
-              </VStack>
-            </CardBody>
-          </Card>
-        </Box>
-        <Box w={{ base: "full", md: "auto" }} flex={{ base: 0, md: "1" }}>
-          <Card w="full">
-            <CardBody>
-              <VStack align="stretch" spacing={4}>
-                {isEditMode ? (
-                  <>
-                    <Heading size="md" mb={2}>
-                      Additional Information
-                    </Heading>
-                    <FormControl isInvalid={validationErrors.phone}>
-                      <FormLabel>Phone</FormLabel>
-                      <HStack>
-                        <Text
-                          px={3}
-                          py={2}
-                          bg="gray.100"
-                          borderRadius="md"
-                          fontWeight="medium"
-                        >
-                          +63
-                        </Text>
-                        <Input
-                          type="tel"
-                          value={formData.phone}
-                          onChange={(e) => {
-                            // Only allow digits and limit to 10 characters
-                            const value = e.target.value
-                              .replace(/\D/g, "")
-                              .slice(0, 10);
-                            handleFieldChange("phone", value);
-                          }}
-                          onBlur={(e) => {
-                            // Format on blur: 999 999 9999
-                            const value = e.target.value.replace(/\D/g, "");
-                            if (value.length === 10) {
-                              const formatted = `${value.slice(
-                                0,
-                                3
-                              )} ${value.slice(3, 6)} ${value.slice(6, 10)}`;
-                              handleFieldChange("phone", formatted);
-                            }
-                          }}
-                          placeholder="999 999 9999"
-                          maxLength={12} // Account for spaces in formatted version
-                        />
-                      </HStack>
-                      <FormErrorMessage>
-                        {validationErrors.phone}
-                      </FormErrorMessage>
-                    </FormControl>
-
-                    <FormControl>
-                      <FormLabel>Department</FormLabel>
                       <Input
-                        value={formData.department}
-                        onChange={(e) =>
-                          handleFieldChange("department", e.target.value)
-                        }
-                        placeholder="Enter department"
+                        type="tel"
+                        value={formData.phone}
+                        onChange={(e) => {
+                          // Only allow digits and limit to 10 characters
+                          const value = e.target.value
+                            .replace(/\D/g, "")
+                            .slice(0, 10);
+                          handleFieldChange("phone", value);
+                        }}
+                        onBlur={(e) => {
+                          // Format on blur: 999 999 9999
+                          const value = e.target.value.replace(/\D/g, "");
+                          if (value.length === 10) {
+                            const formatted = `${value.slice(
+                              0,
+                              3
+                            )} ${value.slice(3, 6)} ${value.slice(6, 10)}`;
+                            handleFieldChange("phone", formatted);
+                          }
+                        }}
+                        placeholder="917 123 4567"
+                        maxLength={12} // Account for spaces in formatted version
                       />
-                    </FormControl>
+                    </HStack>
+                    <FormErrorMessage>
+                      {validationErrors.phone}
+                    </FormErrorMessage>
+                  </FormControl>
 
-                    <FormControl>
-                      <FormLabel>Position</FormLabel>
-                      <Input
-                        value={formData.position}
-                        onChange={(e) =>
-                          handleFieldChange("position", e.target.value)
-                        }
-                        placeholder="Enter position"
-                      />
-                    </FormControl>
-
-                    <Divider my={2} />
-
-                    <RoleAsyncSelect
-                      value={formData.role || []}
-                      onChange={(roles) => handleFieldChange("role", roles)}
+                  <FormControl>
+                    <FormLabel>Department</FormLabel>
+                    <Input
+                      value={formData.department}
+                      onChange={(e) =>
+                        handleFieldChange("department", e.target.value)
+                      }
+                      placeholder="Enter department"
                     />
-                  </>
-                ) : (
-                  <>
-                    <Heading size="md" mb={2}>
-                      Additional Information
-                    </Heading>
-                    <Box>
-                      <Text fontSize="sm" color="gray.500" mb={1}>
-                        Phone
-                      </Text>
-                      <Text fontWeight="medium">
-                        {user.phone || "Not provided"}
-                      </Text>
-                    </Box>
-                    <Divider />
-                    <Box>
-                      <Text fontSize="sm" color="gray.500" mb={1}>
-                        Department
-                      </Text>
-                      <Text fontWeight="medium">
-                        {user.department || "Not specified"}
-                      </Text>
-                    </Box>
-                    <Divider />
-                    <Box>
-                      <Text fontSize="sm" color="gray.500" mb={1}>
-                        Position
-                      </Text>
-                      <Text fontWeight="medium">
-                        {user.position || "Not specified"}
-                      </Text>
-                    </Box>
-                    <Divider />
-                    <Box>
-                      <Text fontSize="sm" color="gray.500" mb={1}>
-                        Roles
-                      </Text>
-                      <HStack wrap="wrap" spacing={2}>
-                        {user.role && user.role.length > 0 ? (
-                          convertRoleIdsToObjects(user.role).map((r, idx) => (
-                            <Badge key={idx} colorScheme="purple">
-                              {r.title}
-                            </Badge>
-                          ))
-                        ) : (
-                          <Badge colorScheme="gray">No Role Assigned</Badge>
-                        )}
-                      </HStack>
-                    </Box>
-                  </>
-                )}
-              </VStack>
-            </CardBody>
-          </Card>
-        </Box>
-      </Flex>
+                  </FormControl>
+
+                  <FormControl>
+                    <FormLabel>Position</FormLabel>
+                    <Input
+                      value={formData.position}
+                      onChange={(e) =>
+                        handleFieldChange("position", e.target.value)
+                      }
+                      placeholder="Enter position"
+                    />
+                  </FormControl>
+
+                  <Divider my={2} />
+
+                  <RoleAsyncSelect
+                    value={formData.role || []}
+                    onChange={(roles) => handleFieldChange("role", roles)}
+                  />
+                </VStack>
+              </CardBody>
+            </Card>
+          </Box>
+        </Flex>
+      )}
 
       {/* Credentials Modal for New User */}
       {generatedCredentials && (
