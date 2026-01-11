@@ -203,6 +203,7 @@ export const UserProfileProvider = ({ children }) => {
         method: "POST",
         body: JSON.stringify(userData),
       });
+      console.log(userData, data);
 
       const newUser = data.data || data;
       dispatch({

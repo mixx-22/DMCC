@@ -57,10 +57,11 @@ const UserPage = () => {
   useEffect(() => {
     if (user && !isNewUser) {
       // Strip +63 prefix from phone for display (user will see/edit 10 digits only)
-      const phoneForDisplay = user.phone && user.phone.startsWith("+63")
-        ? user.phone.slice(3)
-        : user.phone;
-      
+      const phoneForDisplay =
+        user.phone && user.phone.startsWith("+63")
+          ? user.phone.slice(3)
+          : user.phone;
+
       setFormData({
         ...initialUserData,
         ...user,
@@ -105,14 +106,16 @@ const UserPage = () => {
     // Philippine phone number validation (optional but if provided, must be valid)
     // User enters 10 digits (9XX XXX XXXX), we validate the format
     if (formData.phone && formData.phone.trim()) {
-      const cleanedPhone = formData.phone.replace(/[\s\-\.\(\)]/g, "");
-      // Should be exactly 10 digits starting with 9 (mobile) or 2-8 (landline)
+      const cleanedPhone = formData.phone.replace(/\D/g, "");
+
       const phoneRegex = /^[2-9]\d{9}$/;
+
       if (!phoneRegex.test(cleanedPhone)) {
         errors.phone =
           "Please enter a valid 10-digit Philippine number (e.g., 917 123 4567)";
       }
     }
+
     setValidationErrors(errors);
     return Object.keys(errors).length === 0;
   };
@@ -132,15 +135,18 @@ const UserPage = () => {
       role: Array.isArray(formData.role)
         ? formData.role.map((r) => (typeof r === "object" ? r.id : r))
         : [],
-      phone: formData.phone && formData.phone.trim()
-        ? `+63${formData.phone.replace(/[\s\-\.\(\)]/g, "")}`
-        : formData.phone,
+      phone:
+        formData.phone && formData.phone.trim()
+          ? `+63${formData.phone.replace(/\D/g, "").replace(/^0/, "")}`
+          : formData.phone,
     };
 
     if (isNewUser) {
       delete dataToSubmit.createdAt;
       delete dataToSubmit.updatedAt;
       const result = await createUser(dataToSubmit);
+
+      console.log({ dataToSubmit, result });
 
       if (result.success) {
         toast.success("User Created", {
@@ -222,7 +228,6 @@ const UserPage = () => {
       </PageHeader>
       <PageFooter>
         <Flex
-          mb={6}
           gap={4}
           flexWrap="wrap"
           justifyContent={{ base: "stretch", sm: "flex-end" }}
@@ -456,18 +461,23 @@ const UserPage = () => {
                           value={formData.phone}
                           onChange={(e) => {
                             // Only allow digits and limit to 10 characters
-                            const value = e.target.value.replace(/\D/g, "").slice(0, 10);
+                            const value = e.target.value
+                              .replace(/\D/g, "")
+                              .slice(0, 10);
                             handleFieldChange("phone", value);
                           }}
                           onBlur={(e) => {
                             // Format on blur: 999 999 9999
                             const value = e.target.value.replace(/\D/g, "");
                             if (value.length === 10) {
-                              const formatted = `${value.slice(0, 3)} ${value.slice(3, 6)} ${value.slice(6, 10)}`;
+                              const formatted = `${value.slice(
+                                0,
+                                3
+                              )} ${value.slice(3, 6)} ${value.slice(6, 10)}`;
                               handleFieldChange("phone", formatted);
                             }
                           }}
-                          placeholder="917 123 4567"
+                          placeholder="999 999 9999"
                           maxLength={12} // Account for spaces in formatted version
                         />
                       </HStack>
