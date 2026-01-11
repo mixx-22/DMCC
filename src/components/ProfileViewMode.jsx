@@ -12,6 +12,7 @@ import {
   Icon,
   Flex,
   useColorModeValue,
+  CardHeader,
 } from "@chakra-ui/react";
 import { FiMail, FiPhone, FiBriefcase, FiUsers, FiKey } from "react-icons/fi";
 import { formatDistanceToNow } from "date-fns";
@@ -19,7 +20,6 @@ import { formatDistanceToNow } from "date-fns";
 const ProfileViewMode = ({ user, roleObjects, isValidDate }) => {
   const bg = useColorModeValue("white", "gray.800");
   const headerBg = useColorModeValue("brandPrimary.50", "brandPrimary.900");
-  const borderColor = useColorModeValue("gray.200", "gray.600");
 
   const fullName = user
     ? `${user.firstName || ""} ${user.middleName || ""} ${
@@ -67,10 +67,20 @@ const ProfileViewMode = ({ user, roleObjects, isValidDate }) => {
               )}
             </Box>
 
-            <VStack align={{ base: "center", md: "flex-start" }} flex={1} spacing={2}>
+            <VStack
+              align={{ base: "center", md: "flex-start" }}
+              flex={1}
+              spacing={2}
+            >
               <Heading size="xl">{fullName}</Heading>
-              <Text color="gray.600" fontSize="md" fontWeight="medium">{user.employeeId}</Text>
-              <HStack spacing={2} flexWrap="wrap" justify={{ base: "center", md: "flex-start" }}>
+              <Text color="gray.600" fontSize="md" fontWeight="medium">
+                {user.employeeId}
+              </Text>
+              <HStack
+                spacing={2}
+                flexWrap="wrap"
+                justify={{ base: "center", md: "flex-start" }}
+              >
                 {!user.isActive && (
                   <Badge colorScheme="red" fontSize="sm">
                     Inactive
@@ -94,14 +104,13 @@ const ProfileViewMode = ({ user, roleObjects, isValidDate }) => {
       </Card>
 
       <Flex gap={6} flexWrap={{ base: "wrap", lg: "nowrap" }}>
-        <Box w={{ base: "full", lg: "50%" }}>
+        <Box w={{ base: "full", lg: "lg" }}>
           <Card>
+            <CardHeader pb={0}>
+              <Heading size="md">Basic Information</Heading>
+            </CardHeader>
             <CardBody>
               <VStack align="stretch" spacing={4}>
-                <Heading size="md" mb={2}>
-                  Contact Information
-                </Heading>
-
                 <HStack spacing={3}>
                   <Icon as={FiMail} color="gray.500" boxSize={5} />
                   <Box flex={1}>
@@ -120,7 +129,9 @@ const ProfileViewMode = ({ user, roleObjects, isValidDate }) => {
                     <Text fontSize="sm" color="gray.500">
                       Phone
                     </Text>
-                    <Text fontWeight="medium">{user.phone || "Not provided"}</Text>
+                    <Text fontWeight="medium">
+                      {user.phone || "Not provided"}
+                    </Text>
                   </Box>
                 </HStack>
 
@@ -137,7 +148,7 @@ const ProfileViewMode = ({ user, roleObjects, isValidDate }) => {
           </Card>
         </Box>
 
-        <Box w={{ base: "full", lg: "50%" }}>
+        <Box w="full">
           <Card>
             <CardBody>
               <VStack align="stretch" spacing={4}>
@@ -151,7 +162,9 @@ const ProfileViewMode = ({ user, roleObjects, isValidDate }) => {
                     <Text fontSize="sm" color="gray.500">
                       Department
                     </Text>
-                    <Text fontWeight="medium">{user.department || "Not specified"}</Text>
+                    <Text fontWeight="medium">
+                      {user.department || "Not specified"}
+                    </Text>
                   </Box>
                 </HStack>
 
@@ -163,7 +176,9 @@ const ProfileViewMode = ({ user, roleObjects, isValidDate }) => {
                     <Text fontSize="sm" color="gray.500">
                       Position
                     </Text>
-                    <Text fontWeight="medium">{user.position || "Not specified"}</Text>
+                    <Text fontWeight="medium">
+                      {user.position || "Not specified"}
+                    </Text>
                   </Box>
                 </HStack>
 

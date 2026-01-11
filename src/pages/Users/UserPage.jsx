@@ -15,15 +15,18 @@ import {
   Card,
   Flex,
   Switch,
-  Badge,
   HStack,
   useDisclosure,
+  CardHeader,
+  Stack,
+  InputGroup,
+  InputLeftAddon,
+  FormHelperText,
 } from "@chakra-ui/react";
 import { FiEdit, FiArrowLeft, FiSave, FiX } from "react-icons/fi";
 import { useNavigate, useParams } from "react-router-dom";
-import { formatDistanceToNow } from "date-fns";
 import { toast } from "sonner";
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useUserProfile } from "../../context/UserProfileContext";
 import PageHeader from "../../components/PageHeader";
 import PageFooter from "../../components/PageFooter";
@@ -294,7 +297,8 @@ const UserPage = () => {
       }`.trim()
     : "";
 
-  const roleObjects = user && !isEditMode ? convertRoleIdsToObjects(user.role || []) : [];
+  const roleObjects =
+    user && !isEditMode ? convertRoleIdsToObjects(user.role || []) : [];
 
   return (
     <Box>
@@ -353,8 +357,8 @@ const UserPage = () => {
       </PageFooter>
 
       {!isEditMode && !isNewUser && user && (
-        <ProfileViewMode 
-          user={user} 
+        <ProfileViewMode
+          user={user}
           roleObjects={roleObjects}
           isValidDate={isValidDate}
         />
@@ -362,15 +366,19 @@ const UserPage = () => {
 
       {(isEditMode || isNewUser) && (
         <Flex gap={6} flexWrap={{ base: "wrap", lg: "nowrap" }}>
-          <Box w={{ base: "full", lg: "50%" }}>
-            <Card mb={6}>
+          <Stack gap={6} w={{ base: "full", lg: "lg" }}>
+            <Card>
+              <CardHeader pb={0}>
+                <Heading size="md">Profile Picture</Heading>
+              </CardHeader>
               <CardBody>
                 <VStack align="stretch" spacing={4}>
                   <FormControl>
-                    <FormLabel>Profile Picture</FormLabel>
                     <ProfileImageUpload
                       value={formData.profilePicture}
-                      onChange={(value) => handleFieldChange("profilePicture", value)}
+                      onChange={(value) =>
+                        handleFieldChange("profilePicture", value)
+                      }
                     />
                   </FormControl>
                 </VStack>
@@ -378,12 +386,79 @@ const UserPage = () => {
             </Card>
 
             <Card>
+              <CardHeader pb={0}>
+                <Heading size="md">Account Information</Heading>
+              </CardHeader>
               <CardBody>
                 <VStack align="stretch" spacing={4}>
-                  <Heading size="md" mb={2}>
-                    Basic Information
-                  </Heading>
+                  <FormControl isInvalid={validationErrors.email}>
+                    <FormLabel>Email</FormLabel>
+                    <Input
+                      type="email"
+                      value={formData.email}
+                      onChange={(e) =>
+                        handleFieldChange("email", e.target.value)
+                      }
+                      placeholder="Enter email address"
+                    />
+                    <FormErrorMessage>
+                      {validationErrors.email}
+                    </FormErrorMessage>
+                  </FormControl>
 
+                  <FormControl isInvalid={validationErrors.username}>
+                    <FormLabel>Username</FormLabel>
+                    <Input
+                      value={formData.username}
+                      onChange={(e) =>
+                        handleFieldChange("username", e.target.value)
+                      }
+                      placeholder={
+                        isNewUser
+                          ? "Auto-generated or enter custom username"
+                          : "Enter username"
+                      }
+                    />
+                    <FormErrorMessage>
+                      {validationErrors.username}
+                    </FormErrorMessage>
+                  </FormControl>
+
+                  <Divider my={2} />
+
+                  <FormControl display="flex" alignItems="center">
+                    <Stack spacing={0}>
+                      <FormLabel my={0}>Account Status</FormLabel>
+                      <FormHelperText mt={0} mb={2}>
+                        Toggle OFF to restrict user access without deleting the
+                        account.
+                      </FormHelperText>
+                      <HStack align="center">
+                        <Switch
+                          isChecked={formData.isActive}
+                          onChange={(e) =>
+                            handleFieldChange("isActive", e.target.checked)
+                          }
+                          colorScheme="brandPrimary"
+                        />
+                        <FormLabel mb={0} ml={2}>
+                          Active User
+                        </FormLabel>
+                      </HStack>
+                    </Stack>
+                  </FormControl>
+                </VStack>
+              </CardBody>
+            </Card>
+          </Stack>
+
+          <Stack gap={6} w="full">
+            <Card>
+              <CardHeader pb={0}>
+                <Heading size="md">Personal Information</Heading>
+              </CardHeader>
+              <CardBody>
+                <VStack align="stretch" spacing={4}>
                   <FormControl isInvalid={validationErrors.firstName}>
                     <FormLabel>First Name</FormLabel>
                     <Input
@@ -423,39 +498,10 @@ const UserPage = () => {
                     </FormErrorMessage>
                   </FormControl>
 
-                  <Divider my={2} />
-
-                  <Heading size="sm" mb={2}>
-                    Contact Information
-                  </Heading>
-
-                  <FormControl isInvalid={validationErrors.email}>
-                    <FormLabel>Email</FormLabel>
-                    <Input
-                      type="email"
-                      value={formData.email}
-                      onChange={(e) =>
-                        handleFieldChange("email", e.target.value)
-                      }
-                      placeholder="Enter email address"
-                    />
-                    <FormErrorMessage>
-                      {validationErrors.email}
-                    </FormErrorMessage>
-                  </FormControl>
-
                   <FormControl isInvalid={validationErrors.phone}>
                     <FormLabel>Phone</FormLabel>
-                    <HStack>
-                      <Text
-                        px={3}
-                        py={2}
-                        bg="gray.100"
-                        borderRadius="md"
-                        fontWeight="medium"
-                      >
-                        +63
-                      </Text>
+                    <InputGroup>
+                      <InputLeftAddon>+63</InputLeftAddon>
                       <Input
                         type="tel"
                         value={formData.phone}
@@ -475,14 +521,24 @@ const UserPage = () => {
                             handleFieldChange("phone", formatted);
                           }
                         }}
-                        placeholder="917 123 4567"
+                        placeholder="999 999 9999"
                         maxLength={12}
                       />
-                    </HStack>
+                    </InputGroup>
                     <FormErrorMessage>
                       {validationErrors.phone}
                     </FormErrorMessage>
                   </FormControl>
+                </VStack>
+              </CardBody>
+            </Card>
+
+            <Card>
+              <CardBody>
+                <VStack align="stretch" spacing={4}>
+                  <Heading size="md" mb={2}>
+                    Professional Details
+                  </Heading>
 
                   <FormControl isInvalid={validationErrors.employeeId}>
                     <FormLabel>Employee ID</FormLabel>
@@ -497,35 +553,6 @@ const UserPage = () => {
                       {validationErrors.employeeId}
                     </FormErrorMessage>
                   </FormControl>
-
-                  <FormControl isInvalid={validationErrors.username}>
-                    <FormLabel>Username</FormLabel>
-                    <Input
-                      value={formData.username}
-                      onChange={(e) =>
-                        handleFieldChange("username", e.target.value)
-                      }
-                      placeholder={
-                        isNewUser
-                          ? "Auto-generated or enter custom username"
-                          : "Enter username"
-                      }
-                    />
-                    <FormErrorMessage>
-                      {validationErrors.username}
-                    </FormErrorMessage>
-                  </FormControl>
-                </VStack>
-              </CardBody>
-            </Card>
-          </Box>
-          <Box w={{ base: "full", lg: "50%" }}>
-            <Card>
-              <CardBody>
-                <VStack align="stretch" spacing={4}>
-                  <Heading size="md" mb={2}>
-                    Professional Details
-                  </Heading>
 
                   <FormControl>
                     <FormLabel>Department</FormLabel>
@@ -555,23 +582,10 @@ const UserPage = () => {
                     value={formData.role || []}
                     onChange={(roles) => handleFieldChange("role", roles)}
                   />
-
-                  <Divider my={2} />
-
-                  <FormControl display="flex" alignItems="center">
-                    <FormLabel mb="0">Active Status</FormLabel>
-                    <Switch
-                      isChecked={formData.isActive}
-                      onChange={(e) =>
-                        handleFieldChange("isActive", e.target.checked)
-                      }
-                      colorScheme="brandPrimary"
-                    />
-                  </FormControl>
                 </VStack>
               </CardBody>
             </Card>
-          </Box>
+          </Stack>
         </Flex>
       )}
 

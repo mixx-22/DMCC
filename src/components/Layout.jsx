@@ -1,10 +1,16 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { Box, Flex, useColorModeValue } from "@chakra-ui/react";
 import Sidebar from "./Sidebar";
 import Header from "./Header";
 import Footer from "./Footer";
+import { useLocation } from "react-router-dom";
 
 const Layout = ({ children }) => {
+  const location = useLocation();
+  const smallMaxContent = useMemo(() => {
+    const pathSegments = location.pathname.split("/").filter(Boolean);
+    return ["users"].includes(pathSegments[0]) && pathSegments.length === 2;
+  }, [location.pathname]);
   const contentBg = useColorModeValue("gray.50", "gray.900");
   const [isMobile, setIsMobile] = useState(false);
 
@@ -28,7 +34,12 @@ const Layout = ({ children }) => {
           overflowY="auto"
           pb={isMobile ? "80px" : 0}
         >
-          <Box maxW="page.maxContent" mx="auto" w="full" p="page.padding">
+          <Box
+            maxW={smallMaxContent ? "page.maxContent-sm" : "page.maxContent"}
+            mx="auto"
+            w="full"
+            p="page.padding"
+          >
             {children}
           </Box>
         </Box>
