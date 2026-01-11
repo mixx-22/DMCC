@@ -16,8 +16,20 @@ import {
   CardBody,
   Card,
   Flex,
+  useColorModeValue,
+  Menu,
+  MenuButton,
+  MenuList,
+  MenuItem,
 } from "@chakra-ui/react";
-import { FiEdit, FiArrowLeft, FiSave, FiX } from "react-icons/fi";
+import {
+  FiEdit,
+  FiArrowLeft,
+  FiSave,
+  FiX,
+  FiMoreVertical,
+  FiTrash2,
+} from "react-icons/fi";
 import { useNavigate, useParams } from "react-router-dom";
 import { formatDistanceToNow } from "date-fns";
 import { toast } from "sonner";
@@ -31,7 +43,9 @@ import PageFooter from "../../components/PageFooter";
 const RolePage = () => {
   const navigate = useNavigate();
   const { id } = useParams();
-  const { role, loading, saving, updateRole, createRole } = useRole();
+  const { role, loading, saving, updateRole, createRole, deleteRole } =
+    useRole();
+  const errorColor = useColorModeValue("error.600", "error.400");
 
   const isNewRole = id === "new";
   const [isEditMode, setIsEditMode] = useState(isNewRole);
@@ -296,6 +310,35 @@ const RolePage = () => {
     setIsEditMode(true);
   };
 
+  const handleDeleteClick = async () => {
+    const result = await Swal.fire({
+      title: "Delete Role",
+      text: "This action is irreversible and cannot be undone.",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#E53E3E",
+      cancelButtonColor: "#718096",
+      confirmButtonText: "Delete",
+      cancelButtonText: "Cancel",
+      reverseButtons: true,
+    });
+
+    if (result.isConfirmed) {
+      const deleteResult = await deleteRole(role._id || role.id);
+
+      if (deleteResult.success) {
+        toast.success("Role Deleted", {
+          description: "Role has been deleted successfully",
+        });
+        navigate("/roles");
+      } else {
+        toast.error("Delete Failed", {
+          description: deleteResult.error || "Failed to delete role",
+        });
+      }
+    }
+  };
+
   if (loading && !isNewRole) {
     return (
       <Box p={8} textAlign="center">
@@ -338,14 +381,33 @@ const RolePage = () => {
           justifyContent={{ base: "stretch", sm: "flex-end" }}
         >
           {!isEditMode && !isNewRole ? (
-            <Button
-              leftIcon={<FiEdit />}
-              colorScheme="brandPrimary"
-              onClick={handleEdit}
-              w={{ base: "full", sm: "auto" }}
-            >
-              Edit Role
-            </Button>
+            <Flex gap={2} w={{ base: "full", sm: "auto" }}>
+              <Menu>
+                <MenuButton
+                  as={IconButton}
+                  icon={<FiMoreVertical />}
+                  variant="outline"
+                  aria-label="More options"
+                />
+                <MenuList>
+                  <MenuItem
+                    icon={<FiTrash2 />}
+                    color={errorColor}
+                    onClick={handleDeleteClick}
+                  >
+                    Delete Role
+                  </MenuItem>
+                </MenuList>
+              </Menu>
+              <Button
+                leftIcon={<FiEdit />}
+                colorScheme="brandPrimary"
+                onClick={handleEdit}
+                flex={{ base: 1, sm: "auto" }}
+              >
+                Edit Role
+              </Button>
+            </Flex>
           ) : (
             <Flex gap={2} w={{ base: "full", sm: "auto" }}>
               <Button

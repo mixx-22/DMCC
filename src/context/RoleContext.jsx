@@ -233,6 +233,34 @@ export const RoleProvider = ({ children }) => {
     }
   }, []);
 
+  const deleteRole = useCallback(async (roleId) => {
+    dispatch({ type: "SET_SAVING", value: true });
+    dispatch({ type: "SET_ERROR", value: null });
+
+    if (!USE_API) {
+      setTimeout(() => {
+        dispatch({ type: "SET_SAVING", value: false });
+      }, 500);
+      return { success: true };
+    }
+
+    try {
+      await apiService.request(`${ROLES_ENDPOINT}/${roleId}`, {
+        method: "DELETE",
+      });
+
+      dispatch({ type: "SET_SAVING", value: false });
+      return { success: true };
+    } catch (err) {
+      dispatch({
+        type: "SET_ERROR",
+        value: err.message || "Failed to delete role",
+      });
+      dispatch({ type: "SET_SAVING", value: false });
+      return { success: false, error: err.message };
+    }
+  }, []);
+
   useEffect(() => {
     if (id && id !== "new") {
       fetchRole(id);
@@ -247,6 +275,7 @@ export const RoleProvider = ({ children }) => {
         fetchRole,
         updateRole,
         createRole,
+        deleteRole,
       }}
     >
       {children}
