@@ -14,10 +14,14 @@ import {
   Spacer,
   InputGroup,
   InputLeftElement,
+  LinkBox,
+  LinkOverlay,
+  useColorModeValue,
+  Tooltip,
 } from "@chakra-ui/react";
 import { motion } from "framer-motion";
 import { useEffect } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { useSearchParams, Link as RouterLink } from "react-router-dom";
 import { useUsers } from "../../context/_useContext";
 import Pagination from "../../components/Pagination";
 import UsersSkeleton from "../../components/UsersSkeleton";
@@ -25,7 +29,7 @@ import { FiSearch } from "react-icons/fi";
 
 const MotionBox = motion(Box);
 
-const Layout = () => {
+const UsersList = () => {
   const {
     users,
     loading,
@@ -37,10 +41,10 @@ const Layout = () => {
     setPage,
     setSearch,
   } = useUsers();
-  const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   // Use users?.data or empty array if not present
   const userList = Array.isArray(users?.data) ? users.data : [];
+  const inactive = useColorModeValue("red.600", "red.300");
 
   // Initialize from URL on mount
   useEffect(() => {
@@ -130,8 +134,7 @@ const Layout = () => {
               <Tr>
                 <Th>Name</Th>
                 <Th>Email</Th>
-                <Th>Roles</Th>
-                <Th>Status</Th>
+                <Th textAlign="right">Roles</Th>
               </Tr>
             </Thead>
             <Tbody>
@@ -150,32 +153,47 @@ const Layout = () => {
                   const fullName = `${user.firstName || ""} ${
                     user.middleName || ""
                   } ${user.lastName || ""}`.trim();
+                  const userId = user._id || user.userId || user.employeeId;
                   return (
-                    <Tr key={user.userId || user.employeeId}>
-                      <Td>
-                        <HStack>
-                          <Avatar size="sm" name={fullName} />
-                          <span>{fullName}</span>
-                        </HStack>
+                    <LinkBox as={Tr} key={userId}>
+                      <Td flex={2}>
+                        <LinkOverlay as={RouterLink} to={`/users/${userId}`}>
+                          <Tooltip
+                            hasArrow
+                            label={
+                              !user.isActive
+                                ? `${user.firstName || "User"} is Inactive`
+                                : ""
+                            }
+                          >
+                            <HStack w="fit-content">
+                              <Avatar size="sm" name={fullName} />
+                              <Text
+                                as="span"
+                                opacity={!user.isActive ? 0.6 : 1}
+                                color={!user.isActive ? inactive : "inherit"}
+                              >
+                                {fullName}
+                              </Text>
+                            </HStack>
+                          </Tooltip>
+                        </LinkOverlay>
                       </Td>
-                      <Td>{user.email}</Td>
-                      <Td>
-                        {user.role && user.role.length > 0 ? (
-                          user.role.map((r) => (
-                            <Badge key={r} colorScheme="purple" mr={1}>
-                              {r}
+                      <Td opacity={!user.isActive ? 0.6 : 1}>{user.email}</Td>
+                      <Td textAlign="right" flexGrow={0}>
+                        {!user.isActive ? (
+                          <Badge colorScheme="red">Inactive</Badge>
+                        ) : user.role && user.role.length > 0 ? (
+                          user.role.map((r, idx) => (
+                            <Badge key={idx} colorScheme="purple" mr={1}>
+                              {r?.title}
                             </Badge>
                           ))
                         ) : (
                           <Badge colorScheme="gray">No Role</Badge>
                         )}
                       </Td>
-                      <Td>
-                        <Badge colorScheme={user.isActive ? "green" : "red"}>
-                          {user.isActive ? "Active" : "Inactive"}
-                        </Badge>
-                      </Td>
-                    </Tr>
+                    </LinkBox>
                   );
                 })
               )}
@@ -196,4 +214,4 @@ const Layout = () => {
   );
 };
 
-export default Layout;
+export default UsersList;

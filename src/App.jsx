@@ -14,7 +14,9 @@ import DocumentDetail from "./pages/DocumentDetail";
 import Certifications from "./pages/Certifications";
 import CertificationDetail from "./pages/CertificationDetail";
 import Users from "./pages/Users";
+import UserPage from "./pages/Users/UserPage";
 import { UsersProvider } from "./context/UsersContext";
+import { UserProfileProvider } from "./context/UserProfileContext";
 import Archive from "./pages/Archive";
 import Roles from "./pages/Roles";
 import RolePage from "./pages/Roles/RolePage";
@@ -84,6 +86,14 @@ function App() {
                         <UsersProvider>
                           <Users />
                         </UsersProvider>
+                      }
+                    />
+                    <Route
+                      path="/users/:id"
+                      element={
+                        <UserProfileProvider>
+                          <UserPage />
+                        </UserProfileProvider>
                       }
                     />
                     <Route
