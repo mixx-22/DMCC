@@ -28,12 +28,6 @@ import {
   MenuButton,
   MenuList,
   MenuItem,
-  AlertDialog,
-  AlertDialogBody,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogContent,
-  AlertDialogOverlay,
 } from "@chakra-ui/react";
 import {
   FiEdit,
@@ -46,6 +40,7 @@ import {
 import { useNavigate, useParams } from "react-router-dom";
 import { toast } from "sonner";
 import { useState, useEffect, useMemo, useRef } from "react";
+import Swal from "sweetalert2";
 import { useUserProfile } from "../../context/UserProfileContext";
 import PageHeader from "../../components/PageHeader";
 import PageFooter from "../../components/PageFooter";
@@ -86,16 +81,10 @@ const UserPage = () => {
   const [formData, setFormData] = useState(initialUserData);
   const [validationErrors, setValidationErrors] = useState({});
   const [generatedCredentials, setGeneratedCredentials] = useState(null);
-  const cancelRef = useRef();
   const {
     isOpen: isCredentialsModalOpen,
     onOpen: onOpenCredentialsModal,
     onClose: onCloseCredentialsModal,
-  } = useDisclosure();
-  const {
-    isOpen: isDeleteDialogOpen,
-    onOpen: onOpenDeleteDialog,
-    onClose: onCloseDeleteDialog,
   } = useDisclosure();
 
   useEffect(() => {
@@ -257,20 +246,32 @@ const UserPage = () => {
     setIsEditMode(true);
   };
 
-  const handleDelete = async () => {
-    const result = await deleteUser(user._id || user.id);
+  const handleDeleteClick = async () => {
+    const result = await Swal.fire({
+      title: "Delete User",
+      text: "This action is irreversible and cannot be undone.",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#E53E3E",
+      cancelButtonColor: "#718096",
+      confirmButtonText: "Delete",
+      cancelButtonText: "Cancel",
+      reverseButtons: true,
+    });
 
-    if (result.success) {
-      toast.success("User Deleted", {
-        description: "User has been deleted successfully",
-      });
-      onCloseDeleteDialog();
-      navigate("/users");
-    } else {
-      toast.error("Delete Failed", {
-        description: result.error || "Failed to delete user",
-      });
-      onCloseDeleteDialog();
+    if (result.isConfirmed) {
+      const deleteResult = await deleteUser(user._id || user.id);
+
+      if (deleteResult.success) {
+        toast.success("User Deleted", {
+          description: "User has been deleted successfully",
+        });
+        navigate("/users");
+      } else {
+        toast.error("Delete Failed", {
+          description: deleteResult.error || "Failed to delete user",
+        });
+      }
     }
   };
 
@@ -328,7 +329,7 @@ const UserPage = () => {
                   <MenuItem
                     icon={<FiTrash2 />}
                     color={errorColor}
-                    onClick={onOpenDeleteDialog}
+                    onClick={handleDeleteClick}
                   >
                     Delete User
                   </MenuItem>
@@ -637,39 +638,6 @@ const UserPage = () => {
           password={generatedCredentials.password}
         />
       )}
-
-      <AlertDialog
-        isOpen={isDeleteDialogOpen}
-        leastDestructiveRef={cancelRef}
-        onClose={onCloseDeleteDialog}
-      >
-        <AlertDialogOverlay>
-          <AlertDialogContent>
-            <AlertDialogHeader fontSize="lg" fontWeight="bold">
-              Delete User
-            </AlertDialogHeader>
-
-            <AlertDialogBody>
-              Are you sure you want to delete this user? This action is
-              irreversible and cannot be undone.
-            </AlertDialogBody>
-
-            <AlertDialogFooter>
-              <Button ref={cancelRef} onClick={onCloseDeleteDialog}>
-                Cancel
-              </Button>
-              <Button
-                colorScheme="red"
-                onClick={handleDelete}
-                ml={3}
-                isLoading={saving}
-              >
-                Delete
-              </Button>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialogOverlay>
-      </AlertDialog>
     </Box>
   );
 };
