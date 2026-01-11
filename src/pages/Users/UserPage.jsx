@@ -408,17 +408,20 @@ const UserPage = () => {
 
                   <FormControl isInvalid={validationErrors.username}>
                     <FormLabel>Username</FormLabel>
-                    <Input
-                      value={formData.username}
-                      onChange={(e) =>
-                        handleFieldChange("username", e.target.value)
-                      }
-                      placeholder={
-                        isNewUser
-                          ? "Auto-generated or enter custom username"
-                          : "Enter username"
-                      }
-                    />
+                    <InputGroup>
+                      <InputLeftAddon>@</InputLeftAddon>
+                      <Input
+                        value={formData.username}
+                        onChange={(e) =>
+                          handleFieldChange("username", e.target.value)
+                        }
+                        placeholder={
+                          isNewUser
+                            ? "Auto-generated or enter custom username"
+                            : "Enter username"
+                        }
+                      />
+                    </InputGroup>
                     <FormErrorMessage>
                       {validationErrors.username}
                     </FormErrorMessage>
