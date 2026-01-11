@@ -1,20 +1,44 @@
 import { Flex, Box, useColorModeValue } from "@chakra-ui/react";
 import { useLayout } from "../context/Layout";
+import { useState, useEffect } from "react";
+
+// Mobile navigation constants - keep in sync across Sidebar.jsx, Footer.jsx, and Layout.jsx
+const MOBILE_NAV_HEIGHT = 60; // Must match height in Sidebar.jsx
 
 const Footer = () => {
-  const { footerRef } = useLayout();
+  const { footerRef, isBottomNavVisible } = useLayout();
   const bgColor = useColorModeValue("gray.50", "gray.900");
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    checkMobile();
+    window.addEventListener("resize", checkMobile);
+    return () => window.removeEventListener("resize", checkMobile);
+  }, []);
 
   return (
     <Flex
       bg={bgColor}
       borderTop="1px"
       border="none"
-      position="sticky"
+      position={isMobile ? "fixed" : "sticky"}
       bottom={0}
+      left={isMobile ? 0 : undefined}
+      right={isMobile ? 0 : undefined}
       zIndex="sticky"
       h="sidebar.row"
       justify="center"
+      transition="transform 0.3s ease"
+      transform={
+        isMobile
+          ? isBottomNavVisible
+            ? `translateY(-${MOBILE_NAV_HEIGHT}px)`
+            : "translateY(0)"
+          : "none"
+      }
     >
       <Flex
         w="full"
