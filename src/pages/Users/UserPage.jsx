@@ -30,6 +30,7 @@ import PageFooter from "../../components/PageFooter";
 import RoleAsyncSelect from "../../components/RoleAsyncSelect";
 import UserCredentialsModal from "../../components/UserCredentialsModal";
 import { generatePassword } from "../../utils/passwordGenerator";
+import { generateUsername } from "../../utils/usernameGenerator";
 
 // Helper function to validate and format dates safely
 const isValidDate = (dateString) => {
@@ -56,6 +57,7 @@ const UserPage = () => {
   const [formData, setFormData] = useState(initialUserData);
   const [validationErrors, setValidationErrors] = useState({});
   const [generatedCredentials, setGeneratedCredentials] = useState(null);
+  const [usernameManuallyEdited, setUsernameManuallyEdited] = useState(false);
   const {
     isOpen: isCredentialsModalOpen,
     onOpen: onOpenCredentialsModal,
@@ -79,14 +81,39 @@ const UserPage = () => {
         role: convertRoleIdsToObjects(user.role || []),
         phone: phoneForDisplay,
       });
+      // If editing existing user, mark username as manually set
+      setUsernameManuallyEdited(true);
     }
   }, [user, isNewUser, initialUserData, convertRoleIdsToObjects]);
+
+  // Auto-generate username for new users when firstName, lastName, or employeeId changes
+  useEffect(() => {
+    if (isNewUser && !usernameManuallyEdited) {
+      const generatedUsername = generateUsername(
+        formData.firstName,
+        formData.lastName,
+        formData.employeeId
+      );
+      if (generatedUsername && generatedUsername !== formData.username) {
+        setFormData((prev) => ({
+          ...prev,
+          username: generatedUsername,
+        }));
+      }
+    }
+  }, [formData.firstName, formData.lastName, formData.employeeId, isNewUser, usernameManuallyEdited]);
 
   const handleFieldChange = (field, value) => {
     setFormData((prev) => ({
       ...prev,
       [field]: value,
     }));
+    
+    // Track if username is manually edited
+    if (field === "username") {
+      setUsernameManuallyEdited(true);
+    }
+    
     // Clear validation error for this field
     if (validationErrors[field]) {
       setValidationErrors((prev) => ({
@@ -111,6 +138,9 @@ const UserPage = () => {
     }
     if (!formData.employeeId.trim()) {
       errors.employeeId = "Employee ID is required";
+    }
+    if (!formData.username.trim()) {
+      errors.username = "Username is required";
     }
     // Philippine phone number validation (optional but if provided, must be valid)
     // User enters 10 digits (9XX XXX XXXX), we validate the format
@@ -373,6 +403,24 @@ const UserPage = () => {
                       </FormErrorMessage>
                     </FormControl>
 
+                    <FormControl isInvalid={validationErrors.username}>
+                      <FormLabel>Username</FormLabel>
+                      <Input
+                        value={formData.username}
+                        onChange={(e) =>
+                          handleFieldChange("username", e.target.value)
+                        }
+                        placeholder={
+                          isNewUser
+                            ? "Auto-generated or enter custom username"
+                            : "Enter username"
+                        }
+                      />
+                      <FormErrorMessage>
+                        {validationErrors.username}
+                      </FormErrorMessage>
+                    </FormControl>
+
                     <FormControl display="flex" alignItems="center">
                       <FormLabel mb="0">Active Status</FormLabel>
                       <Switch
@@ -405,6 +453,13 @@ const UserPage = () => {
                         Employee ID
                       </Text>
                       <Text fontWeight="medium">{user.employeeId}</Text>
+                    </Box>
+                    <Divider />
+                    <Box>
+                      <Text fontSize="sm" color="gray.500" mb={1}>
+                        Username
+                      </Text>
+                      <Text fontWeight="medium">{user.username}</Text>
                     </Box>
                     <Divider />
                     <Box>
