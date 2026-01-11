@@ -147,9 +147,14 @@ export const UserProfileProvider = ({ children }) => {
         method: "GET",
       });
 
+      const fetchedUser = data.user || data;
+      if (fetchedUser.role) {
+        fetchedUser.role = normalizeRoles(fetchedUser.role);
+      }
+
       dispatch({
         type: "SET_USER",
-        user: data.user || data,
+        user: fetchedUser,
       });
     } catch (err) {
       dispatch({
@@ -173,9 +178,13 @@ export const UserProfileProvider = ({ children }) => {
 
       if (!USE_API) {
         setTimeout(() => {
+          const updatedUser = { ...state.user, ...updates };
+          if (updatedUser.role) {
+            updatedUser.role = normalizeRoles(updatedUser.role);
+          }
           dispatch({
             type: "SET_USER",
-            user: { ...state.user, ...updates },
+            user: updatedUser,
           });
           dispatch({ type: "SET_SAVING", value: false });
         }, 500);
@@ -188,9 +197,14 @@ export const UserProfileProvider = ({ children }) => {
           body: JSON.stringify(payload),
         });
 
+        const updatedUser = data.data || data;
+        if (updatedUser.role) {
+          updatedUser.role = normalizeRoles(updatedUser.role);
+        }
+
         dispatch({
           type: "SET_USER",
-          user: data.data || data,
+          user: updatedUser,
         });
         dispatch({ type: "SET_SAVING", value: false });
         return { success: true };
@@ -218,14 +232,18 @@ export const UserProfileProvider = ({ children }) => {
     if (!USE_API) {
       const newId = `user-${Date.now()}`;
       setTimeout(() => {
+        const newUser = {
+          ...userData,
+          _id: newId,
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+        };
+        if (newUser.role) {
+          newUser.role = normalizeRoles(newUser.role);
+        }
         dispatch({
           type: "SET_USER",
-          user: {
-            ...userData,
-            _id: newId,
-            createdAt: new Date().toISOString(),
-            updatedAt: new Date().toISOString(),
-          },
+          user: newUser,
         });
         dispatch({ type: "SET_SAVING", value: false });
       }, 500);
@@ -240,6 +258,10 @@ export const UserProfileProvider = ({ children }) => {
       console.log(payload, data);
 
       const newUser = data.data || data;
+      if (newUser.role) {
+        newUser.role = normalizeRoles(newUser.role);
+      }
+
       dispatch({
         type: "SET_USER",
         user: newUser,
