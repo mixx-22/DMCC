@@ -56,7 +56,11 @@ const UserPage = () => {
   const [formData, setFormData] = useState(initialUserData);
   const [validationErrors, setValidationErrors] = useState({});
   const [generatedCredentials, setGeneratedCredentials] = useState(null);
-  const { isOpen: isCredentialsModalOpen, onOpen: onOpenCredentialsModal, onClose: onCloseCredentialsModal } = useDisclosure();
+  const {
+    isOpen: isCredentialsModalOpen,
+    onOpen: onOpenCredentialsModal,
+    onClose: onCloseCredentialsModal,
+  } = useDisclosure();
 
   // Initialize form data when user loads
   useEffect(() => {
@@ -150,7 +154,7 @@ const UserPage = () => {
       // Generate a random password for new user
       const generatedPassword = generatePassword();
       dataToSubmit.password = generatedPassword;
-      
+
       delete dataToSubmit.createdAt;
       delete dataToSubmit.updatedAt;
       const result = await createUser(dataToSubmit);
@@ -163,10 +167,10 @@ const UserPage = () => {
           email: dataToSubmit.email,
           password: generatedPassword,
         });
-        
+
         // Open credentials modal
         onOpenCredentialsModal();
-        
+
         toast.success("User Created", {
           description: "User has been created successfully",
         });
@@ -216,16 +220,6 @@ const UserPage = () => {
     onCloseCredentialsModal();
     // Navigate to users list after closing the modal
     navigate("/users");
-  };
-
-  const handleEdit = () => {
-          ...user,
-          isActive: user.isActive !== undefined ? user.isActive : true,
-        });
-      }
-      setValidationErrors({});
-      setIsEditMode(false);
-    }
   };
 
   const handleEdit = () => {
