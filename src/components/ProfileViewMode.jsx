@@ -129,10 +129,10 @@ const ProfileViewMode = ({ user, roleObjects, isValidDate }) => {
                   <Icon as={FiPhone} color="gray.500" boxSize={5} />
                   <Box flex={1}>
                     <Text fontSize="sm" color="gray.500">
-                      Phone
+                      Contact Number
                     </Text>
                     <Text fontWeight="medium">
-                      {user.phone || "Not provided"}
+                      {user.contactNumber || "Not provided"}
                     </Text>
                   </Box>
                 </HStack>

@@ -71,17 +71,17 @@ const UserPage = () => {
 
   useEffect(() => {
     if (user && !isNewUser) {
-      const phoneForDisplay =
-        user.phone && user.phone.startsWith("+63")
-          ? user.phone.slice(3)
-          : user.phone;
+      const contactNumberForDisplay =
+        user.contactNumber && user.contactNumber.startsWith("+63")
+          ? user.contactNumber.slice(3)
+          : user.contactNumber;
 
       setFormData({
         ...initialUserData,
         ...user,
         isActive: user.isActive !== undefined ? user.isActive : true,
         role: normalizeRoles(user.role || []),
-        phone: phoneForDisplay,
+        contactNumber: contactNumberForDisplay,
       });
       setUsernameManuallyEdited(true);
     }
@@ -174,12 +174,12 @@ const UserPage = () => {
     if (!formData.username.trim()) {
       errors.username = "Username is required";
     }
-    if (formData.phone && formData.phone.trim()) {
-      const cleanedPhone = formData.phone.replace(/\D/g, "");
-      const phoneRegex = /^[2-9]\d{9}$/;
+    if (formData.contactNumber && formData.contactNumber.trim()) {
+      const cleanedContactNumber = formData.contactNumber.replace(/\D/g, "");
+      const contactNumberRegex = /^[2-9]\d{9}$/;
 
-      if (!phoneRegex.test(cleanedPhone)) {
-        errors.phone =
+      if (!contactNumberRegex.test(cleanedContactNumber)) {
+        errors.contactNumber =
           "Please enter a valid 10-digit Philippine number (e.g., 917 123 4567)";
       }
     }
@@ -198,10 +198,10 @@ const UserPage = () => {
 
     const dataToSubmit = {
       ...formData,
-      phone:
-        formData.phone && formData.phone.trim()
-          ? `+63${formData.phone.replace(/\D/g, "").replace(/^0/, "")}`
-          : formData.phone,
+      contactNumber:
+        formData.contactNumber && formData.contactNumber.trim()
+          ? `+63${formData.contactNumber.replace(/\D/g, "").replace(/^0/, "")}`
+          : formData.contactNumber,
     };
 
     if (isNewUser) {
@@ -255,10 +255,10 @@ const UserPage = () => {
           ...user,
           isActive: user.isActive !== undefined ? user.isActive : true,
           role: user.role || [],
-          phone:
-            user.phone && user.phone.startsWith("+63")
-              ? user.phone.slice(3)
-              : user.phone,
+          contactNumber:
+            user.contactNumber && user.contactNumber.startsWith("+63")
+              ? user.contactNumber.slice(3)
+              : user.contactNumber,
         });
       }
       setIsEditMode(false);
@@ -496,18 +496,18 @@ const UserPage = () => {
                     </FormErrorMessage>
                   </FormControl>
 
-                  <FormControl isInvalid={validationErrors.phone}>
-                    <FormLabel>Phone</FormLabel>
+                  <FormControl isInvalid={validationErrors.contactNumber}>
+                    <FormLabel>Contact Number</FormLabel>
                     <InputGroup>
                       <InputLeftAddon>+63</InputLeftAddon>
                       <Input
                         type="tel"
-                        value={formData.phone}
+                        value={formData.contactNumber}
                         onChange={(e) => {
                           const value = e.target.value
                             .replace(/\D/g, "")
                             .slice(0, 10);
-                          handleFieldChange("phone", value);
+                          handleFieldChange("contactNumber", value);
                         }}
                         onBlur={(e) => {
                           const value = e.target.value.replace(/\D/g, "");
@@ -516,7 +516,7 @@ const UserPage = () => {
                               0,
                               3
                             )} ${value.slice(3, 6)} ${value.slice(6, 10)}`;
-                            handleFieldChange("phone", formatted);
+                            handleFieldChange("contactNumber", formatted);
                           }
                         }}
                         placeholder="999 999 9999"
@@ -524,7 +524,7 @@ const UserPage = () => {
                       />
                     </InputGroup>
                     <FormErrorMessage>
-                      {validationErrors.phone}
+                      {validationErrors.contactNumber}
                     </FormErrorMessage>
                   </FormControl>
                 </VStack>
