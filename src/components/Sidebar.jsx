@@ -5,15 +5,8 @@ import {
   Link,
   Text,
   Icon,
-  Heading,
   useColorModeValue,
   IconButton,
-  useDisclosure,
-  Drawer,
-  DrawerOverlay,
-  DrawerContent,
-  DrawerCloseButton,
-  DrawerBody,
   Flex,
   Collapse,
   Spacer,
@@ -24,8 +17,10 @@ import {
   MenuItem,
   Portal,
   MenuGroup,
+  Badge,
+  Avatar,
 } from "@chakra-ui/react";
-import { NavLink, useLocation } from "react-router-dom";
+import { NavLink, useLocation, useNavigate } from "react-router-dom";
 import {
   FiHome,
   FiFileText,
@@ -36,11 +31,15 @@ import {
   FiChevronDown,
   FiChevronUp,
   FiSettings,
+  FiBell,
+  FiFolder,
 } from "react-icons/fi";
 import logoDefault from "../images/auptilyze.png";
 import logoWhite from "../images/auptilyze-white.png";
 import logoIconDefault from "../images/auptilyze-icon.svg";
 import logoIconWhite from "../images/auptilyze-icon-white.svg";
+import { useUser } from "../context/useUser";
+import { useApp } from "../context/AppContext";
 
 const isRouteMatch = (location, target) => {
   const [targetPath, targetQuery] = target.split("?");
@@ -107,18 +106,18 @@ const SidebarRow = ({
       )}
 
       {icon !== null && (
-        <Icon 
-          as={icon} 
-          boxSize={isChild ? 4 : 5} 
+        <Icon
+          as={icon}
+          boxSize={isChild ? 4 : 5}
           minW={isChild ? 4 : 5}
           transition="all 0.3s cubic-bezier(0.4, 0, 0.2, 1)"
         />
       )}
       {(!isCollapsed || isMobile) && (
         <>
-          <Text 
-            flex={1} 
-            noOfLines={1} 
+          <Text
+            flex={1}
+            noOfLines={1}
             fontSize={isChild ? "xs" : "sm"}
             transition="opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1)"
           >
@@ -154,14 +153,16 @@ const SidebarRow = ({
 
 const Sidebar = () => {
   const location = useLocation();
-  const { isOpen, onOpen, onClose } = useDisclosure();
+  const navigate = useNavigate();
+  const { user: currentUser } = useUser();
+  const { getExpiringCertifications } = useApp();
+  const expiringCerts = getExpiringCertifications();
 
   const logoSrc = useColorModeValue(logoDefault, logoWhite);
   const logoIconSrc = useColorModeValue(logoIconDefault, logoIconWhite);
   const textColor = useColorModeValue("gray.700", "gray.300");
   const bgColor = useColorModeValue("white", "gray.900");
   const borderColor = useColorModeValue("gray.100", "gray.800");
-  const brandColor = useColorModeValue("brandPrimary.500", "brandPrimary.200");
   const subMenuBg = useColorModeValue("blackAlpha.50", "whiteAlpha.50");
   const activeBg = useColorModeValue("brandPrimary.50", "whiteAlpha.200");
   const activeColor = useColorModeValue("brandPrimary.600", "brandPrimary.200");
@@ -291,9 +292,9 @@ const Sidebar = () => {
             strategy="fixed"
             gutter={8}
           >
-            <MenuButton 
-              as={Box} 
-              w="full" 
+            <MenuButton
+              as={Box}
+              w="full"
               cursor="pointer"
               transition="all 0.2s cubic-bezier(0.4, 0, 0.2, 1)"
               _hover={{ transform: "translateX(2px)" }}
@@ -309,13 +310,13 @@ const Sidebar = () => {
               />
             </MenuButton>
             <Portal>
-              <MenuList 
+              <MenuList
                 minW="200px"
                 motionProps={{
                   initial: { opacity: 0, x: -10 },
                   animate: { opacity: 1, x: 0 },
                   exit: { opacity: 0, x: -10 },
-                  transition: { duration: 0.2, ease: [0.4, 0, 0.2, 1] }
+                  transition: { duration: 0.2, ease: [0.4, 0, 0.2, 1] },
                 }}
               >
                 <MenuGroup
@@ -347,9 +348,9 @@ const Sidebar = () => {
                           ? activeBg
                           : "transparent"
                       }
-                      _hover={{ 
+                      _hover={{
                         bg: hoverBg,
-                        transform: "translateX(4px)"
+                        transform: "translateX(4px)",
                       }}
                       transition="all 0.2s cubic-bezier(0.4, 0, 0.2, 1)"
                     >
@@ -375,14 +376,14 @@ const Sidebar = () => {
             isExpanded={isExpanded}
             isActive={isActiveParent}
             onToggle={() => toggleItem(item.id)}
-            onClick={() => mobileMode && !hasChildren && onClose()}
+            onClick={() => mobileMode && !hasChildren && {}}
           />
 
           {hasChildren && (
             <Collapse in={isExpanded} animateOpacity>
-              <VStack 
-                align="stretch" 
-                spacing={0} 
+              <VStack
+                align="stretch"
+                spacing={0}
                 bg={subMenuBg}
                 transition="background-color 0.3s cubic-bezier(0.4, 0, 0.2, 1)"
               >
@@ -395,7 +396,7 @@ const Sidebar = () => {
                     isMobile={mobileMode}
                     isChild={true}
                     isActive={isRouteMatch(location, child.path)}
-                    onClick={() => mobileMode && onClose()}
+                    onClick={() => {}}
                   />
                 ))}
               </VStack>
@@ -416,49 +417,108 @@ const Sidebar = () => {
           bg={bgColor}
           borderTop="1px"
           borderColor={borderColor}
-          zIndex="docked"
+          zIndex="modal"
           transition="transform 0.3s ease"
           transform={isBottomNavVisible ? "translateY(0)" : "translateY(100%)"}
-          h="sidebar.row"
+          h="60px"
+          boxShadow="0 -2px 10px rgba(0, 0, 0, 0.1)"
         >
-          <Flex justify="center" py={3}>
+          <Flex justify="space-around" align="center" h="full" px={2}>
+            {/* Menu Button */}
             <IconButton
-              aria-label="Open Menu"
-              icon={<FiMenu size={20} />}
+              aria-label="Menu"
+              icon={<FiMenu size={24} />}
               variant="ghost"
-              onClick={onOpen}
+              onClick={() => navigate("/menu")}
               display="flex"
               flexDirection="column"
               h="auto"
-              gap={1}
-              color={textColor}
-              borderRadius="0"
+              py={2}
+              color={location.pathname === "/menu" ? activeColor : textColor}
+              _hover={{ bg: hoverBg }}
+              borderRadius="md"
+            />
+
+            {/* Documents Button */}
+            <IconButton
+              aria-label="Documents"
+              icon={<FiFolder size={24} />}
+              variant="ghost"
+              onClick={() => navigate("/documents")}
+              display="flex"
+              flexDirection="column"
+              h="auto"
+              py={2}
+              color={
+                location.pathname === "/documents" ? activeColor : textColor
+              }
+              _hover={{ bg: hoverBg }}
+              borderRadius="md"
+            />
+
+            {/* Notifications Button */}
+            <IconButton
+              aria-label="Notifications"
+              icon={<FiBell size={24} />}
+              variant="ghost"
+              onClick={() => navigate("/notifications")}
+              position="relative"
+              h="auto"
+              py={2}
+              color={
+                location.pathname === "/notifications" ? activeColor : textColor
+              }
+              _hover={{ bg: hoverBg }}
+              borderRadius="md"
             >
-              <Text fontSize="xs">Menu</Text>
+              {expiringCerts.length > 0 && (
+                <Badge
+                  position="absolute"
+                  top={0}
+                  right={0}
+                  colorScheme="red"
+                  borderRadius="full"
+                  fontSize="xs"
+                >
+                  {expiringCerts.length}
+                </Badge>
+              )}
             </IconButton>
+
+            {/* User Menu Button */}
+            <IconButton
+              aria-label="Profile"
+              icon={
+                <Avatar
+                  src={currentUser?.profilePicture}
+                  name={
+                    currentUser
+                      ? [
+                          currentUser.firstName,
+                          currentUser.middleName,
+                          currentUser.lastName,
+                        ]
+                          .filter(Boolean)
+                          .join(" ") ||
+                        currentUser.name ||
+                        "User"
+                      : "User"
+                  }
+                  size="sm"
+                />
+              }
+              variant="ghost"
+              onClick={() => navigate("/profile")}
+              h="auto"
+              py={2}
+              color={location.pathname === "/profile" ? activeColor : textColor}
+              _hover={{ bg: hoverBg }}
+              borderRadius="md"
+            />
           </Flex>
         </Box>
 
-        <Drawer isOpen={isOpen} placement="left" onClose={onClose} size="xs">
-          <DrawerOverlay />
-          <DrawerContent bg={bgColor}>
-            <DrawerCloseButton borderRadius="full" color={textColor} />
-            <DrawerBody px={0} py="sidebar.row">
-              <VStack spacing={0} align="stretch" h="full">
-                <Spacer />
-                <Heading
-                  fontSize="lg"
-                  mb={"sidebar.row"}
-                  color={brandColor}
-                  px={4}
-                >
-                  {import.meta.env.VITE_PROJECT_NAME}
-                </Heading>
-                {renderNavList(navItems, true)}
-              </VStack>
-            </DrawerBody>
-          </DrawerContent>
-        </Drawer>
+        {/* Old drawer removed - menu now opens as a page */}
       </>
     );
   }
@@ -517,7 +577,7 @@ const Sidebar = () => {
         <IconButton
           aria-label="Toggle Sidebar"
           icon={
-            <Icon 
+            <Icon
               as={isCollapsed ? FiChevronRight : FiChevronLeft}
               transition="transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)"
             />
@@ -528,9 +588,9 @@ const Sidebar = () => {
           onClick={() => setIsCollapsed(!isCollapsed)}
           isRound
           transition="all 0.2s cubic-bezier(0.4, 0, 0.2, 1)"
-          _hover={{ 
+          _hover={{
             transform: "scale(1.1)",
-            bg: hoverBg
+            bg: hoverBg,
           }}
         />
       </Flex>

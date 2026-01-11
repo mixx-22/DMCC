@@ -21,6 +21,9 @@ import RolePage from "./pages/Roles/RolePage";
 import { RolesProvider } from "./context/RolesContext";
 import { RoleProvider } from "./context/RoleContext";
 import { useBreakpointValue } from "@chakra-ui/react";
+import Menu from "./pages/Menu";
+import Notifications from "./pages/Notifications";
+import Profile from "./pages/Profile";
 
 const ProtectedRoute = ({ children }) => {
   const { currentUser } = useApp();
@@ -61,6 +64,9 @@ function App() {
                       element={<Navigate to="/dashboard" replace />}
                     />
                     <Route path="/dashboard" element={<Dashboard />} />
+                    <Route path="/menu" element={<Menu />} />
+                    <Route path="/notifications" element={<Notifications />} />
+                    <Route path="/profile" element={<Profile />} />
                     <Route path="/documents" element={<Documents />} />
                     <Route path="/documents/:id" element={<DocumentDetail />} />
                     <Route path="/archive" element={<Archive />} />
