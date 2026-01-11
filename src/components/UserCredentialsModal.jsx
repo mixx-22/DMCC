@@ -16,34 +16,34 @@ import {
   AlertIcon,
   AlertDescription,
   useClipboard,
-  HStack,
 } from "@chakra-ui/react";
 import { FiCopy, FiCheck } from "react-icons/fi";
 
 const UserCredentialsModal = ({ isOpen, onClose, email, password }) => {
-  const {
-    hasCopied: emailCopied,
-    onCopy: onCopyEmail,
-  } = useClipboard(email);
-  
-  const {
-    hasCopied: passwordCopied,
-    onCopy: onCopyPassword,
-  } = useClipboard(password);
+  const { hasCopied: emailCopied, onCopy: onCopyEmail } = useClipboard(email);
+
+  const { hasCopied: passwordCopied, onCopy: onCopyPassword } =
+    useClipboard(password);
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} size="lg" closeOnOverlayClick={false}>
+    <Modal
+      isOpen={isOpen}
+      onClose={onClose}
+      size="lg"
+      closeOnOverlayClick={false}
+    >
       <ModalOverlay />
       <ModalContent>
-        <ModalHeader>User Created Successfully</ModalHeader>
+        <ModalHeader>New User Credentials</ModalHeader>
         <ModalBody>
           <VStack spacing={4} align="stretch">
             <Alert status="warning" borderRadius="md">
               <AlertIcon />
               <AlertDescription>
-                <strong>Important:</strong> This is the only time the password will be shown. 
-                Please copy and securely share these credentials with the user. 
-                A new password can only be created in the future through the password reset feature.
+                <strong>Important:</strong> This is the only time the password
+                will be shown. Please copy and securely share these credentials
+                with the user. A new password can only be created in the future
+                through the password reset feature.
               </AlertDescription>
             </Alert>
 
@@ -93,22 +93,6 @@ const UserCredentialsModal = ({ isOpen, onClose, email, password }) => {
                 </InputRightElement>
               </InputGroup>
             </VStack>
-
-            <HStack spacing={2} justify="flex-end" pt={2}>
-              <Button
-                size="sm"
-                leftIcon={<FiCopy />}
-                onClick={() => {
-                  navigator.clipboard.writeText(`Email: ${email}\nPassword: ${password}`);
-                  onCopyEmail();
-                  onCopyPassword();
-                }}
-                colorScheme="blue"
-                variant="ghost"
-              >
-                Copy Both
-              </Button>
-            </HStack>
           </VStack>
         </ModalBody>
 

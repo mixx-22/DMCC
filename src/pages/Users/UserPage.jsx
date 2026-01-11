@@ -29,7 +29,7 @@ import PageHeader from "../../components/PageHeader";
 import PageFooter from "../../components/PageFooter";
 import RoleAsyncSelect from "../../components/RoleAsyncSelect";
 import UserCredentialsModal from "../../components/UserCredentialsModal";
-import { generatePassword } from "../../utils/passwordGenerator";
+import { generateKey as generatePassword } from "../../utils/passwordGenerator";
 import { generateUsername } from "../../utils/usernameGenerator";
 
 // Helper function to validate and format dates safely
@@ -101,19 +101,19 @@ const UserPage = () => {
         }));
       }
     }
-  }, [formData.firstName, formData.lastName, formData.employeeId, isNewUser, usernameManuallyEdited]);
+  }, [formData, isNewUser, usernameManuallyEdited]);
 
   const handleFieldChange = (field, value) => {
     setFormData((prev) => ({
       ...prev,
       [field]: value,
     }));
-    
+
     // Track if username is manually edited
     if (field === "username") {
       setUsernameManuallyEdited(true);
     }
-    
+
     // Clear validation error for this field
     if (validationErrors[field]) {
       setValidationErrors((prev) => ({
@@ -182,7 +182,7 @@ const UserPage = () => {
 
     if (isNewUser) {
       // Generate a random password for new user
-      const generatedPassword = generatePassword();
+      const generatedPassword = generatePassword({ length: 12 });
       dataToSubmit.password = generatedPassword;
 
       delete dataToSubmit.createdAt;
