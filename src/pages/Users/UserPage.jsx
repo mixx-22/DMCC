@@ -79,6 +79,7 @@ const UserPage = () => {
     "brandPrimary.600",
     "brandPrimary.400"
   );
+  const errorColor = useColorModeValue("error.600", "error.400");
 
   const isNewUser = id === "new";
   const [isEditMode, setIsEditMode] = useState(isNewUser);
@@ -316,14 +317,6 @@ const UserPage = () => {
         >
           {!isEditMode && !isNewUser ? (
             <Flex gap={2} w={{ base: "full", sm: "auto" }}>
-              <Button
-                leftIcon={<FiEdit />}
-                colorScheme="brandPrimary"
-                onClick={handleEdit}
-                flex={{ base: 1, sm: "auto" }}
-              >
-                Edit User
-              </Button>
               <Menu>
                 <MenuButton
                   as={IconButton}
@@ -334,13 +327,21 @@ const UserPage = () => {
                 <MenuList>
                   <MenuItem
                     icon={<FiTrash2 />}
+                    color={errorColor}
                     onClick={onOpenDeleteDialog}
-                    color="red.500"
                   >
                     Delete User
                   </MenuItem>
                 </MenuList>
               </Menu>
+              <Button
+                leftIcon={<FiEdit />}
+                colorScheme="brandPrimary"
+                onClick={handleEdit}
+                flex={{ base: 1, sm: "auto" }}
+              >
+                Edit User
+              </Button>
             </Flex>
           ) : (
             <Flex gap={2} w={{ base: "full", sm: "auto" }}>
