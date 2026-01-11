@@ -24,11 +24,28 @@ import {
   FormHelperText,
   Collapse,
   useColorModeValue,
+  Menu,
+  MenuButton,
+  MenuList,
+  MenuItem,
+  AlertDialog,
+  AlertDialogBody,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogContent,
+  AlertDialogOverlay,
 } from "@chakra-ui/react";
-import { FiEdit, FiArrowLeft, FiSave, FiX } from "react-icons/fi";
+import {
+  FiEdit,
+  FiArrowLeft,
+  FiSave,
+  FiX,
+  FiMoreVertical,
+  FiTrash2,
+} from "react-icons/fi";
 import { useNavigate, useParams } from "react-router-dom";
 import { toast } from "sonner";
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import { useUserProfile } from "../../context/UserProfileContext";
 import PageHeader from "../../components/PageHeader";
 import PageFooter from "../../components/PageFooter";
@@ -55,6 +72,7 @@ const UserPage = () => {
     saving,
     updateUser,
     createUser,
+    deleteUser,
     normalizeRoles,
   } = useUserProfile();
   const suggestionColor = useColorModeValue(
@@ -67,10 +85,16 @@ const UserPage = () => {
   const [formData, setFormData] = useState(initialUserData);
   const [validationErrors, setValidationErrors] = useState({});
   const [generatedCredentials, setGeneratedCredentials] = useState(null);
+  const cancelRef = useRef();
   const {
     isOpen: isCredentialsModalOpen,
     onOpen: onOpenCredentialsModal,
     onClose: onCloseCredentialsModal,
+  } = useDisclosure();
+  const {
+    isOpen: isDeleteDialogOpen,
+    onOpen: onOpenDeleteDialog,
+    onClose: onCloseDeleteDialog,
   } = useDisclosure();
 
   useEffect(() => {
@@ -232,6 +256,23 @@ const UserPage = () => {
     setIsEditMode(true);
   };
 
+  const handleDelete = async () => {
+    const result = await deleteUser(user._id || user.id);
+
+    if (result.success) {
+      toast.success("User Deleted", {
+        description: "User has been deleted successfully",
+      });
+      onCloseDeleteDialog();
+      navigate("/users");
+    } else {
+      toast.error("Delete Failed", {
+        description: result.error || "Failed to delete user",
+      });
+      onCloseDeleteDialog();
+    }
+  };
+
   if (loading && !isNewUser) {
     return (
       <Box p={8} textAlign="center">
@@ -274,14 +315,33 @@ const UserPage = () => {
           justifyContent={{ base: "stretch", sm: "flex-end" }}
         >
           {!isEditMode && !isNewUser ? (
-            <Button
-              leftIcon={<FiEdit />}
-              colorScheme="brandPrimary"
-              onClick={handleEdit}
-              w={{ base: "full", sm: "auto" }}
-            >
-              Edit User
-            </Button>
+            <Flex gap={2} w={{ base: "full", sm: "auto" }}>
+              <Button
+                leftIcon={<FiEdit />}
+                colorScheme="brandPrimary"
+                onClick={handleEdit}
+                flex={{ base: 1, sm: "auto" }}
+              >
+                Edit User
+              </Button>
+              <Menu>
+                <MenuButton
+                  as={IconButton}
+                  icon={<FiMoreVertical />}
+                  variant="outline"
+                  aria-label="More options"
+                />
+                <MenuList>
+                  <MenuItem
+                    icon={<FiTrash2 />}
+                    onClick={onOpenDeleteDialog}
+                    color="red.500"
+                  >
+                    Delete User
+                  </MenuItem>
+                </MenuList>
+              </Menu>
+            </Flex>
           ) : (
             <Flex gap={2} w={{ base: "full", sm: "auto" }}>
               <Button
@@ -576,6 +636,39 @@ const UserPage = () => {
           password={generatedCredentials.password}
         />
       )}
+
+      <AlertDialog
+        isOpen={isDeleteDialogOpen}
+        leastDestructiveRef={cancelRef}
+        onClose={onCloseDeleteDialog}
+      >
+        <AlertDialogOverlay>
+          <AlertDialogContent>
+            <AlertDialogHeader fontSize="lg" fontWeight="bold">
+              Delete User
+            </AlertDialogHeader>
+
+            <AlertDialogBody>
+              Are you sure you want to delete this user? This action is
+              irreversible and cannot be undone.
+            </AlertDialogBody>
+
+            <AlertDialogFooter>
+              <Button ref={cancelRef} onClick={onCloseDeleteDialog}>
+                Cancel
+              </Button>
+              <Button
+                colorScheme="red"
+                onClick={handleDelete}
+                ml={3}
+                isLoading={saving}
+              >
+                Delete
+              </Button>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialogOverlay>
+      </AlertDialog>
     </Box>
   );
 };
