@@ -23,7 +23,7 @@ const MOCK_USER = {
   email: "john.doe@example.com",
   role: [
     { id: "1", title: "Admin" },
-    { id: "2", title: "Manager" }
+    { id: "2", title: "Manager" },
   ],
   isActive: true,
   department: "Engineering",
@@ -36,13 +36,13 @@ const MOCK_USER = {
 // Helper to normalize roles - handles both array of objects and array of IDs
 const normalizeRoles = (roles) => {
   if (!Array.isArray(roles)) return [];
-  
+
   if (roles.length === 0) return [];
-  
-  if (typeof roles[0] === 'object' && roles[0] !== null && 'id' in roles[0]) {
+
+  if (typeof roles[0] === "object" && roles[0] !== null && "id" in roles[0]) {
     return roles;
   }
-  
+
   const MOCK_ROLES_MAP = {
     1: { id: "1", title: "Admin" },
     2: { id: "2", title: "Manager" },
@@ -50,22 +50,22 @@ const normalizeRoles = (roles) => {
     4: { id: "4", title: "Supervisor" },
     5: { id: "5", title: "Analyst" },
   };
-  
+
   return roles
-    .map((id) => MOCK_ROLES_MAP[id] || { id, title: `Role ${id}` })
+    .map((id) => MOCK_ROLES_MAP[id] || { id, title: `${id}` })
     .filter(Boolean);
 };
 
 // Helper to extract only role IDs from role objects for API submission
 const extractRoleIds = (roles) => {
   if (!Array.isArray(roles)) return [];
-  
+
   if (roles.length === 0) return [];
-  
-  if (typeof roles[0] === 'object' && roles[0] !== null && 'id' in roles[0]) {
-    return roles.map(role => role.id);
+
+  if (typeof roles[0] === "object" && roles[0] !== null && "id" in roles[0]) {
+    return roles.map((role) => role.id);
   }
-  
+
   return roles;
 };
 

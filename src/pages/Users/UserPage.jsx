@@ -259,7 +259,7 @@ const UserPage = () => {
           ...initialUserData,
           ...user,
           isActive: user.isActive !== undefined ? user.isActive : true,
-          role: convertRoleIdsToObjects(user.role || []),
+          role: user.role || [],
           phone:
             user.phone && user.phone.startsWith("+63")
               ? user.phone.slice(3)
