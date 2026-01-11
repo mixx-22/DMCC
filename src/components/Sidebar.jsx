@@ -42,6 +42,7 @@ import { useUser } from "../context/useUser";
 import { useApp } from "../context/AppContext";
 import { useLayout } from "../context/Layout";
 
+// Mobile navigation constants - keep in sync across Sidebar.jsx, Footer.jsx, and Layout.jsx
 const MOBILE_NAV_HEIGHT = 60; // Height of mobile bottom navigation bar
 
 const isRouteMatch = (location, target) => {

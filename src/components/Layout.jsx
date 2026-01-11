@@ -6,6 +6,7 @@ import Footer from "./Footer";
 import { useLocation } from "react-router-dom";
 import { useLayout } from "../context/Layout";
 
+// Mobile navigation constants - keep in sync across Sidebar.jsx, Footer.jsx, and Layout.jsx
 const MOBILE_NAV_HEIGHT = 60; // Must match value in Sidebar.jsx
 const FOOTER_HEIGHT = 48; // From theme sidebar.row
 

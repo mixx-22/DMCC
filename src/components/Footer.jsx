@@ -2,6 +2,7 @@ import { Flex, Box, useColorModeValue } from "@chakra-ui/react";
 import { useLayout } from "../context/Layout";
 import { useState, useEffect } from "react";
 
+// Mobile navigation constants - keep in sync across Sidebar.jsx, Footer.jsx, and Layout.jsx
 const MOBILE_NAV_HEIGHT = 60; // Must match height in Sidebar.jsx
 
 const Footer = () => {
