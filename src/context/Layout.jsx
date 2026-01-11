@@ -1,4 +1,4 @@
-import { createContext, useContext, useRef } from "react";
+import { createContext, useContext, useRef, useState } from "react";
 
 const Layout = createContext();
 
@@ -13,12 +13,15 @@ export const useLayout = () => {
 export const LayoutProvider = ({ children }) => {
   const headerRef = useRef();
   const footerRef = useRef();
+  const [isBottomNavVisible, setIsBottomNavVisible] = useState(true);
 
   return (
     <Layout.Provider
       value={{
         headerRef,
         footerRef,
+        isBottomNavVisible,
+        setIsBottomNavVisible,
       }}
     >
       {children}

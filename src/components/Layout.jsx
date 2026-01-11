@@ -4,9 +4,11 @@ import Sidebar from "./Sidebar";
 import Header from "./Header";
 import Footer from "./Footer";
 import { useLocation } from "react-router-dom";
+import { useLayout } from "../context/Layout";
 
 const Layout = ({ children }) => {
   const location = useLocation();
+  const { isBottomNavVisible } = useLayout();
   const smallMaxContent = useMemo(() => {
     const pathSegments = location.pathname.split("/").filter(Boolean);
     return ["users"].includes(pathSegments[0]) && pathSegments.length === 2;
@@ -32,7 +34,7 @@ const Layout = ({ children }) => {
           flex={1}
           bg={contentBg}
           overflowY="auto"
-          pb={isMobile ? "80px" : 0}
+          pb={isMobile ? (isBottomNavVisible ? "108px" : "48px") : "48px"}
         >
           <Box
             maxW={smallMaxContent ? "page.maxContent-sm" : "page.maxContent"}

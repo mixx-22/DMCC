@@ -40,6 +40,7 @@ import logoIconDefault from "../images/auptilyze-icon.svg";
 import logoIconWhite from "../images/auptilyze-icon-white.svg";
 import { useUser } from "../context/useUser";
 import { useApp } from "../context/AppContext";
+import { useLayout } from "../context/Layout";
 
 const isRouteMatch = (location, target) => {
   const [targetPath, targetQuery] = target.split("?");
@@ -156,6 +157,7 @@ const Sidebar = () => {
   const navigate = useNavigate();
   const { user: currentUser } = useUser();
   const { getExpiringCertifications } = useApp();
+  const { isBottomNavVisible, setIsBottomNavVisible } = useLayout();
   const expiringCerts = getExpiringCertifications();
 
   const logoSrc = useColorModeValue(logoDefault, logoWhite);
@@ -172,7 +174,6 @@ const Sidebar = () => {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   const [expandedItems, setExpandedItems] = useState(new Set());
-  const [isBottomNavVisible, setIsBottomNavVisible] = useState(true);
   const [lastScrollY, setLastScrollY] = useState(0);
 
   const isAdmin = true;
@@ -223,10 +224,21 @@ const Sidebar = () => {
     const handleResize = () => setIsMobile(window.innerWidth < 768);
     const handleScroll = () => {
       const currentY = window.scrollY;
-      if (currentY < 10) setIsBottomNavVisible(true);
-      else if (currentY > lastScrollY && currentY > 100)
+      const scrollDiff = currentY - lastScrollY;
+      
+      // Show nav when at top of page
+      if (currentY < 10) {
+        setIsBottomNavVisible(true);
+      }
+      // Hide nav when scrolling down past 200px offset
+      else if (scrollDiff > 0 && currentY > 200) {
         setIsBottomNavVisible(false);
-      else if (currentY < lastScrollY) setIsBottomNavVisible(true);
+      }
+      // Show nav when scrolling up at least 10px
+      else if (scrollDiff < -10) {
+        setIsBottomNavVisible(true);
+      }
+      
       setLastScrollY(currentY);
     };
 
@@ -237,7 +249,7 @@ const Sidebar = () => {
       window.removeEventListener("resize", handleResize);
       window.removeEventListener("scroll", handleScroll);
     };
-  }, [lastScrollY]);
+  }, [lastScrollY, setIsBottomNavVisible]);
 
   useEffect(() => {
     if (isCollapsed && !isMobile) {
