@@ -20,7 +20,10 @@ const MOCK_USERS = [
     department: "Engineering",
     position: "Senior Engineer",
     phone: "+639171234567",
-    role: ["1", "2"], // Role IDs (Admin, Manager)
+    role: [
+      { id: "1", title: "Admin" },
+      { id: "2", title: "Manager" }
+    ],
     isActive: true,
   },
   {
@@ -35,7 +38,9 @@ const MOCK_USERS = [
     department: "HR",
     position: "HR Manager",
     phone: "+639181234567",
-    role: ["3"], // Role ID (User)
+    role: [
+      { id: "3", title: "User" }
+    ],
     isActive: true,
   },
 ];

@@ -53,7 +53,7 @@ const UserPage = () => {
     saving,
     updateUser,
     createUser,
-    convertRoleIdsToObjects,
+    normalizeRoles,
   } = useUserProfile();
 
   const isNewUser = id === "new";
@@ -80,12 +80,12 @@ const UserPage = () => {
         ...initialUserData,
         ...user,
         isActive: user.isActive !== undefined ? user.isActive : true,
-        role: convertRoleIdsToObjects(user.role || []),
+        role: normalizeRoles(user.role || []),
         phone: phoneForDisplay,
       });
       setUsernameManuallyEdited(true);
     }
-  }, [user, isNewUser, initialUserData, convertRoleIdsToObjects]);
+  }, [user, isNewUser, initialUserData, normalizeRoles]);
 
   useEffect(() => {
     if (!isNewUser) return;
@@ -298,7 +298,7 @@ const UserPage = () => {
     : "";
 
   const roleObjects =
-    user && !isEditMode ? convertRoleIdsToObjects(user.role || []) : [];
+    user && !isEditMode ? normalizeRoles(user.role || []) : [];
 
   return (
     <Box>

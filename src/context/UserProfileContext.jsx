@@ -21,7 +21,10 @@ const MOCK_USER = {
   middleName: "M",
   lastName: "Doe",
   email: "john.doe@example.com",
-  role: ["1", "2"], // Role IDs (User, Manager)
+  role: [
+    { id: "1", title: "Admin" },
+    { id: "2", title: "Manager" }
+  ],
   isActive: true,
   department: "Engineering",
   position: "Senior Developer",
@@ -30,21 +33,40 @@ const MOCK_USER = {
   updatedAt: "2024-01-15T10:00:00.000Z",
 };
 
-// Mock roles mapping for development
-const MOCK_ROLES_MAP = {
-  1: { id: "1", title: "Admin" },
-  2: { id: "2", title: "Manager" },
-  3: { id: "3", title: "User" },
-  4: { id: "4", title: "Supervisor" },
-  5: { id: "5", title: "Analyst" },
-};
-
-// Helper to convert role IDs to role objects with title
-const convertRoleIdsToObjects = (roleIds) => {
-  if (!Array.isArray(roleIds)) return [];
-  return roleIds
+// Helper to normalize roles - handles both array of objects and array of IDs
+const normalizeRoles = (roles) => {
+  if (!Array.isArray(roles)) return [];
+  
+  if (roles.length === 0) return [];
+  
+  if (typeof roles[0] === 'object' && roles[0] !== null && 'id' in roles[0]) {
+    return roles;
+  }
+  
+  const MOCK_ROLES_MAP = {
+    1: { id: "1", title: "Admin" },
+    2: { id: "2", title: "Manager" },
+    3: { id: "3", title: "User" },
+    4: { id: "4", title: "Supervisor" },
+    5: { id: "5", title: "Analyst" },
+  };
+  
+  return roles
     .map((id) => MOCK_ROLES_MAP[id] || { id, title: `Role ${id}` })
     .filter(Boolean);
+};
+
+// Helper to extract only role IDs from role objects for API submission
+const extractRoleIds = (roles) => {
+  if (!Array.isArray(roles)) return [];
+  
+  if (roles.length === 0) return [];
+  
+  if (typeof roles[0] === 'object' && roles[0] !== null && 'id' in roles[0]) {
+    return roles.map(role => role.id);
+  }
+  
+  return roles;
 };
 
 const UserProfileContext = createContext();
@@ -144,8 +166,12 @@ export const UserProfileProvider = ({ children }) => {
       dispatch({ type: "SET_SAVING", value: true });
       dispatch({ type: "SET_ERROR", value: null });
 
+      const payload = { ...updates };
+      if (payload.role) {
+        payload.role = extractRoleIds(payload.role);
+      }
+
       if (!USE_API) {
-        // Mock API call
         setTimeout(() => {
           dispatch({
             type: "SET_USER",
@@ -159,7 +185,7 @@ export const UserProfileProvider = ({ children }) => {
       try {
         const data = await apiService.request(`${USERS_ENDPOINT}/${userId}`, {
           method: "PUT",
-          body: JSON.stringify(updates),
+          body: JSON.stringify(payload),
         });
 
         dispatch({
@@ -184,6 +210,11 @@ export const UserProfileProvider = ({ children }) => {
     dispatch({ type: "SET_SAVING", value: true });
     dispatch({ type: "SET_ERROR", value: null });
 
+    const payload = { ...userData };
+    if (payload.role) {
+      payload.role = extractRoleIds(payload.role);
+    }
+
     if (!USE_API) {
       const newId = `user-${Date.now()}`;
       setTimeout(() => {
@@ -204,9 +235,9 @@ export const UserProfileProvider = ({ children }) => {
     try {
       const data = await apiService.request(USERS_ENDPOINT, {
         method: "POST",
-        body: JSON.stringify(userData),
+        body: JSON.stringify(payload),
       });
-      console.log(userData, data);
+      console.log(payload, data);
 
       const newUser = data.data || data;
       dispatch({
@@ -240,7 +271,8 @@ export const UserProfileProvider = ({ children }) => {
         updateUser,
         createUser,
         initialUserData,
-        convertRoleIdsToObjects,
+        normalizeRoles,
+        extractRoleIds,
       }}
     >
       {children}

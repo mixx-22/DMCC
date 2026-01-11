@@ -28,7 +28,9 @@ const ProfileViewMode = ({ user, roleObjects, isValidDate }) => {
     : "";
 
   const hasSystemRole =
-    user.role && Array.isArray(user.role) && user.role.includes("1");
+    roleObjects &&
+    Array.isArray(roleObjects) &&
+    roleObjects.some((role) => role.id === "1");
 
   return (
     <Box>
