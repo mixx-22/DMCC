@@ -89,11 +89,7 @@ const UserPage = () => {
   // Auto-generate username for new users when firstName, lastName, or employeeId changes
   useEffect(() => {
     if (isNewUser && !usernameManuallyEdited) {
-      const generatedUsername = generateUsername(
-        formData.firstName,
-        formData.lastName,
-        formData.employeeId
-      );
+      const generatedUsername = generateUsername(formData);
       if (generatedUsername && generatedUsername !== formData.username) {
         setFormData((prev) => ({
           ...prev,
