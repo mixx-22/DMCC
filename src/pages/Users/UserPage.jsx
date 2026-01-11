@@ -198,9 +198,6 @@ const UserPage = () => {
 
     const dataToSubmit = {
       ...formData,
-      role: Array.isArray(formData.role)
-        ? formData.role.map((r) => (typeof r === "object" ? r.id : r))
-        : [],
       phone:
         formData.phone && formData.phone.trim()
           ? `+63${formData.phone.replace(/\D/g, "").replace(/^0/, "")}`
@@ -214,8 +211,6 @@ const UserPage = () => {
       delete dataToSubmit.createdAt;
       delete dataToSubmit.updatedAt;
       const result = await createUser(dataToSubmit);
-
-      console.log({ dataToSubmit, result });
 
       if (result.success) {
         setGeneratedCredentials({

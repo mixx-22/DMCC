@@ -197,17 +197,22 @@ export const UserProfileProvider = ({ children }) => {
           body: JSON.stringify(payload),
         });
 
-        const updatedUser = data.data || data;
-        if (updatedUser.role) {
-          updatedUser.role = normalizeRoles(updatedUser.role);
-        }
+        let success = false;
+        if (data.user) {
+          success = true;
+          const updatedUser = {
+            ...state.user,
+            ...updates,
+            updatedAt: new Date().toISOString(),
+          };
 
-        dispatch({
-          type: "SET_USER",
-          user: updatedUser,
-        });
+          dispatch({
+            type: "SET_USER",
+            user: updatedUser,
+          });
+        }
         dispatch({ type: "SET_SAVING", value: false });
-        return { success: true };
+        return { success };
       } catch (err) {
         dispatch({
           type: "SET_ERROR",
@@ -255,7 +260,6 @@ export const UserProfileProvider = ({ children }) => {
         method: "POST",
         body: JSON.stringify(payload),
       });
-      console.log(payload, data);
 
       const newUser = data.data || data;
       if (newUser.role) {
