@@ -9,13 +9,12 @@ import {
   Avatar,
   Button,
   Divider,
-  HStack,
-  Icon,
   useColorMode,
   useBreakpointValue,
+  Spacer,
 } from "@chakra-ui/react";
 import { useNavigate } from "react-router-dom";
-import { FiUser, FiLogOut, FiMoon, FiSun, FiSettings } from "react-icons/fi";
+import { FiLogOut, FiMoon, FiSun, FiSettings } from "react-icons/fi";
 import { useUser } from "../context/useUser";
 import Swal from "sweetalert2";
 import { useEffect } from "react";
@@ -24,10 +23,10 @@ const Profile = () => {
   const navigate = useNavigate();
   const { user: currentUser, logout } = useUser();
   const { colorMode, toggleColorMode } = useColorMode();
-  
+
   // Redirect to dashboard on desktop - Profile page is mobile-only
   const isMobile = useBreakpointValue({ base: true, md: false });
-  
+
   useEffect(() => {
     if (isMobile === false) {
       navigate("/dashboard");
@@ -39,7 +38,6 @@ const Profile = () => {
   const containerBg = useColorModeValue("white", "gray.800");
   const textColor = useColorModeValue("gray.700", "gray.300");
   const subTextColor = useColorModeValue("gray.500", "gray.400");
-  const borderColor = useColorModeValue("gray.200", "gray.700");
 
   const handleLogout = async () => {
     const result = await Swal.fire({
@@ -71,9 +69,8 @@ const Profile = () => {
       <Container maxW="container.md">
         <VStack spacing={6} align="stretch">
           <Flex align="center" gap={3}>
-            <Icon as={FiUser} boxSize={6} color={headingColor} />
             <Heading size="lg" color={headingColor}>
-              Profile
+              hey, {currentUser?.firstName || "User"}!
             </Heading>
           </Flex>
 
@@ -88,8 +85,13 @@ const Profile = () => {
                   name={displayName}
                   size="2xl"
                 />
-                <VStack spacing={1}>
-                  <Text fontSize="2xl" fontWeight="semibold" color={textColor}>
+                <VStack spacing={1} justify="center">
+                  <Text
+                    fontSize="2xl"
+                    fontWeight="semibold"
+                    color={textColor}
+                    textAlign="center"
+                  >
                     {displayName}
                   </Text>
                   {currentUser?.position && (
@@ -109,16 +111,6 @@ const Profile = () => {
 
               {/* Settings Section */}
               <VStack spacing={3} align="stretch">
-                <Text
-                  fontSize="sm"
-                  fontWeight="semibold"
-                  color={subTextColor}
-                  textTransform="uppercase"
-                  letterSpacing="wide"
-                >
-                  Settings
-                </Text>
-
                 <Button
                   variant="ghost"
                   justifyContent="flex-start"
@@ -132,7 +124,7 @@ const Profile = () => {
 
                 <Button
                   variant="ghost"
-                  justifyContent="space-between"
+                  justifyContent="flex-start"
                   leftIcon={colorMode === "light" ? <FiMoon /> : <FiSun />}
                   onClick={toggleColorMode}
                   w="full"
@@ -140,6 +132,7 @@ const Profile = () => {
                   _hover={{ bg: useColorModeValue("gray.50", "gray.700") }}
                 >
                   <Text>Appearance</Text>
+                  <Spacer />
                   <Text fontSize="sm" color={subTextColor}>
                     {colorMode === "dark" ? "Dark" : "Light"}
                   </Text>

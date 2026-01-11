@@ -70,12 +70,17 @@ const Notifications = () => {
       <Container maxW="container.md">
         <VStack spacing={6} align="stretch">
           <Flex align="center" gap={3}>
-            <Icon as={FiBell} boxSize={6} color={headingColor} />
             <Heading size="lg" color={headingColor}>
               Notifications
             </Heading>
             {expiringCerts.length > 0 && (
-              <Badge colorScheme="red" fontSize="md" borderRadius="full" px={3} py={1}>
+              <Badge
+                colorScheme="red"
+                fontSize="md"
+                borderRadius="full"
+                px={3}
+                py={1}
+              >
                 {expiringCerts.length}
               </Badge>
             )}
