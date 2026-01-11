@@ -282,6 +282,34 @@ export const UserProfileProvider = ({ children }) => {
     }
   }, []);
 
+  const deleteUser = useCallback(async (userId) => {
+    dispatch({ type: "SET_SAVING", value: true });
+    dispatch({ type: "SET_ERROR", value: null });
+
+    if (!USE_API) {
+      setTimeout(() => {
+        dispatch({ type: "SET_SAVING", value: false });
+      }, 500);
+      return { success: true };
+    }
+
+    try {
+      await apiService.request(`${USERS_ENDPOINT}/${userId}`, {
+        method: "DELETE",
+      });
+
+      dispatch({ type: "SET_SAVING", value: false });
+      return { success: true };
+    } catch (err) {
+      dispatch({
+        type: "SET_ERROR",
+        value: err.message || "Failed to delete user",
+      });
+      dispatch({ type: "SET_SAVING", value: false });
+      return { success: false, error: err.message };
+    }
+  }, []);
+
   useEffect(() => {
     if (id && id !== "new") {
       fetchUser(id);
@@ -296,6 +324,7 @@ export const UserProfileProvider = ({ children }) => {
         fetchUser,
         updateUser,
         createUser,
+        deleteUser,
         initialUserData,
         normalizeRoles,
         extractRoleIds,
