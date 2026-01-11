@@ -24,7 +24,7 @@ const MOCK_USER = {
   isActive: true,
   department: "Engineering",
   position: "Senior Developer",
-  phone: "09171234567",
+  phone: "+639171234567",
   createdAt: "2024-01-15T10:00:00.000Z",
   updatedAt: "2024-01-15T10:00:00.000Z",
 };

@@ -56,12 +56,18 @@ const UserPage = () => {
   // Initialize form data when user loads
   useEffect(() => {
     if (user && !isNewUser) {
+      // Strip +63 prefix from phone for display (user will see/edit 10 digits only)
+      const phoneForDisplay = user.phone && user.phone.startsWith("+63")
+        ? user.phone.slice(3)
+        : user.phone;
+      
       setFormData({
         ...initialUserData,
         ...user,
         isActive: user.isActive !== undefined ? user.isActive : true,
         // Convert role IDs to objects for the async select component
         role: convertRoleIdsToObjects(user.role || []),
+        phone: phoneForDisplay,
       });
     }
   }, [user, isNewUser, initialUserData, convertRoleIdsToObjects]);
@@ -97,15 +103,14 @@ const UserPage = () => {
       errors.employeeId = "Employee ID is required";
     }
     // Philippine phone number validation (optional but if provided, must be valid)
-    // Formats: 09XX XXX XXXX, +639XX XXX XXXX, 63 9XX XXX XXXX, (02) XXXX XXXX, etc.
+    // User enters 10 digits (9XX XXX XXXX), we validate the format
     if (formData.phone && formData.phone.trim()) {
       const cleanedPhone = formData.phone.replace(/[\s\-\.\(\)]/g, "");
-      // Philippine mobile: starts with 09 or +639 or 639 (10-13 digits total)
-      // Philippine landline: starts with 02 or area code (7-10 digits)
-      const phoneRegex = /^(\+?63|0)?[2-9]\d{8,10}$/;
+      // Should be exactly 10 digits starting with 9 (mobile) or 2-8 (landline)
+      const phoneRegex = /^[2-9]\d{9}$/;
       if (!phoneRegex.test(cleanedPhone)) {
         errors.phone =
-          "Please enter a valid Philippine phone number (e.g., 09XX XXX XXXX or (02) XXXX XXXX)";
+          "Please enter a valid 10-digit Philippine number (e.g., 917 123 4567)";
       }
     }
     setValidationErrors(errors);
@@ -121,11 +126,15 @@ const UserPage = () => {
     }
 
     // Transform roles to array of IDs for submission
+    // Transform phone to include +63 prefix if user entered a number
     const dataToSubmit = {
       ...formData,
       role: Array.isArray(formData.role)
         ? formData.role.map((r) => (typeof r === "object" ? r.id : r))
         : [],
+      phone: formData.phone && formData.phone.trim()
+        ? `+63${formData.phone.replace(/[\s\-\.\(\)]/g, "")}`
+        : formData.phone,
     };
 
     if (isNewUser) {
@@ -432,14 +441,36 @@ const UserPage = () => {
                     </Heading>
                     <FormControl isInvalid={validationErrors.phone}>
                       <FormLabel>Phone</FormLabel>
-                      <Input
-                        type="tel"
-                        value={formData.phone}
-                        onChange={(e) =>
-                          handleFieldChange("phone", e.target.value)
-                        }
-                        placeholder="Enter phone number (e.g., +1234567890)"
-                      />
+                      <HStack>
+                        <Text
+                          px={3}
+                          py={2}
+                          bg="gray.100"
+                          borderRadius="md"
+                          fontWeight="medium"
+                        >
+                          +63
+                        </Text>
+                        <Input
+                          type="tel"
+                          value={formData.phone}
+                          onChange={(e) => {
+                            // Only allow digits and limit to 10 characters
+                            const value = e.target.value.replace(/\D/g, "").slice(0, 10);
+                            handleFieldChange("phone", value);
+                          }}
+                          onBlur={(e) => {
+                            // Format on blur: 999 999 9999
+                            const value = e.target.value.replace(/\D/g, "");
+                            if (value.length === 10) {
+                              const formatted = `${value.slice(0, 3)} ${value.slice(3, 6)} ${value.slice(6, 10)}`;
+                              handleFieldChange("phone", formatted);
+                            }
+                          }}
+                          placeholder="917 123 4567"
+                          maxLength={12} // Account for spaces in formatted version
+                        />
+                      </HStack>
                       <FormErrorMessage>
                         {validationErrors.phone}
                       </FormErrorMessage>

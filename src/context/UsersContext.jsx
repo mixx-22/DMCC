@@ -18,7 +18,7 @@ const MOCK_USERS = [
     email: "jane@example.com",
     department: "Engineering",
     position: "Senior Engineer",
-    phone: "09171234567",
+    phone: "+639171234567",
     role: ["1", "2"], // Role IDs (Admin, Manager)
     isActive: true,
   },
@@ -32,7 +32,7 @@ const MOCK_USERS = [
     email: "john@example.com",
     department: "HR",
     position: "HR Manager",
-    phone: "09181234567",
+    phone: "+639181234567",
     role: ["3"], // Role ID (User)
     isActive: true,
   },
