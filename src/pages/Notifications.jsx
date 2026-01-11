@@ -102,7 +102,7 @@ const Notifications = () => {
                   No notifications
                 </Text>
                 <Text fontSize="sm" color={emptyTextColor}>
-                  You're all caught up!
+                  You&apos;re all caught up!
                 </Text>
               </Flex>
             ) : (
