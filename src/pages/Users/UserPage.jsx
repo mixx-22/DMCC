@@ -99,12 +99,13 @@ const UserPage = () => {
     // Philippine phone number validation (optional but if provided, must be valid)
     // Formats: 09XX XXX XXXX, +639XX XXX XXXX, 63 9XX XXX XXXX, (02) XXXX XXXX, etc.
     if (formData.phone && formData.phone.trim()) {
-      const cleanedPhone = formData.phone.replace(/[\s\-\.\(\)]/g, '');
+      const cleanedPhone = formData.phone.replace(/[\s\-\.\(\)]/g, "");
       // Philippine mobile: starts with 09 or +639 or 639 (10-13 digits total)
       // Philippine landline: starts with 02 or area code (7-10 digits)
       const phoneRegex = /^(\+?63|0)?[2-9]\d{8,10}$/;
       if (!phoneRegex.test(cleanedPhone)) {
-        errors.phone = "Please enter a valid Philippine phone number (e.g., 09XX XXX XXXX or (02) XXXX XXXX)";
+        errors.phone =
+          "Please enter a valid Philippine phone number (e.g., 09XX XXX XXXX or (02) XXXX XXXX)";
       }
     }
     setValidationErrors(errors);

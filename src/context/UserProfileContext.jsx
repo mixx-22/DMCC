@@ -31,11 +31,11 @@ const MOCK_USER = {
 
 // Mock roles mapping for development
 const MOCK_ROLES_MAP = {
-  "1": { id: "1", title: "Admin" },
-  "2": { id: "2", title: "Manager" },
-  "3": { id: "3", title: "User" },
-  "4": { id: "4", title: "Supervisor" },
-  "5": { id: "5", title: "Analyst" },
+  1: { id: "1", title: "Admin" },
+  2: { id: "2", title: "Manager" },
+  3: { id: "3", title: "User" },
+  4: { id: "4", title: "Supervisor" },
+  5: { id: "5", title: "Analyst" },
 };
 
 // Helper to convert role IDs to role objects with title
