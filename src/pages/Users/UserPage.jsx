@@ -23,7 +23,7 @@ import { FiEdit, FiArrowLeft, FiSave, FiX } from "react-icons/fi";
 import { useNavigate, useParams } from "react-router-dom";
 import { formatDistanceToNow } from "date-fns";
 import { toast } from "sonner";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useUserProfile } from "../../context/UserProfileContext";
 import PageHeader from "../../components/PageHeader";
 import PageFooter from "../../components/PageFooter";
@@ -58,6 +58,7 @@ const UserPage = () => {
   const [validationErrors, setValidationErrors] = useState({});
   const [generatedCredentials, setGeneratedCredentials] = useState(null);
   const [usernameManuallyEdited, setUsernameManuallyEdited] = useState(false);
+  const debounceTimerRef = useRef(null);
   const {
     isOpen: isCredentialsModalOpen,
     onOpen: onOpenCredentialsModal,
@@ -86,18 +87,56 @@ const UserPage = () => {
     }
   }, [user, isNewUser, initialUserData, convertRoleIdsToObjects]);
 
-  // Auto-generate username for new users when firstName, lastName, or employeeId changes
+  // Debounced username generation for new users
   useEffect(() => {
-    if (isNewUser && !usernameManuallyEdited) {
-      const generatedUsername = generateUsername(formData);
-      if (generatedUsername && generatedUsername !== formData.username) {
+    if (!isNewUser) return;
+
+    // Clear existing timer
+    if (debounceTimerRef.current) {
+      clearTimeout(debounceTimerRef.current);
+    }
+
+    // Set new timer for debounced generation
+    debounceTimerRef.current = setTimeout(() => {
+      const generatedUsername = generateUsername(
+        formData.firstName,
+        formData.lastName,
+        formData.employeeId
+      );
+
+      // Only auto-generate if:
+      // 1. Username is empty (was cleared)
+      // 2. OR username hasn't been manually edited and current value matches what would be generated
+      const shouldAutoGenerate =
+        !formData.username.trim() ||
+        (!usernameManuallyEdited && formData.username === generatedUsername);
+
+      if (generatedUsername && shouldAutoGenerate) {
         setFormData((prev) => ({
           ...prev,
           username: generatedUsername,
         }));
+        // Reset manual edit flag when auto-generating after clear
+        if (!formData.username.trim()) {
+          setUsernameManuallyEdited(false);
+        }
       }
-    }
-  }, [formData, isNewUser, usernameManuallyEdited]);
+    }, 500); // 500ms debounce
+
+    // Cleanup timer on unmount
+    return () => {
+      if (debounceTimerRef.current) {
+        clearTimeout(debounceTimerRef.current);
+      }
+    };
+  }, [
+    formData.firstName,
+    formData.lastName,
+    formData.employeeId,
+    formData.username,
+    isNewUser,
+    usernameManuallyEdited,
+  ]);
 
   const handleFieldChange = (field, value) => {
     setFormData((prev) => ({
@@ -105,9 +144,17 @@ const UserPage = () => {
       [field]: value,
     }));
 
-    // Track if username is manually edited
-    if (field === "username") {
-      setUsernameManuallyEdited(true);
+    // Track if username is manually edited (user typed something different from generated)
+    if (field === "username" && value.trim()) {
+      // Check if value is different from what would be auto-generated
+      const generatedUsername = generateUsername(
+        formData.firstName,
+        formData.lastName,
+        formData.employeeId
+      );
+      if (value !== generatedUsername) {
+        setUsernameManuallyEdited(true);
+      }
     }
 
     // Clear validation error for this field
@@ -191,6 +238,7 @@ const UserPage = () => {
         // Store credentials to show in modal
         setGeneratedCredentials({
           email: dataToSubmit.email,
+          username: dataToSubmit.username,
           password: generatedPassword,
         });
 
@@ -660,6 +708,7 @@ const UserPage = () => {
           isOpen={isCredentialsModalOpen}
           onClose={handleCredentialsModalClose}
           email={generatedCredentials.email}
+          username={generatedCredentials.username}
           password={generatedCredentials.password}
         />
       )}

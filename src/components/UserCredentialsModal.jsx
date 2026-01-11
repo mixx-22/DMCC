@@ -19,11 +19,14 @@ import {
 } from "@chakra-ui/react";
 import { FiCopy, FiCheck } from "react-icons/fi";
 
-const UserCredentialsModal = ({ isOpen, onClose, email, password }) => {
+const UserCredentialsModal = ({ isOpen, onClose, email, password, username }) => {
   const { hasCopied: emailCopied, onCopy: onCopyEmail } = useClipboard(email);
 
   const { hasCopied: passwordCopied, onCopy: onCopyPassword } =
     useClipboard(password);
+
+  const { hasCopied: usernameCopied, onCopy: onCopyUsername } =
+    useClipboard(username);
 
   return (
     <Modal
@@ -65,6 +68,29 @@ const UserCredentialsModal = ({ isOpen, onClose, email, password }) => {
                     size="sm"
                     colorScheme={emailCopied ? "green" : "gray"}
                     aria-label="Copy email"
+                  />
+                </InputRightElement>
+              </InputGroup>
+            </VStack>
+
+            <VStack spacing={3} align="stretch">
+              <Text fontWeight="semibold" fontSize="sm" color="gray.600">
+                Username
+              </Text>
+              <InputGroup>
+                <Input
+                  value={username}
+                  isReadOnly
+                  bg="gray.50"
+                  fontFamily="mono"
+                />
+                <InputRightElement>
+                  <IconButton
+                    icon={usernameCopied ? <FiCheck /> : <FiCopy />}
+                    onClick={onCopyUsername}
+                    size="sm"
+                    colorScheme={usernameCopied ? "green" : "gray"}
+                    aria-label="Copy username"
                   />
                 </InputRightElement>
               </InputGroup>
