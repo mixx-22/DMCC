@@ -56,6 +56,16 @@ const MODULES = [
     label: "Archive",
     description: "Archive and unarchive documents",
     level: 1,
+    parentLabel: (action) => {
+      switch (action) {
+        case "c":
+          return "Archive Documents";
+        case "r":
+          return "View Archived Documents";
+        default:
+          return `${PERMISSION_LABELS[action]} Archived Documents`;
+      }
+    },
     path: "document.archive",
   },
   {
@@ -63,6 +73,16 @@ const MODULES = [
     label: "Download",
     description: "Download documents",
     level: 1,
+    parentLabel: (action) => {
+      switch (action) {
+        case "c":
+          return "Download Documents";
+        case "r":
+          return "View Downloadable Documents";
+        default:
+          return `${PERMISSION_LABELS[action]} Downloadable Documents`;
+      }
+    },
     path: "document.download",
   },
   {
@@ -216,7 +236,13 @@ const PermissionsCheckboxGroup = ({
                       px={{ base: 1, md: 3 }}
                     >
                       <Tooltip
-                        label={`${PERMISSION_LABELS[action]} ${module.label}`}
+                        label={` ${
+                          module.level > 0 && module.parentLabel
+                            ? typeof module.parentLabel === "function"
+                              ? module.parentLabel(action)
+                              : `${module.parentLabel} ${module.label}`
+                            : `${PERMISSION_LABELS[action]} ${module.label}`
+                        }`}
                         placement="top"
                         hasArrow
                       >
