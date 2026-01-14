@@ -337,7 +337,7 @@ export const UserProfileProvider = ({ children }) => {
       dispatch({ type: "SET_SAVING", value: false });
       return {
         success: true,
-        data: data,
+        data,
       };
     } catch (err) {
       dispatch({
