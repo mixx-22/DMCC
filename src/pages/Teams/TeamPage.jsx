@@ -95,8 +95,8 @@ const TeamPage = () => {
 
   const validateForm = () => {
     const errors = {};
-    if (!formData.title.trim()) {
-      errors.title = "Team name is required";
+    if (!formData.name.trim()) {
+      errors.name = "Team name is required";
     }
     if (!formData.description.trim()) {
       errors.description = "Description is required";
@@ -172,7 +172,7 @@ const TeamPage = () => {
 
   const handleDeleteClick = async () => {
     const result = await Swal.fire({
-      title: "Delete Team",
+      name: "Delete Team",
       text: "This action is irreversible and cannot be undone.",
       icon: "warning",
       showCancelButton: true,
@@ -208,12 +208,12 @@ const TeamPage = () => {
     );
   }
 
-  const teamTitle = isEditMode ? formData.title : team ? team.title : "";
+  const teamName = isEditMode ? formData.name : team ? team.name : "";
 
   return (
     <Box>
       <PageHeader>
-        <Heading variant="pageTitle" noOfLines={1}>
+        <Heading variant="pageName" noOfLines={1}>
           <IconButton
             isRound
             as="span"
@@ -222,7 +222,7 @@ const TeamPage = () => {
             icon={<FiArrowLeft />}
             onClick={() => navigate("/teams")}
           />
-          {isNewTeam ? "Create New Team" : teamTitle}
+          {isNewTeam ? "Create New Team" : teamName}
         </Heading>
       </PageHeader>
       <PageFooter>
@@ -295,7 +295,7 @@ const TeamPage = () => {
                     Team Name
                   </Text>
                   <Text fontSize="lg" fontWeight="semibold">
-                    {team.title}
+                    {team.name}
                   </Text>
                 </Box>
 
@@ -433,18 +433,16 @@ const TeamPage = () => {
               </CardHeader>
               <CardBody>
                 <VStack align="stretch" spacing={4}>
-                  <FormControl isInvalid={validationErrors.title}>
+                  <FormControl isInvalid={validationErrors.name}>
                     <FormLabel>Team Name</FormLabel>
                     <Input
-                      value={formData.title}
+                      value={formData.name}
                       onChange={(e) =>
-                        handleFieldChange("title", e.target.value)
+                        handleFieldChange("name", e.target.value)
                       }
                       placeholder="Enter team name"
                     />
-                    <FormErrorMessage>
-                      {validationErrors.title}
-                    </FormErrorMessage>
+                    <FormErrorMessage>{validationErrors.name}</FormErrorMessage>
                   </FormControl>
 
                   <FormControl isInvalid={validationErrors.description}>

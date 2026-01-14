@@ -173,7 +173,10 @@ const TeamsList = () => {
                     <LinkBox as={Tr} key={teamId}>
                       <Td>
                         <LinkOverlay as={RouterLink} to={`/teams/${teamId}`}>
-                          <Text fontWeight="semibold">{team.title}</Text>
+                          <HStack w="fit-content">
+                            <Avatar size="sm" name={team.name} />
+                            <Text as="span">{team.name}</Text>
+                          </HStack>
                         </LinkOverlay>
                       </Td>
                       <Td>
@@ -198,7 +201,9 @@ const TeamsList = () => {
                                 );
                               })}
                             </AvatarGroup>
-                            <Badge colorScheme="blue">{allMembers.length}</Badge>
+                            <Badge colorScheme="blue">
+                              {allMembers.length}
+                            </Badge>
                           </HStack>
                         ) : (
                           <Badge colorScheme="gray">No members</Badge>

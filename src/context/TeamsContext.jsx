@@ -10,7 +10,7 @@ const DEFAULT_LIMIT = parseInt(import.meta.env.VITE_LIMIT) || 10;
 const MOCK_TEAMS = [
   {
     _id: "team-1",
-    title: "Engineering Team",
+    name: "Engineering Team",
     description: "Core engineering team responsible for product development",
     leaders: [
       {
@@ -37,7 +37,7 @@ const MOCK_TEAMS = [
   },
   {
     _id: "team-2",
-    title: "Design Team",
+    name: "Design Team",
     description: "Product design and UX team",
     leaders: [
       {
@@ -126,10 +126,10 @@ export const TeamsProvider = ({ children }) => {
           if (search && search.length >= 2) {
             const searchLower = search.toLowerCase();
             filteredTeams = MOCK_TEAMS.filter((team) => {
-              const title = (team.title || "").toLowerCase();
+              const name = (team.name || "").toLowerCase();
               const description = (team.description || "").toLowerCase();
               return (
-                title.includes(searchLower) || description.includes(searchLower)
+                name.includes(searchLower) || description.includes(searchLower)
               );
             });
           }

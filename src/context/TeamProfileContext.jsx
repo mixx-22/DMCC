@@ -48,7 +48,7 @@ const MOCK_TEAM = {
 // Helper to normalize users - ensures consistent format
 const normalizeUsers = (users) => {
   if (!Array.isArray(users)) return [];
-  
+
   return users.map((user) => ({
     id: user.id || user._id,
     _id: user._id || user.id,
@@ -61,7 +61,7 @@ const normalizeUsers = (users) => {
 // Helper to extract only user IDs for API submission
 const extractUserIds = (users) => {
   if (!Array.isArray(users)) return [];
-  
+
   return users.map((user) => user.id || user._id);
 };
 
@@ -145,7 +145,7 @@ export const TeamProfileProvider = ({ children }) => {
 
       dispatch({
         type: "SET_TEAM",
-        team: fetchedTeam,
+        team: fetchedTeam?.data || fetchedTeam,
       });
     } catch (err) {
       dispatch({
