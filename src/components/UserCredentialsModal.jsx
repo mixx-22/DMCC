@@ -25,6 +25,7 @@ const UserCredentialsModal = ({
   email,
   password,
   username,
+  isResetPassword = false,
 }) => {
   const { hasCopied: emailCopied, onCopy: onCopyEmail } = useClipboard(email);
 
@@ -43,7 +44,9 @@ const UserCredentialsModal = ({
     >
       <ModalOverlay />
       <ModalContent>
-        <ModalHeader>New User Credentials</ModalHeader>
+        <ModalHeader>
+          {isResetPassword ? "Password Reset Successful" : "New User Credentials"}
+        </ModalHeader>
         <ModalBody>
           <VStack spacing={4} align="stretch">
             <Alert status="warning" borderRadius="md">
