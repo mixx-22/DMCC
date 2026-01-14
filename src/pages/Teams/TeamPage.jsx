@@ -22,6 +22,7 @@ import {
   Textarea,
   Avatar,
   Stack,
+  CardHeader,
 } from "@chakra-ui/react";
 import {
   FiEdit,
@@ -207,11 +208,7 @@ const TeamPage = () => {
     );
   }
 
-  const teamTitle = isEditMode
-    ? formData.title
-    : team
-    ? team.title
-    : "";
+  const teamTitle = isEditMode ? formData.title : team ? team.title : "";
 
   return (
     <Box>
@@ -334,7 +331,11 @@ const TeamPage = () => {
                         }`.trim();
                         return (
                           <HStack key={leader._id || leader.id}>
-                            <Avatar size="sm" name={fullName} src={leader.profilePicture} />
+                            <Avatar
+                              size="sm"
+                              name={fullName}
+                              src={leader.profilePicture}
+                            />
                             <VStack align="start" spacing={0}>
                               <Text fontSize="sm" fontWeight="medium">
                                 {fullName}
@@ -364,7 +365,11 @@ const TeamPage = () => {
                         }`.trim();
                         return (
                           <HStack key={member._id || member.id}>
-                            <Avatar size="sm" name={fullName} src={member.profilePicture} />
+                            <Avatar
+                              size="sm"
+                              name={fullName}
+                              src={member.profilePicture}
+                            />
                             <VStack align="start" spacing={0}>
                               <Text fontSize="sm" fontWeight="medium">
                                 {fullName}
@@ -384,7 +389,12 @@ const TeamPage = () => {
 
                 {isValidDate(team.createdAt) && (
                   <Box>
-                    <Text fontSize="sm" fontWeight="bold" color="gray.500" mb={1}>
+                    <Text
+                      fontSize="sm"
+                      fontWeight="bold"
+                      color="gray.500"
+                      mb={1}
+                    >
                       Created At
                     </Text>
                     <Text fontSize="sm">
@@ -395,7 +405,12 @@ const TeamPage = () => {
 
                 {isValidDate(team.updatedAt) && (
                   <Box>
-                    <Text fontSize="sm" fontWeight="bold" color="gray.500" mb={1}>
+                    <Text
+                      fontSize="sm"
+                      fontWeight="bold"
+                      color="gray.500"
+                      mb={1}
+                    >
                       Last Updated
                     </Text>
                     <Text fontSize="sm">
@@ -410,68 +425,78 @@ const TeamPage = () => {
       )}
 
       {(isEditMode || isNewTeam) && (
-        <Stack gap={6}>
-          <Card>
-            <CardBody>
-              <VStack align="stretch" spacing={4}>
-                <Heading size="md" mb={2}>
-                  Team Information
-                </Heading>
+        <Flex gap={6} flexWrap={{ base: "wrap", lg: "nowrap" }}>
+          <Stack gap={6} w={{ base: "full", lg: "xl" }}>
+            <Card>
+              <CardHeader pb={0}>
+                <Heading size="md">Team Information</Heading>
+              </CardHeader>
+              <CardBody>
+                <VStack align="stretch" spacing={4}>
+                  <FormControl isInvalid={validationErrors.title}>
+                    <FormLabel>Team Name</FormLabel>
+                    <Input
+                      value={formData.title}
+                      onChange={(e) =>
+                        handleFieldChange("title", e.target.value)
+                      }
+                      placeholder="Enter team name"
+                    />
+                    <FormErrorMessage>
+                      {validationErrors.title}
+                    </FormErrorMessage>
+                  </FormControl>
 
-                <FormControl isInvalid={validationErrors.title}>
-                  <FormLabel>Team Name</FormLabel>
-                  <Input
-                    value={formData.title}
-                    onChange={(e) => handleFieldChange("title", e.target.value)}
-                    placeholder="Enter team name"
-                  />
-                  <FormErrorMessage>{validationErrors.title}</FormErrorMessage>
-                </FormControl>
+                  <FormControl isInvalid={validationErrors.description}>
+                    <FormLabel>Description</FormLabel>
+                    <Textarea
+                      value={formData.description}
+                      onChange={(e) =>
+                        handleFieldChange("description", e.target.value)
+                      }
+                      placeholder="Enter team description"
+                      rows={4}
+                    />
+                    <FormErrorMessage>
+                      {validationErrors.description}
+                    </FormErrorMessage>
+                  </FormControl>
+                </VStack>
+              </CardBody>
+            </Card>
 
-                <FormControl isInvalid={validationErrors.description}>
-                  <FormLabel>Description</FormLabel>
-                  <Textarea
-                    value={formData.description}
-                    onChange={(e) =>
-                      handleFieldChange("description", e.target.value)
-                    }
-                    placeholder="Enter team description"
-                    rows={4}
-                  />
-                  <FormErrorMessage>
-                    {validationErrors.description}
-                  </FormErrorMessage>
-                </FormControl>
-              </VStack>
-            </CardBody>
-          </Card>
-
-          <Card>
-            <CardBody>
-              <VStack align="stretch" spacing={4}>
-                <Heading size="md" mb={2}>
-                  Team Members
-                </Heading>
-
+            <Card>
+              <CardHeader pb={0}>
+                <Heading size="md">Team Leaders</Heading>
+              </CardHeader>
+              <CardBody>
                 <UserAsyncSelect
-                  label="Leaders"
-                  placeholder="Search for leaders..."
+                  label=""
+                  placeholder="Search for users..."
                   value={formData.leaders || []}
                   onChange={(leaders) => handleFieldChange("leaders", leaders)}
                   limit={5}
                 />
-
+              </CardBody>
+            </Card>
+          </Stack>
+          <Stack gap={6} w="full">
+            <Card>
+              <CardHeader pb={0}>
+                <Heading size="md">Team Members</Heading>
+              </CardHeader>
+              <CardBody>
                 <UserAsyncSelect
-                  label="Members"
-                  placeholder="Search for members..."
+                  label=""
+                  placeholder="Search for users..."
                   value={formData.members || []}
                   onChange={(members) => handleFieldChange("members", members)}
                   limit={10}
                 />
-              </VStack>
-            </CardBody>
-          </Card>
-        </Stack>
+              </CardBody>
+            </Card>
+          </Stack>
+        </Flex>
       )}
     </Box>
   );
