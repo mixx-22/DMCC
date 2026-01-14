@@ -16,7 +16,7 @@ import {
   useColorModeValue,
   useBreakpointValue,
 } from "@chakra-ui/react";
-import { FiBell, FiLogOut } from "react-icons/fi";
+import { FiBell, FiLogOut, FiKey } from "react-icons/fi";
 import { useUser } from "../context/useUser";
 import Swal from "sweetalert2";
 import { useNavigate } from "react-router-dom";
@@ -148,6 +148,12 @@ const Header = () => {
                   </HStack>
                 </MenuItem>
                 <MenuItem>Settings</MenuItem>
+                <MenuItem
+                  icon={<FiKey />}
+                  onClick={() => navigate("/change-password")}
+                >
+                  Change Password
+                </MenuItem>
                 <Divider />
                 <MenuItem onClick={toggleColorMode}>
                   Appearance: {colorMode === "dark" ? "Dark" : "Light"}

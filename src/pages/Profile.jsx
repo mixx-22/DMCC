@@ -14,7 +14,7 @@ import {
   Spacer,
 } from "@chakra-ui/react";
 import { useNavigate } from "react-router-dom";
-import { FiLogOut, FiMoon, FiSun, FiSettings } from "react-icons/fi";
+import { FiLogOut, FiMoon, FiSun, FiSettings, FiKey } from "react-icons/fi";
 import { useUser } from "../context/useUser";
 import Swal from "sweetalert2";
 import { useEffect } from "react";
@@ -120,6 +120,18 @@ const Profile = () => {
                   _hover={{ bg: useColorModeValue("gray.50", "gray.700") }}
                 >
                   Account Settings
+                </Button>
+
+                <Button
+                  variant="ghost"
+                  justifyContent="flex-start"
+                  leftIcon={<FiKey />}
+                  onClick={() => navigate("/change-password")}
+                  w="full"
+                  color={textColor}
+                  _hover={{ bg: useColorModeValue("gray.50", "gray.700") }}
+                >
+                  Change Password
                 </Button>
 
                 <Button
