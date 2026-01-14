@@ -185,9 +185,8 @@ export const TeamsProvider = ({ children }) => {
       dispatch({ type: "SET_PAGE", value: page });
       dispatch({ type: "SET_LAST_PAGE", value: page });
       fetchTeams(page, state.search);
-      // eslint-disable-next-line react-hooks/exhaustive-deps
     },
-    [fetchTeams]
+    [fetchTeams, state.search]
   );
 
   const setSearch = useCallback(
@@ -213,15 +212,13 @@ export const TeamsProvider = ({ children }) => {
           fetchTeams(1, search);
         }, 500); // 500ms debounce
       }
-      // eslint-disable-next-line react-hooks/exhaustive-deps
     },
-    [fetchTeams]
+    [fetchTeams, state.lastPage]
   );
 
   useEffect(() => {
     fetchTeams();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [fetchTeams]);
 
   return (
     <TeamsContext.Provider

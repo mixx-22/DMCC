@@ -21,7 +21,6 @@ import {
   useColorModeValue,
   Textarea,
   Avatar,
-  AvatarGroup,
   Stack,
 } from "@chakra-ui/react";
 import {
