@@ -31,7 +31,6 @@ import {
   FiTrash2,
 } from "react-icons/fi";
 import { useNavigate, useParams } from "react-router-dom";
-import { formatDistanceToNow } from "date-fns";
 import { toast } from "sonner";
 import Swal from "sweetalert2";
 import { useState, useEffect } from "react";
@@ -39,6 +38,7 @@ import PermissionsCheckboxGroup from "../../components/PermissionsCheckboxGroup"
 import { useRole } from "../../context/RoleContext";
 import PageHeader from "../../components/PageHeader";
 import PageFooter from "../../components/PageFooter";
+import Timestamp from "../../components/Timestamp";
 
 const RolePage = () => {
   const navigate = useNavigate();
@@ -522,14 +522,7 @@ const RolePage = () => {
                           fontWeight="medium"
                           fontSize={{ base: "sm", md: "md" }}
                         >
-                          {new Date(role.createdAt).toLocaleDateString()}{" "}
-                          <Text as="span" fontSize="sm" color="gray.500">
-                            (
-                            {formatDistanceToNow(new Date(role.createdAt), {
-                              addSuffix: true,
-                            })}
-                            )
-                          </Text>
+                          <Timestamp date={role.createdAt} />
                         </Text>
                       </Box>
                       <Box>
@@ -540,14 +533,7 @@ const RolePage = () => {
                           fontWeight="medium"
                           fontSize={{ base: "sm", md: "md" }}
                         >
-                          {new Date(role.updatedAt).toLocaleDateString()}{" "}
-                          <Text as="span" fontSize="sm" color="gray.500">
-                            (
-                            {formatDistanceToNow(new Date(role.updatedAt), {
-                              addSuffix: true,
-                            })}
-                            )
-                          </Text>
+                          <Timestamp date={role.updatedAt} />
                         </Text>
                       </Box>
                     </VStack>

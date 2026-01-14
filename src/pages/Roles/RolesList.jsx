@@ -8,7 +8,6 @@ import {
   Tr,
   Th,
   Td,
-  Tooltip,
   Text,
   LinkBox,
   LinkOverlay,
@@ -18,7 +17,6 @@ import {
 } from "@chakra-ui/react";
 import { FiSearch } from "react-icons/fi";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { formatDistanceToNow } from "date-fns";
 import { motion } from "framer-motion";
 import { useEffect } from "react";
 import { useRoles } from "../../context/_useContext";
@@ -26,6 +24,7 @@ import { generateRoleDescriptions } from "../../helpers/describePermissions";
 import { Link as RouterLink } from "react-router-dom";
 import Pagination from "../../components/Pagination";
 import RolesSkeleton from "../../components/RolesSkeleton";
+import Timestamp from "../../components/Timestamp";
 
 const MotionBox = motion(Box);
 
@@ -171,15 +170,7 @@ const RolesList = () => {
                       </Td>
 
                       <Td>
-                        <Tooltip
-                          label={new Date(role.updatedAt).toLocaleString()}
-                        >
-                          <Text fontSize="sm">
-                            {formatDistanceToNow(new Date(role.updatedAt), {
-                              addSuffix: true,
-                            })}
-                          </Text>
-                        </Tooltip>
+                        <Timestamp date={role.updatedAt} showTime={true} fontSize="sm" />
                       </Td>
                     </LinkBox>
                   ))
