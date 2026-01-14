@@ -52,7 +52,7 @@ const MOCK_USERS = [
 ];
 
 // Helper function to get consistent user ID
-const getUserId = (user) => user.id || user._id;
+const getUserId = (user) => user.id || user._id || user.userId;
 
 const UserAsyncSelect = ({
   value = [],
@@ -161,7 +161,9 @@ const UserAsyncSelect = ({
   };
 
   const handleRemoveUser = (userToRemove) => {
-    onChange(value.filter((user) => getUserId(user) !== getUserId(userToRemove)));
+    onChange(
+      value.filter((user) => getUserId(user) !== getUserId(userToRemove))
+    );
   };
 
   // Filter out already selected users by checking IDs
