@@ -24,7 +24,6 @@ import { NavLink, useLocation, useNavigate } from "react-router-dom";
 import {
   FiHome,
   FiFileText,
-  FiUsers,
   FiChevronLeft,
   FiChevronRight,
   FiMenu,
@@ -34,6 +33,7 @@ import {
   FiBell,
   FiFolder,
 } from "react-icons/fi";
+import { HiOutlineUser, HiOutlineUserGroup } from "react-icons/hi2";
 import logoDefault from "../images/auptilyze.png";
 import logoWhite from "../images/auptilyze-white.png";
 import logoIconDefault from "../images/auptilyze-icon.svg";
@@ -58,6 +58,7 @@ const isRouteMatch = (location, target) => {
 const SidebarRow = ({
   to,
   icon = null,
+  iconProps = {},
   label,
   isCollapsed,
   isMobile = false,
@@ -111,6 +112,7 @@ const SidebarRow = ({
           boxSize={isChild ? 4 : 5}
           minW={isChild ? 4 : 5}
           transition="all 0.3s cubic-bezier(0.4, 0, 0.2, 1)"
+          {...iconProps}
         />
       )}
       {(!isCollapsed || isMobile) && (
@@ -203,13 +205,15 @@ const Sidebar = () => {
         id: "users",
         path: "/users",
         label: "Users",
-        icon: FiUsers,
+        icon: HiOutlineUser,
+        iconProps: { strokeWidth: "2px" },
       });
       items.push({
         id: "teams",
         path: "/teams",
         label: "Teams",
-        icon: FiFolder,
+        icon: HiOutlineUserGroup,
+        iconProps: { strokeWidth: "2px" },
       });
       items.push({
         id: "settings",
@@ -307,6 +311,7 @@ const Sidebar = () => {
             >
               <SidebarRow
                 icon={item.icon}
+                iconProps={item.iconProps}
                 label={item.label}
                 isCollapsed={isCollapsed}
                 isMobile={mobileMode}
@@ -375,6 +380,7 @@ const Sidebar = () => {
           <SidebarRow
             to={item.path}
             icon={item.icon}
+            iconProps={item.iconProps}
             label={item.label}
             isCollapsed={isCollapsed}
             isMobile={mobileMode}
