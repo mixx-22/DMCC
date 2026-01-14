@@ -76,13 +76,16 @@ const ChangePassword = () => {
     setIsLoading(true);
 
     try {
-      await apiService.request(`/change-password/${currentUser.id}`, {
-        method: "POST",
-        body: JSON.stringify({
-          currentPassword,
-          newPassword,
-        }),
-      });
+      await apiService.request(
+        `${import.meta.env.VITE_API_PACKAGE_CHANGE_PASSWORD}/${currentUser.id}`,
+        {
+          method: "POST",
+          body: JSON.stringify({
+            currentPassword,
+            newPassword,
+          }),
+        }
+      );
 
       toast.success("Password Changed", {
         description: "Your password has been successfully updated",
@@ -142,12 +145,16 @@ const ChangePassword = () => {
                     <InputRightElement>
                       <IconButton
                         aria-label={
-                          showCurrentPassword ? "Hide password" : "Show password"
+                          showCurrentPassword
+                            ? "Hide password"
+                            : "Show password"
                         }
                         icon={showCurrentPassword ? <FiEyeOff /> : <FiEye />}
                         variant="ghost"
                         size="sm"
-                        onClick={() => setShowCurrentPassword(!showCurrentPassword)}
+                        onClick={() =>
+                          setShowCurrentPassword(!showCurrentPassword)
+                        }
                       />
                     </InputRightElement>
                   </InputGroup>
@@ -203,12 +210,16 @@ const ChangePassword = () => {
                     <InputRightElement>
                       <IconButton
                         aria-label={
-                          showConfirmPassword ? "Hide password" : "Show password"
+                          showConfirmPassword
+                            ? "Hide password"
+                            : "Show password"
                         }
                         icon={showConfirmPassword ? <FiEyeOff /> : <FiEye />}
                         variant="ghost"
                         size="sm"
-                        onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                        onClick={() =>
+                          setShowConfirmPassword(!showConfirmPassword)
+                        }
                       />
                     </InputRightElement>
                   </InputGroup>

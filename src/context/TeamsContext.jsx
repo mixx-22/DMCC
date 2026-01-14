@@ -2,7 +2,7 @@ import { useEffect, useCallback, useReducer, useRef } from "react";
 import { TeamsContext } from "./_contexts";
 import apiService from "../services/api";
 
-const TEAMS_ENDPOINT = "/teams";
+const TEAMS_ENDPOINT = import.meta.env.VITE_API_PACKAGE_TEAMS;
 const USE_API = import.meta.env.VITE_USE_API !== "false";
 const DEFAULT_LIMIT = parseInt(import.meta.env.VITE_LIMIT) || 10;
 

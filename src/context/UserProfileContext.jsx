@@ -310,44 +310,50 @@ export const UserProfileProvider = ({ children }) => {
     }
   }, []);
 
-  const resetPassword = useCallback(async (userId) => {
-    dispatch({ type: "SET_SAVING", value: true });
-    dispatch({ type: "SET_ERROR", value: null });
+  const resetPassword = useCallback(
+    async (userId) => {
+      dispatch({ type: "SET_SAVING", value: true });
+      dispatch({ type: "SET_ERROR", value: null });
 
-    if (!USE_API) {
-      // Mock response for development
-      setTimeout(() => {
+      if (!USE_API) {
+        // Mock response for development
+        setTimeout(() => {
+          dispatch({ type: "SET_SAVING", value: false });
+        }, 500);
+        return {
+          success: true,
+          data: {
+            email: state.user?.email || "mock@example.com",
+            username: state.user?.username || "mockuser",
+            password: "MockPassword123!",
+          },
+        };
+      }
+
+      try {
+        const data = await apiService.request(
+          `${import.meta.env.VITE_API_PACKAGE_RESET_PASSWORD}/${userId}`,
+          {
+            method: "POST",
+          }
+        );
+
         dispatch({ type: "SET_SAVING", value: false });
-      }, 500);
-      return {
-        success: true,
-        data: {
-          email: state.user?.email || "mock@example.com",
-          username: state.user?.username || "mockuser",
-          password: "MockPassword123!",
-        },
-      };
-    }
-
-    try {
-      const data = await apiService.request(`/reset-password/${userId}`, {
-        method: "POST",
-      });
-
-      dispatch({ type: "SET_SAVING", value: false });
-      return {
-        success: true,
-        data,
-      };
-    } catch (err) {
-      dispatch({
-        type: "SET_ERROR",
-        value: err.message || "Failed to reset password",
-      });
-      dispatch({ type: "SET_SAVING", value: false });
-      return { success: false, error: err.message };
-    }
-  }, [state.user]);
+        return {
+          success: true,
+          data,
+        };
+      } catch (err) {
+        dispatch({
+          type: "SET_ERROR",
+          value: err.message || "Failed to reset password",
+        });
+        dispatch({ type: "SET_SAVING", value: false });
+        return { success: false, error: err.message };
+      }
+    },
+    [state.user]
+  );
 
   useEffect(() => {
     if (id && id !== "new") {
