@@ -20,9 +20,10 @@ import {
   Td,
   IconButton,
 } from "@chakra-ui/react";
-import { FiX } from "react-icons/fi";
+import { FiEye, FiX } from "react-icons/fi";
 import { useState, useRef, useCallback } from "react";
 import apiService from "../services/api";
+import { Link as RouterLink } from "react-router-dom";
 
 const USERS_ENDPOINT = import.meta.env.VITE_API_PACKAGE_USERS;
 const USE_API = import.meta.env.VITE_USE_API !== "false";
@@ -75,6 +76,7 @@ const UserAsyncSelect = ({
   limit = 10,
   displayMode = "badges", // "badges" or "table"
   readonly = false, // if true, only shows the list without input
+  tableProps = {},
   ...props
 }) => {
   const [inputValue, setInputValue] = useState("");
@@ -272,64 +274,16 @@ const UserAsyncSelect = ({
 
   // Editable mode with either badges or table display
   return (
-    <FormControl isInvalid={isInvalid} {...props}>
-      <FormLabel>{label}</FormLabel>
-      <Box ref={containerRef} position="relative">
-        <VStack align="stretch" spacing={2}>
-          {displayMode === "table" && value.length > 0 ? (
-            <Table variant="simple" size="sm" border="none">
-              <Thead>
-                <Tr>
-                  <Th border="none">Name</Th>
-                  <Th border="none">Employee ID</Th>
-                  <Th border="none" w="50px"></Th>
-                </Tr>
-              </Thead>
-              <Tbody>
-                {value.map((user) => {
-                  const fullName = `${user.firstName || ""} ${
-                    user.lastName || ""
-                  }`.trim();
-                  return (
-                    <Tr key={getUserId(user)}>
-                      <Td border="none">
-                        <HStack spacing={3}>
-                          <Avatar
-                            size="sm"
-                            name={fullName}
-                            src={user.profilePicture}
-                          />
-                          <VStack align="start" spacing={0}>
-                            <Text fontSize="sm" fontWeight="medium">
-                              {fullName}
-                            </Text>
-                            <Text fontSize="xs" color="gray.500">
-                              {user.email}
-                            </Text>
-                          </VStack>
-                        </HStack>
-                      </Td>
-                      <Td border="none">
-                        <Text fontSize="sm" color="gray.600">
-                          {user.employeeId || "-"}
-                        </Text>
-                      </Td>
-                      <Td border="none">
-                        <IconButton
-                          size="sm"
-                          variant="ghost"
-                          icon={<FiX />}
-                          aria-label="Remove user"
-                          onClick={() => handleRemoveUser(user)}
-                        />
-                      </Td>
-                    </Tr>
-                  );
-                })}
-              </Tbody>
-            </Table>
-          ) : (
-            value.length > 0 && (
+    <>
+      <FormControl isInvalid={isInvalid} {...props}>
+        <FormLabel>{label}</FormLabel>
+        <Box ref={containerRef} position="relative">
+          <VStack
+            align="stretch"
+            spacing={2}
+            order={displayMode === "table" ? "revert" : "initial"}
+          >
+            {displayMode === "badges" && value.length > 0 && (
               <HStack spacing={2} wrap="wrap">
                 {value.map((user) => {
                   const fullName = `${user.firstName || ""} ${
@@ -356,92 +310,146 @@ const UserAsyncSelect = ({
                   );
                 })}
               </HStack>
-            )
-          )}
-          <Input
-            value={inputValue}
-            onChange={handleInputChange}
-            onFocus={() => {
-              if (inputValue.length >= 2) {
-                setIsOpen(true);
-              }
-            }}
-            placeholder={placeholder}
-          />
-        </VStack>
-
-        {isOpen && inputValue.length >= 2 && (
-          <Box
-            position="absolute"
-            top="100%"
-            left={0}
-            right={0}
-            mt={1}
-            bg="white"
-            boxShadow="lg"
-            borderRadius="md"
-            border="1px"
-            borderColor="gray.200"
-            maxH="200px"
-            overflowY="auto"
-            zIndex={10}
-          >
-            {loading ? (
-              <Box p={4} textAlign="center">
-                <Spinner size="sm" />
-                <Text fontSize="sm" color="gray.500" mt={2}>
-                  Loading users...
-                </Text>
-              </Box>
-            ) : filteredOptions.length > 0 ? (
-              <VStack align="stretch" spacing={0}>
-                {filteredOptions.map((option) => {
-                  const fullName = `${option.firstName || ""} ${
-                    option.lastName || ""
-                  }`.trim();
-                  return (
-                    <Box
-                      key={getUserId(option)}
-                      p={3}
-                      cursor="pointer"
-                      _hover={{ bg: "gray.100" }}
-                      onClick={() => handleSelectUser(option)}
-                    >
-                      <HStack>
-                        <Avatar
-                          size="sm"
-                          name={fullName}
-                          src={option.profilePicture}
-                        />
-                        <VStack align="start" spacing={0}>
-                          <Text fontSize="sm" fontWeight="medium">
-                            {fullName}
-                          </Text>
-                          <Text fontSize="xs" color="gray.500">
-                            {option.email}
-                          </Text>
-                        </VStack>
-                      </HStack>
-                    </Box>
-                  );
-                })}
-              </VStack>
-            ) : (
-              <Box p={4} textAlign="center">
-                <Text fontSize="sm" color="gray.500">
-                  No users found
-                </Text>
-              </Box>
             )}
-          </Box>
+            <Input
+              value={inputValue}
+              onChange={handleInputChange}
+              onFocus={() => {
+                if (inputValue.length >= 2) {
+                  setIsOpen(true);
+                }
+              }}
+              placeholder={placeholder}
+            />
+          </VStack>
+
+          {isOpen && inputValue.length >= 2 && (
+            <Box
+              position="absolute"
+              top="100%"
+              left={0}
+              right={0}
+              mt={1}
+              bg="white"
+              boxShadow="lg"
+              borderRadius="md"
+              border="1px"
+              borderColor="gray.200"
+              maxH="200px"
+              overflowY="auto"
+              zIndex={10}
+            >
+              {loading ? (
+                <Box p={4} textAlign="center">
+                  <Spinner size="sm" />
+                  <Text fontSize="sm" color="gray.500" mt={2}>
+                    Loading users...
+                  </Text>
+                </Box>
+              ) : filteredOptions.length > 0 ? (
+                <VStack align="stretch" spacing={0}>
+                  {filteredOptions.map((option) => {
+                    const fullName = `${option.firstName || ""} ${
+                      option.lastName || ""
+                    }`.trim();
+                    return (
+                      <Box
+                        key={getUserId(option)}
+                        p={3}
+                        cursor="pointer"
+                        _hover={{ bg: "gray.100" }}
+                        onClick={() => handleSelectUser(option)}
+                      >
+                        <HStack>
+                          <Avatar
+                            size="sm"
+                            name={fullName}
+                            src={option.profilePicture}
+                          />
+                          <VStack align="start" spacing={0}>
+                            <Text fontSize="sm" fontWeight="medium">
+                              {fullName}
+                            </Text>
+                            <Text fontSize="xs" color="gray.500">
+                              {option.email}
+                            </Text>
+                          </VStack>
+                        </HStack>
+                      </Box>
+                    );
+                  })}
+                </VStack>
+              ) : (
+                <Box p={4} textAlign="center">
+                  <Text fontSize="sm" color="gray.500">
+                    No users found
+                  </Text>
+                </Box>
+              )}
+            </Box>
+          )}
+        </Box>
+        {!readonly && (
+          <Text fontSize="xs" color="gray.500" mt={1}>
+            Type at least 2 characters to search for users
+          </Text>
         )}
-      </Box>
-      {!readonly && (
-        <Text fontSize="xs" color="gray.500" mt={1}>
-          Type at least 2 characters to search for users
-        </Text>
+      </FormControl>
+      {displayMode === "table" && value.length > 0 && (
+        <Table variant="simple" size="sm" border="none" mt={6} {...tableProps}>
+          <Tbody>
+            {value.map((user) => {
+              const userId = user.id || user._id || user.userId;
+              const fullName = `${user.firstName || ""} ${
+                user.lastName || ""
+              }`.trim();
+              return (
+                <Tr key={getUserId(user)}>
+                  <Td border="none">
+                    <HStack spacing={3}>
+                      <Avatar
+                        size="sm"
+                        name={fullName}
+                        src={user.profilePicture}
+                      />
+                      <VStack align="start" spacing={0}>
+                        <Text fontSize="sm" fontWeight="medium">
+                          {fullName}
+                        </Text>
+                        <Text fontSize="xs" color="gray.500">
+                          {user.employeeId || "-"}
+                        </Text>
+                      </VStack>
+                    </HStack>
+                  </Td>
+                  <Td border="none" textAlign="right">
+                    <HStack spacing={1} justifyContent="flex-end">
+                      <IconButton
+                        size="sm"
+                        variant="ghost"
+                        colorScheme="brandPrimary"
+                        icon={<FiEye />}
+                        aria-label="Remove user"
+                        as={RouterLink}
+                        to={`/users/${userId}`}
+                      />
+                      <IconButton
+                        size="sm"
+                        variant="ghost"
+                        colorScheme="error"
+                        icon={<FiX />}
+                        aria-label="Remove user"
+                        onClick={() => handleRemoveUser(user)}
+                      />
+                    </HStack>
+                  </Td>
+                </Tr>
+              );
+            })}
+          </Tbody>
+        </Table>
       )}
-    </FormControl>
+    </>
   );
 };
 

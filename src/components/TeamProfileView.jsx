@@ -7,19 +7,17 @@ import {
   HStack,
   Card,
   CardBody,
-  Divider,
   Icon,
   Flex,
   useColorModeValue,
   CardHeader,
   Table,
-  Thead,
   Tbody,
   Tr,
-  Th,
   Td,
+  Stack,
 } from "@chakra-ui/react";
-import { FiUsers, FiFileText } from "react-icons/fi";
+import { FiUsers } from "react-icons/fi";
 import { formatDistanceToNow } from "date-fns";
 
 const TeamProfileView = ({ team, isValidDate }) => {
@@ -64,32 +62,33 @@ const TeamProfileView = ({ team, isValidDate }) => {
       </Card>
 
       <Flex gap={6} flexWrap={{ base: "wrap", lg: "nowrap" }}>
-        <Box w={{ base: "full", lg: "lg" }}>
-          <Card>
+        <Flex
+          gap={6}
+          flexWrap="wrap"
+          w={{ base: "full", lg: "lg" }}
+          flexDir={{ base: "column-reverse", lg: "column" }}
+        >
+          <Card w="full" flex={1}>
             <CardHeader pb={0}>
               <Heading size="md">
-                <HStack>
-                  <Icon as={FiUsers} />
-                  <Text>Leaders</Text>
-                </HStack>
+                <Text>Leaders</Text>
               </Heading>
             </CardHeader>
-            <CardBody>
+            <CardBody px={0}>
               {team.leaders && team.leaders.length > 0 ? (
-                <Table variant="simple" size="sm">
-                  <Thead>
-                    <Tr>
-                      <Th>Name</Th>
-                      <Th>Employee ID</Th>
-                    </Tr>
-                  </Thead>
+                <Table
+                  variant="simple"
+                  size="sm"
+                  border="none"
+                  sx={{ td: { px: 5 } }}
+                >
                   <Tbody>
                     {team.leaders.map((leader) => {
                       const fullName = `${leader.firstName || ""} ${
                         leader.lastName || ""
                       }`.trim();
                       return (
-                        <Tr key={leader._id || leader.id}>
+                        <Tr key={leader._id || leader.id || leader.userId}>
                           <Td>
                             <HStack spacing={3}>
                               <Avatar
@@ -99,19 +98,15 @@ const TeamProfileView = ({ team, isValidDate }) => {
                               />
                               <VStack align="start" spacing={0}>
                                 <Text fontSize="sm" fontWeight="medium">
-                                  {fullName}
+                                  {fullName || "Leader"}
                                 </Text>
                                 <Text fontSize="xs" color="gray.500">
-                                  {leader.email}
+                                  {leader.employeeId || "-"}
                                 </Text>
                               </VStack>
                             </HStack>
                           </Td>
-                          <Td>
-                            <Text fontSize="sm" color="gray.600">
-                              {leader.employeeId || "-"}
-                            </Text>
-                          </Td>
+                          <Td></Td>
                         </Tr>
                       );
                     })}
@@ -124,70 +119,10 @@ const TeamProfileView = ({ team, isValidDate }) => {
               )}
             </CardBody>
           </Card>
-        </Box>
-
-        <Box w="full">
-          <Card>
-            <CardHeader pb={0}>
-              <Heading size="md">
-                <HStack>
-                  <Icon as={FiUsers} />
-                  <Text>Members</Text>
-                </HStack>
-              </Heading>
-            </CardHeader>
+          <Card w="full" flex={1}>
             <CardBody>
-              {team.members && team.members.length > 0 ? (
-                <Table variant="simple" size="sm">
-                  <Thead>
-                    <Tr>
-                      <Th>Name</Th>
-                      <Th>Employee ID</Th>
-                    </Tr>
-                  </Thead>
-                  <Tbody>
-                    {team.members.map((member) => {
-                      const fullName = `${member.firstName || ""} ${
-                        member.lastName || ""
-                      }`.trim();
-                      return (
-                        <Tr key={member._id || member.id}>
-                          <Td>
-                            <HStack spacing={3}>
-                              <Avatar
-                                size="sm"
-                                name={fullName}
-                                src={member.profilePicture}
-                              />
-                              <VStack align="start" spacing={0}>
-                                <Text fontSize="sm" fontWeight="medium">
-                                  {fullName}
-                                </Text>
-                                <Text fontSize="xs" color="gray.500">
-                                  {member.email}
-                                </Text>
-                              </VStack>
-                            </HStack>
-                          </Td>
-                          <Td>
-                            <Text fontSize="sm" color="gray.600">
-                              {member.employeeId || "-"}
-                            </Text>
-                          </Td>
-                        </Tr>
-                      );
-                    })}
-                  </Tbody>
-                </Table>
-              ) : (
-                <Text color="gray.500" py={4} textAlign="center">
-                  No members assigned
-                </Text>
-              )}
-
-              {isValidDate(team.createdAt) && (
-                <>
-                  <Divider my={4} />
+              <Flex gap={6} flexDir={{ base: "row", lg: "column" }}>
+                {isValidDate(team.createdAt) && (
                   <Box>
                     <Text fontSize="sm" color="gray.500" mb={1}>
                       Team Created
@@ -203,7 +138,71 @@ const TeamProfileView = ({ team, isValidDate }) => {
                       </Text>
                     </Text>
                   </Box>
-                </>
+                )}
+                {isValidDate(team.updatedAt) && (
+                  <Box>
+                    <Text fontSize="sm" color="gray.500" mb={1}>
+                      Last Updated
+                    </Text>
+                    <Text fontWeight="medium" fontSize="sm">
+                      {new Date(team.updatedAt).toLocaleDateString()}{" "}
+                      <Text as="span" fontSize="xs" color="gray.500">
+                        (
+                        {formatDistanceToNow(new Date(team.updatedAt), {
+                          addSuffix: true,
+                        })}
+                        )
+                      </Text>
+                    </Text>
+                  </Box>
+                )}
+              </Flex>
+            </CardBody>
+          </Card>
+        </Flex>
+
+        <Box w="full">
+          <Card>
+            <CardHeader pb={0}>
+              <Heading size="md">Members</Heading>
+            </CardHeader>
+            <CardBody px={0}>
+              {team.members && team.members.length > 0 ? (
+                <Table variant="simple" size="sm" border="none">
+                  <Tbody>
+                    {team.members.map((member) => {
+                      const fullName = `${member.firstName || ""} ${
+                        member.lastName || ""
+                      }`.trim();
+                      return (
+                        <Tr key={member._id || member.id || member.userId}>
+                          <Td>
+                            <HStack spacing={3}>
+                              <Avatar
+                                size="sm"
+                                name={fullName}
+                                src={member.profilePicture}
+                              />
+                              <VStack align="start" spacing={0}>
+                                <Text fontSize="sm" fontWeight="medium">
+                                  {fullName || "Member"}
+                                </Text>
+                                <Text fontSize="xs" color="gray.500">
+                                  {member.employeeId || "-"}
+                                </Text>
+                              </VStack>
+                            </HStack>
+                          </Td>
+                          <Td></Td>
+                        </Tr>
+                      );
+                    })}
+                  </Tbody>
+                </Table>
+              ) : (
+                <Text color="gray.500" py={4} textAlign="center">
+                  No members assigned
+                </Text>
               )}
             </CardBody>
           </Card>

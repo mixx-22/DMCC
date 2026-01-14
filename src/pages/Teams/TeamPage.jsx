@@ -214,17 +214,19 @@ const TeamPage = () => {
   return (
     <Box>
       <PageHeader>
-        <Heading variant="pageName" noOfLines={1}>
-          <IconButton
-            isRound
-            as="span"
-            variant="ghost"
-            cursor="pointer"
-            icon={<FiArrowLeft />}
-            onClick={() => navigate("/teams")}
-          />
-          {isNewTeam ? "Create New Team" : teamName}
-        </Heading>
+        <PageHeader>
+          <Heading variant="pageTitle" noOfLines={1}>
+            <IconButton
+              isRound
+              as="span"
+              variant="ghost"
+              cursor="pointer"
+              icon={<FiArrowLeft />}
+              onClick={() => navigate("/users")}
+            />
+            {isNewTeam ? "Create New Team" : teamName}
+          </Heading>
+        </PageHeader>
       </PageHeader>
       <PageFooter>
         <Flex
@@ -333,7 +335,7 @@ const TeamPage = () => {
               <CardHeader pb={0}>
                 <Heading size="md">Team Leaders</Heading>
               </CardHeader>
-              <CardBody>
+              <CardBody px={0}>
                 <UserAsyncSelect
                   label=""
                   placeholder="Search for users..."
@@ -341,6 +343,8 @@ const TeamPage = () => {
                   onChange={(leaders) => handleFieldChange("leaders", leaders)}
                   limit={5}
                   displayMode="table"
+                  sx={{ px: 5 }}
+                  tableProps={{ sx: { td: { px: 5 } } }}
                 />
               </CardBody>
             </Card>
@@ -350,7 +354,7 @@ const TeamPage = () => {
               <CardHeader pb={0}>
                 <Heading size="md">Team Members</Heading>
               </CardHeader>
-              <CardBody>
+              <CardBody px={0}>
                 <UserAsyncSelect
                   label=""
                   placeholder="Search for users..."
@@ -358,6 +362,8 @@ const TeamPage = () => {
                   onChange={(members) => handleFieldChange("members", members)}
                   limit={10}
                   displayMode="table"
+                  sx={{ px: 5 }}
+                  tableProps={{ sx: { td: { px: 5 } } }}
                 />
               </CardBody>
             </Card>
