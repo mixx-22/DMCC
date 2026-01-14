@@ -16,7 +16,14 @@ import {
   useColorModeValue,
   useBreakpointValue,
 } from "@chakra-ui/react";
-import { FiBell, FiLogOut } from "react-icons/fi";
+import {
+  FiBell,
+  FiLogOut,
+  FiKey,
+  FiMoon,
+  FiSun,
+  FiSettings,
+} from "react-icons/fi";
 import { useUser } from "../context/useUser";
 import Swal from "sweetalert2";
 import { useNavigate } from "react-router-dom";
@@ -31,7 +38,7 @@ const Header = () => {
   const expiringCerts = getExpiringCertifications();
   const { colorMode, toggleColorMode } = useColorMode();
   const bgColor = useColorModeValue("gray.50", "gray.900");
-  
+
   // Hide notifications and user menu on mobile (they're in bottom nav now)
   const showDesktopMenu = useBreakpointValue({ base: false, md: true });
 
@@ -147,10 +154,18 @@ const Header = () => {
                     </VStack>
                   </HStack>
                 </MenuItem>
-                <MenuItem>Settings</MenuItem>
-                <Divider />
-                <MenuItem onClick={toggleColorMode}>
-                  Appearance: {colorMode === "dark" ? "Dark" : "Light"}
+                <MenuItem icon={<FiSettings />}>Settings</MenuItem>
+                <MenuItem
+                  icon={<FiKey />}
+                  onClick={() => navigate("/change-password")}
+                >
+                  Change Password
+                </MenuItem>
+                <MenuItem
+                  icon={colorMode === "dark" ? <FiMoon /> : <FiSun />}
+                  onClick={toggleColorMode}
+                >
+                  Appearance: {colorMode === "dark" ? "Dark" : "Light"} Mode
                 </MenuItem>
                 <Divider />
                 <MenuItem
