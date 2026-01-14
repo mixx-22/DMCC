@@ -14,7 +14,7 @@ const USE_API = import.meta.env.VITE_USE_API !== "false";
 // Mock team for development
 const MOCK_TEAM = {
   _id: "team-mock-1",
-  title: "Engineering Team",
+  name: "Engineering Team",
   description: "Core engineering team responsible for product development",
   leaders: [
     {
@@ -23,6 +23,7 @@ const MOCK_TEAM = {
       firstName: "Jane",
       lastName: "Doe",
       email: "jane@example.com",
+      employeeId: "EMP001",
     },
   ],
   members: [
@@ -32,6 +33,7 @@ const MOCK_TEAM = {
       firstName: "John",
       lastName: "Smith",
       email: "john@example.com",
+      employeeId: "EMP002",
     },
     {
       _id: "user-3",
@@ -39,6 +41,7 @@ const MOCK_TEAM = {
       firstName: "Alice",
       lastName: "Johnson",
       email: "alice@example.com",
+      employeeId: "EMP003",
     },
   ],
   createdAt: "2024-01-15T10:00:00.000Z",
@@ -55,6 +58,7 @@ const normalizeUsers = (users) => {
     firstName: user.firstName || "",
     lastName: user.lastName || "",
     email: user.email || "",
+    employeeId: user.employeeId || "",
   }));
 };
 

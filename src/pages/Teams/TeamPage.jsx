@@ -41,6 +41,7 @@ import { useTeamProfile } from "../../context/TeamProfileContext";
 import PageHeader from "../../components/PageHeader";
 import PageFooter from "../../components/PageFooter";
 import UserAsyncSelect from "../../components/UserAsyncSelect";
+import TeamProfileView from "../../components/TeamProfileView";
 
 const isValidDate = (dateString) => {
   if (!dateString) return false;
@@ -286,142 +287,7 @@ const TeamPage = () => {
       </PageFooter>
 
       {!isEditMode && !isNewTeam && team && (
-        <Stack gap={6}>
-          <Card>
-            <CardBody>
-              <VStack align="stretch" spacing={4}>
-                <Box>
-                  <Text fontSize="sm" fontWeight="bold" color="gray.500" mb={1}>
-                    Team Name
-                  </Text>
-                  <Text fontSize="lg" fontWeight="semibold">
-                    {team.name}
-                  </Text>
-                </Box>
-
-                <Box>
-                  <Text fontSize="sm" fontWeight="bold" color="gray.500" mb={1}>
-                    Description
-                  </Text>
-                  <Text>{team.description || "-"}</Text>
-                </Box>
-              </VStack>
-            </CardBody>
-          </Card>
-
-          <Card>
-            <CardBody>
-              <VStack align="stretch" spacing={4}>
-                <Heading size="md">
-                  <HStack>
-                    <FiUsers />
-                    <Text>Team Members</Text>
-                  </HStack>
-                </Heading>
-
-                <Box>
-                  <Text fontSize="sm" fontWeight="bold" color="gray.500" mb={2}>
-                    Leaders
-                  </Text>
-                  {team.leaders && team.leaders.length > 0 ? (
-                    <VStack align="stretch" spacing={2}>
-                      {team.leaders.map((leader) => {
-                        const fullName = `${leader.firstName || ""} ${
-                          leader.lastName || ""
-                        }`.trim();
-                        return (
-                          <HStack key={leader._id || leader.id}>
-                            <Avatar
-                              size="sm"
-                              name={fullName}
-                              src={leader.profilePicture}
-                            />
-                            <VStack align="start" spacing={0}>
-                              <Text fontSize="sm" fontWeight="medium">
-                                {fullName}
-                              </Text>
-                              <Text fontSize="xs" color="gray.500">
-                                {leader.email}
-                              </Text>
-                            </VStack>
-                          </HStack>
-                        );
-                      })}
-                    </VStack>
-                  ) : (
-                    <Text color="gray.500">No leaders assigned</Text>
-                  )}
-                </Box>
-
-                <Box>
-                  <Text fontSize="sm" fontWeight="bold" color="gray.500" mb={2}>
-                    Members
-                  </Text>
-                  {team.members && team.members.length > 0 ? (
-                    <VStack align="stretch" spacing={2}>
-                      {team.members.map((member) => {
-                        const fullName = `${member.firstName || ""} ${
-                          member.lastName || ""
-                        }`.trim();
-                        return (
-                          <HStack key={member._id || member.id}>
-                            <Avatar
-                              size="sm"
-                              name={fullName}
-                              src={member.profilePicture}
-                            />
-                            <VStack align="start" spacing={0}>
-                              <Text fontSize="sm" fontWeight="medium">
-                                {fullName}
-                              </Text>
-                              <Text fontSize="xs" color="gray.500">
-                                {member.email}
-                              </Text>
-                            </VStack>
-                          </HStack>
-                        );
-                      })}
-                    </VStack>
-                  ) : (
-                    <Text color="gray.500">No members assigned</Text>
-                  )}
-                </Box>
-
-                {isValidDate(team.createdAt) && (
-                  <Box>
-                    <Text
-                      fontSize="sm"
-                      fontWeight="bold"
-                      color="gray.500"
-                      mb={1}
-                    >
-                      Created At
-                    </Text>
-                    <Text fontSize="sm">
-                      {new Date(team.createdAt).toLocaleString()}
-                    </Text>
-                  </Box>
-                )}
-
-                {isValidDate(team.updatedAt) && (
-                  <Box>
-                    <Text
-                      fontSize="sm"
-                      fontWeight="bold"
-                      color="gray.500"
-                      mb={1}
-                    >
-                      Last Updated
-                    </Text>
-                    <Text fontSize="sm">
-                      {new Date(team.updatedAt).toLocaleString()}
-                    </Text>
-                  </Box>
-                )}
-              </VStack>
-            </CardBody>
-          </Card>
-        </Stack>
+        <TeamProfileView team={team} isValidDate={isValidDate} />
       )}
 
       {(isEditMode || isNewTeam) && (
@@ -474,6 +340,7 @@ const TeamPage = () => {
                   value={formData.leaders || []}
                   onChange={(leaders) => handleFieldChange("leaders", leaders)}
                   limit={5}
+                  displayMode="table"
                 />
               </CardBody>
             </Card>
@@ -490,6 +357,7 @@ const TeamPage = () => {
                   value={formData.members || []}
                   onChange={(members) => handleFieldChange("members", members)}
                   limit={10}
+                  displayMode="table"
                 />
               </CardBody>
             </Card>

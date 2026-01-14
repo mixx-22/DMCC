@@ -12,7 +12,15 @@ import {
   Spinner,
   useOutsideClick,
   Avatar,
+  Table,
+  Thead,
+  Tbody,
+  Tr,
+  Th,
+  Td,
+  IconButton,
 } from "@chakra-ui/react";
+import { FiX } from "react-icons/fi";
 import { useState, useRef, useCallback } from "react";
 import apiService from "../services/api";
 
@@ -27,6 +35,7 @@ const MOCK_USERS = [
     firstName: "Jane",
     lastName: "Doe",
     email: "jane@example.com",
+    employeeId: "EMP001",
   },
   {
     _id: "user-2",
@@ -34,6 +43,7 @@ const MOCK_USERS = [
     firstName: "John",
     lastName: "Smith",
     email: "john@example.com",
+    employeeId: "EMP002",
   },
   {
     _id: "user-3",
@@ -41,6 +51,7 @@ const MOCK_USERS = [
     firstName: "Alice",
     lastName: "Johnson",
     email: "alice@example.com",
+    employeeId: "EMP003",
   },
   {
     _id: "user-4",
@@ -48,6 +59,7 @@ const MOCK_USERS = [
     firstName: "Bob",
     lastName: "Williams",
     email: "bob@example.com",
+    employeeId: "EMP004",
   },
 ];
 
@@ -61,6 +73,8 @@ const UserAsyncSelect = ({
   label = "Users",
   placeholder = "Type at least 2 characters to search users...",
   limit = 10,
+  displayMode = "badges", // "badges" or "table"
+  readonly = false, // if true, only shows the list without input
   ...props
 }) => {
   const [inputValue, setInputValue] = useState("");
@@ -152,6 +166,7 @@ const UserAsyncSelect = ({
           firstName: user.firstName,
           lastName: user.lastName,
           email: user.email,
+          employeeId: user.employeeId || "",
         },
       ]);
     }
@@ -171,12 +186,55 @@ const UserAsyncSelect = ({
     (option) => !value.some((u) => getUserId(u) === getUserId(option))
   );
 
-  return (
-    <FormControl isInvalid={isInvalid} {...props}>
-      <FormLabel>{label}</FormLabel>
-      <Box ref={containerRef} position="relative">
-        <VStack align="stretch" spacing={2}>
-          {value.length > 0 && (
+  // Readonly mode - only display the list, no input
+  if (readonly) {
+    return (
+      <FormControl {...props}>
+        <FormLabel>{label}</FormLabel>
+        {value.length > 0 ? (
+          displayMode === "table" ? (
+            <Table variant="simple" size="sm">
+              <Thead>
+                <Tr>
+                  <Th>Name</Th>
+                  <Th>Employee ID</Th>
+                </Tr>
+              </Thead>
+              <Tbody>
+                {value.map((user) => {
+                  const fullName = `${user.firstName || ""} ${
+                    user.lastName || ""
+                  }`.trim();
+                  return (
+                    <Tr key={getUserId(user)}>
+                      <Td>
+                        <HStack spacing={3}>
+                          <Avatar
+                            size="sm"
+                            name={fullName}
+                            src={user.profilePicture}
+                          />
+                          <VStack align="start" spacing={0}>
+                            <Text fontSize="sm" fontWeight="medium">
+                              {fullName}
+                            </Text>
+                            <Text fontSize="xs" color="gray.500">
+                              {user.email}
+                            </Text>
+                          </VStack>
+                        </HStack>
+                      </Td>
+                      <Td>
+                        <Text fontSize="sm" color="gray.600">
+                          {user.employeeId || "-"}
+                        </Text>
+                      </Td>
+                    </Tr>
+                  );
+                })}
+              </Tbody>
+            </Table>
+          ) : (
             <HStack spacing={2} wrap="wrap">
               {value.map((user) => {
                 const fullName = `${user.firstName || ""} ${
@@ -198,11 +256,107 @@ const UserAsyncSelect = ({
                       src={user.profilePicture}
                     />
                     <TagLabel>{fullName}</TagLabel>
-                    <TagCloseButton onClick={() => handleRemoveUser(user)} />
                   </Tag>
                 );
               })}
             </HStack>
+          )
+        ) : (
+          <Text color="gray.500" fontSize="sm">
+            No users assigned
+          </Text>
+        )}
+      </FormControl>
+    );
+  }
+
+  // Editable mode with either badges or table display
+  return (
+    <FormControl isInvalid={isInvalid} {...props}>
+      <FormLabel>{label}</FormLabel>
+      <Box ref={containerRef} position="relative">
+        <VStack align="stretch" spacing={2}>
+          {displayMode === "table" && value.length > 0 ? (
+            <Table variant="simple" size="sm" border="none">
+              <Thead>
+                <Tr>
+                  <Th border="none">Name</Th>
+                  <Th border="none">Employee ID</Th>
+                  <Th border="none" w="50px"></Th>
+                </Tr>
+              </Thead>
+              <Tbody>
+                {value.map((user) => {
+                  const fullName = `${user.firstName || ""} ${
+                    user.lastName || ""
+                  }`.trim();
+                  return (
+                    <Tr key={getUserId(user)}>
+                      <Td border="none">
+                        <HStack spacing={3}>
+                          <Avatar
+                            size="sm"
+                            name={fullName}
+                            src={user.profilePicture}
+                          />
+                          <VStack align="start" spacing={0}>
+                            <Text fontSize="sm" fontWeight="medium">
+                              {fullName}
+                            </Text>
+                            <Text fontSize="xs" color="gray.500">
+                              {user.email}
+                            </Text>
+                          </VStack>
+                        </HStack>
+                      </Td>
+                      <Td border="none">
+                        <Text fontSize="sm" color="gray.600">
+                          {user.employeeId || "-"}
+                        </Text>
+                      </Td>
+                      <Td border="none">
+                        <IconButton
+                          size="sm"
+                          variant="ghost"
+                          icon={<FiX />}
+                          aria-label="Remove user"
+                          onClick={() => handleRemoveUser(user)}
+                        />
+                      </Td>
+                    </Tr>
+                  );
+                })}
+              </Tbody>
+            </Table>
+          ) : (
+            value.length > 0 && (
+              <HStack spacing={2} wrap="wrap">
+                {value.map((user) => {
+                  const fullName = `${user.firstName || ""} ${
+                    user.lastName || ""
+                  }`.trim();
+                  return (
+                    <Tag
+                      key={getUserId(user)}
+                      size="md"
+                      borderRadius="full"
+                      variant="solid"
+                      colorScheme="blue"
+                    >
+                      <Avatar
+                        size="xs"
+                        name={fullName}
+                        ml={-1}
+                        mr={2}
+                        src={user.profilePicture}
+                      />
+                      <TagLabel>{fullName}</TagLabel>
+                      <TagCloseButton onClick={() => handleRemoveUser(user)} />
+                    </Tag>
+                  );
+                })}
+              </HStack>
+            )
           )}
           <Input
             value={inputValue}
@@ -282,9 +436,11 @@ const UserAsyncSelect = ({
           </Box>
         )}
       </Box>
-      <Text fontSize="xs" color="gray.500" mt={1}>
-        Type at least 2 characters to search for users
-      </Text>
+      {!readonly && (
+        <Text fontSize="xs" color="gray.500" mt={1}>
+          Type at least 2 characters to search for users
+        </Text>
+      )}
     </FormControl>
   );
 };

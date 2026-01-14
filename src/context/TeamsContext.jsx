@@ -18,6 +18,7 @@ const MOCK_TEAMS = [
         firstName: "Jane",
         lastName: "Doe",
         email: "jane@example.com",
+        employeeId: "EMP001",
       },
     ],
     members: [
@@ -26,12 +27,14 @@ const MOCK_TEAMS = [
         firstName: "John",
         lastName: "Smith",
         email: "john@example.com",
+        employeeId: "EMP002",
       },
       {
         _id: "user-3",
         firstName: "Alice",
         lastName: "Johnson",
         email: "alice@example.com",
+        employeeId: "EMP003",
       },
     ],
   },
@@ -45,6 +48,7 @@ const MOCK_TEAMS = [
         firstName: "Bob",
         lastName: "Williams",
         email: "bob@example.com",
+        employeeId: "EMP004",
       },
     ],
     members: [
@@ -53,6 +57,7 @@ const MOCK_TEAMS = [
         firstName: "Jane",
         lastName: "Doe",
         email: "jane@example.com",
+        employeeId: "EMP001",
       },
     ],
   },
