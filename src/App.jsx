@@ -17,6 +17,10 @@ import Users from "./pages/Users";
 import UserPage from "./pages/Users/UserPage";
 import { UsersProvider } from "./context/UsersContext";
 import { UserProfileProvider } from "./context/UserProfileContext";
+import Teams from "./pages/Teams";
+import TeamPage from "./pages/Teams/TeamPage";
+import { TeamsProvider } from "./context/TeamsContext";
+import { TeamProfileProvider } from "./context/TeamProfileContext";
 import Archive from "./pages/Archive";
 import Roles from "./pages/Roles";
 import RolePage from "./pages/Roles/RolePage";
@@ -94,6 +98,22 @@ function App() {
                         <UserProfileProvider>
                           <UserPage />
                         </UserProfileProvider>
+                      }
+                    />
+                    <Route
+                      path="/teams"
+                      element={
+                        <TeamsProvider>
+                          <Teams />
+                        </TeamsProvider>
+                      }
+                    />
+                    <Route
+                      path="/teams/:id"
+                      element={
+                        <TeamProfileProvider>
+                          <TeamPage />
+                        </TeamProfileProvider>
                       }
                     />
                     <Route

@@ -206,6 +206,12 @@ const Sidebar = () => {
         icon: FiUsers,
       });
       items.push({
+        id: "teams",
+        path: "/teams",
+        label: "Teams",
+        icon: FiFolder,
+      });
+      items.push({
         id: "settings",
         path: "/settings",
         label: "Settings",
