@@ -46,7 +46,7 @@ import { useNavigate } from "react-router-dom";
 import DocumentUploadModal from "../components/DocumentUploadModal";
 import PageHeader from "../components/PageHeader";
 import PageFooter from "../components/PageFooter";
-import { formatDistanceToNow } from "date-fns";
+import Timestamp from "../components/Timestamp";
 
 const Documents = () => {
   const {
@@ -285,11 +285,7 @@ const Documents = () => {
                     <Text fontSize="sm" color="gray.500">
                       {folder.count} document{folder.count !== 1 ? "s" : ""}
                     </Text>
-                    <Text fontSize="xs" color="gray.400">
-                      {formatDistanceToNow(new Date(folder.openedAt), {
-                        addSuffix: true,
-                      })}
-                    </Text>
+                    <Timestamp date={folder.openedAt} fontSize="xs" color="gray.400" />
                   </VStack>
                 </CardBody>
               </Card>
@@ -355,11 +351,7 @@ const Documents = () => {
                       >
                         {doc.status}
                       </Badge>
-                      <Text fontSize="xs" color="gray.400">
-                        {formatDistanceToNow(new Date(recentDoc.openedAt), {
-                          addSuffix: true,
-                        })}
-                      </Text>
+                      <Timestamp date={recentDoc.openedAt} fontSize="xs" color="gray.400" />
                     </VStack>
                   </CardBody>
                 </Card>
@@ -420,7 +412,7 @@ const Documents = () => {
                         {String(doc.versions?.length || 1).padStart(2, "0")}
                       </Badge>
                     </Td>
-                    <Td>{new Date(doc.createdAt).toLocaleDateString()}</Td>
+                    <Td><Timestamp date={doc.createdAt} /></Td>
                     <Td>
                       {canApproveDocument(doc) ? (
                         <HStack
@@ -508,7 +500,7 @@ const Documents = () => {
                       </Badge>
                     </Td>
                     <Td>{doc.versions?.length || 1}</Td>
-                    <Td>{new Date(doc.createdAt).toLocaleDateString()}</Td>
+                    <Td><Timestamp date={doc.createdAt} /></Td>
                     <Td>
                       <IconButton
                         icon={<FiStar />}

@@ -18,13 +18,14 @@ import {
   IconButton,
   Flex,
 } from "@chakra-ui/react";
-import { FiPlus, FiSearch, FiEdit, FiTrash2, FiEye } from "react-icons/fi";
+import { FiPlus, FiEdit, FiTrash2, FiEye } from "react-icons/fi";
 import { useApp } from "../context/AppContext";
 import { useNavigate } from "react-router-dom";
 import CertificationUploadModal from "../components/CertificationUploadModal";
 import PageHeader from "../components/PageHeader";
 import PageFooter from "../components/PageFooter";
-import { formatDistanceToNow, differenceInCalendarDays } from "date-fns";
+import { differenceInCalendarDays } from "date-fns";
+import Timestamp from "../components/Timestamp";
 
 const Certifications = () => {
   const {
@@ -162,9 +163,7 @@ const Certifications = () => {
                     <Td>{cert.type || "N/A"}</Td>
                     <Td>{cert.issuer || "N/A"}</Td>
                     <Td>
-                      {cert.expirationDate
-                        ? new Date(cert.expirationDate).toLocaleDateString()
-                        : "N/A"}
+                      <Timestamp date={cert.expirationDate} />
                     </Td>
                     <Td>
                       {daysRemaining === null

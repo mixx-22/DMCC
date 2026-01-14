@@ -29,6 +29,7 @@ import { FiCheck, FiX } from "react-icons/fi";
 import { useApp } from "../context/AppContext";
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
+import Timestamp from "../components/Timestamp";
 
 const Approvals = () => {
   const { documents, approveDocument, rejectDocument } = useApp();
@@ -116,7 +117,7 @@ const Approvals = () => {
                       v{doc.versions?.length || 1}
                     </Badge>
                   </Td>
-                  <Td>{new Date(doc.createdAt).toLocaleDateString()}</Td>
+                  <Td><Timestamp date={doc.createdAt} /></Td>
                   <Td>
                     <HStack spacing={2} onClick={(e) => e.stopPropagation()}>
                       <Button
