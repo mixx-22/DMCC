@@ -9,7 +9,9 @@ const Layout = ({ children }) => {
   const location = useLocation();
   const smallMaxContent = useMemo(() => {
     const pathSegments = location.pathname.split("/").filter(Boolean);
-    return ["users"].includes(pathSegments[0]) && pathSegments.length === 2;
+    return (
+      ["users", "teams"].includes(pathSegments[0]) && pathSegments.length === 2
+    );
   }, [location.pathname]);
   const contentBg = useColorModeValue("gray.50", "gray.900");
   const [isMobile, setIsMobile] = useState(false);
