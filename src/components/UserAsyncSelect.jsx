@@ -51,6 +51,9 @@ const MOCK_USERS = [
   },
 ];
 
+// Helper function to get consistent user ID
+const getUserId = (user) => user.id || user._id;
+
 const UserAsyncSelect = ({
   value = [],
   onChange,
@@ -138,10 +141,8 @@ const UserAsyncSelect = ({
   const handleSelectUser = (user) => {
     // Store full user object with necessary properties
     // Prevent duplicate selection by checking if id already exists
-    const userId = user.id || user._id;
-    const isDuplicate = value.some(
-      (u) => u.id === userId || u.id === user._id || u._id === userId
-    );
+    const userId = getUserId(user);
+    const isDuplicate = value.some((u) => getUserId(u) === userId);
     if (!isDuplicate) {
       onChange([
         ...value,
@@ -160,24 +161,12 @@ const UserAsyncSelect = ({
   };
 
   const handleRemoveUser = (userToRemove) => {
-    onChange(
-      value.filter(
-        (user) =>
-          user.id !== userToRemove.id && user._id !== userToRemove._id
-      )
-    );
+    onChange(value.filter((user) => getUserId(user) !== getUserId(userToRemove)));
   };
 
   // Filter out already selected users by checking IDs
   const filteredOptions = options.filter(
-    (option) =>
-      !value.some(
-        (u) =>
-          u.id === option.id ||
-          u.id === option._id ||
-          u._id === option.id ||
-          u._id === option._id
-      )
+    (option) => !value.some((u) => getUserId(u) === getUserId(option))
   );
 
   return (
@@ -193,7 +182,7 @@ const UserAsyncSelect = ({
                 }`.trim();
                 return (
                   <Tag
-                    key={user.id || user._id}
+                    key={getUserId(user)}
                     size="md"
                     borderRadius="full"
                     variant="solid"
@@ -256,7 +245,7 @@ const UserAsyncSelect = ({
                   }`.trim();
                   return (
                     <Box
-                      key={option._id || option.id}
+                      key={getUserId(option)}
                       p={3}
                       cursor="pointer"
                       _hover={{ bg: "gray.100" }}
