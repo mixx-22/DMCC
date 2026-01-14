@@ -36,6 +36,7 @@ import {
   FiX,
   FiMoreVertical,
   FiTrash2,
+  FiKey,
 } from "react-icons/fi";
 import { useNavigate, useParams } from "react-router-dom";
 import { toast } from "sonner";
@@ -68,6 +69,7 @@ const UserPage = () => {
     updateUser,
     createUser,
     deleteUser,
+    resetPassword,
     normalizeRoles,
   } = useUserProfile();
   const suggestionColor = useColorModeValue(
@@ -81,6 +83,7 @@ const UserPage = () => {
   const [formData, setFormData] = useState(initialUserData);
   const [validationErrors, setValidationErrors] = useState({});
   const [generatedCredentials, setGeneratedCredentials] = useState(null);
+  const [isResetPassword, setIsResetPassword] = useState(false);
   const {
     isOpen: isCredentialsModalOpen,
     onOpen: onOpenCredentialsModal,
@@ -239,11 +242,53 @@ const UserPage = () => {
 
   const handleCredentialsModalClose = () => {
     onCloseCredentialsModal();
-    navigate("/users");
+    setGeneratedCredentials(null);
+    if (isResetPassword) {
+      setIsResetPassword(false);
+    } else {
+      navigate("/users");
+    }
   };
 
   const handleEdit = () => {
     setIsEditMode(true);
+  };
+
+  const handleResetPasswordClick = async () => {
+    const result = await Swal.fire({
+      title: "Reset Password",
+      text: "This will generate a new password for this user. The user will need to use the new password to log in.",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#3182CE",
+      cancelButtonColor: "#718096",
+      confirmButtonText: "Proceed",
+      cancelButtonText: "Cancel",
+      reverseButtons: true,
+    });
+
+    if (result.isConfirmed) {
+      const resetResult = await resetPassword(user._id || user.id);
+
+      if (resetResult.success) {
+        setIsResetPassword(true);
+        setGeneratedCredentials({
+          email: resetResult.data.email,
+          username: resetResult.data.username,
+          password: resetResult.data.password,
+        });
+
+        onOpenCredentialsModal();
+
+        toast.success("Password Reset", {
+          description: "A new password has been generated successfully",
+        });
+      } else {
+        toast.error("Reset Failed", {
+          description: resetResult.error || "Failed to reset password",
+        });
+      }
+    }
   };
 
   const handleDeleteClick = async () => {
@@ -326,6 +371,12 @@ const UserPage = () => {
                   aria-label="More options"
                 />
                 <MenuList>
+                  <MenuItem
+                    icon={<FiKey />}
+                    onClick={handleResetPasswordClick}
+                  >
+                    Reset Password
+                  </MenuItem>
                   <MenuItem
                     icon={<FiTrash2 />}
                     color={errorColor}
@@ -636,6 +687,7 @@ const UserPage = () => {
           email={generatedCredentials.email}
           username={generatedCredentials.username}
           password={generatedCredentials.password}
+          isResetPassword={isResetPassword}
         />
       )}
     </Box>
