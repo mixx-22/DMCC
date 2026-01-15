@@ -23,12 +23,6 @@ import {
   Th,
   Td,
   Badge,
-  Drawer,
-  DrawerBody,
-  DrawerHeader,
-  DrawerOverlay,
-  DrawerContent,
-  DrawerCloseButton,
 } from "@chakra-ui/react";
 import {
   FiPlus,

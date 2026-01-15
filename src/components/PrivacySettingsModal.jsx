@@ -8,7 +8,6 @@ import {
   ModalBody,
   ModalCloseButton,
   Button,
-  FormControl,
   FormLabel,
   VStack,
   Text,
@@ -139,7 +138,7 @@ const PrivacySettingsModal = ({ isOpen, onClose, document }) => {
         <ModalBody>
           <VStack spacing={4} align="stretch">
             <Text fontSize="sm" color="gray.600">
-              Control who can access "{document.title}". If no users, teams, or
+              Control who can access &quot;{document.title}&quot;. If no users, teams, or
               roles are specified, the document is visible to everyone.
             </Text>
 

@@ -12,7 +12,6 @@ import {
   Button,
   Box,
   Divider,
-  IconButton,
   useDisclosure,
 } from "@chakra-ui/react";
 import {
@@ -25,7 +24,6 @@ import {
   FiFolder,
   FiCalendar,
 } from "react-icons/fi";
-import { useDocuments } from "../context/DocumentsContext";
 import Timestamp from "./Timestamp";
 import EditDocumentModal from "./EditDocumentModal";
 import DeleteDocumentModalV2 from "./DeleteDocumentModalV2";

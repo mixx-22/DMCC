@@ -8,14 +8,12 @@ import {
   ModalBody,
   ModalCloseButton,
   Button,
-  FormControl,
   FormLabel,
   VStack,
   Text,
   Radio,
   RadioGroup,
   Stack,
-  Box,
   HStack,
 } from "@chakra-ui/react";
 import { FiFolder, FiHome } from "react-icons/fi";
@@ -76,8 +74,7 @@ const MoveDocumentModal = ({ isOpen, onClose, document }) => {
               Select a new location for <strong>{document.title}</strong>:
             </Text>
 
-            <FormControl>
-              <FormLabel>Destination</FormLabel>
+            <FormLabel>Destination</FormLabel>
               <RadioGroup
                 value={selectedFolderId || "root"}
                 onChange={(value) =>
@@ -101,7 +98,6 @@ const MoveDocumentModal = ({ isOpen, onClose, document }) => {
                   ))}
                 </Stack>
               </RadioGroup>
-            </FormControl>
 
             {availableFolders.length === 0 && (
               <Text fontSize="sm" color="gray.500">
