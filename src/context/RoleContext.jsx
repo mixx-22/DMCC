@@ -108,7 +108,7 @@ const initialState = {
 export const RoleProvider = ({ children }) => {
   const { id } = useParams();
   const [state, dispatch] = useReducer(reducer, initialState);
-  const fetched = useRef();
+  const fetched = useRef(null);
 
   const fetchRole = useCallback(async (roleId) => {
     if (fetched.current === roleId) {

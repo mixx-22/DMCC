@@ -95,7 +95,7 @@ const initialState = {
 
 export const UsersProvider = ({ children }) => {
   const [state, dispatch] = useReducer(reducer, initialState);
-  const fetched = useRef();
+  const fetched = useRef(false);
   const searchTimeoutRef = useRef(null);
 
   const fetchUsers = useCallback(

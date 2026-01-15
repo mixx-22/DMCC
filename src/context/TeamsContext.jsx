@@ -115,7 +115,7 @@ const initialState = {
 
 export const TeamsProvider = ({ children }) => {
   const [state, dispatch] = useReducer(reducer, initialState);
-  const fetched = useRef();
+  const fetched = useRef(false);
   const searchTimeoutRef = useRef(null);
 
   const fetchTeams = useCallback(

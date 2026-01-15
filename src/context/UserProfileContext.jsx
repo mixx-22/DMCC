@@ -127,7 +127,7 @@ const initialState = {
 export const UserProfileProvider = ({ children }) => {
   const { id } = useParams();
   const [state, dispatch] = useReducer(reducer, initialState);
-  const fetched = useRef();
+  const fetched = useRef(null);
 
   const fetchUser = useCallback(async (userId) => {
     if (fetched.current === userId) {

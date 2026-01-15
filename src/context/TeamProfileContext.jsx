@@ -119,7 +119,7 @@ const initialState = {
 export const TeamProfileProvider = ({ children }) => {
   const { id } = useParams();
   const [state, dispatch] = useReducer(reducer, initialState);
-  const fetched = useRef();
+  const fetched = useRef(null);
 
   const fetchTeam = useCallback(async (teamId) => {
     if (fetched.current === teamId) {
