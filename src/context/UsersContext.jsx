@@ -95,10 +95,15 @@ const initialState = {
 
 export const UsersProvider = ({ children }) => {
   const [state, dispatch] = useReducer(reducer, initialState);
+  const fetched = useRef(false);
   const searchTimeoutRef = useRef(null);
 
   const fetchUsers = useCallback(
     async (page = state.page, search = state.search) => {
+      if (fetched.current) {
+        return; // Already fetching or fetched
+      }
+      fetched.current = true;
       dispatch({ type: "SET_LOADING", value: true });
       dispatch({ type: "SET_ERROR", value: null });
 
@@ -160,8 +165,8 @@ export const UsersProvider = ({ children }) => {
       } finally {
         dispatch({ type: "SET_LOADING", value: false });
       }
-      // eslint-disable-next-line react-hooks/exhaustive-deps
     },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     [state.limit]
   );
 
@@ -169,9 +174,10 @@ export const UsersProvider = ({ children }) => {
     (page) => {
       dispatch({ type: "SET_PAGE", value: page });
       dispatch({ type: "SET_LAST_PAGE", value: page });
+      fetched.current = false;
       fetchUsers(page, state.search);
-      // eslint-disable-next-line react-hooks/exhaustive-deps
     },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     [fetchUsers]
   );
 
@@ -187,6 +193,7 @@ export const UsersProvider = ({ children }) => {
       // If search is cleared, return to last page
       if (!search || search.length === 0) {
         dispatch({ type: "SET_PAGE", value: state.lastPage });
+        fetched.current = false;
         fetchUsers(state.lastPage, "");
         return;
       }
@@ -195,11 +202,12 @@ export const UsersProvider = ({ children }) => {
       if (search.length >= 2) {
         searchTimeoutRef.current = setTimeout(() => {
           dispatch({ type: "SET_PAGE", value: 1 }); // Reset to page 1 on search
+          fetched.current = false;
           fetchUsers(1, search);
         }, 500); // 500ms debounce
       }
-      // eslint-disable-next-line react-hooks/exhaustive-deps
     },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     [fetchUsers]
   );
 
