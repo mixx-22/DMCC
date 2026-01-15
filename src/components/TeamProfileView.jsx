@@ -20,7 +20,8 @@ import { FiUsers } from "react-icons/fi";
 import Timestamp from "./Timestamp";
 
 const TeamProfileView = ({ team, isValidDate }) => {
-  const bg = useColorModeValue("white", "gray.800");
+  const borderColor = useColorModeValue("white", "gray.700");
+  const bg = useColorModeValue("brandPrimary.600", "brandPrimary.800");
   const headerBg = useColorModeValue("brandPrimary.50", "brandPrimary.900");
 
   return (
@@ -39,10 +40,10 @@ const TeamProfileView = ({ team, isValidDate }) => {
                 size="2xl"
                 name={team.name}
                 icon={<Icon as={FiUsers} fontSize="4xl" />}
-                border="4px solid"
-                borderColor={bg}
-                shadow="lg"
-                bg="brandPrimary.500"
+                borderColor={borderColor}
+                borderWidth="8px"
+                bg={bg}
+                color="white"
               />
             </Box>
 
