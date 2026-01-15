@@ -10,8 +10,6 @@ import Layout from "./components/Layout";
 import Login from "./pages/Login";
 import { Dashboard } from "./pages/Dashboard";
 import Documents from "./pages/Documents";
-import DocumentDetail from "./pages/DocumentDetail";
-import DocumentsV2 from "./pages/DocumentsV2";
 import { DocumentsProvider } from "./context/DocumentsContext";
 import Certifications from "./pages/Certifications";
 import CertificationDetail from "./pages/CertificationDetail";
@@ -78,15 +76,13 @@ function App() {
                     <Route path="/profile" element={<Profile />} />
                     <Route path="/change-password" element={<ChangePassword />} />
                     <Route
-                      path="/documents-v2"
+                      path="/documents"
                       element={
                         <DocumentsProvider>
-                          <DocumentsV2 />
+                          <Documents />
                         </DocumentsProvider>
                       }
                     />
-                    <Route path="/documents" element={<Documents />} />
-                    <Route path="/documents/:id" element={<DocumentDetail />} />
                     <Route path="/archive" element={<Archive />} />
                     <Route
                       path="/certifications"

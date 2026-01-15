@@ -3,6 +3,19 @@ import {
   Box,
   Heading,
   Button,
+  HStack,
+  VStack,
+  Text,
+  IconButton,
+  Input,
+  Grid,
+  Card,
+  CardBody,
+  Flex,
+  useDisclosure,
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
   Table,
   Thead,
   Tbody,
@@ -10,556 +23,404 @@ import {
   Th,
   Td,
   Badge,
-  IconButton,
-  useDisclosure,
-  HStack,
-  Input,
-  Select,
-  VStack,
-  Text,
-  Grid,
-  Card,
-  CardBody,
-  Flex,
-  Textarea,
-  Modal,
-  ModalOverlay,
-  ModalContent,
-  ModalHeader,
-  ModalFooter,
-  ModalBody,
-  ModalCloseButton,
 } from "@chakra-ui/react";
-import { toast } from "sonner";
 import {
   FiPlus,
-  FiStar,
   FiSearch,
   FiFolder,
-  FiFileText,
-  FiCheck,
-  FiX,
-  FiCheckCircle,
+  FiFile,
+  FiGrid,
+  FiList,
+  FiChevronRight,
+  FiHome,
+  FiCalendar,
+  FiMoreVertical,
 } from "react-icons/fi";
-import { useApp } from "../context/AppContext";
-import { useNavigate } from "react-router-dom";
-import DocumentUploadModal from "../components/DocumentUploadModal";
+import { useDocuments } from "../context/DocumentsContext";
 import PageHeader from "../components/PageHeader";
 import PageFooter from "../components/PageFooter";
+import CreateFolderModal from "../components/CreateFolderModal";
+import CreateAuditScheduleModal from "../components/CreateAuditScheduleModal";
+import UploadFileModal from "../components/UploadFileModal";
+import DocumentDrawer from "../components/DocumentDrawer";
 import Timestamp from "../components/Timestamp";
 
 const Documents = () => {
   const {
-    documents,
-    toggleStar,
-    starredDocuments,
-    recentDocuments,
-    recentFolders,
-    addRecentFolder,
-    approveDocument,
-    rejectDocument,
-    currentUser,
-  } = useApp();
-  const { isOpen, onOpen, onClose } = useDisclosure();
-  const {
-    isOpen: isRejectOpen,
-    onOpen: onRejectOpen,
-    onClose: onRejectClose,
-  } = useDisclosure();
-  const navigate = useNavigate();
+    viewMode,
+    currentFolderId,
+    selectedDocument,
+    getCurrentFolderDocuments,
+    getBreadcrumbPath,
+    navigateToFolder,
+    toggleViewMode,
+    setSelectedDocument,
+  } = useDocuments();
+
   const [searchTerm, setSearchTerm] = useState("");
-  const [statusFilter, setStatusFilter] = useState("all");
-  const [folderFilter, setFolderFilter] = useState("all");
-  const [selectedDoc, setSelectedDoc] = useState(null);
-  const [rejectionReason, setRejectionReason] = useState("");
+  const [lastClickTime, setLastClickTime] = useState(0);
+  const [lastClickId, setLastClickId] = useState(null);
 
-  const canViewDocument = (doc) => {
-    if (currentUser?.userType === "Admin") {
-      return true;
-    }
-    return doc.department === currentUser?.department;
-  };
+  const {
+    isOpen: isFolderModalOpen,
+    onOpen: onFolderModalOpen,
+    onClose: onFolderModalClose,
+  } = useDisclosure();
 
-  const visibleDocuments = documents.filter(canViewDocument);
+  const {
+    isOpen: isAuditModalOpen,
+    onOpen: onAuditModalOpen,
+    onClose: onAuditModalClose,
+  } = useDisclosure();
 
-  const folders = [
-    ...new Set(visibleDocuments.map((doc) => doc.category || "Uncategorized")),
-  ];
+  const {
+    isOpen: isFileModalOpen,
+    onOpen: onFileModalOpen,
+    onClose: onFileModalClose,
+  } = useDisclosure();
 
-  const recentDocItems = recentDocuments
-    .filter((doc) => doc.type === "documents")
-    .filter((recentDoc) => {
-      const doc = documents.find((d) => d.id === recentDoc.id);
-      return doc ? canViewDocument(doc) : false;
-    });
+  const folderDocuments = getCurrentFolderDocuments();
+  const breadcrumbs = getBreadcrumbPath();
 
-  const recentFolderItems = recentFolders
-    .map((folder) => ({
-      ...folder,
-      count: visibleDocuments.filter(
-        (doc) => (doc.category || "Uncategorized") === folder.name
-      ).length,
-    }))
-    .filter((folder) => folder.count > 0);
-
-  const canApproveDocument = (doc) => {
-    if (currentUser?.userType === "Admin") {
-      return true;
-    }
-    if (
-      currentUser?.userType !== "Supervisor" &&
-      currentUser?.userType !== "Manager"
-    ) {
-      return false;
-    }
-    if (doc.createdByUserType === "Supervisor") {
-      return currentUser?.userType === "Manager";
-    }
-    return true;
-  };
-
-  const filteredDocuments = documents.filter((doc) => {
-    if (!canViewDocument(doc)) {
-      return false;
-    }
-    const matchesSearch =
-      doc.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      doc.description?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      doc.documentId?.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesStatus = statusFilter === "all" || doc.status === statusFilter;
-    const matchesFolder =
-      folderFilter === "all" ||
-      (doc.category || "Uncategorized") === folderFilter;
-    return matchesSearch && matchesStatus && matchesFolder;
-  });
-
-  const handleFolderClick = (folderName) => {
-    setFolderFilter(folderName);
-    addRecentFolder(folderName);
-  };
-
-  const getStatusColor = (status) => {
-    switch (status) {
-      case "approved":
-        return "green";
-      case "pending":
-        return "yellow";
-      case "rejected":
-        return "red";
-      default:
-        return "gray";
-    }
-  };
-
-  const pendingDocuments = documents.filter((doc) => {
+  // Filter documents by search term
+  const filteredDocuments = folderDocuments.filter((doc) => {
+    if (!searchTerm) return true;
+    const searchLower = searchTerm.toLowerCase();
     return (
-      doc.status === "pending" &&
-      canViewDocument(doc) &&
-      canApproveDocument(doc)
+      doc.title.toLowerCase().includes(searchLower) ||
+      doc.description?.toLowerCase().includes(searchLower)
     );
   });
 
-  const handleApprove = (docId) => {
-    approveDocument(docId);
-    toast.success("Document Approved", {
-      description: "Document has been approved and posted",
-      duration: 3000,
-    });
-  };
-
-  const handleRejectClick = (doc) => {
-    setSelectedDoc(doc);
-    setRejectionReason("");
-    onRejectOpen();
-  };
-
-  const handleReject = () => {
-    if (!rejectionReason.trim()) {
-      toast.error("Validation Error", {
-        description: "Please provide a reason for rejection",
-        duration: 3000,
-      });
-      return;
+  // Handle document click (single or double)
+  const handleDocumentClick = (doc) => {
+    const now = Date.now();
+    const timeDiff = now - lastClickTime;
+    
+    // Double click detection (within 300ms)
+    if (lastClickId === doc.id && timeDiff < 300) {
+      // Double click - open file or folder
+      if (doc.type === "folder" || doc.type === "auditSchedule") {
+        navigateToFolder(doc.id);
+      } else if (doc.type === "file") {
+        // Open file (would typically open in new tab or viewer)
+        window.open(doc.metadata.key || "#", "_blank");
+      }
+      setLastClickTime(0);
+      setLastClickId(null);
+    } else {
+      // Single click - show drawer
+      setSelectedDocument(doc);
+      setLastClickTime(now);
+      setLastClickId(doc.id);
     }
+  };
 
-    rejectDocument(selectedDoc.id, rejectionReason);
-    toast.info("Document Rejected", {
-      description: "Document has been rejected",
-      duration: 3000,
-    });
-    onRejectClose();
-    setSelectedDoc(null);
-    setRejectionReason("");
+  // Get icon based on document type
+  const getDocumentIcon = (type) => {
+    switch (type) {
+      case "folder":
+        return <FiFolder size={24} color="#3182CE" />;
+      case "auditSchedule":
+        return <FiCalendar size={24} color="#805AD5" />;
+      case "file":
+      default:
+        return <FiFile size={24} color="#718096" />;
+    }
+  };
+
+  // Get status badge
+  const getStatusBadge = (status) => {
+    const statusMap = {
+      "-1": { label: "Draft", color: "gray" },
+      "0": { label: "Under Review", color: "yellow" },
+      "1": { label: "Approved", color: "green" },
+      "2": { label: "Archived", color: "blue" },
+      "3": { label: "Expired", color: "red" },
+    };
+    const statusInfo = statusMap[String(status)] || statusMap["0"];
+    return (
+      <Badge colorScheme={statusInfo.color} size="sm">
+        {statusInfo.label}
+      </Badge>
+    );
   };
 
   return (
     <Box>
       <PageHeader>
-        <Heading variant="pageTitle">Documents</Heading>
+        <Flex justify="space-between" align="center" w="full">
+          <Heading variant="pageTitle">Documents</Heading>
+          <HStack>
+            <IconButton
+              icon={viewMode === "grid" ? <FiList /> : <FiGrid />}
+              onClick={toggleViewMode}
+              aria-label="Toggle view"
+              variant="ghost"
+            />
+          </HStack>
+        </Flex>
       </PageHeader>
+
       <PageFooter>
         <Flex gap={4} justifyContent="flex-end">
-          <Button leftIcon={<FiPlus />} colorScheme="blue" onClick={onOpen}>
-            Upload New Document
+          <Button
+            leftIcon={<FiPlus />}
+            colorScheme="blue"
+            onClick={onFileModalOpen}
+          >
+            Upload File
+          </Button>
+          <Button
+            leftIcon={<FiFolder />}
+            variant="outline"
+            colorScheme="blue"
+            onClick={onFolderModalOpen}
+          >
+            New Folder
+          </Button>
+          <Button
+            leftIcon={<FiCalendar />}
+            variant="outline"
+            colorScheme="purple"
+            onClick={onAuditModalOpen}
+          >
+            New Audit Schedule
           </Button>
         </Flex>
       </PageFooter>
 
-      {/* Search Bar */}
-      <Box mb={6}>
-        <HStack spacing={4}>
-          <Box position="relative" flex={1}>
-            <Input
-              placeholder="Search by Document ID, title, or description..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              pl={10}
-              size="lg"
-              id="search"
-              name="search"
-            />
-            <Box
-              position="absolute"
-              left={3}
-              top="50%"
-              transform="translateY(-50%)"
-              color="gray.400"
+      {/* Breadcrumb Navigation */}
+      <Box mb={4}>
+        <Breadcrumb
+          spacing="8px"
+          separator={<FiChevronRight color="gray.500" />}
+        >
+          <BreadcrumbItem>
+            <BreadcrumbLink
+              onClick={() => navigateToFolder(null)}
+              display="flex"
+              alignItems="center"
+              gap={2}
             >
-              <FiSearch />
-            </Box>
-          </Box>
-          <Select
-            value={statusFilter}
-            onChange={(e) => setStatusFilter(e.target.value)}
-            w="200px"
-            size="lg"
-            id="statusFilter"
-            name="statusFilter"
-          >
-            <option value="all">All Status</option>
-            <option value="pending">Pending</option>
-            <option value="approved">Approved</option>
-            <option value="rejected">Rejected</option>
-          </Select>
-          <Select
-            value={folderFilter}
-            onChange={(e) => setFolderFilter(e.target.value)}
-            w="200px"
-            size="lg"
-            id="folderFilter"
-            name="folderFilter"
-          >
-            <option value="all">All Folders</option>
-            {folders.map((folder) => (
-              <option key={folder} value={folder}>
-                {folder}
-              </option>
-            ))}
-          </Select>
-        </HStack>
+              <FiHome />
+              <Text>Root</Text>
+            </BreadcrumbLink>
+          </BreadcrumbItem>
+          {breadcrumbs.map((folder) => (
+            <BreadcrumbItem key={folder.id}>
+              <BreadcrumbLink onClick={() => navigateToFolder(folder.id)}>
+                {folder.title}
+              </BreadcrumbLink>
+            </BreadcrumbItem>
+          ))}
+        </Breadcrumb>
       </Box>
 
-      {/* Recent Opened Folders */}
-      {recentFolderItems.length > 0 && (
-        <Box mb={6}>
-          <Heading size="md" mb={4}>
-            Recent Opened Folders
-          </Heading>
-          <Grid templateColumns="repeat(auto-fill, minmax(200px, 1fr))" gap={4}>
-            {recentFolderItems.slice(0, 6).map((folder, index) => (
+      {/* Search Bar */}
+      <Box mb={6}>
+        <Box position="relative" maxW="600px">
+          <Input
+            placeholder="Search documents..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            pl={10}
+            size="lg"
+            id="search"
+            name="search"
+          />
+          <Box
+            position="absolute"
+            left={3}
+            top="50%"
+            transform="translateY(-50%)"
+            color="gray.400"
+          >
+            <FiSearch />
+          </Box>
+        </Box>
+      </Box>
+
+      {/* Documents Grid/List View */}
+      <Box>
+        {filteredDocuments.length === 0 ? (
+          <VStack spacing={4} py={12}>
+            <Text color="gray.500" fontSize="lg">
+              {searchTerm
+                ? "No documents found"
+                : "This folder is empty"}
+            </Text>
+            <HStack>
+              <Button
+                size="sm"
+                colorScheme="blue"
+                onClick={onFileModalOpen}
+              >
+                Upload File
+              </Button>
+              <Button
+                size="sm"
+                variant="outline"
+                colorScheme="blue"
+                onClick={onFolderModalOpen}
+              >
+                Create Folder
+              </Button>
+            </HStack>
+          </VStack>
+        ) : viewMode === "grid" ? (
+          <Grid
+            templateColumns="repeat(auto-fill, minmax(200px, 1fr))"
+            gap={4}
+          >
+            {filteredDocuments.map((doc) => (
               <Card
-                key={index}
+                key={doc.id}
                 cursor="pointer"
                 _hover={{ shadow: "md", transform: "translateY(-2px)" }}
                 transition="all 0.2s"
-                onClick={() => handleFolderClick(folder.name)}
+                onClick={() => handleDocumentClick(doc)}
+                bg={selectedDocument?.id === doc.id ? "blue.50" : "white"}
+                borderWidth={selectedDocument?.id === doc.id ? 2 : 1}
+                borderColor={
+                  selectedDocument?.id === doc.id ? "blue.500" : "gray.200"
+                }
               >
                 <CardBody>
                   <VStack align="start" spacing={2}>
-                    <HStack>
-                      <FiFolder size={24} color="#3182CE" />
-                      <Text fontWeight="semibold" isTruncated maxW="150px">
-                        {folder.name}
-                      </Text>
+                    <HStack justify="space-between" w="full">
+                      {getDocumentIcon(doc.type)}
+                      <IconButton
+                        icon={<FiMoreVertical />}
+                        size="sm"
+                        variant="ghost"
+                        aria-label="More options"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setSelectedDocument(doc);
+                        }}
+                      />
                     </HStack>
-                    <Text fontSize="sm" color="gray.500">
-                      {folder.count} document{folder.count !== 1 ? "s" : ""}
+                    <Text
+                      fontWeight="semibold"
+                      isTruncated
+                      maxW="full"
+                      title={doc.title}
+                    >
+                      {doc.title || "Untitled"}
                     </Text>
-                    <Timestamp date={folder.openedAt} fontSize="xs" color="gray.400" />
+                    {doc.type === "file" && doc.metadata.filename && (
+                      <Text fontSize="xs" color="gray.500" isTruncated maxW="full">
+                        {doc.metadata.filename}
+                      </Text>
+                    )}
+                    {getStatusBadge(doc.status)}
+                    <Timestamp
+                      date={doc.updatedAt}
+                      fontSize="xs"
+                      color="gray.400"
+                    />
                   </VStack>
                 </CardBody>
               </Card>
             ))}
           </Grid>
-        </Box>
-      )}
-
-      {/* Recent Opened Documents */}
-      {recentDocItems.length > 0 && (
-        <Box mb={6}>
-          <Heading size="md" mb={4}>
-            Recent Opened Documents
-          </Heading>
-          <Grid templateColumns="repeat(auto-fill, minmax(250px, 1fr))" gap={4}>
-            {recentDocItems.slice(0, 6).map((recentDoc) => {
-              const doc = documents.find((d) => d.id === recentDoc.id);
-              if (!doc) return null;
-              return (
-                <Card
-                  key={`recent-doc-${recentDoc.id}`}
-                  cursor="pointer"
-                  _hover={{ shadow: "md", transform: "translateY(-2px)" }}
-                  transition="all 0.2s"
-                  onClick={() => navigate(`/documents/${recentDoc.id}`)}
-                >
-                  <CardBody>
-                    <VStack align="start" spacing={2}>
-                      <HStack justify="space-between" w="full">
-                        <HStack>
-                          <FiFileText size={20} color="#3182CE" />
-                          <Text fontWeight="semibold" isTruncated maxW="200px">
-                            {recentDoc.name}
-                          </Text>
-                        </HStack>
-                        <IconButton
-                          icon={<FiStar />}
-                          size="sm"
-                          variant="ghost"
-                          color={
-                            starredDocuments.includes(recentDoc.id)
-                              ? "yellow.500"
-                              : "gray.400"
-                          }
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            toggleStar(recentDoc.id);
-                          }}
-                          aria-label="Star document"
-                        />
-                      </HStack>
-                      <Text fontSize="sm" color="gray.500">
-                        {doc.category || "Uncategorized"}
-                      </Text>
-                      <Badge
-                        colorScheme={
-                          doc.status === "approved"
-                            ? "green"
-                            : doc.status === "pending"
-                            ? "yellow"
-                            : "red"
-                        }
-                      >
-                        {doc.status}
-                      </Badge>
-                      <Timestamp date={recentDoc.openedAt} fontSize="xs" color="gray.400" />
-                    </VStack>
-                  </CardBody>
-                </Card>
-              );
-            })}
-          </Grid>
-        </Box>
-      )}
-
-      {/* Pending Approvals Section */}
-      {pendingDocuments.length > 0 && (
-        <Box mb={6}>
-          <Heading size="md" mb={4} color="orange.600">
-            <HStack>
-              <FiCheckCircle />
-              <Text>Pending Approvals ({pendingDocuments.length})</Text>
-            </HStack>
-          </Heading>
-          <Box
-            bg="white"
-            borderRadius="md"
-            overflow="hidden"
-            border="2px"
-            borderColor="orange.200"
-          >
+        ) : (
+          <Box bg="white" borderRadius="md" overflow="hidden">
             <Table variant="simple">
-              <Thead bg="orange.50">
+              <Thead bg="gray.50">
                 <Tr>
-                  <Th>Document ID</Th>
-                  <Th>Title</Th>
-                  <Th>Category</Th>
+                  <Th>Name</Th>
                   <Th>Type</Th>
-                  <Th>Version</Th>
-                  <Th>Uploaded</Th>
-                  <Th>Actions</Th>
+                  <Th>Status</Th>
+                  <Th>Owner</Th>
+                  <Th>Modified</Th>
+                  <Th></Th>
                 </Tr>
               </Thead>
               <Tbody>
-                {pendingDocuments.map((doc) => (
+                {filteredDocuments.map((doc) => (
                   <Tr
-                    key={`pending-${doc.id}`}
+                    key={doc.id}
                     cursor="pointer"
-                    _hover={{ bg: "orange.50" }}
-                    onClick={() => navigate(`/documents/${doc.id}`)}
+                    _hover={{ bg: "gray.50" }}
+                    onClick={() => handleDocumentClick(doc)}
+                    bg={selectedDocument?.id === doc.id ? "blue.50" : "white"}
                   >
-                    <Td fontWeight="semibold" color="blue.600">
-                      {doc.documentId || "N/A"}
-                    </Td>
-                    <Td fontWeight="semibold">{doc.title}</Td>
-                    <Td>{doc.category || "Uncategorized"}</Td>
                     <Td>
-                      <Badge colorScheme={doc.isNew ? "blue" : "purple"}>
-                        {doc.isNew ? "New Document" : "Revised Document"}
+                      <HStack>
+                        {getDocumentIcon(doc.type)}
+                        <VStack align="start" spacing={0}>
+                          <Text fontWeight="semibold">
+                            {doc.title || "Untitled"}
+                          </Text>
+                          {doc.type === "file" && doc.metadata.filename && (
+                            <Text fontSize="xs" color="gray.500">
+                              {doc.metadata.filename}
+                            </Text>
+                          )}
+                        </VStack>
+                      </HStack>
+                    </Td>
+                    <Td>
+                      <Badge>
+                        {doc.type === "auditSchedule"
+                          ? "Audit Schedule"
+                          : doc.type.charAt(0).toUpperCase() + doc.type.slice(1)}
                       </Badge>
                     </Td>
+                    <Td>{getStatusBadge(doc.status)}</Td>
                     <Td>
-                      <Badge colorScheme="blue">
-                        {String(doc.versions?.length || 1).padStart(2, "0")}
-                      </Badge>
+                      <Text fontSize="sm">
+                        {doc.owner.firstName} {doc.owner.lastName}
+                      </Text>
                     </Td>
-                    <Td><Timestamp date={doc.createdAt} /></Td>
                     <Td>
-                      {canApproveDocument(doc) ? (
-                        <HStack
-                          spacing={2}
-                          onClick={(e) => e.stopPropagation()}
-                        >
-                          <Button
-                            size="sm"
-                            colorScheme="green"
-                            leftIcon={<FiCheck />}
-                            onClick={() => handleApprove(doc.id)}
-                          >
-                            Approve
-                          </Button>
-                          <Button
-                            size="sm"
-                            colorScheme="red"
-                            leftIcon={<FiX />}
-                            onClick={() => handleRejectClick(doc)}
-                          >
-                            Reject
-                          </Button>
-                        </HStack>
-                      ) : (
-                        <Text fontSize="sm" color="gray.500">
-                          No permission
-                        </Text>
-                      )}
+                      <Timestamp date={doc.updatedAt} />
+                    </Td>
+                    <Td>
+                      <IconButton
+                        icon={<FiMoreVertical />}
+                        size="sm"
+                        variant="ghost"
+                        aria-label="More options"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setSelectedDocument(doc);
+                        }}
+                      />
                     </Td>
                   </Tr>
                 ))}
               </Tbody>
             </Table>
           </Box>
-        </Box>
-      )}
-
-      {/* Full List of Documents */}
-      <Box>
-        <Heading size="md" mb={4}>
-          All Documents
-        </Heading>
-
-        <Box bg="white" borderRadius="md" overflow="hidden">
-          <Table variant="simple">
-            <Thead bg="gray.50">
-              <Tr>
-                <Th>Document ID</Th>
-                <Th>Title</Th>
-                <Th>Category</Th>
-                <Th>Status</Th>
-                <Th>Versions</Th>
-                <Th>Created</Th>
-                <Th>Actions</Th>
-              </Tr>
-            </Thead>
-            <Tbody>
-              {filteredDocuments.length === 0 ? (
-                <Tr>
-                  <Td colSpan={7} textAlign="center" py={8}>
-                    <VStack>
-                      <Text color="gray.500">No documents found</Text>
-                      <Button size="sm" colorScheme="blue" onClick={onOpen}>
-                        Upload Your First Document
-                      </Button>
-                    </VStack>
-                  </Td>
-                </Tr>
-              ) : (
-                filteredDocuments.map((doc) => (
-                  <Tr
-                    key={`doc-${doc.id}`}
-                    cursor="pointer"
-                    _hover={{ bg: "gray.50" }}
-                    onClick={() => navigate(`/documents/${doc.id}`)}
-                  >
-                    <Td fontWeight="semibold" color="blue.600">
-                      {doc.documentId || "N/A"}
-                    </Td>
-                    <Td fontWeight="semibold">{doc.title}</Td>
-                    <Td>{doc.category || "Uncategorized"}</Td>
-                    <Td>
-                      <Badge colorScheme={getStatusColor(doc.status)}>
-                        {doc.status}
-                      </Badge>
-                    </Td>
-                    <Td>{doc.versions?.length || 1}</Td>
-                    <Td><Timestamp date={doc.createdAt} /></Td>
-                    <Td>
-                      <IconButton
-                        icon={<FiStar />}
-                        size="sm"
-                        variant="ghost"
-                        color={
-                          starredDocuments.includes(doc.id)
-                            ? "yellow.500"
-                            : "gray.400"
-                        }
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          toggleStar(doc.id);
-                        }}
-                        aria-label="Star document"
-                      />
-                    </Td>
-                  </Tr>
-                ))
-              )}
-            </Tbody>
-          </Table>
-        </Box>
+        )}
       </Box>
 
-      <DocumentUploadModal isOpen={isOpen} onClose={onClose} />
+      {/* Modals */}
+      <CreateFolderModal
+        isOpen={isFolderModalOpen}
+        onClose={onFolderModalClose}
+        parentId={currentFolderId}
+      />
+      <CreateAuditScheduleModal
+        isOpen={isAuditModalOpen}
+        onClose={onAuditModalClose}
+        parentId={currentFolderId}
+      />
+      <UploadFileModal
+        isOpen={isFileModalOpen}
+        onClose={onFileModalClose}
+        parentId={currentFolderId}
+      />
 
-      {/* Reject Document Modal */}
-      <Modal isOpen={isRejectOpen} onClose={onRejectClose}>
-        <ModalOverlay />
-        <ModalContent>
-          <ModalHeader>Reject Document</ModalHeader>
-          <ModalCloseButton />
-          <ModalBody>
-            <VStack spacing={4} align="stretch">
-              <Text>
-                Are you sure you want to reject{" "}
-                <strong>{selectedDoc?.title}</strong>?
-              </Text>
-              <Textarea
-                placeholder="Please provide a reason for rejection..."
-                value={rejectionReason}
-                onChange={(e) => setRejectionReason(e.target.value)}
-                rows={4}
-                id="rejectionReason"
-                name="rejectionReason"
-              />
-            </VStack>
-          </ModalBody>
-          <ModalFooter>
-            <Button variant="ghost" mr={3} onClick={onRejectClose}>
-              Cancel
-            </Button>
-            <Button colorScheme="red" onClick={handleReject}>
-              Reject Document
-            </Button>
-          </ModalFooter>
-        </ModalContent>
-      </Modal>
+      {/* Document Drawer */}
+      <DocumentDrawer
+        document={selectedDocument}
+        isOpen={!!selectedDocument}
+        onClose={() => setSelectedDocument(null)}
+      />
     </Box>
   );
 };
