@@ -89,8 +89,8 @@ const ProfileViewMode = ({ user, roleObjects, isValidDate }) => {
                   </Badge>
                 )}
                 {roleObjects && roleObjects.length > 0 ? (
-                  roleObjects.map((r, idx) => (
-                    <Badge key={idx} colorScheme="purple" fontSize="sm">
+                  roleObjects.map((r) => (
+                    <Badge key={r.id || r._id} colorScheme="purple" fontSize="sm">
                       {r.title}
                     </Badge>
                   ))
@@ -194,8 +194,8 @@ const ProfileViewMode = ({ user, roleObjects, isValidDate }) => {
                     </Text>
                     <HStack wrap="wrap" spacing={2}>
                       {roleObjects && roleObjects.length > 0 ? (
-                        roleObjects.map((r, idx) => (
-                          <Badge key={idx} colorScheme="purple">
+                        roleObjects.map((r) => (
+                          <Badge key={r.id || r._id} colorScheme="purple">
                             {r.title}
                           </Badge>
                         ))

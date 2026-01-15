@@ -214,19 +214,17 @@ const TeamPage = () => {
   return (
     <Box>
       <PageHeader>
-        <PageHeader>
-          <Heading variant="pageTitle" noOfLines={1}>
-            <IconButton
-              isRound
-              as="span"
-              variant="ghost"
-              cursor="pointer"
-              icon={<FiArrowLeft />}
-              onClick={() => navigate("/users")}
-            />
-            {isNewTeam ? "Create New Team" : teamName}
-          </Heading>
-        </PageHeader>
+        <Heading variant="pageTitle" noOfLines={1}>
+          <IconButton
+            isRound
+            as="span"
+            variant="ghost"
+            cursor="pointer"
+            icon={<FiArrowLeft />}
+            onClick={() => navigate("/teams")}
+          />
+          {isNewTeam ? "Create New Team" : teamName}
+        </Heading>
       </PageHeader>
       <PageFooter>
         <Flex

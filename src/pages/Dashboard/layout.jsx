@@ -292,8 +292,8 @@ const Layout = () => {
                       fill="#8884d8"
                       dataKey="value"
                     >
-                      {certificateAgeData.map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={entry.color} />
+                      {certificateAgeData.map((entry) => (
+                        <Cell key={`age-${entry.name}-${entry.value}`} fill={entry.color} />
                       ))}
                     </Pie>
                     <Tooltip />
@@ -358,8 +358,8 @@ const Layout = () => {
                       fill="#8884d8"
                       dataKey="value"
                     >
-                      {remainingDaysData.map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={entry.color} />
+                      {remainingDaysData.map((entry) => (
+                        <Cell key={`remaining-${entry.name}-${entry.value}`} fill={entry.color} />
                       ))}
                     </Pie>
                     <Tooltip />
