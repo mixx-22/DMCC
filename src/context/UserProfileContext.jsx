@@ -2,6 +2,7 @@ import {
   useEffect,
   useCallback,
   useReducer,
+  useRef,
   createContext,
   useContext,
 } from "react";
@@ -126,8 +127,13 @@ const initialState = {
 export const UserProfileProvider = ({ children }) => {
   const { id } = useParams();
   const [state, dispatch] = useReducer(reducer, initialState);
+  const fetched = useRef();
 
   const fetchUser = useCallback(async (userId) => {
+    if (fetched.current === userId) {
+      return; // Already fetched this user
+    }
+    fetched.current = userId;
     dispatch({ type: "SET_LOADING", value: true });
     dispatch({ type: "SET_ERROR", value: null });
 

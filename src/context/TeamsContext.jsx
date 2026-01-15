@@ -115,10 +115,15 @@ const initialState = {
 
 export const TeamsProvider = ({ children }) => {
   const [state, dispatch] = useReducer(reducer, initialState);
+  const fetched = useRef();
   const searchTimeoutRef = useRef(null);
 
   const fetchTeams = useCallback(
     async (page = state.page, search = state.search) => {
+      if (fetched.current) {
+        fetched.current = false; // Allow refetch
+      }
+      fetched.current = true;
       dispatch({ type: "SET_LOADING", value: true });
       dispatch({ type: "SET_ERROR", value: null });
 
@@ -180,8 +185,8 @@ export const TeamsProvider = ({ children }) => {
       } finally {
         dispatch({ type: "SET_LOADING", value: false });
       }
-      // eslint-disable-next-line react-hooks/exhaustive-deps
     },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     [state.limit]
   );
 
@@ -189,6 +194,7 @@ export const TeamsProvider = ({ children }) => {
     (page) => {
       dispatch({ type: "SET_PAGE", value: page });
       dispatch({ type: "SET_LAST_PAGE", value: page });
+      fetched.current = false;
       fetchTeams(page, state.search);
     },
     [fetchTeams, state.search]
@@ -206,6 +212,7 @@ export const TeamsProvider = ({ children }) => {
       // If search is cleared, return to last page
       if (!search || search.length === 0) {
         dispatch({ type: "SET_PAGE", value: state.lastPage });
+        fetched.current = false;
         fetchTeams(state.lastPage, "");
         return;
       }
@@ -214,6 +221,7 @@ export const TeamsProvider = ({ children }) => {
       if (search.length >= 2) {
         searchTimeoutRef.current = setTimeout(() => {
           dispatch({ type: "SET_PAGE", value: 1 }); // Reset to page 1 on search
+          fetched.current = false;
           fetchTeams(1, search);
         }, 500); // 500ms debounce
       }

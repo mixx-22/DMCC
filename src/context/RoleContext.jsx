@@ -2,6 +2,7 @@ import {
   useEffect,
   useCallback,
   useReducer,
+  useRef,
   createContext,
   useContext,
 } from "react";
@@ -107,8 +108,13 @@ const initialState = {
 export const RoleProvider = ({ children }) => {
   const { id } = useParams();
   const [state, dispatch] = useReducer(reducer, initialState);
+  const fetched = useRef();
 
   const fetchRole = useCallback(async (roleId) => {
+    if (fetched.current === roleId) {
+      return; // Already fetched this role
+    }
+    fetched.current = roleId;
     dispatch({ type: "SET_LOADING", value: true });
     dispatch({ type: "SET_ERROR", value: null });
 
