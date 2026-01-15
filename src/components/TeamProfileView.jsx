@@ -18,7 +18,7 @@ import {
   Stack,
 } from "@chakra-ui/react";
 import { FiUsers } from "react-icons/fi";
-import { formatDistanceToNow } from "date-fns";
+import Timestamp from "./Timestamp";
 
 const TeamProfileView = ({ team, isValidDate }) => {
   const bg = useColorModeValue("white", "gray.800");
@@ -128,14 +128,7 @@ const TeamProfileView = ({ team, isValidDate }) => {
                       Team Created
                     </Text>
                     <Text fontWeight="medium" fontSize="sm">
-                      {new Date(team.createdAt).toLocaleDateString()}{" "}
-                      <Text as="span" fontSize="xs" color="gray.500">
-                        (
-                        {formatDistanceToNow(new Date(team.createdAt), {
-                          addSuffix: true,
-                        })}
-                        )
-                      </Text>
+                      <Timestamp date={team.createdAt} />
                     </Text>
                   </Box>
                 )}
@@ -145,14 +138,7 @@ const TeamProfileView = ({ team, isValidDate }) => {
                       Last Updated
                     </Text>
                     <Text fontWeight="medium" fontSize="sm">
-                      {new Date(team.updatedAt).toLocaleDateString()}{" "}
-                      <Text as="span" fontSize="xs" color="gray.500">
-                        (
-                        {formatDistanceToNow(new Date(team.updatedAt), {
-                          addSuffix: true,
-                        })}
-                        )
-                      </Text>
+                      <Timestamp date={team.updatedAt} />
                     </Text>
                   </Box>
                 )}

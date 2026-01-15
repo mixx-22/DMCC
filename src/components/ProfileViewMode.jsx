@@ -15,7 +15,7 @@ import {
   CardHeader,
 } from "@chakra-ui/react";
 import { FiMail, FiPhone, FiBriefcase, FiUsers, FiKey } from "react-icons/fi";
-import { formatDistanceToNow } from "date-fns";
+import Timestamp from "./Timestamp";
 
 const ProfileViewMode = ({ user, roleObjects, isValidDate }) => {
   const bg = useColorModeValue("white", "gray.800");
@@ -214,14 +214,7 @@ const ProfileViewMode = ({ user, roleObjects, isValidDate }) => {
                         Member Since
                       </Text>
                       <Text fontWeight="medium" fontSize="sm">
-                        {new Date(user.createdAt).toLocaleDateString()}{" "}
-                        <Text as="span" fontSize="xs" color="gray.500">
-                          (
-                          {formatDistanceToNow(new Date(user.createdAt), {
-                            addSuffix: true,
-                          })}
-                          )
-                        </Text>
+                        <Timestamp date={user.createdAt} />
                       </Text>
                     </Box>
                   </>

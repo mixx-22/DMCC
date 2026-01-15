@@ -34,6 +34,7 @@ import {
 import { useApp } from "../context/AppContext";
 import CheckInModal from "../components/CheckInModal";
 import DeleteDocumentModal from "../components/DeleteDocumentModal";
+import Timestamp from "../components/Timestamp";
 
 const DocumentDetail = () => {
   const { id } = useParams();
@@ -224,16 +225,14 @@ const DocumentDetail = () => {
                 <Text fontSize="sm" color="gray.600">
                   Created
                 </Text>
-                <Text>{new Date(document.createdAt).toLocaleDateString()}</Text>
+                <Timestamp date={document.createdAt} />
               </Box>
               {document.approvedAt && (
                 <Box>
                   <Text fontSize="sm" color="gray.600">
                     Approved
                   </Text>
-                  <Text>
-                    {new Date(document.approvedAt).toLocaleDateString()}
-                  </Text>
+                  <Timestamp date={document.approvedAt} />
                 </Box>
               )}
               {document.checkedOut && (
@@ -245,9 +244,7 @@ const DocumentDetail = () => {
                     For Revision
                   </Badge>
                   {document.checkedOutAt && (
-                    <Text fontSize="xs" color="gray.500" mt={1}>
-                      {new Date(document.checkedOutAt).toLocaleDateString()}
-                    </Text>
+                    <Timestamp date={document.checkedOutAt} fontSize="xs" color="gray.500" display="block" mt={1} />
                   )}
                 </Box>
               )}
@@ -348,7 +345,9 @@ const DocumentDetail = () => {
                   <Td fontWeight="semibold">
                     {String(version.version).padStart(2, "0")}
                   </Td>
-                  <Td>{new Date(version.uploadedAt).toLocaleString()}</Td>
+                  <Td>
+                    <Timestamp date={version.uploadedAt} showTime={true} />
+                  </Td>
                   <Td>
                     <Button
                       size="sm"

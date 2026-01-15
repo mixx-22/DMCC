@@ -13,6 +13,7 @@ import {
 import { useNavigate } from "react-router-dom";
 import { FiBell, FiAlertCircle } from "react-icons/fi";
 import { useApp } from "../context/AppContext";
+import Timestamp from "../components/Timestamp";
 
 const NotificationItem = ({ cert, onClick }) => {
   const bgColor = useColorModeValue("white", "gray.800");
@@ -41,7 +42,7 @@ const NotificationItem = ({ cert, onClick }) => {
           {cert.name}
         </Text>
         <Text fontSize="sm" color={dateColor}>
-          Expires: {new Date(cert.expirationDate).toLocaleDateString()}
+          Expires: <Timestamp date={cert.expirationDate} />
         </Text>
       </Box>
       <Badge colorScheme="red" fontSize="xs">

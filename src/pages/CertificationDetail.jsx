@@ -18,7 +18,7 @@ import {
 import { FiArrowLeft, FiEdit, FiDownload, FiTrash2 } from 'react-icons/fi'
 import { useApp } from '../context/AppContext'
 import CertificationUploadModal from '../components/CertificationUploadModal'
-import { formatDistanceToNow } from 'date-fns'
+import Timestamp from '../components/Timestamp'
 
 const CertificationDetail = () => {
   const { id } = useParams()
@@ -159,7 +159,7 @@ const CertificationDetail = () => {
               </Box>
               <Box>
                 <Text fontSize="sm" color="gray.600">Created</Text>
-                <Text>{new Date(certification.createdAt).toLocaleDateString()}</Text>
+                <Timestamp date={certification.createdAt} />
               </Box>
             </VStack>
           </CardBody>
@@ -176,7 +176,7 @@ const CertificationDetail = () => {
                   <Box>
                     <Text fontSize="sm" color="gray.600">Expiration Date</Text>
                     <Text fontWeight="semibold">
-                      {new Date(certification.expirationDate).toLocaleDateString()}
+                      <Timestamp date={certification.expirationDate} />
                     </Text>
                   </Box>
                   {daysUntilExpiration !== null && (
