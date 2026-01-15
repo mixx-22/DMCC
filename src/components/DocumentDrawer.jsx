@@ -57,23 +57,6 @@ const DocumentDrawer = ({ document, isOpen, onClose }) => {
 
   if (!document) return null;
 
-  // Get status badge
-  const getStatusBadge = (status) => {
-    const statusMap = {
-      "-1": { label: "Draft", color: "gray" },
-      "0": { label: "Under Review", color: "yellow" },
-      "1": { label: "Approved", color: "green" },
-      "2": { label: "Archived", color: "blue" },
-      "3": { label: "Expired", color: "red" },
-    };
-    const statusInfo = statusMap[String(status)] || statusMap["0"];
-    return (
-      <Badge colorScheme={statusInfo.color} fontSize="sm">
-        {statusInfo.label}
-      </Badge>
-    );
-  };
-
   // Get document icon
   const getDocumentIcon = () => {
     switch (document.type) {
@@ -120,7 +103,6 @@ const DocumentDrawer = ({ document, isOpen, onClose }) => {
                 <Text fontSize="lg" fontWeight="bold" textAlign="center">
                   {document.title || "Untitled"}
                 </Text>
-                {getStatusBadge(document.status)}
               </VStack>
 
               <Divider />

@@ -15,14 +15,12 @@ import {
   Divider,
   Box,
   HStack,
-  Tag,
-  TagLabel,
-  TagCloseButton,
-  Input,
-  Select,
 } from "@chakra-ui/react";
 import { toast } from "sonner";
 import { useDocuments } from "../context/DocumentsContext";
+import UserAsyncSelect from "./UserAsyncSelect";
+import TeamAsyncSelect from "./TeamAsyncSelect";
+import RoleAsyncSelect from "./RoleAsyncSelect";
 
 const PrivacySettingsModal = ({ isOpen, onClose, document }) => {
   const { updateDocument } = useDocuments();
@@ -33,11 +31,6 @@ const PrivacySettingsModal = ({ isOpen, onClose, document }) => {
     readOnly: 1,
     restricted: 1,
   });
-
-  // Input states for adding new items
-  const [newUser, setNewUser] = useState("");
-  const [newTeam, setNewTeam] = useState("");
-  const [newRole, setNewRole] = useState("");
 
   useEffect(() => {
     if (document) {
@@ -52,61 +45,6 @@ const PrivacySettingsModal = ({ isOpen, onClose, document }) => {
   }, [document]);
 
   if (!document) return null;
-
-  const handleAddUser = () => {
-    if (!newUser.trim()) return;
-
-    // In a real app, this would search and add actual user objects
-    const userObj = { id: newUser, name: newUser };
-    setPrivacySettings((prev) => ({
-      ...prev,
-      users: [...prev.users, userObj],
-    }));
-    setNewUser("");
-  };
-
-  const handleAddTeam = () => {
-    if (!newTeam.trim()) return;
-
-    const teamObj = { id: newTeam, name: newTeam };
-    setPrivacySettings((prev) => ({
-      ...prev,
-      teams: [...prev.teams, teamObj],
-    }));
-    setNewTeam("");
-  };
-
-  const handleAddRole = () => {
-    if (!newRole) return;
-
-    const roleObj = { id: newRole, name: newRole };
-    setPrivacySettings((prev) => ({
-      ...prev,
-      roles: [...prev.roles, roleObj],
-    }));
-    setNewRole("");
-  };
-
-  const handleRemoveUser = (index) => {
-    setPrivacySettings((prev) => ({
-      ...prev,
-      users: prev.users.filter((_, i) => i !== index),
-    }));
-  };
-
-  const handleRemoveTeam = (index) => {
-    setPrivacySettings((prev) => ({
-      ...prev,
-      teams: prev.teams.filter((_, i) => i !== index),
-    }));
-  };
-
-  const handleRemoveRole = (index) => {
-    setPrivacySettings((prev) => ({
-      ...prev,
-      roles: prev.roles.filter((_, i) => i !== index),
-    }));
-  };
 
   const handleSave = () => {
     updateDocument(document.id, {
@@ -145,110 +83,29 @@ const PrivacySettingsModal = ({ isOpen, onClose, document }) => {
             <Divider />
 
             {/* Users */}
-            <Box>
-              <FormLabel>Shared with Users</FormLabel>
-              <HStack mb={2}>
-                <Input
-                  placeholder="Enter user ID or name"
-                  value={newUser}
-                  onChange={(e) => setNewUser(e.target.value)}
-                  onKeyPress={(e) => e.key === "Enter" && handleAddUser()}
-                  size="sm"
-                  id="newUser"
-                  name="newUser"
-                />
-                <Button size="sm" colorScheme="blue" onClick={handleAddUser}>
-                  Add
-                </Button>
-              </HStack>
-              <Box>
-                {privacySettings.users.map((user, index) => (
-                  <Tag key={index} size="md" mr={2} mb={2} colorScheme="blue">
-                    <TagLabel>
-                      {typeof user === "string" ? user : user.name || user.id}
-                    </TagLabel>
-                    <TagCloseButton onClick={() => handleRemoveUser(index)} />
-                  </Tag>
-                ))}
-                {privacySettings.users.length === 0 && (
-                  <Text fontSize="sm" color="gray.500">
-                    No specific users
-                  </Text>
-                )}
-              </Box>
-            </Box>
+            <UserAsyncSelect
+              label="Shared with Users"
+              value={privacySettings.users}
+              onChange={(users) =>
+                setPrivacySettings((prev) => ({ ...prev, users }))
+              }
+            />
 
             {/* Teams */}
-            <Box>
-              <FormLabel>Shared with Teams</FormLabel>
-              <HStack mb={2}>
-                <Input
-                  placeholder="Enter team ID or name"
-                  value={newTeam}
-                  onChange={(e) => setNewTeam(e.target.value)}
-                  onKeyPress={(e) => e.key === "Enter" && handleAddTeam()}
-                  size="sm"
-                  id="newTeam"
-                  name="newTeam"
-                />
-                <Button size="sm" colorScheme="blue" onClick={handleAddTeam}>
-                  Add
-                </Button>
-              </HStack>
-              <Box>
-                {privacySettings.teams.map((team, index) => (
-                  <Tag key={index} size="md" mr={2} mb={2} colorScheme="green">
-                    <TagLabel>
-                      {typeof team === "string" ? team : team.name || team.id}
-                    </TagLabel>
-                    <TagCloseButton onClick={() => handleRemoveTeam(index)} />
-                  </Tag>
-                ))}
-                {privacySettings.teams.length === 0 && (
-                  <Text fontSize="sm" color="gray.500">
-                    No specific teams
-                  </Text>
-                )}
-              </Box>
-            </Box>
+            <TeamAsyncSelect
+              value={privacySettings.teams}
+              onChange={(teams) =>
+                setPrivacySettings((prev) => ({ ...prev, teams }))
+              }
+            />
 
             {/* Roles */}
-            <Box>
-              <FormLabel>Shared with Roles</FormLabel>
-              <HStack mb={2}>
-                <Select
-                  placeholder="Select role"
-                  value={newRole}
-                  onChange={(e) => setNewRole(e.target.value)}
-                  size="sm"
-                  id="newRole"
-                  name="newRole"
-                >
-                  <option value="Admin">Admin</option>
-                  <option value="Manager">Manager</option>
-                  <option value="Supervisor">Supervisor</option>
-                  <option value="Employee">Employee</option>
-                </Select>
-                <Button size="sm" colorScheme="blue" onClick={handleAddRole}>
-                  Add
-                </Button>
-              </HStack>
-              <Box>
-                {privacySettings.roles.map((role, index) => (
-                  <Tag key={index} size="md" mr={2} mb={2} colorScheme="purple">
-                    <TagLabel>
-                      {typeof role === "string" ? role : role.name || role.id}
-                    </TagLabel>
-                    <TagCloseButton onClick={() => handleRemoveRole(index)} />
-                  </Tag>
-                ))}
-                {privacySettings.roles.length === 0 && (
-                  <Text fontSize="sm" color="gray.500">
-                    No specific roles
-                  </Text>
-                )}
-              </Box>
-            </Box>
+            <RoleAsyncSelect
+              value={privacySettings.roles}
+              onChange={(roles) =>
+                setPrivacySettings((prev) => ({ ...prev, roles }))
+              }
+            />
 
             <Divider />
 

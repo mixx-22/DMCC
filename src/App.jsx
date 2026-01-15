@@ -83,6 +83,14 @@ function App() {
                         </DocumentsProvider>
                       }
                     />
+                    <Route
+                      path="/documents/folder/:id"
+                      element={
+                        <DocumentsProvider>
+                          <Documents />
+                        </DocumentsProvider>
+                      }
+                    />
                     <Route path="/archive" element={<Archive />} />
                     <Route
                       path="/certifications"

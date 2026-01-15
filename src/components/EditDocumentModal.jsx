@@ -13,7 +13,6 @@ import {
   Input,
   Textarea,
   VStack,
-  Select,
 } from "@chakra-ui/react";
 import { toast } from "sonner";
 import { useDocuments } from "../context/DocumentsContext";
@@ -23,7 +22,6 @@ const EditDocumentModal = ({ isOpen, onClose, document }) => {
   const [formData, setFormData] = useState({
     title: "",
     description: "",
-    status: 0,
   });
 
   useEffect(() => {
@@ -31,7 +29,6 @@ const EditDocumentModal = ({ isOpen, onClose, document }) => {
       setFormData({
         title: document.title || "",
         description: document.description || "",
-        status: document.status,
       });
     }
   }, [document]);
@@ -50,7 +47,6 @@ const EditDocumentModal = ({ isOpen, onClose, document }) => {
     updateDocument(document.id, {
       title: formData.title,
       description: formData.description,
-      status: parseInt(formData.status),
     });
 
     toast.success("Document Updated", {
@@ -100,27 +96,6 @@ const EditDocumentModal = ({ isOpen, onClose, document }) => {
                   id="editDescription"
                   name="editDescription"
                 />
-              </FormControl>
-
-              <FormControl>
-                <FormLabel>Status</FormLabel>
-                <Select
-                  value={formData.status}
-                  onChange={(e) =>
-                    setFormData((prev) => ({
-                      ...prev,
-                      status: parseInt(e.target.value),
-                    }))
-                  }
-                  id="editStatus"
-                  name="editStatus"
-                >
-                  <option value="-1">Draft</option>
-                  <option value="0">Under Review</option>
-                  <option value="1">Approved</option>
-                  <option value="2">Archived</option>
-                  <option value="3">Expired</option>
-                </Select>
               </FormControl>
             </VStack>
           </ModalBody>
