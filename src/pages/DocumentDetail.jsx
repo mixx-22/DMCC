@@ -340,8 +340,8 @@ const DocumentDetail = () => {
               </Tr>
             </Thead>
             <Tbody>
-              {document.versions?.map((version, index) => (
-                <Tr key={index}>
+              {document.versions?.map((version) => (
+                <Tr key={version.version}>
                   <Td fontWeight="semibold">
                     {String(version.version).padStart(2, "0")}
                   </Td>
