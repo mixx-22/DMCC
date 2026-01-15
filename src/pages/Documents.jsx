@@ -268,7 +268,7 @@ const Documents = () => {
           <Grid templateColumns="repeat(auto-fill, minmax(200px, 1fr))" gap={4}>
             {recentFolderItems.slice(0, 6).map((folder) => (
               <Card
-                key={folder.name}
+                key={`${folder.name}-${folder.openedAt}`}
                 cursor="pointer"
                 _hover={{ shadow: "md", transform: "translateY(-2px)" }}
                 transition="all 0.2s"

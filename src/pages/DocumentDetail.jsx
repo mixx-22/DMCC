@@ -341,7 +341,7 @@ const DocumentDetail = () => {
             </Thead>
             <Tbody>
               {document.versions?.map((version) => (
-                <Tr key={version.version}>
+                <Tr key={`${document.id}-v${version.version}`}>
                   <Td fontWeight="semibold">
                     {String(version.version).padStart(2, "0")}
                   </Td>
