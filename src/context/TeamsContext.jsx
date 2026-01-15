@@ -120,9 +120,6 @@ export const TeamsProvider = ({ children }) => {
 
   const fetchTeams = useCallback(
     async (page = state.page, search = state.search) => {
-      if (fetched.current) {
-        fetched.current = false; // Allow refetch
-      }
       fetched.current = true;
       dispatch({ type: "SET_LOADING", value: true });
       dispatch({ type: "SET_ERROR", value: null });
