@@ -4,11 +4,7 @@ import { formatDistanceToNow } from "date-fns";
 
 const STORAGE_KEY = "timestampDisplayFormat";
 
-const Timestamp = ({ 
-  date, 
-  showTime = false,
-  ...textProps 
-}) => {
+const Timestamp = ({ date, showTime = false, ...textProps }) => {
   // Get initial preference from localStorage, default to 'ago'
   const [displayMode, setDisplayMode] = useState(() => {
     const stored = localStorage.getItem(STORAGE_KEY);
@@ -30,7 +26,7 @@ const Timestamp = ({
   }
 
   const dateObj = new Date(date);
-  
+
   // Check if date is valid
   if (isNaN(dateObj.getTime())) {
     return <Text {...textProps}>Invalid Date</Text>;
@@ -38,8 +34,8 @@ const Timestamp = ({
 
   // Format the date based on display mode
   const agoText = formatDistanceToNow(dateObj, { addSuffix: true });
-  const timestampText = showTime 
-    ? dateObj.toLocaleString() 
+  const timestampText = showTime
+    ? dateObj.toLocaleString()
     : dateObj.toLocaleDateString();
 
   const displayText = displayMode === "ago" ? agoText : timestampText;
@@ -47,14 +43,7 @@ const Timestamp = ({
 
   return (
     <Tooltip label={tooltipText} placement="top" hasArrow>
-      <Text
-        as="span"
-        cursor="pointer"
-        onClick={toggleMode}
-        textDecoration="underline dotted"
-        textUnderlineOffset="2px"
-        {...textProps}
-      >
+      <Text as="span" cursor="pointer" onClick={toggleMode} {...textProps}>
         {displayText}
       </Text>
     </Tooltip>
