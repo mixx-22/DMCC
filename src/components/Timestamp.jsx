@@ -5,7 +5,7 @@ import moment from "moment";
 const STORAGE_KEY = "timestampDisplayFormat";
 const TIMESTAMP_FORMAT = "MMM DD, YYYY HH:mm:ss";
 
-const Timestamp = ({ date, showTime = false, ...textProps }) => {
+const Timestamp = ({ date, showTime = true, ...textProps }) => {
   // Get initial preference from localStorage, default to 'ago'
   const [displayMode, setDisplayMode] = useState(() => {
     const stored = localStorage.getItem(STORAGE_KEY);
