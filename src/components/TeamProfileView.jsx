@@ -83,12 +83,16 @@ const TeamProfileView = ({ team, isValidDate }) => {
                   sx={{ td: { px: 5 } }}
                 >
                   <Tbody>
-                    {team.leaders.map((leader) => {
+                    {team.leaders.map((leader, leaderIndex) => {
                       const fullName = `${leader.firstName || ""} ${
                         leader.lastName || ""
                       }`.trim();
                       return (
-                        <Tr key={leader._id || leader.id || leader.userId}>
+                        <Tr
+                          key={`leader-${leaderIndex}-${
+                            leader._id || leader.id || leader.userId
+                          }`}
+                        >
                           <Td>
                             <HStack spacing={3}>
                               <Avatar
@@ -156,12 +160,16 @@ const TeamProfileView = ({ team, isValidDate }) => {
               {team.members && team.members.length > 0 ? (
                 <Table variant="simple" size="sm" border="none">
                   <Tbody>
-                    {team.members.map((member) => {
+                    {team.members.map((member, memberIndex) => {
                       const fullName = `${member.firstName || ""} ${
                         member.lastName || ""
                       }`.trim();
                       return (
-                        <Tr key={member._id || member.id || member.userId}>
+                        <Tr
+                          key={`member-${memberIndex}-${
+                            member._id || member.id || member.userId
+                          }`}
+                        >
                           <Td>
                             <HStack spacing={3}>
                               <Avatar

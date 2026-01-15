@@ -87,7 +87,11 @@ const TeamsList = () => {
             <InputLeftElement pointerEvents="none" color="gray.400">
               <FiSearch />
             </InputLeftElement>
-            <Input placeholder="Start searching for Teams..." isDisabled />
+            <Input
+              value={search}
+              placeholder="Start searching for Teams..."
+              isDisabled
+            />
           </InputGroup>
         </HStack>
         <Box p={8} textAlign="center">
@@ -163,14 +167,14 @@ const TeamsList = () => {
                   </Td>
                 </Tr>
               ) : (
-                teamList.map((team) => {
+                teamList.map((team, teamIndex) => {
                   const teamId = team._id || team.id;
                   const allMembers = [
                     ...(team.leaders || []),
                     ...(team.members || []),
                   ];
                   return (
-                    <LinkBox as={Tr} key={teamId}>
+                    <LinkBox as={Tr} key={`team-${teamIndex}-${teamId}`}>
                       <Td>
                         <LinkOverlay as={RouterLink} to={`/teams/${teamId}`}>
                           <HStack w="fit-content">
@@ -188,13 +192,15 @@ const TeamsList = () => {
                         {allMembers.length > 0 ? (
                           <HStack justify="flex-end">
                             <AvatarGroup size="sm" max={3}>
-                              {allMembers.map((member) => {
+                              {allMembers.map((member, memberIndex) => {
                                 const fullName = `${member.firstName || ""} ${
                                   member.lastName || ""
                                 }`.trim();
                                 return (
                                   <Avatar
-                                    key={member._id || member.id}
+                                    key={`member-${memberIndex}-${
+                                      member._id || member.i
+                                    }d`}
                                     name={fullName}
                                     src={member.profilePicture}
                                   />
