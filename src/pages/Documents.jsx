@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { Link as RouterLink, useParams } from "react-router-dom";
 import {
   Box,
   Heading,
@@ -22,7 +23,7 @@ import {
   Tr,
   Th,
   Td,
-  Badge,
+  Link,
 } from "@chakra-ui/react";
 import {
   FiPlus,
@@ -46,6 +47,7 @@ import DocumentDrawer from "../components/DocumentDrawer";
 import Timestamp from "../components/Timestamp";
 
 const Documents = () => {
+  const { id: folderId } = useParams();
   const {
     viewMode,
     currentFolderId,
@@ -60,6 +62,15 @@ const Documents = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [lastClickTime, setLastClickTime] = useState(0);
   const [lastClickId, setLastClickId] = useState(null);
+
+  // Update currentFolderId when URL changes
+  useEffect(() => {
+    if (folderId && folderId !== currentFolderId) {
+      navigateToFolder(folderId);
+    } else if (!folderId && currentFolderId !== null) {
+      navigateToFolder(null);
+    }
+  }, [folderId, currentFolderId, navigateToFolder]);
 
   const {
     isOpen: isFolderModalOpen,
@@ -129,23 +140,6 @@ const Documents = () => {
     }
   };
 
-  // Get status badge
-  const getStatusBadge = (status) => {
-    const statusMap = {
-      "-1": { label: "Draft", color: "gray" },
-      "0": { label: "Under Review", color: "yellow" },
-      "1": { label: "Approved", color: "green" },
-      "2": { label: "Archived", color: "blue" },
-      "3": { label: "Expired", color: "red" },
-    };
-    const statusInfo = statusMap[String(status)] || statusMap["0"];
-    return (
-      <Badge colorScheme={statusInfo.color} size="sm">
-        {statusInfo.label}
-      </Badge>
-    );
-  };
-
   return (
     <Box>
       <PageHeader>
@@ -204,7 +198,7 @@ const Documents = () => {
               gap={2}
             >
               <FiHome />
-              <Text>Root</Text>
+              <Text>All Documents</Text>
             </BreadcrumbLink>
           </BreadcrumbItem>
           {breadcrumbs.map((folder) => (
@@ -248,7 +242,9 @@ const Documents = () => {
             <Text color="gray.500" fontSize="lg">
               {searchTerm
                 ? "No documents found"
-                : "This folder is empty"}
+                : currentFolderId 
+                ? "This folder is empty" 
+                : "No Documents"}
             </Text>
             <HStack>
               <Button
@@ -273,79 +269,106 @@ const Documents = () => {
             templateColumns="repeat(auto-fill, minmax(200px, 1fr))"
             gap={4}
           >
-            {filteredDocuments.map((doc) => (
-              <Card
-                key={doc.id}
-                cursor="pointer"
-                _hover={{ shadow: "md", transform: "translateY(-2px)" }}
-                transition="all 0.2s"
-                onClick={() => handleDocumentClick(doc)}
-                bg={selectedDocument?.id === doc.id ? "blue.50" : "white"}
-                borderWidth={selectedDocument?.id === doc.id ? 2 : 1}
-                borderColor={
-                  selectedDocument?.id === doc.id ? "blue.500" : "gray.200"
+            {filteredDocuments.map((doc) => {
+              const isFolderType = doc.type === "folder" || doc.type === "auditSchedule";
+              const CardWrapper = isFolderType ? Link : Box;
+              const linkProps = isFolderType ? {
+                as: RouterLink,
+                to: `/documents/folder/${doc.id}`,
+                style: { textDecoration: 'none' },
+                onClick: (e) => {
+                  e.preventDefault();
+                  handleDocumentClick(doc);
                 }
-              >
-                <CardBody>
-                  <VStack align="start" spacing={2}>
-                    <HStack justify="space-between" w="full">
-                      {getDocumentIcon(doc.type)}
-                      <IconButton
-                        icon={<FiMoreVertical />}
-                        size="sm"
-                        variant="ghost"
-                        aria-label="More options"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setSelectedDocument(doc);
-                        }}
-                      />
-                    </HStack>
-                    <Text
-                      fontWeight="semibold"
-                      isTruncated
-                      maxW="full"
-                      title={doc.title}
-                    >
-                      {doc.title || "Untitled"}
-                    </Text>
-                    {doc.type === "file" && doc.metadata.filename && (
-                      <Text fontSize="xs" color="gray.500" isTruncated maxW="full">
-                        {doc.metadata.filename}
-                      </Text>
-                    )}
-                    {getStatusBadge(doc.status)}
-                    <Timestamp
-                      date={doc.updatedAt}
-                      fontSize="xs"
-                      color="gray.400"
-                    />
-                  </VStack>
-                </CardBody>
-              </Card>
-            ))}
+              } : {
+                onClick: () => handleDocumentClick(doc)
+              };
+              
+              return (
+                <CardWrapper key={doc.id} {...linkProps}>
+                  <Card
+                    cursor="pointer"
+                    _hover={{ shadow: "md", transform: "translateY(-2px)" }}
+                    transition="all 0.2s"
+                    bg={selectedDocument?.id === doc.id ? "blue.50" : "white"}
+                    borderWidth={selectedDocument?.id === doc.id ? 2 : 1}
+                    borderColor={
+                      selectedDocument?.id === doc.id ? "blue.500" : "gray.200"
+                    }
+                  >
+                    <CardBody>
+                      <VStack align="start" spacing={2}>
+                        <HStack justify="space-between" w="full">
+                          {getDocumentIcon(doc.type)}
+                          <IconButton
+                            icon={<FiMoreVertical />}
+                            size="sm"
+                            variant="ghost"
+                            aria-label="More options"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              e.preventDefault();
+                              setSelectedDocument(doc);
+                            }}
+                          />
+                        </HStack>
+                        <Text
+                          fontWeight="semibold"
+                          isTruncated
+                          maxW="full"
+                          title={doc.title}
+                        >
+                          {doc.title || "Untitled"}
+                        </Text>
+                        {doc.type === "file" && doc.metadata.filename && (
+                          <Text fontSize="xs" color="gray.500" isTruncated maxW="full">
+                            {doc.metadata.filename}
+                          </Text>
+                        )}
+                        <Timestamp
+                          date={doc.updatedAt}
+                          fontSize="xs"
+                          color="gray.400"
+                        />
+                      </VStack>
+                    </CardBody>
+                  </Card>
+                </CardWrapper>
+              );
+            })}
           </Grid>
         ) : (
-          <Box bg="white" borderRadius="md" overflow="hidden">
-            <Table variant="simple">
-              <Thead bg="gray.50">
-                <Tr>
-                  <Th>Name</Th>
-                  <Th>Type</Th>
-                  <Th>Status</Th>
-                  <Th>Owner</Th>
-                  <Th>Modified</Th>
-                  <Th></Th>
-                </Tr>
-              </Thead>
-              <Tbody>
-                {filteredDocuments.map((doc) => (
+          <Table variant="simple">
+            <Thead>
+              <Tr>
+                <Th>Name</Th>
+                <Th>Type</Th>
+                <Th>Owner</Th>
+                <Th>Modified</Th>
+                <Th></Th>
+              </Tr>
+            </Thead>
+            <Tbody>
+              {filteredDocuments.map((doc) => {
+                const isFolderType = doc.type === "folder" || doc.type === "auditSchedule";
+                const RowWrapper = isFolderType ? "a" : "tr";
+                const rowProps = isFolderType ? {
+                  href: `/documents/folder/${doc.id}`,
+                  onClick: (e) => {
+                    e.preventDefault();
+                    handleDocumentClick(doc);
+                  },
+                  style: { display: 'table-row' }
+                } : {};
+                
+                return (
                   <Tr
+                    as={RowWrapper}
+                    {...rowProps}
                     key={doc.id}
                     cursor="pointer"
                     _hover={{ bg: "gray.50" }}
-                    onClick={() => handleDocumentClick(doc)}
-                    bg={selectedDocument?.id === doc.id ? "blue.50" : "white"}
+                    bg={selectedDocument?.id === doc.id ? "blue.50" : "transparent"}
                   >
                     <Td>
                       <HStack>
@@ -363,13 +386,12 @@ const Documents = () => {
                       </HStack>
                     </Td>
                     <Td>
-                      <Badge>
+                      <Text fontSize="sm">
                         {doc.type === "auditSchedule"
                           ? "Audit Schedule"
                           : doc.type.charAt(0).toUpperCase() + doc.type.slice(1)}
-                      </Badge>
+                      </Text>
                     </Td>
-                    <Td>{getStatusBadge(doc.status)}</Td>
                     <Td>
                       <Text fontSize="sm">
                         {doc.owner.firstName} {doc.owner.lastName}
@@ -386,15 +408,16 @@ const Documents = () => {
                         aria-label="More options"
                         onClick={(e) => {
                           e.stopPropagation();
+                          e.preventDefault();
                           setSelectedDocument(doc);
                         }}
                       />
                     </Td>
                   </Tr>
-                ))}
-              </Tbody>
-            </Table>
-          </Box>
+                );
+              })}
+            </Tbody>
+          </Table>
         )}
       </Box>
 
