@@ -14,7 +14,7 @@ import {
   Textarea,
   VStack,
   Switch,
-  FormHelperText,
+  Text,
 } from "@chakra-ui/react";
 import { toast } from "sonner";
 import { useDocuments } from "../context/DocumentsContext";
@@ -124,10 +124,10 @@ const CreateFolderModal = ({ isOpen, onClose, parentId }) => {
                   name="allowInheritance"
                 />
               </FormControl>
-              <FormHelperText mt={-2}>
+              <Text fontSize="sm" color="gray.600">
                 When enabled, privacy settings of this folder will be applied to
                 its contents
-              </FormHelperText>
+              </Text>
             </VStack>
           </ModalBody>
           <ModalFooter>
