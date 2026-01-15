@@ -1,8 +1,9 @@
 import { useState, useEffect } from "react";
 import { Text, Tooltip } from "@chakra-ui/react";
-import { formatDistanceToNow } from "date-fns";
+import moment from "moment";
 
 const STORAGE_KEY = "timestampDisplayFormat";
+const TIMESTAMP_FORMAT = "MMM DD, YYYY HH:mm:ss";
 
 const Timestamp = ({ date, showTime = false, ...textProps }) => {
   // Get initial preference from localStorage, default to 'ago'
@@ -14,7 +15,24 @@ const Timestamp = ({ date, showTime = false, ...textProps }) => {
   // Update localStorage when mode changes
   useEffect(() => {
     localStorage.setItem(STORAGE_KEY, displayMode);
+    // Dispatch a custom event to notify other Timestamp components
+    window.dispatchEvent(
+      new CustomEvent("timestampFormatChange", { detail: displayMode })
+    );
   }, [displayMode]);
+
+  // Listen for changes from other Timestamp components
+  useEffect(() => {
+    const handleFormatChange = (e) => {
+      setDisplayMode(e.detail);
+    };
+
+    window.addEventListener("timestampFormatChange", handleFormatChange);
+
+    return () => {
+      window.removeEventListener("timestampFormatChange", handleFormatChange);
+    };
+  }, []);
 
   const toggleMode = (e) => {
     e.stopPropagation(); // Prevent parent click events
@@ -25,18 +43,18 @@ const Timestamp = ({ date, showTime = false, ...textProps }) => {
     return <Text {...textProps}>N/A</Text>;
   }
 
-  const dateObj = new Date(date);
+  const momentDate = moment(date);
 
   // Check if date is valid
-  if (isNaN(dateObj.getTime())) {
+  if (!momentDate.isValid()) {
     return <Text {...textProps}>Invalid Date</Text>;
   }
 
   // Format the date based on display mode
-  const agoText = formatDistanceToNow(dateObj, { addSuffix: true });
+  const agoText = momentDate.fromNow();
   const timestampText = showTime
-    ? dateObj.toLocaleString()
-    : dateObj.toLocaleDateString();
+    ? momentDate.format(TIMESTAMP_FORMAT)
+    : momentDate.format("MMM DD, YYYY");
 
   const displayText = displayMode === "ago" ? agoText : timestampText;
   const tooltipText = displayMode === "ago" ? timestampText : agoText;
