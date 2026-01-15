@@ -15,7 +15,6 @@ import {
   Tbody,
   Tr,
   Td,
-  Stack,
 } from "@chakra-ui/react";
 import { FiUsers } from "react-icons/fi";
 import Timestamp from "./Timestamp";

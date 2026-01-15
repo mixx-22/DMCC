@@ -17,6 +17,7 @@ import {
   Badge,
   Avatar,
   AvatarGroup,
+  useColorModeValue,
 } from "@chakra-ui/react";
 import { motion } from "framer-motion";
 import { useEffect } from "react";
@@ -40,8 +41,8 @@ const TeamsList = () => {
     setSearch,
   } = useTeams();
   const [searchParams, setSearchParams] = useSearchParams();
-  // Use teams?.data or empty array if not present
   const teamList = Array.isArray(teams?.data) ? teams.data : [];
+  const avatarBorderColor = useColorModeValue("gray.50", "gray.800");
 
   // Initialize from URL on mount
   useEffect(() => {
@@ -193,16 +194,17 @@ const TeamsList = () => {
                           <HStack justify="flex-end">
                             <AvatarGroup size="sm" max={3}>
                               {allMembers.map((member, memberIndex) => {
+                                const memberId =
+                                  member.id || member._id || member.userId;
                                 const fullName = `${member.firstName || ""} ${
                                   member.lastName || ""
                                 }`.trim();
                                 return (
                                   <Avatar
-                                    key={`member-${memberIndex}-${
-                                      member._id || member.i
-                                    }d`}
                                     name={fullName}
-                                    src={member.profilePicture}
+                                    src={member?.profilePicture}
+                                    borderColor={avatarBorderColor}
+                                    key={`member-${memberIndex}-${memberId}`}
                                   />
                                 );
                               })}
