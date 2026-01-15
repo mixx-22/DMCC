@@ -184,8 +184,8 @@ const UsersList = () => {
                         {!user.isActive ? (
                           <Badge colorScheme="red">Inactive</Badge>
                         ) : user.role && user.role.length > 0 ? (
-                          user.role.map((r, idx) => (
-                            <Badge key={idx} colorScheme="purple" mr={1}>
+                          user.role.map((r) => (
+                            <Badge key={r.id || r._id} colorScheme="purple" mr={1}>
                               {r?.title}
                             </Badge>
                           ))

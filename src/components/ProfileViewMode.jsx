@@ -18,7 +18,8 @@ import { FiMail, FiPhone, FiBriefcase, FiUsers, FiKey } from "react-icons/fi";
 import Timestamp from "./Timestamp";
 
 const ProfileViewMode = ({ user, roleObjects, isValidDate }) => {
-  const bg = useColorModeValue("white", "gray.800");
+  const borderColor = useColorModeValue("white", "gray.700");
+  const bg = useColorModeValue("brandPrimary.600", "brandPrimary.800");
   const headerBg = useColorModeValue("brandPrimary.50", "brandPrimary.900");
 
   const fullName = user
@@ -47,10 +48,11 @@ const ProfileViewMode = ({ user, roleObjects, isValidDate }) => {
               <Avatar
                 size="2xl"
                 name={fullName}
-                src={user.profilePicture}
-                border="4px solid"
-                borderColor={bg}
-                shadow="lg"
+                icon={<Icon as={FiUsers} fontSize="4xl" />}
+                borderColor={borderColor}
+                borderWidth="8px"
+                bg={bg}
+                color="white"
               />
               {hasSystemRole && (
                 <Box
@@ -89,8 +91,12 @@ const ProfileViewMode = ({ user, roleObjects, isValidDate }) => {
                   </Badge>
                 )}
                 {roleObjects && roleObjects.length > 0 ? (
-                  roleObjects.map((r, idx) => (
-                    <Badge key={idx} colorScheme="purple" fontSize="sm">
+                  roleObjects.map((r) => (
+                    <Badge
+                      key={r.id || r._id}
+                      colorScheme="purple"
+                      fontSize="sm"
+                    >
                       {r.title}
                     </Badge>
                   ))
@@ -194,8 +200,8 @@ const ProfileViewMode = ({ user, roleObjects, isValidDate }) => {
                     </Text>
                     <HStack wrap="wrap" spacing={2}>
                       {roleObjects && roleObjects.length > 0 ? (
-                        roleObjects.map((r, idx) => (
-                          <Badge key={idx} colorScheme="purple">
+                        roleObjects.map((r) => (
+                          <Badge key={r.id || r._id} colorScheme="purple">
                             {r.title}
                           </Badge>
                         ))

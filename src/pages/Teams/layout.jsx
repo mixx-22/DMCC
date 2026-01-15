@@ -17,6 +17,7 @@ import {
   Badge,
   Avatar,
   AvatarGroup,
+  useColorModeValue,
 } from "@chakra-ui/react";
 import { motion } from "framer-motion";
 import { useEffect } from "react";
@@ -40,8 +41,8 @@ const TeamsList = () => {
     setSearch,
   } = useTeams();
   const [searchParams, setSearchParams] = useSearchParams();
-  // Use teams?.data or empty array if not present
   const teamList = Array.isArray(teams?.data) ? teams.data : [];
+  const avatarBorderColor = useColorModeValue("gray.50", "gray.800");
 
   // Initialize from URL on mount
   useEffect(() => {
@@ -87,7 +88,11 @@ const TeamsList = () => {
             <InputLeftElement pointerEvents="none" color="gray.400">
               <FiSearch />
             </InputLeftElement>
-            <Input placeholder="Start searching for Teams..." isDisabled />
+            <Input
+              value={search}
+              placeholder="Start searching for Teams..."
+              isDisabled
+            />
           </InputGroup>
         </HStack>
         <Box p={8} textAlign="center">
@@ -163,14 +168,14 @@ const TeamsList = () => {
                   </Td>
                 </Tr>
               ) : (
-                teamList.map((team) => {
+                teamList.map((team, teamIndex) => {
                   const teamId = team._id || team.id;
                   const allMembers = [
                     ...(team.leaders || []),
                     ...(team.members || []),
                   ];
                   return (
-                    <LinkBox as={Tr} key={teamId}>
+                    <LinkBox as={Tr} key={`team-${teamIndex}-${teamId}`}>
                       <Td>
                         <LinkOverlay as={RouterLink} to={`/teams/${teamId}`}>
                           <HStack w="fit-content">
@@ -188,15 +193,18 @@ const TeamsList = () => {
                         {allMembers.length > 0 ? (
                           <HStack justify="flex-end">
                             <AvatarGroup size="sm" max={3}>
-                              {allMembers.map((member) => {
+                              {allMembers.map((member, memberIndex) => {
+                                const memberId =
+                                  member.id || member._id || member.userId;
                                 const fullName = `${member.firstName || ""} ${
                                   member.lastName || ""
                                 }`.trim();
                                 return (
                                   <Avatar
-                                    key={member._id || member.id}
                                     name={fullName}
-                                    src={member.profilePicture}
+                                    src={member?.profilePicture}
+                                    borderColor={avatarBorderColor}
+                                    key={`member-${memberIndex}-${memberId}`}
                                   />
                                 );
                               })}

@@ -15,13 +15,13 @@ import {
   Tbody,
   Tr,
   Td,
-  Stack,
 } from "@chakra-ui/react";
 import { FiUsers } from "react-icons/fi";
 import Timestamp from "./Timestamp";
 
 const TeamProfileView = ({ team, isValidDate }) => {
-  const bg = useColorModeValue("white", "gray.800");
+  const borderColor = useColorModeValue("white", "gray.700");
+  const bg = useColorModeValue("brandPrimary.600", "brandPrimary.800");
   const headerBg = useColorModeValue("brandPrimary.50", "brandPrimary.900");
 
   return (
@@ -40,10 +40,10 @@ const TeamProfileView = ({ team, isValidDate }) => {
                 size="2xl"
                 name={team.name}
                 icon={<Icon as={FiUsers} fontSize="4xl" />}
-                border="4px solid"
-                borderColor={bg}
-                shadow="lg"
-                bg="brandPrimary.500"
+                borderColor={borderColor}
+                borderWidth="8px"
+                bg={bg}
+                color="white"
               />
             </Box>
 
@@ -83,12 +83,16 @@ const TeamProfileView = ({ team, isValidDate }) => {
                   sx={{ td: { px: 5 } }}
                 >
                   <Tbody>
-                    {team.leaders.map((leader) => {
+                    {team.leaders.map((leader, leaderIndex) => {
                       const fullName = `${leader.firstName || ""} ${
                         leader.lastName || ""
                       }`.trim();
                       return (
-                        <Tr key={leader._id || leader.id || leader.userId}>
+                        <Tr
+                          key={`leader-${leaderIndex}-${
+                            leader._id || leader.id || leader.userId
+                          }`}
+                        >
                           <Td>
                             <HStack spacing={3}>
                               <Avatar
@@ -156,12 +160,16 @@ const TeamProfileView = ({ team, isValidDate }) => {
               {team.members && team.members.length > 0 ? (
                 <Table variant="simple" size="sm" border="none">
                   <Tbody>
-                    {team.members.map((member) => {
+                    {team.members.map((member, memberIndex) => {
                       const fullName = `${member.firstName || ""} ${
                         member.lastName || ""
                       }`.trim();
                       return (
-                        <Tr key={member._id || member.id || member.userId}>
+                        <Tr
+                          key={`member-${memberIndex}-${
+                            member._id || member.id || member.userId
+                          }`}
+                        >
                           <Td>
                             <HStack spacing={3}>
                               <Avatar

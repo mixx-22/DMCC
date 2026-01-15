@@ -83,6 +83,7 @@ const ChangePassword = () => {
           body: JSON.stringify({
             currentPassword,
             newPassword,
+            confirmPassword,
           }),
         }
       );
