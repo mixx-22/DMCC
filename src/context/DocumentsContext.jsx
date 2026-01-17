@@ -293,21 +293,6 @@ export const DocumentsProvider = ({ children }) => {
     return documents.filter((doc) => doc.parentId === currentFolderId);
   };
 
-  // Get folder breadcrumb path
-  const getBreadcrumbPath = () => {
-    if (!currentFolderId) return [];
-
-    const path = [];
-    let current = documents.find((d) => d.id === currentFolderId);
-
-    while (current) {
-      path.unshift(current);
-      current = documents.find((d) => d.id === current.parentId);
-    }
-
-    return path;
-  };
-
   // Navigate to folder
   const navigateToFolder = (folderId, folderTitle = null) => {
     setCurrentFolderId(folderId);
@@ -371,7 +356,6 @@ export const DocumentsProvider = ({ children }) => {
     deleteDocument,
     moveDocument,
     getCurrentFolderDocuments,
-    getBreadcrumbPath,
     navigateToFolder,
     toggleViewMode,
     setViewMode,

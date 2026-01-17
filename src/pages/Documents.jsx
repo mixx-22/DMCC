@@ -13,15 +13,11 @@ import {
   VStack,
   Text,
   IconButton,
-  Input,
   Grid,
   Card,
   CardBody,
   Flex,
   useDisclosure,
-  Breadcrumb,
-  BreadcrumbItem,
-  BreadcrumbLink,
   Table,
   Thead,
   Tbody,
@@ -40,13 +36,10 @@ import {
 } from "@chakra-ui/react";
 import {
   FiPlus,
-  FiSearch,
   FiFolder,
   FiFile,
   FiGrid,
   FiList,
-  FiChevronRight,
-  FiHome,
   FiCalendar,
   FiMoreVertical,
   FiAlertCircle,
@@ -72,14 +65,12 @@ const Documents = () => {
     selectedDocument,
     documents,
     getCurrentFolderDocuments,
-    getBreadcrumbPath,
     navigateToFolder,
     toggleViewMode,
     setSelectedDocument,
     loading,
   } = useDocuments();
 
-  const [searchTerm, setSearchTerm] = useState("");
   const [lastClickTime, setLastClickTime] = useState(0);
   const [lastClickId, setLastClickId] = useState(null);
 
@@ -139,17 +130,6 @@ const Documents = () => {
   } = useDisclosure();
 
   const folderDocuments = getCurrentFolderDocuments();
-  const breadcrumbs = getBreadcrumbPath();
-
-  // Filter documents by search term
-  const filteredDocuments = folderDocuments.filter((doc) => {
-    if (!searchTerm) return true;
-    const searchLower = searchTerm.toLowerCase();
-    return (
-      doc.title.toLowerCase().includes(searchLower) ||
-      doc.description?.toLowerCase().includes(searchLower)
-    );
-  });
 
   // Handle document click (single or double)
   const handleDocumentClick = (doc) => {
@@ -268,75 +248,16 @@ const Documents = () => {
         </Flex>
       </PageFooter>
 
-      {/* Breadcrumb Navigation */}
-      <Box mb={4}>
-        <Breadcrumb
-          spacing="8px"
-          separator={<FiChevronRight color="gray.500" />}
-        >
-          <BreadcrumbItem>
-            <BreadcrumbLink
-              as={RouterLink}
-              to="/documents"
-              display="flex"
-              alignItems="center"
-              gap={2}
-            >
-              <FiHome />
-              <Text>All Documents</Text>
-            </BreadcrumbLink>
-          </BreadcrumbItem>
-          {breadcrumbs.map((folder) => (
-            <BreadcrumbItem key={folder.id}>
-              <BreadcrumbLink
-                as={RouterLink}
-                to={`/documents/folders/${folder.id}`}
-              >
-                {folder?.title || "Untitled"}
-              </BreadcrumbLink>
-            </BreadcrumbItem>
-          ))}
-        </Breadcrumb>
-      </Box>
-
-      {/* Search Bar */}
-      <Box mb={6}>
-        <Box position="relative" maxW="600px">
-          <Input
-            placeholder="Search documents..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            pl={10}
-            size="lg"
-            id="search"
-            name="search"
-          />
-          <Box
-            position="absolute"
-            left={3}
-            top="50%"
-            transform="translateY(-50%)"
-            color="gray.400"
-          >
-            <FiSearch />
-          </Box>
-        </Box>
-      </Box>
-
       {/* Documents Grid/List View */}
       <Box>
         {loading ? (
           <Center py={12}>
             <Spinner size="xl" color="blue.500" />
           </Center>
-        ) : filteredDocuments.length === 0 ? (
+        ) : folderDocuments.length === 0 ? (
           <VStack spacing={4} py={12}>
             <Text color="gray.500" fontSize="lg">
-              {searchTerm
-                ? "No documents found"
-                : currentFolderId
-                  ? "This folder is empty"
-                  : "No Documents"}
+              {currentFolderId ? "This folder is empty" : "No Documents"}
             </Text>
             <HStack>
               <Button size="sm" colorScheme="blue" onClick={onFileModalOpen}>
@@ -358,7 +279,7 @@ const Documents = () => {
             templateColumns="repeat(auto-fill, minmax(200px, 1fr))"
             sx={{ ">*": { h: "full" } }}
           >
-            {filteredDocuments.map((doc, docIndex) => {
+            {folderDocuments.map((doc, docIndex) => {
               const docId = doc?.id || doc?._id;
               const isFolderType =
                 doc?.type === "folder" || doc?.type === "auditSchedule";
