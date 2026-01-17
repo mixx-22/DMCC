@@ -312,11 +312,6 @@ export const DocumentsProvider = ({ children }) => {
   const navigateToFolder = (folderId, folderTitle = null) => {
     setCurrentFolderId(folderId);
     setSelectedDocument(null);
-    
-    // Log folder title if provided for debugging
-    if (folderTitle) {
-      console.log(`Navigating to folder: ${folderTitle} (ID: ${folderId})`);
-    }
   };
 
   // Toggle view mode
