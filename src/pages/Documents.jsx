@@ -1,5 +1,10 @@
 import { useState, useEffect } from "react";
-import { Link as RouterLink, useParams, useLocation, useNavigate } from "react-router-dom";
+import {
+  Link as RouterLink,
+  useParams,
+  useLocation,
+  useNavigate,
+} from "react-router-dom";
 import {
   Box,
   Heading,
@@ -70,8 +75,10 @@ const Documents = () => {
   const [lastClickId, setLastClickId] = useState(null);
 
   // Determine if we're viewing a specific document or navigating folders
-  const isDocumentView = location.pathname.match(/^\/documents\/[^/]+$/) && !location.pathname.includes('/folders/');
-  const isFolderView = location.pathname.includes('/folders/');
+  const isDocumentView =
+    location.pathname.match(/^\/documents\/[^/]+$/) &&
+    !location.pathname.includes("/folders/");
+  const isFolderView = location.pathname.includes("/folders/");
 
   // Update currentFolderId when URL changes for folder navigation
   useEffect(() => {
@@ -91,7 +98,7 @@ const Documents = () => {
   // Fetch and display specific document if viewing /documents/:id
   useEffect(() => {
     if (isDocumentView && id) {
-      fetchDocumentById(id).then(doc => {
+      fetchDocumentById(id).then((doc) => {
         if (doc) {
           setSelectedDocument(doc);
         }
@@ -134,7 +141,7 @@ const Documents = () => {
   const handleDocumentClick = (doc) => {
     const now = Date.now();
     const timeDiff = now - lastClickTime;
-    
+
     // Double click detection (within 300ms)
     if (lastClickId === doc.id && timeDiff < 300) {
       // Double click - navigate to proper route
@@ -274,16 +281,12 @@ const Documents = () => {
             <Text color="gray.500" fontSize="lg">
               {searchTerm
                 ? "No documents found"
-                : currentFolderId 
-                ? "This folder is empty" 
-                : "No Documents"}
+                : currentFolderId
+                  ? "This folder is empty"
+                  : "No Documents"}
             </Text>
             <HStack>
-              <Button
-                size="sm"
-                colorScheme="blue"
-                onClick={onFileModalOpen}
-              >
+              <Button size="sm" colorScheme="blue" onClick={onFileModalOpen}>
                 Upload File
               </Button>
               <Button
@@ -297,25 +300,25 @@ const Documents = () => {
             </HStack>
           </VStack>
         ) : viewMode === "grid" ? (
-          <Grid
-            templateColumns="repeat(auto-fill, minmax(200px, 1fr))"
-            gap={4}
-          >
+          <Grid templateColumns="repeat(auto-fill, minmax(200px, 1fr))" gap={4}>
             {filteredDocuments.map((doc) => {
-              const isFolderType = doc.type === "folder" || doc.type === "auditSchedule";
+              const isFolderType =
+                doc.type === "folder" || doc.type === "auditSchedule";
               const CardWrapper = isFolderType ? Link : Box;
-              const linkProps = isFolderType ? {
-                as: RouterLink,
-                to: `/documents/folders/${doc.id}`,
-                style: { textDecoration: 'none' },
-                onClick: (e) => {
-                  e.preventDefault();
-                  handleDocumentClick(doc);
-                }
-              } : {
-                onClick: () => handleDocumentClick(doc)
-              };
-              
+              const linkProps = isFolderType
+                ? {
+                    as: RouterLink,
+                    to: `/documents/folders/${doc.id}`,
+                    style: { textDecoration: "none" },
+                    onClick: (e) => {
+                      e.preventDefault();
+                      handleDocumentClick(doc);
+                    },
+                  }
+                : {
+                    onClick: () => handleDocumentClick(doc),
+                  };
+
               return (
                 <CardWrapper key={doc.id} {...linkProps}>
                   <Card
@@ -352,8 +355,13 @@ const Documents = () => {
                         >
                           {doc.title || "Untitled"}
                         </Text>
-                        {doc.type === "file" && doc.metadata.filename && (
-                          <Text fontSize="xs" color="gray.500" isTruncated maxW="full">
+                        {doc?.type === "file" && doc?.metadata?.filename && (
+                          <Text
+                            fontSize="xs"
+                            color="gray.500"
+                            isTruncated
+                            maxW="full"
+                          >
                             {doc.metadata.filename}
                           </Text>
                         )}
@@ -382,17 +390,20 @@ const Documents = () => {
             </Thead>
             <Tbody>
               {filteredDocuments.map((doc) => {
-                const isFolderType = doc.type === "folder" || doc.type === "auditSchedule";
+                const isFolderType =
+                  doc.type === "folder" || doc.type === "auditSchedule";
                 const RowWrapper = isFolderType ? "a" : "tr";
-                const rowProps = isFolderType ? {
-                  href: `/documents/folders/${doc.id}`,
-                  onClick: (e) => {
-                    e.preventDefault();
-                    handleDocumentClick(doc);
-                  },
-                  style: { display: 'table-row' }
-                } : {};
-                
+                const rowProps = isFolderType
+                  ? {
+                      href: `/documents/folders/${doc.id}`,
+                      onClick: (e) => {
+                        e.preventDefault();
+                        handleDocumentClick(doc);
+                      },
+                      style: { display: "table-row" },
+                    }
+                  : {};
+
                 return (
                   <Tr
                     as={RowWrapper}
@@ -400,7 +411,11 @@ const Documents = () => {
                     key={doc.id}
                     cursor="pointer"
                     _hover={{ bg: "gray.50" }}
-                    bg={selectedDocument?.id === doc.id ? "blue.50" : "transparent"}
+                    bg={
+                      selectedDocument?.id === doc.id
+                        ? "blue.50"
+                        : "transparent"
+                    }
                   >
                     <Td>
                       <HStack>
@@ -421,7 +436,8 @@ const Documents = () => {
                       <Text fontSize="sm">
                         {doc.type === "auditSchedule"
                           ? "Audit Schedule"
-                          : doc.type.charAt(0).toUpperCase() + doc.type.slice(1)}
+                          : doc.type.charAt(0).toUpperCase() +
+                            doc.type.slice(1)}
                       </Text>
                     </Td>
                     <Td>

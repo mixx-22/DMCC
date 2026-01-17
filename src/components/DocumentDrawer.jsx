@@ -211,7 +211,7 @@ const DocumentDrawer = ({ document, isOpen, onClose }) => {
               </Box>
 
               {/* File-specific metadata */}
-              {document.type === "file" && (
+              {document?.type === "file" && (
                 <>
                   <Divider />
                   <Box>
@@ -224,7 +224,7 @@ const DocumentDrawer = ({ document, isOpen, onClose }) => {
                           Filename
                         </Text>
                         <Text fontSize="sm" wordBreak="break-all">
-                          {document.metadata.filename}
+                          {document?.metadata?.filename}
                         </Text>
                       </Box>
                       <Box>
@@ -247,7 +247,7 @@ const DocumentDrawer = ({ document, isOpen, onClose }) => {
               )}
 
               {/* Folder-specific metadata */}
-              {document.type === "folder" && (
+              {document?.type === "folder" && (
                 <>
                   <Divider />
                   <Box>
@@ -261,7 +261,9 @@ const DocumentDrawer = ({ document, isOpen, onClose }) => {
                         </Text>
                         <Badge
                           colorScheme={
-                            document.metadata.allowInheritance ? "green" : "gray"
+                            document.metadata.allowInheritance
+                              ? "green"
+                              : "gray"
                           }
                         >
                           {document.metadata.allowInheritance
@@ -301,7 +303,7 @@ const DocumentDrawer = ({ document, isOpen, onClose }) => {
                               .split("-")
                               .map(
                                 (word) =>
-                                  word.charAt(0).toUpperCase() + word.slice(1)
+                                  word.charAt(0).toUpperCase() + word.slice(1),
                               )
                               .join(" ")}
                           </Text>
@@ -312,7 +314,9 @@ const DocumentDrawer = ({ document, isOpen, onClose }) => {
                           <Text fontSize="sm" color="gray.600">
                             Standard
                           </Text>
-                          <Text fontSize="sm">{document.metadata.standard}</Text>
+                          <Text fontSize="sm">
+                            {document.metadata.standard}
+                          </Text>
                         </Box>
                       )}
                       <Box>
@@ -372,7 +376,9 @@ const DocumentDrawer = ({ document, isOpen, onClose }) => {
                     <HStack spacing={2} mt={1}>
                       <Badge
                         colorScheme={
-                          document.permissionOverrides.readOnly ? "orange" : "gray"
+                          document.permissionOverrides.readOnly
+                            ? "orange"
+                            : "gray"
                         }
                       >
                         {document.permissionOverrides.readOnly
@@ -381,7 +387,9 @@ const DocumentDrawer = ({ document, isOpen, onClose }) => {
                       </Badge>
                       <Badge
                         colorScheme={
-                          document.permissionOverrides.restricted ? "red" : "gray"
+                          document.permissionOverrides.restricted
+                            ? "red"
+                            : "gray"
                         }
                       >
                         {document.permissionOverrides.restricted
