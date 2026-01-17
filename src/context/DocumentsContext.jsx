@@ -294,7 +294,7 @@ export const DocumentsProvider = ({ children }) => {
   };
 
   // Navigate to folder
-  const navigateToFolder = (folderId, folderTitle = null) => {
+  const navigateToFolder = (folderId) => {
     setCurrentFolderId(folderId);
     setSelectedDocument(null);
   };

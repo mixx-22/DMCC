@@ -14,11 +14,7 @@ import { FiMoreVertical } from "react-icons/fi";
 import { getDocumentIcon, isDocumentValid } from "./DocumentIcon";
 import Timestamp from "../../components/Timestamp";
 
-export const GridView = ({
-  documents,
-  selectedDocument,
-  onDocumentClick,
-}) => {
+export const GridView = ({ documents, selectedDocument, onDocumentClick }) => {
   return (
     <Grid
       gap={0}
@@ -33,7 +29,7 @@ export const GridView = ({
           as: RouterLink,
           to: isFolderType
             ? `/documents/folders/${docId}`
-            : `/documents/${docId}`,
+            : `/document/${docId}`,
           style: { textDecoration: "none" },
         };
 
@@ -80,7 +76,12 @@ export const GridView = ({
                     {doc?.title || "Untitled"}
                   </Text>
                   {doc?.type === "file" && doc?.metadata?.filename && (
-                    <Text fontSize="xs" color="gray.500" isTruncated maxW="full">
+                    <Text
+                      fontSize="xs"
+                      color="gray.500"
+                      isTruncated
+                      maxW="full"
+                    >
                       {doc.metadata.filename}
                     </Text>
                   )}

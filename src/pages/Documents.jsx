@@ -91,7 +91,7 @@ const Documents = () => {
         navigateToFolder(doc.id, folderTitle);
         navigate(`/documents/folders/${doc.id}`);
       } else if (doc.type === "file") {
-        navigate(`/documents/${doc.id}`);
+        navigate(`/document/${doc.id}`);
       }
       setLastClickTime(0);
       setLastClickId(null);
