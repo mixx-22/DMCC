@@ -25,11 +25,11 @@ import {
   FiCalendar,
   FiAlertCircle,
 } from "react-icons/fi";
-import Timestamp from "./Timestamp";
-import EditDocumentModal from "./EditDocumentModal";
+import Timestamp from "../../Timestamp";
+import EditDocumentModal from "../modals/EditDocumentModal";
 import DeleteDocumentModal from "../modals/DeleteDocumentModal";
-import MoveDocumentModal from "./MoveDocumentModal";
-import PrivacySettingsModal from "./PrivacySettingsModal";
+import MoveDocumentModal from "../modals/MoveDocumentModal";
+import PrivacySettingsModal from "../modals/PrivacySettingsModal";
 
 const DocumentDrawer = ({ document, isOpen, onClose }) => {
   const {
@@ -60,7 +60,7 @@ const DocumentDrawer = ({ document, isOpen, onClose }) => {
 
   // Get document icon with validation
   const getDocumentIcon = () => {
-    if (!document || typeof document !== 'object') {
+    if (!document || typeof document !== "object") {
       return <FiAlertCircle size={48} color="#E53E3E" />;
     }
 
@@ -72,11 +72,23 @@ const DocumentDrawer = ({ document, isOpen, onClose }) => {
       case "file":
         // Check if file has valid metadata
         if (!document?.metadata?.filename) {
-          return <FiAlertCircle size={48} color="#E53E3E" title="Broken file - missing metadata" />;
+          return (
+            <FiAlertCircle
+              size={48}
+              color="#E53E3E"
+              title="Broken file - missing metadata"
+            />
+          );
         }
         return <FiFile size={48} color="#718096" />;
       default:
-        return <FiAlertCircle size={48} color="#E53E3E" title="Unknown document type" />;
+        return (
+          <FiAlertCircle
+            size={48}
+            color="#E53E3E"
+            title="Unknown document type"
+          />
+        );
     }
   };
 
@@ -92,16 +104,17 @@ const DocumentDrawer = ({ document, isOpen, onClose }) => {
     if (document?.type === "file" && document?.metadata?.key) {
       const link = window.document.createElement("a");
       link.href = document.metadata.key;
-      link.download = document?.metadata?.filename || document?.title || "download";
+      link.download =
+        document?.metadata?.filename || document?.title || "download";
       link.click();
     }
   };
 
   // Check if document is valid
   const isDocumentValid = () => {
-    if (!document || typeof document !== 'object') return false;
+    if (!document || typeof document !== "object") return false;
     if (!document.type) return false;
-    if (document.type === 'file' && !document?.metadata?.filename) return false;
+    if (document.type === "file" && !document?.metadata?.filename) return false;
     return true;
   };
 
@@ -120,7 +133,12 @@ const DocumentDrawer = ({ document, isOpen, onClose }) => {
               {/* Icon and Title */}
               <VStack align="center" py={4}>
                 {getDocumentIcon()}
-                <Text fontSize="lg" fontWeight="bold" textAlign="center" color={isValid ? "inherit" : "red.500"}>
+                <Text
+                  fontSize="lg"
+                  fontWeight="bold"
+                  textAlign="center"
+                  color={isValid ? "inherit" : "red.500"}
+                >
                   {document?.title || "Untitled"}
                 </Text>
                 {!isValid && (
@@ -195,9 +213,9 @@ const DocumentDrawer = ({ document, isOpen, onClose }) => {
                       {document?.type === "auditSchedule"
                         ? "Audit Schedule"
                         : document?.type
-                        ? document.type.charAt(0).toUpperCase() +
-                          document.type.slice(1)
-                        : "Unknown"}
+                          ? document.type.charAt(0).toUpperCase() +
+                            document.type.slice(1)
+                          : "Unknown"}
                     </Text>
                   </Box>
 

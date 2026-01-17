@@ -32,19 +32,19 @@ import {
   FiHome,
 } from "react-icons/fi";
 import { useDocuments } from "../context/DocumentsContext";
-import PageHeader from "../../../components/PageHeader";
-import PageFooter from "../components/PageFooter";
+import PageHeader from "../../PageHeader";
+import PageFooter from "../../PageFooter";
 import EditDocumentModal from "../modals/EditDocumentModal";
 import DeleteDocumentModal from "../modals/DeleteDocumentModal";
 import MoveDocumentModal from "../modals/MoveDocumentModal";
 import PrivacySettingsModal from "../modals/PrivacySettingsModal";
-import Timestamp from "../components/Timestamp";
+import Timestamp from "../../Timestamp";
 
 const DocumentDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const { fetchDocumentById, documents, loading } = useDocuments();
-  
+
   const [document, setDocument] = useState(null);
   const [breadcrumbs, setBreadcrumbs] = useState([]);
   const fetchedRef = useRef(false);
@@ -121,7 +121,7 @@ const DocumentDetail = () => {
     const buildBreadcrumbs = () => {
       const path = [];
       let current = document;
-      
+
       // Traverse up the parent chain
       while (current && current.parentId) {
         const parent = documents.find((d) => d.id === current.parentId);
@@ -132,7 +132,7 @@ const DocumentDetail = () => {
           break;
         }
       }
-      
+
       setBreadcrumbs(path);
     };
 
@@ -193,8 +193,7 @@ const DocumentDetail = () => {
   const isDocumentValid = () => {
     if (!document || typeof document !== "object") return false;
     if (!document.type) return false;
-    if (document.type === "file" && !document?.metadata?.filename)
-      return false;
+    if (document.type === "file" && !document?.metadata?.filename) return false;
     return true;
   };
 
@@ -365,9 +364,9 @@ const DocumentDetail = () => {
                       {document?.type === "auditSchedule"
                         ? "Audit Schedule"
                         : document?.type
-                        ? document.type.charAt(0).toUpperCase() +
-                          document.type.slice(1)
-                        : "Unknown"}
+                          ? document.type.charAt(0).toUpperCase() +
+                            document.type.slice(1)
+                          : "Unknown"}
                     </Text>
                   </Box>
 
@@ -492,7 +491,9 @@ const DocumentDetail = () => {
                       </Text>
                       <Badge
                         colorScheme={
-                          document?.metadata?.allowInheritance ? "green" : "gray"
+                          document?.metadata?.allowInheritance
+                            ? "green"
+                            : "gray"
                         }
                         fontSize="md"
                         px={3}
@@ -537,7 +538,7 @@ const DocumentDetail = () => {
                               .split("-")
                               .map(
                                 (word) =>
-                                  word.charAt(0).toUpperCase() + word.slice(1)
+                                  word.charAt(0).toUpperCase() + word.slice(1),
                               )
                               .join(" ")}
                           </Text>
@@ -552,7 +553,9 @@ const DocumentDetail = () => {
                           <Text fontSize="sm" color="gray.600" mb={1}>
                             Standard
                           </Text>
-                          <Text fontSize="md">{document.metadata.standard}</Text>
+                          <Text fontSize="md">
+                            {document.metadata.standard}
+                          </Text>
                         </Box>
                       </>
                     )}
