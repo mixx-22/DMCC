@@ -360,6 +360,8 @@ const Documents = () => {
                   {...linkProps}
                 >
                   <Card
+                    sx={{ ".moreOptions": { opacity: 0 } }}
+                    _hover={{ ".moreOptions": { opacity: 1 } }}
                     variant={isSelected ? "documentSelected" : "document"}
                     cursor="pointer"
                     opacity={isValid ? 1 : 0.6}
@@ -369,6 +371,7 @@ const Documents = () => {
                         <HStack justify="space-between" w="full">
                           {getDocumentIcon(doc)}
                           <IconButton
+                            className="moreOptions"
                             icon={<FiMoreVertical />}
                             size="sm"
                             variant="ghost"
@@ -381,6 +384,7 @@ const Documents = () => {
                           />
                         </HStack>
                         <Text
+                          fontSize="sm"
                           fontWeight="semibold"
                           noOfLines={2}
                           maxW="full"

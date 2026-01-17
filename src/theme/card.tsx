@@ -17,7 +17,7 @@ const document = defineStyle((props) => {
       },
     },
     body: {
-      p: 4,
+      p: 2,
     },
   };
 });
@@ -36,7 +36,7 @@ const documentSelected = defineStyle((props) => {
       },
     },
     body: {
-      p: 4,
+      p: 2,
     },
   };
 });
