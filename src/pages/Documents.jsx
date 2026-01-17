@@ -70,6 +70,7 @@ const Documents = () => {
     viewMode,
     currentFolderId,
     selectedDocument,
+    documents,
     getCurrentFolderDocuments,
     getBreadcrumbPath,
     navigateToFolder,
@@ -106,15 +107,18 @@ const Documents = () => {
     if (isFolderView && id) {
       // Viewing a folder: /documents/folders/:id
       if (id !== currentFolderId) {
-        navigateToFolder(id, `/`); // add concatenated document.path + document.title
+        // Find the folder document to get its title from all documents
+        const folderDoc = documents.find((doc) => doc.id === id);
+        const folderTitle = folderDoc?.title || "Untitled";
+        navigateToFolder(id, folderTitle);
       }
     } else if (!isFolderView) {
       // Root view: /documents
       if (currentFolderId !== null) {
-        navigateToFolder(null, "/");
+        navigateToFolder(null, null);
       }
     }
-  }, [id, isFolderView, currentFolderId, navigateToFolder]);
+  }, [id, isFolderView, currentFolderId, navigateToFolder, documents]);
 
   const {
     isOpen: isFolderModalOpen,
@@ -157,6 +161,9 @@ const Documents = () => {
       // Double click - navigate to proper route
       if (doc.type === "folder" || doc.type === "auditSchedule") {
         // Navigate to folder view: /documents/folders/:id
+        // Pass folder title as second parameter
+        const folderTitle = doc?.title || "Untitled";
+        navigateToFolder(doc.id, folderTitle);
         navigate(`/documents/folders/${doc.id}`);
       } else if (doc.type === "file") {
         // Navigate to document view: /documents/:id
