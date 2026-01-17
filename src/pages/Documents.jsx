@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import {
   Link as RouterLink,
   useParams,
@@ -68,45 +68,76 @@ const Documents = () => {
     navigateToFolder,
     toggleViewMode,
     setSelectedDocument,
-    fetchDocumentById,
     loading,
+    documents,
   } = useDocuments();
 
   const [searchTerm, setSearchTerm] = useState("");
   const [lastClickTime, setLastClickTime] = useState(0);
   const [lastClickId, setLastClickId] = useState(null);
+  const [breadcrumbs, setBreadcrumbs] = useState([]);
 
-  // Determine if we're viewing a specific document or navigating folders
-  const isDocumentView =
-    location.pathname.match(/^\/documents\/[^/]+$/) &&
-    !location.pathname.includes("/folders/");
   const isFolderView = location.pathname.includes("/folders/");
+
+  // Use ref to prevent duplicate fetch calls
+  const fetchedRef = useRef(false);
+  const currentIdRef = useRef(null);
 
   // Update currentFolderId when URL changes for folder navigation
   useEffect(() => {
+    // Reset fetch tracking when id changes
+    if (currentIdRef.current !== id) {
+      fetchedRef.current = false;
+      currentIdRef.current = id;
+    }
+
+    // Prevent duplicate navigateToFolder calls
+    if (fetchedRef.current) {
+      return;
+    }
+
+    fetchedRef.current = true;
+
     if (isFolderView && id) {
       // Viewing a folder: /documents/folders/:id
       if (id !== currentFolderId) {
         navigateToFolder(id);
       }
-    } else if (!isFolderView && !isDocumentView) {
+    } else if (!isFolderView) {
       // Root view: /documents
       if (currentFolderId !== null) {
         navigateToFolder(null);
       }
     }
-  }, [id, isFolderView, isDocumentView, currentFolderId, navigateToFolder]);
+  }, [id, isFolderView, currentFolderId, navigateToFolder]);
 
-  // Fetch and display specific document if viewing /documents/:id
+  // Build breadcrumbs based on path and parentId
   useEffect(() => {
-    if (isDocumentView && id) {
-      fetchDocumentById(id).then((doc) => {
-        if (doc) {
-          setSelectedDocument(doc);
-        }
-      });
+    if (!currentFolderId || documents.length === 0) {
+      setBreadcrumbs([]);
+      return;
     }
-  }, [isDocumentView, id, fetchDocumentById, setSelectedDocument]);
+
+    const buildBreadcrumbs = () => {
+      const path = [];
+      let currentId = currentFolderId;
+      
+      // Traverse up the parent chain
+      while (currentId) {
+        const folder = documents.find((d) => d.id === currentId);
+        if (folder) {
+          path.unshift(folder);
+          currentId = folder.parentId;
+        } else {
+          break;
+        }
+      }
+      
+      setBreadcrumbs(path);
+    };
+
+    buildBreadcrumbs();
+  }, [currentFolderId, documents]);
 
   const {
     isOpen: isFolderModalOpen,
@@ -261,7 +292,8 @@ const Documents = () => {
         >
           <BreadcrumbItem>
             <BreadcrumbLink
-              onClick={() => navigateToFolder(null)}
+              as={RouterLink}
+              to="/documents"
               display="flex"
               alignItems="center"
               gap={2}
@@ -272,8 +304,11 @@ const Documents = () => {
           </BreadcrumbItem>
           {breadcrumbs.map((folder) => (
             <BreadcrumbItem key={folder.id}>
-              <BreadcrumbLink onClick={() => navigateToFolder(folder.id)}>
-                {folder.title}
+              <BreadcrumbLink
+                as={RouterLink}
+                to={`/documents/folders/${folder.id}`}
+              >
+                {folder?.title || "Untitled"}
               </BreadcrumbLink>
             </BreadcrumbItem>
           ))}

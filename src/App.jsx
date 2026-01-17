@@ -10,6 +10,7 @@ import Layout from "./components/Layout";
 import Login from "./pages/Login";
 import { Dashboard } from "./pages/Dashboard";
 import Documents from "./pages/Documents";
+import DocumentDetail from "./pages/DocumentDetail";
 import { DocumentsProvider } from "./context/DocumentsContext";
 import Certifications from "./pages/Certifications";
 import CertificationDetail from "./pages/CertificationDetail";
@@ -87,7 +88,7 @@ function App() {
                       path="/documents/:id"
                       element={
                         <DocumentsProvider>
-                          <Documents />
+                          <DocumentDetail />
                         </DocumentsProvider>
                       }
                     />
