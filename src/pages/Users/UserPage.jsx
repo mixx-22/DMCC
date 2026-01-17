@@ -340,6 +340,9 @@ const UserPage = () => {
   const roleObjects =
     user && !isEditMode ? normalizeRoles(user.role || []) : [];
 
+  const teamObjects =
+    user && !isEditMode ? normalizeRoles(user.team || []) : [];
+
   return (
     <Box>
       <PageHeader>
@@ -422,6 +425,7 @@ const UserPage = () => {
         <ProfileViewMode
           user={user}
           roleObjects={roleObjects}
+          teamObjects={teamObjects}
           isValidDate={isValidDate}
         />
       )}
