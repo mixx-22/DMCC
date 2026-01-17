@@ -13,9 +13,14 @@ import {
   AlertIcon,
 } from "@chakra-ui/react";
 import { toast } from "sonner";
-import { useDocuments } from "../context/DocumentsContext";
+import { useDocuments } from "../../../context/DocumentsContext";
 
-const DeleteDocumentModal = ({ isOpen, onClose, document, onDeleteSuccess }) => {
+const DeleteDocumentModal = ({
+  isOpen,
+  onClose,
+  document,
+  onDeleteSuccess,
+}) => {
   const { deleteDocument, documents } = useDocuments();
 
   if (!document) return null;

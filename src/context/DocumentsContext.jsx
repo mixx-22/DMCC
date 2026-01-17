@@ -1,6 +1,6 @@
 import { createContext, useContext, useState, useEffect, useRef } from "react";
-import { useUser } from "../../../context/useUser";
-import apiService from "../../../services/api";
+import { useUser } from "./useUser";
+import apiService from "../services/api";
 
 const DocumentsContext = createContext();
 

@@ -13,7 +13,7 @@ import {
 } from "@chakra-ui/react";
 import { FiMoreVertical } from "react-icons/fi";
 import { getDocumentIcon, isDocumentValid } from "./DocumentIcon";
-import Timestamp from "../../../components/Timestamp";
+import Timestamp from "../Timestamp";
 
 export const ListView = ({
   documents,
@@ -56,9 +56,7 @@ export const ListView = ({
               key={doc?.id || Math.random()}
               cursor="pointer"
               _hover={{ bg: "gray.50" }}
-              bg={
-                selectedDocument?.id === doc?.id ? "blue.50" : "transparent"
-              }
+              bg={selectedDocument?.id === doc?.id ? "blue.50" : "transparent"}
               opacity={isValid ? 1 : 0.6}
             >
               <Td w="full">

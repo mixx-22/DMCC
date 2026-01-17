@@ -18,7 +18,7 @@ import {
 } from "@chakra-ui/react";
 import { FiFolder, FiHome } from "react-icons/fi";
 import { toast } from "sonner";
-import { useDocuments } from "../context/DocumentsContext";
+import { useDocuments } from "../../../context/DocumentsContext";
 
 const MoveDocumentModal = ({ isOpen, onClose, document }) => {
   const { moveDocument, documents } = useDocuments();
@@ -75,29 +75,29 @@ const MoveDocumentModal = ({ isOpen, onClose, document }) => {
             </Text>
 
             <FormLabel>Destination</FormLabel>
-              <RadioGroup
-                value={selectedFolderId || "root"}
-                onChange={(value) =>
-                  setSelectedFolderId(value === "root" ? null : value)
-                }
-              >
-                <Stack spacing={2}>
-                  <Radio value="root">
+            <RadioGroup
+              value={selectedFolderId || "root"}
+              onChange={(value) =>
+                setSelectedFolderId(value === "root" ? null : value)
+              }
+            >
+              <Stack spacing={2}>
+                <Radio value="root">
+                  <HStack>
+                    <FiHome />
+                    <Text>Root</Text>
+                  </HStack>
+                </Radio>
+                {availableFolders.map((folder) => (
+                  <Radio key={folder.id} value={folder.id}>
                     <HStack>
-                      <FiHome />
-                      <Text>Root</Text>
+                      <FiFolder />
+                      <Text>{folder.title}</Text>
                     </HStack>
                   </Radio>
-                  {availableFolders.map((folder) => (
-                    <Radio key={folder.id} value={folder.id}>
-                      <HStack>
-                        <FiFolder />
-                        <Text>{folder.title}</Text>
-                      </HStack>
-                    </Radio>
-                  ))}
-                </Stack>
-              </RadioGroup>
+                ))}
+              </Stack>
+            </RadioGroup>
 
             {availableFolders.length === 0 && (
               <Text fontSize="sm" color="gray.500">

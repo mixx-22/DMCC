@@ -11,17 +11,17 @@ import {
   Center,
 } from "@chakra-ui/react";
 import { FiGrid, FiList } from "react-icons/fi";
-import { useDocuments } from "../context/DocumentsContext";
-import PageHeader from "../../../components/PageHeader";
-import PageFooter from "../../../components/PageFooter";
-import CreateFolderModal from "../modals/CreateFolderModal";
-import CreateAuditScheduleModal from "../modals/CreateAuditScheduleModal";
-import UploadFileModal from "../modals/UploadFileModal";
-import DocumentDrawer from "../components/DocumentDrawer";
-import { GridView } from "../components/GridView";
-import { ListView } from "../components/ListView";
-import { EmptyState } from "../components/EmptyState";
-import { ActionButton } from "../components/ActionButton";
+import { useDocuments } from "../../context/DocumentsContext";
+import PageHeader from "../../components/PageHeader";
+import PageFooter from "../../components/PageFooter";
+import CreateFolderModal from "../../components/Document/modals/CreateFolderModal";
+import CreateAuditScheduleModal from "../../components/Document/modals/CreateAuditScheduleModal";
+import UploadFileModal from "../../components/Document/modals/UploadFileModal";
+import DocumentDrawer from "../../components/Document/DocumentDrawer";
+import { GridView } from "../../components/Document/GridView";
+import { ListView } from "../../components/Document/ListView";
+import { EmptyState } from "../../components/Document/EmptyState";
+import { ActionButton } from "../../components/Document/ActionButton";
 
 const Documents = () => {
   const { id } = useParams();

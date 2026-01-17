@@ -31,14 +31,14 @@ import {
   FiChevronRight,
   FiHome,
 } from "react-icons/fi";
-import { useDocuments } from "../context/DocumentsContext";
-import PageHeader from "../../PageHeader";
-import PageFooter from "../../PageFooter";
-import EditDocumentModal from "../modals/EditDocumentModal";
-import DeleteDocumentModal from "../modals/DeleteDocumentModal";
-import MoveDocumentModal from "../modals/MoveDocumentModal";
-import PrivacySettingsModal from "../modals/PrivacySettingsModal";
-import Timestamp from "../../Timestamp";
+import { useDocuments } from "../../context/DocumentsContext";
+import PageHeader from "../../components/PageHeader";
+import PageFooter from "../../components/PageFooter";
+import EditDocumentModal from "../../components/Document/modals/EditDocumentModal";
+import DeleteDocumentModal from "../../components/Document/modals/DeleteDocumentModal";
+import MoveDocumentModal from "../../components/Document/modals/MoveDocumentModal";
+import PrivacySettingsModal from "../../components/Document/modals/PrivacySettingsModal";
+import Timestamp from "../../components/Timestamp";
 
 const DocumentDetail = () => {
   const { id } = useParams();

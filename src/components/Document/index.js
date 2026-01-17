@@ -1,7 +1,10 @@
-export { DocumentsProvider, useDocuments } from "./context/DocumentsContext";
-export { default as Documents } from "./pages/Documents";
-export { default as DocumentDetail } from "./pages/DocumentDetail";
-export { default as DocumentDrawer } from "./components/DocumentDrawer";
+export {
+  DocumentsProvider,
+  useDocuments,
+} from "../../context/DocumentsContext";
+export { default as Documents } from "../../pages/Document/Documents";
+export { default as DocumentDetail } from "../../pages/Document/DocumentDetail";
+export { default as DocumentDrawer } from "./DocumentDrawer";
 export { default as CreateFolderModal } from "./modals/CreateFolderModal";
 export { default as CreateAuditScheduleModal } from "./modals/CreateAuditScheduleModal";
 export { default as UploadFileModal } from "./modals/UploadFileModal";

@@ -17,7 +17,7 @@ import {
   Box,
 } from "@chakra-ui/react";
 import { toast } from "sonner";
-import { useDocuments } from "../context/DocumentsContext";
+import { useDocuments } from "../../../context/DocumentsContext";
 
 const UploadFileModal = ({ isOpen, onClose, parentId, path }) => {
   const { createDocument } = useDocuments();

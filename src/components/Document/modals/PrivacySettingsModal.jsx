@@ -17,7 +17,7 @@ import {
   HStack,
 } from "@chakra-ui/react";
 import { toast } from "sonner";
-import { useDocuments } from "../context/DocumentsContext";
+import { useDocuments } from "../../../context/DocumentsContext";
 import UserAsyncSelect from "../../UserAsyncSelect";
 import TeamAsyncSelect from "../../TeamAsyncSelect";
 import RoleAsyncSelect from "../../RoleAsyncSelect";
@@ -76,8 +76,9 @@ const PrivacySettingsModal = ({ isOpen, onClose, document }) => {
         <ModalBody>
           <VStack spacing={4} align="stretch">
             <Text fontSize="sm" color="gray.600">
-              Control who can access &quot;{document.title}&quot;. If no users, teams, or
-              roles are specified, the document is visible to everyone.
+              Control who can access &quot;{document.title}&quot;. If no users,
+              teams, or roles are specified, the document is visible to
+              everyone.
             </Text>
 
             <Divider />
