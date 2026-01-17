@@ -19,7 +19,7 @@ import {
 import { toast } from "sonner";
 import { useDocuments } from "../context/DocumentsContext";
 
-const UploadFileModal = ({ isOpen, onClose, parentId }) => {
+const UploadFileModal = ({ isOpen, onClose, parentId, path }) => {
   const { createDocument } = useDocuments();
   const [formData, setFormData] = useState({
     title: "",
@@ -65,6 +65,7 @@ const UploadFileModal = ({ isOpen, onClose, parentId }) => {
       description: formData.description,
       type: "file",
       parentId,
+      path,
       status: 0, // Under review
       metadata: {
         filename: formData.file.name,
@@ -101,7 +102,7 @@ const UploadFileModal = ({ isOpen, onClose, parentId }) => {
     const k = 1024;
     const sizes = ["Bytes", "KB", "MB", "GB"];
     const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return Math.round(bytes / Math.pow(k, i) * 100) / 100 + " " + sizes[i];
+    return Math.round((bytes / Math.pow(k, i)) * 100) / 100 + " " + sizes[i];
   };
 
   return (

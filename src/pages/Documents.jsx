@@ -99,12 +99,12 @@ const Documents = () => {
     if (isFolderView && id) {
       // Viewing a folder: /documents/folders/:id
       if (id !== currentFolderId) {
-        navigateToFolder(id);
+        navigateToFolder(id, `/`); // add concatenated document.path + document.title
       }
     } else if (!isFolderView) {
       // Root view: /documents
       if (currentFolderId !== null) {
-        navigateToFolder(null);
+        navigateToFolder(null, "/");
       }
     }
   }, [id, isFolderView, currentFolderId, navigateToFolder]);
@@ -567,16 +567,19 @@ const Documents = () => {
         isOpen={isFolderModalOpen}
         onClose={onFolderModalClose}
         parentId={currentFolderId}
+        path={`/`}
       />
       <CreateAuditScheduleModal
         isOpen={isAuditModalOpen}
         onClose={onAuditModalClose}
         parentId={currentFolderId}
+        path={`/`}
       />
       <UploadFileModal
         isOpen={isFileModalOpen}
         onClose={onFileModalClose}
         parentId={currentFolderId}
+        path={`/`}
       />
 
       {/* Document Drawer */}

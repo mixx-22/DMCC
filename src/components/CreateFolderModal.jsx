@@ -19,7 +19,7 @@ import {
 import { toast } from "sonner";
 import { useDocuments } from "../context/DocumentsContext";
 
-const CreateFolderModal = ({ isOpen, onClose, parentId }) => {
+const CreateFolderModal = ({ isOpen, onClose, parentId, path }) => {
   const { createDocument } = useDocuments();
   const [formData, setFormData] = useState({
     title: "",
@@ -43,6 +43,7 @@ const CreateFolderModal = ({ isOpen, onClose, parentId }) => {
       description: formData.description,
       type: "folder",
       parentId,
+      path,
       status: 1, // Folders are auto-approved
       metadata: {
         allowInheritance: formData.allowInheritance ? 1 : 0,

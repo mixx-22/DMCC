@@ -62,14 +62,14 @@ export const DocumentsProvider = ({ children }) => {
     lastFetchedFolderIdRef.current = folderId;
     setLoading(true);
     setError(null);
-    
+
     try {
       const params = folderId ? { folder: folderId } : {};
       const data = await apiService.request(DOCUMENTS_ENDPOINT, {
         method: "GET",
         params,
       });
-      
+
       setDocuments(data.data || data.documents || []);
     } catch (err) {
       console.error("Failed to fetch documents:", err);
@@ -87,17 +87,20 @@ export const DocumentsProvider = ({ children }) => {
       // Mock mode: find in localStorage
       const saved = localStorage.getItem("documentsV2");
       const docs = saved ? JSON.parse(saved) : [];
-      return docs.find(doc => doc.id === documentId);
+      return docs.find((doc) => doc.id === documentId);
     }
 
     setLoading(true);
     setError(null);
-    
+
     try {
-      const data = await apiService.request(`${DOCUMENTS_ENDPOINT}/${documentId}`, {
-        method: "GET",
-      });
-      
+      const data = await apiService.request(
+        `${DOCUMENTS_ENDPOINT}/${documentId}`,
+        {
+          method: "GET",
+        },
+      );
+
       return data.data || data.document || data;
     } catch (err) {
       console.error("Failed to fetch document:", err);
@@ -126,6 +129,7 @@ export const DocumentsProvider = ({ children }) => {
       type: documentData.type, // "file", "folder", "auditSchedule"
       status: documentData.status ?? -1, // -1: draft, 0: under review, 1: approved, 2: archived, 3: expired
       parentId: documentData.parentId || currentFolderId,
+      path: documentData.path || currentFolderId,
       owner: {
         type: currentUser?.userType || "",
         id: currentUser?.id || "",
@@ -164,7 +168,10 @@ export const DocumentsProvider = ({ children }) => {
       newDocument.metadata = {
         allowInheritance: documentData.allowInheritance ?? 0,
       };
-    } else if (documentData.type === "auditSchedule" && !documentData.metadata) {
+    } else if (
+      documentData.type === "auditSchedule" &&
+      !documentData.metadata
+    ) {
       newDocument.metadata = {
         code: documentData.code || "",
         type: documentData.auditType || "",
@@ -197,7 +204,7 @@ export const DocumentsProvider = ({ children }) => {
         method: "POST",
         body: JSON.stringify(newDocument),
       });
-      
+
       const createdDoc = data.data || data.document || data;
       // Refresh documents list
       await fetchDocuments(currentFolderId);
@@ -221,7 +228,7 @@ export const DocumentsProvider = ({ children }) => {
               ...updates,
               updatedAt: new Date().toISOString(),
             }
-          : doc
+          : doc,
       );
       localStorage.setItem("documentsV2", JSON.stringify(updated));
       setDocuments(updated);
@@ -234,7 +241,7 @@ export const DocumentsProvider = ({ children }) => {
         method: "PUT",
         body: JSON.stringify(updates),
       });
-      
+
       // Refresh documents list
       await fetchDocuments(currentFolderId);
     } catch (err) {
@@ -253,9 +260,7 @@ export const DocumentsProvider = ({ children }) => {
       const doc = docs.find((d) => d.id === id);
       let idsToDelete = [id];
       if (doc && doc.type === "folder") {
-        const childIds = docs
-          .filter((d) => d.parentId === id)
-          .map((d) => d.id);
+        const childIds = docs.filter((d) => d.parentId === id).map((d) => d.id);
         idsToDelete = [...idsToDelete, ...childIds];
       }
       const updated = docs.filter((doc) => !idsToDelete.includes(doc.id));
@@ -269,7 +274,7 @@ export const DocumentsProvider = ({ children }) => {
       await apiService.request(`${DOCUMENTS_ENDPOINT}/${id}`, {
         method: "DELETE",
       });
-      
+
       // Refresh documents list
       await fetchDocuments(currentFolderId);
     } catch (err) {
@@ -291,15 +296,15 @@ export const DocumentsProvider = ({ children }) => {
   // Get folder breadcrumb path
   const getBreadcrumbPath = () => {
     if (!currentFolderId) return [];
-    
+
     const path = [];
     let current = documents.find((d) => d.id === currentFolderId);
-    
+
     while (current) {
       path.unshift(current);
       current = documents.find((d) => d.id === current.parentId);
     }
-    
+
     return path;
   };
 
@@ -317,35 +322,35 @@ export const DocumentsProvider = ({ children }) => {
   // Check if user can view document based on privacy settings
   const canViewDocument = (doc) => {
     if (!currentUser) return false;
-    
+
     // Owner can always view
     if (doc.owner.id === currentUser.id) return true;
-    
+
     // Check privacy settings
     const { users, teams, roles } = doc.privacy;
-    
+
     // If no privacy settings, document is public
     if (users.length === 0 && teams.length === 0 && roles.length === 0) {
       return true;
     }
-    
+
     // Check if user is in allowed users
     if (users.some((u) => u.id === currentUser.id || u === currentUser.id)) {
       return true;
     }
-    
+
     // Check if user's team is in allowed teams
     const userTeam = currentUser.team || currentUser.department;
     if (teams.some((t) => t.id === userTeam || t === userTeam)) {
       return true;
     }
-    
+
     // Check if user's role is in allowed roles
     const userRole = currentUser.userType;
     if (roles.some((r) => r.id === userRole || r === userRole)) {
       return true;
     }
-    
+
     return false;
   };
 

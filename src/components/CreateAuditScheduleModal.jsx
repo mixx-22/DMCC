@@ -18,7 +18,7 @@ import {
 import { toast } from "sonner";
 import { useDocuments } from "../context/DocumentsContext";
 
-const CreateAuditScheduleModal = ({ isOpen, onClose, parentId }) => {
+const CreateAuditScheduleModal = ({ isOpen, onClose, parentId, path }) => {
   const { createDocument } = useDocuments();
   const [formData, setFormData] = useState({
     title: "",
@@ -44,6 +44,7 @@ const CreateAuditScheduleModal = ({ isOpen, onClose, parentId }) => {
       description: formData.description,
       type: "auditSchedule",
       parentId,
+      path,
       status: -1, // Draft
       metadata: {
         code: formData.code,
