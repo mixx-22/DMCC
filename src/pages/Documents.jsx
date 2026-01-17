@@ -31,6 +31,7 @@ import {
   Link,
   Spinner,
   Center,
+  Avatar,
 } from "@chakra-ui/react";
 import {
   FiPlus,
@@ -166,12 +167,12 @@ const Documents = () => {
   // Get icon based on document type with validation
   const getDocumentIcon = (doc) => {
     // Validate document structure
-    if (!doc || typeof doc !== 'object') {
+    if (!doc || typeof doc !== "object") {
       return <FiAlertCircle size={24} color="#E53E3E" />;
     }
 
     const type = doc?.type;
-    
+
     switch (type) {
       case "folder":
         return <FiFolder size={24} color="#3182CE" />;
@@ -180,19 +181,31 @@ const Documents = () => {
       case "file":
         // Check if file has valid metadata
         if (!doc?.metadata?.filename) {
-          return <FiAlertCircle size={24} color="#E53E3E" title="Broken file - missing metadata" />;
+          return (
+            <FiAlertCircle
+              size={24}
+              color="#E53E3E"
+              title="Broken file - missing metadata"
+            />
+          );
         }
         return <FiFile size={24} color="#718096" />;
       default:
-        return <FiAlertCircle size={24} color="#E53E3E" title="Unknown document type" />;
+        return (
+          <FiAlertCircle
+            size={24}
+            color="#E53E3E"
+            title="Unknown document type"
+          />
+        );
     }
   };
 
   // Check if document is valid and can be displayed
   const isDocumentValid = (doc) => {
-    if (!doc || typeof doc !== 'object') return false;
+    if (!doc || typeof doc !== "object") return false;
     if (!doc.type) return false;
-    if (doc.type === 'file' && !doc?.metadata?.filename) return false;
+    if (doc.type === "file" && !doc?.metadata?.filename) return false;
     return true;
   };
 
@@ -321,37 +334,39 @@ const Documents = () => {
             </HStack>
           </VStack>
         ) : viewMode === "grid" ? (
-          <Grid templateColumns="repeat(auto-fill, minmax(200px, 1fr))" gap={4}>
-            {filteredDocuments.map((doc) => {
+          <Grid
+            gap={0}
+            templateColumns="repeat(auto-fill, minmax(200px, 1fr))"
+            sx={{ ">*": { h: "full" } }}
+          >
+            {filteredDocuments.map((doc, docIndex) => {
+              const docId = doc?.id || doc?._id;
               const isFolderType =
                 doc?.type === "folder" || doc?.type === "auditSchedule";
               const CardWrapper = isFolderType ? Link : Box;
-              const linkProps = isFolderType
-                ? {
-                    as: RouterLink,
-                    to: `/documents/folders/${doc?.id}`,
-                    style: { textDecoration: "none" },
-                    onClick: (e) => {
-                      e.preventDefault();
-                      handleDocumentClick(doc);
-                    },
-                  }
-                : {
-                    onClick: () => handleDocumentClick(doc),
-                  };
+              const linkProps = {
+                as: RouterLink,
+                to: isFolderType
+                  ? `/documents/folders/${docId}`
+                  : `/document/${docId}`,
+                style: { textDecoration: "none" },
+              };
 
               const isValid = isDocumentValid(doc);
-              const isSelected = selectedDocument?.id === doc?.id;
+              const isSelected = selectedDocument?.id === docId;
 
               return (
-                <CardWrapper key={doc?.id || Math.random()} {...linkProps}>
+                <CardWrapper
+                  key={`document-${docIndex}-${doc.type}-${docId}`}
+                  {...linkProps}
+                >
                   <Card
                     variant={isSelected ? "documentSelected" : "document"}
                     cursor="pointer"
                     opacity={isValid ? 1 : 0.6}
                   >
                     <CardBody>
-                      <VStack align="start" spacing={2}>
+                      <VStack align="start" spacing={2} h="full">
                         <HStack justify="space-between" w="full">
                           {getDocumentIcon(doc)}
                           <IconButton
@@ -362,13 +377,13 @@ const Documents = () => {
                             onClick={(e) => {
                               e.stopPropagation();
                               e.preventDefault();
-                              setSelectedDocument(doc);
+                              handleDocumentClick(doc);
                             }}
                           />
                         </HStack>
                         <Text
                           fontWeight="semibold"
-                          isTruncated
+                          noOfLines={2}
                           maxW="full"
                           title={doc?.title || "Untitled"}
                           color={isValid ? "inherit" : "red.500"}
@@ -396,11 +411,13 @@ const Documents = () => {
                           </Text>
                         )}
                         {doc?.updatedAt && (
-                          <Timestamp
-                            date={doc.updatedAt}
-                            fontSize="xs"
-                            color="gray.400"
-                          />
+                          <Box mt="auto">
+                            <Timestamp
+                              fontSize="xs"
+                              color="gray.400"
+                              date={doc.updatedAt}
+                            />
+                          </Box>
                         )}
                       </VStack>
                     </CardBody>
@@ -413,10 +430,9 @@ const Documents = () => {
           <Table variant="simple">
             <Thead>
               <Tr>
-                <Th>Name</Th>
-                <Th>Type</Th>
+                <Th w="full">Name</Th>
                 <Th>Owner</Th>
-                <Th>Modified</Th>
+                <Th>Date Modified</Th>
                 <Th></Th>
               </Tr>
             </Thead>
@@ -452,12 +468,12 @@ const Documents = () => {
                     }
                     opacity={isValid ? 1 : 0.6}
                   >
-                    <Td>
+                    <Td w="full">
                       <HStack>
                         {getDocumentIcon(doc)}
                         <VStack align="start" spacing={0}>
                           <HStack spacing={2}>
-                            <Text 
+                            <Text
                               fontWeight="semibold"
                               color={isValid ? "inherit" : "red.500"}
                             >
@@ -482,31 +498,42 @@ const Documents = () => {
                         </VStack>
                       </HStack>
                     </Td>
-                    <Td>
-                      <Text fontSize="sm">
-                        {doc?.type === "auditSchedule"
-                          ? "Audit Schedule"
-                          : doc?.type
-                          ? doc.type.charAt(0).toUpperCase() +
-                            doc.type.slice(1)
-                          : "Unknown"}
-                      </Text>
+                    <Td whiteSpace="nowrap">
+                      <HStack>
+                        <Avatar
+                          src={doc?.owner?.profilePicture}
+                          name={
+                            doc?.owner
+                              ? [
+                                  doc?.owner.firstName,
+                                  doc?.owner.middleName,
+                                  doc?.owner.lastName,
+                                ]
+                                  .filter(Boolean)
+                                  .join(" ") ||
+                                doc?.owner.name ||
+                                "User"
+                              : "User"
+                          }
+                          size="xs"
+                        />
+                        <Text fontSize="sm">
+                          {doc?.owner?.firstName && doc?.owner?.lastName
+                            ? `${doc.owner.firstName} ${doc.owner.lastName}`
+                            : "Unknown"}
+                        </Text>
+                      </HStack>
                     </Td>
-                    <Td>
-                      <Text fontSize="sm">
-                        {doc?.owner?.firstName && doc?.owner?.lastName
-                          ? `${doc.owner.firstName} ${doc.owner.lastName}`
-                          : "Unknown"}
-                      </Text>
-                    </Td>
-                    <Td>
+                    <Td whiteSpace="nowrap">
                       {doc?.updatedAt ? (
-                        <Timestamp date={doc.updatedAt} />
+                        <Timestamp fontSize="sm" date={doc.updatedAt} />
                       ) : (
-                        <Text fontSize="sm" color="gray.400">-</Text>
+                        <Text fontSize="sm" color="gray.400">
+                          -
+                        </Text>
                       )}
                     </Td>
-                    <Td>
+                    <Td w={22}>
                       <IconButton
                         icon={<FiMoreVertical />}
                         size="sm"
