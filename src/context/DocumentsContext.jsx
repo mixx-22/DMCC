@@ -1,7 +1,11 @@
 import { createContext, useContext, useState, useEffect } from "react";
 import { useUser } from "./useUser";
+import apiService from "../services/api";
 
 const DocumentsContext = createContext();
+
+const DOCUMENTS_ENDPOINT = "/documents";
+const USE_API = import.meta.env.VITE_USE_API !== "false";
 
 export const useDocuments = () => {
   const context = useContext(DocumentsContext);
@@ -15,10 +19,9 @@ export const DocumentsProvider = ({ children }) => {
   const { user: currentUser } = useUser();
 
   // Core documents state with new data structure
-  const [documents, setDocuments] = useState(() => {
-    const saved = localStorage.getItem("documentsV2");
-    return saved ? JSON.parse(saved) : [];
-  });
+  const [documents, setDocuments] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
 
   // View preferences
   const [viewMode, setViewMode] = useState(() => {
@@ -32,15 +35,71 @@ export const DocumentsProvider = ({ children }) => {
   // Selected document for drawer
   const [selectedDocument, setSelectedDocument] = useState(null);
 
-  // Persist documents to localStorage
-  useEffect(() => {
-    localStorage.setItem("documentsV2", JSON.stringify(documents));
-  }, [documents]);
-
-  // Persist view mode to localStorage
+  // Persist view mode to localStorage only
   useEffect(() => {
     localStorage.setItem("documentsViewMode", viewMode);
   }, [viewMode]);
+
+  // Fetch documents from API
+  const fetchDocuments = async (folderId = null) => {
+    if (!USE_API) {
+      // Mock mode: use localStorage
+      const saved = localStorage.getItem("documentsV2");
+      setDocuments(saved ? JSON.parse(saved) : []);
+      return;
+    }
+
+    setLoading(true);
+    setError(null);
+    
+    try {
+      const params = folderId ? { folder: folderId } : {};
+      const data = await apiService.request(DOCUMENTS_ENDPOINT, {
+        method: "GET",
+        params,
+      });
+      
+      setDocuments(data.data || data.documents || []);
+    } catch (err) {
+      console.error("Failed to fetch documents:", err);
+      setError(err.message || "Failed to load documents");
+      setDocuments([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Fetch single document by ID
+  const fetchDocumentById = async (documentId) => {
+    if (!USE_API) {
+      // Mock mode: find in localStorage
+      const saved = localStorage.getItem("documentsV2");
+      const docs = saved ? JSON.parse(saved) : [];
+      return docs.find(doc => doc.id === documentId);
+    }
+
+    setLoading(true);
+    setError(null);
+    
+    try {
+      const data = await apiService.request(`${DOCUMENTS_ENDPOINT}/${documentId}`, {
+        method: "GET",
+      });
+      
+      return data.data || data.document || data;
+    } catch (err) {
+      console.error("Failed to fetch document:", err);
+      setError(err.message || "Failed to load document");
+      return null;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Load documents on mount and when folder changes
+  useEffect(() => {
+    fetchDocuments(currentFolderId);
+  }, [currentFolderId]);
 
   // Generate unique ID
   const generateId = () => {
@@ -48,14 +107,13 @@ export const DocumentsProvider = ({ children }) => {
   };
 
   // Create a new document (file/folder/auditSchedule)
-  const createDocument = (documentData) => {
+  const createDocument = async (documentData) => {
     const newDocument = {
-      id: generateId(),
       title: documentData.title || "",
       description: documentData.description || "",
       type: documentData.type, // "file", "folder", "auditSchedule"
       status: documentData.status ?? -1, // -1: draft, 0: under review, 1: approved, 2: archived, 3: expired
-      parentId: documentData.parentId || null,
+      parentId: documentData.parentId || currentFolderId,
       owner: {
         type: currentUser?.userType || "",
         id: currentUser?.id || "",
@@ -80,8 +138,6 @@ export const DocumentsProvider = ({ children }) => {
         team: currentUser?.team || currentUser?.department || "",
       },
       metadata: documentData.metadata || {},
-      createdAt: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
     };
 
     // Set default metadata based on type
@@ -94,27 +150,59 @@ export const DocumentsProvider = ({ children }) => {
       };
     } else if (documentData.type === "folder" && !documentData.metadata) {
       newDocument.metadata = {
-        allowInheritance: 0,
+        allowInheritance: documentData.allowInheritance ?? 0,
       };
     } else if (documentData.type === "auditSchedule" && !documentData.metadata) {
       newDocument.metadata = {
-        code: "",
-        type: "",
-        standard: "",
+        code: documentData.code || "",
+        type: documentData.auditType || "",
+        standard: documentData.standard || "",
         status: 0,
         auditors: [],
         organization: {},
       };
     }
 
-    setDocuments((prev) => [...prev, newDocument]);
-    return newDocument;
+    if (!USE_API) {
+      // Mock mode: use localStorage
+      const docWithId = {
+        ...newDocument,
+        id: generateId(),
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      };
+      const saved = localStorage.getItem("documentsV2");
+      const docs = saved ? JSON.parse(saved) : [];
+      const updated = [...docs, docWithId];
+      localStorage.setItem("documentsV2", JSON.stringify(updated));
+      setDocuments(updated);
+      return docWithId;
+    }
+
+    // API mode: POST /documents
+    try {
+      const data = await apiService.request(DOCUMENTS_ENDPOINT, {
+        method: "POST",
+        body: JSON.stringify(newDocument),
+      });
+      
+      const createdDoc = data.data || data.document || data;
+      // Refresh documents list
+      await fetchDocuments(currentFolderId);
+      return createdDoc;
+    } catch (err) {
+      console.error("Failed to create document:", err);
+      throw new Error(err.message || "Failed to create document");
+    }
   };
 
   // Update a document
-  const updateDocument = (id, updates) => {
-    setDocuments((prev) =>
-      prev.map((doc) =>
+  const updateDocument = async (id, updates) => {
+    if (!USE_API) {
+      // Mock mode: use localStorage
+      const saved = localStorage.getItem("documentsV2");
+      const docs = saved ? JSON.parse(saved) : [];
+      const updated = docs.map((doc) =>
         doc.id === id
           ? {
               ...doc,
@@ -122,36 +210,65 @@ export const DocumentsProvider = ({ children }) => {
               updatedAt: new Date().toISOString(),
             }
           : doc
-      )
-    );
+      );
+      localStorage.setItem("documentsV2", JSON.stringify(updated));
+      setDocuments(updated);
+      return;
+    }
+
+    // API mode: PUT /documents/:id
+    try {
+      await apiService.request(`${DOCUMENTS_ENDPOINT}/${id}`, {
+        method: "PUT",
+        body: JSON.stringify(updates),
+      });
+      
+      // Refresh documents list
+      await fetchDocuments(currentFolderId);
+    } catch (err) {
+      console.error("Failed to update document:", err);
+      throw new Error(err.message || "Failed to update document");
+    }
   };
 
   // Delete a document
-  const deleteDocument = (id) => {
-    // Also delete all children if it's a folder
-    const doc = documents.find((d) => d.id === id);
-    if (doc && doc.type === "folder") {
-      const childIds = documents
-        .filter((d) => d.parentId === id)
-        .map((d) => d.id);
-      childIds.forEach((childId) => deleteDocument(childId));
+  const deleteDocument = async (id) => {
+    if (!USE_API) {
+      // Mock mode: use localStorage
+      const saved = localStorage.getItem("documentsV2");
+      const docs = saved ? JSON.parse(saved) : [];
+      // Also delete all children if it's a folder
+      const doc = docs.find((d) => d.id === id);
+      let idsToDelete = [id];
+      if (doc && doc.type === "folder") {
+        const childIds = docs
+          .filter((d) => d.parentId === id)
+          .map((d) => d.id);
+        idsToDelete = [...idsToDelete, ...childIds];
+      }
+      const updated = docs.filter((doc) => !idsToDelete.includes(doc.id));
+      localStorage.setItem("documentsV2", JSON.stringify(updated));
+      setDocuments(updated);
+      return;
     }
-    setDocuments((prev) => prev.filter((doc) => doc.id !== id));
+
+    // API mode: DELETE /documents/:id
+    try {
+      await apiService.request(`${DOCUMENTS_ENDPOINT}/${id}`, {
+        method: "DELETE",
+      });
+      
+      // Refresh documents list
+      await fetchDocuments(currentFolderId);
+    } catch (err) {
+      console.error("Failed to delete document:", err);
+      throw new Error(err.message || "Failed to delete document");
+    }
   };
 
   // Move document to a different parent
-  const moveDocument = (id, newParentId) => {
-    setDocuments((prev) =>
-      prev.map((doc) =>
-        doc.id === id
-          ? {
-              ...doc,
-              parentId: newParentId,
-              updatedAt: new Date().toISOString(),
-            }
-          : doc
-      )
-    );
+  const moveDocument = async (id, newParentId) => {
+    return updateDocument(id, { parentId: newParentId });
   };
 
   // Get documents in current folder
@@ -230,6 +347,8 @@ export const DocumentsProvider = ({ children }) => {
     viewMode,
     currentFolderId,
     selectedDocument,
+    loading,
+    error,
     createDocument,
     updateDocument,
     deleteDocument,
@@ -242,6 +361,8 @@ export const DocumentsProvider = ({ children }) => {
     setSelectedDocument,
     canViewDocument,
     getVisibleDocuments,
+    fetchDocuments,
+    fetchDocumentById,
   };
 
   return (

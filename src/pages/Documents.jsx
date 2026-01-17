@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Link as RouterLink, useParams } from "react-router-dom";
+import { Link as RouterLink, useParams, useLocation, useNavigate } from "react-router-dom";
 import {
   Box,
   Heading,
@@ -24,6 +24,8 @@ import {
   Th,
   Td,
   Link,
+  Spinner,
+  Center,
 } from "@chakra-ui/react";
 import {
   FiPlus,
@@ -47,7 +49,9 @@ import DocumentDrawer from "../components/DocumentDrawer";
 import Timestamp from "../components/Timestamp";
 
 const Documents = () => {
-  const { id: folderId } = useParams();
+  const { id } = useParams();
+  const location = useLocation();
+  const navigate = useNavigate();
   const {
     viewMode,
     currentFolderId,
@@ -57,20 +61,43 @@ const Documents = () => {
     navigateToFolder,
     toggleViewMode,
     setSelectedDocument,
+    fetchDocumentById,
+    loading,
   } = useDocuments();
 
   const [searchTerm, setSearchTerm] = useState("");
   const [lastClickTime, setLastClickTime] = useState(0);
   const [lastClickId, setLastClickId] = useState(null);
 
-  // Update currentFolderId when URL changes
+  // Determine if we're viewing a specific document or navigating folders
+  const isDocumentView = location.pathname.match(/^\/documents\/[^/]+$/) && !location.pathname.includes('/folders/');
+  const isFolderView = location.pathname.includes('/folders/');
+
+  // Update currentFolderId when URL changes for folder navigation
   useEffect(() => {
-    if (folderId && folderId !== currentFolderId) {
-      navigateToFolder(folderId);
-    } else if (!folderId && currentFolderId !== null) {
-      navigateToFolder(null);
+    if (isFolderView && id) {
+      // Viewing a folder: /documents/folders/:id
+      if (id !== currentFolderId) {
+        navigateToFolder(id);
+      }
+    } else if (!isFolderView && !isDocumentView) {
+      // Root view: /documents
+      if (currentFolderId !== null) {
+        navigateToFolder(null);
+      }
     }
-  }, [folderId, currentFolderId, navigateToFolder]);
+  }, [id, isFolderView, isDocumentView, currentFolderId, navigateToFolder]);
+
+  // Fetch and display specific document if viewing /documents/:id
+  useEffect(() => {
+    if (isDocumentView && id) {
+      fetchDocumentById(id).then(doc => {
+        if (doc) {
+          setSelectedDocument(doc);
+        }
+      });
+    }
+  }, [isDocumentView, id, fetchDocumentById, setSelectedDocument]);
 
   const {
     isOpen: isFolderModalOpen,
@@ -110,12 +137,13 @@ const Documents = () => {
     
     // Double click detection (within 300ms)
     if (lastClickId === doc.id && timeDiff < 300) {
-      // Double click - open file or folder
+      // Double click - navigate to proper route
       if (doc.type === "folder" || doc.type === "auditSchedule") {
-        navigateToFolder(doc.id);
+        // Navigate to folder view: /documents/folders/:id
+        navigate(`/documents/folders/${doc.id}`);
       } else if (doc.type === "file") {
-        // Open file (would typically open in new tab or viewer)
-        window.open(doc.metadata.key || "#", "_blank");
+        // Navigate to document view: /documents/:id
+        navigate(`/documents/${doc.id}`);
       }
       setLastClickTime(0);
       setLastClickId(null);
@@ -237,7 +265,11 @@ const Documents = () => {
 
       {/* Documents Grid/List View */}
       <Box>
-        {filteredDocuments.length === 0 ? (
+        {loading ? (
+          <Center py={12}>
+            <Spinner size="xl" color="blue.500" />
+          </Center>
+        ) : filteredDocuments.length === 0 ? (
           <VStack spacing={4} py={12}>
             <Text color="gray.500" fontSize="lg">
               {searchTerm
@@ -274,7 +306,7 @@ const Documents = () => {
               const CardWrapper = isFolderType ? Link : Box;
               const linkProps = isFolderType ? {
                 as: RouterLink,
-                to: `/documents/folder/${doc.id}`,
+                to: `/documents/folders/${doc.id}`,
                 style: { textDecoration: 'none' },
                 onClick: (e) => {
                   e.preventDefault();
@@ -353,7 +385,7 @@ const Documents = () => {
                 const isFolderType = doc.type === "folder" || doc.type === "auditSchedule";
                 const RowWrapper = isFolderType ? "a" : "tr";
                 const rowProps = isFolderType ? {
-                  href: `/documents/folder/${doc.id}`,
+                  href: `/documents/folders/${doc.id}`,
                   onClick: (e) => {
                     e.preventDefault();
                     handleDocumentClick(doc);

@@ -84,7 +84,15 @@ function App() {
                       }
                     />
                     <Route
-                      path="/documents/folder/:id"
+                      path="/documents/:id"
+                      element={
+                        <DocumentsProvider>
+                          <Documents />
+                        </DocumentsProvider>
+                      }
+                    />
+                    <Route
+                      path="/documents/folders/:id"
                       element={
                         <DocumentsProvider>
                           <Documents />
