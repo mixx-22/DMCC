@@ -12,16 +12,16 @@ import {
 } from "@chakra-ui/react";
 import { FiGrid, FiList } from "react-icons/fi";
 import { useDocuments } from "../context/DocumentsContext";
-import PageHeader from "../components/PageHeader";
-import PageFooter from "../components/PageFooter";
-import CreateFolderModal from "../components/CreateFolderModal";
-import CreateAuditScheduleModal from "../components/CreateAuditScheduleModal";
-import UploadFileModal from "../components/UploadFileModal";
+import PageHeader from "../../../components/PageHeader";
+import PageFooter from "../../../components/PageFooter";
+import CreateFolderModal from "../modals/CreateFolderModal";
+import CreateAuditScheduleModal from "../modals/CreateAuditScheduleModal";
+import UploadFileModal from "../modals/UploadFileModal";
 import DocumentDrawer from "../components/DocumentDrawer";
-import { GridView } from "./Documents/GridView";
-import { ListView } from "./Documents/ListView";
-import { EmptyState } from "./Documents/EmptyState";
-import { ActionButton } from "./Documents/ActionButton";
+import { GridView } from "../components/GridView";
+import { ListView } from "../components/ListView";
+import { EmptyState } from "../components/EmptyState";
+import { ActionButton } from "../components/ActionButton";
 
 const Documents = () => {
   const { id } = useParams();

@@ -27,7 +27,7 @@ import {
 } from "react-icons/fi";
 import Timestamp from "./Timestamp";
 import EditDocumentModal from "./EditDocumentModal";
-import DeleteDocumentModalV2 from "./DeleteDocumentModalV2";
+import DeleteDocumentModal from "../modals/DeleteDocumentModal";
 import MoveDocumentModal from "./MoveDocumentModal";
 import PrivacySettingsModal from "./PrivacySettingsModal";
 
@@ -457,7 +457,7 @@ const DocumentDrawer = ({ document, isOpen, onClose }) => {
         onClose={onEditClose}
         document={document}
       />
-      <DeleteDocumentModalV2
+      <DeleteDocumentModal
         isOpen={isDeleteOpen}
         onClose={onDeleteClose}
         document={document}

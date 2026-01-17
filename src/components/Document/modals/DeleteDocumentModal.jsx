@@ -15,7 +15,7 @@ import {
 import { toast } from "sonner";
 import { useDocuments } from "../context/DocumentsContext";
 
-const DeleteDocumentModalV2 = ({ isOpen, onClose, document, onDeleteSuccess }) => {
+const DeleteDocumentModal = ({ isOpen, onClose, document, onDeleteSuccess }) => {
   const { deleteDocument, documents } = useDocuments();
 
   if (!document) return null;
@@ -77,4 +77,4 @@ const DeleteDocumentModalV2 = ({ isOpen, onClose, document, onDeleteSuccess }) =
   );
 };
 
-export default DeleteDocumentModalV2;
+export default DeleteDocumentModal;

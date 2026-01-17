@@ -13,7 +13,7 @@ import {
 } from "@chakra-ui/react";
 import { FiMoreVertical } from "react-icons/fi";
 import { getDocumentIcon, isDocumentValid } from "./DocumentIcon";
-import Timestamp from "../../components/Timestamp";
+import Timestamp from "../../../components/Timestamp";
 
 export const ListView = ({
   documents,
