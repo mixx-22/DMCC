@@ -9,8 +9,7 @@ import { useApp } from "./context/AppContext";
 import Layout from "./components/Layout";
 import Login from "./pages/Login";
 import { Dashboard } from "./pages/Dashboard";
-import Documents from "./pages/Documents";
-import DocumentDetail from "./pages/DocumentDetail";
+import { Documents, DocumentDetail, DocumentsProvider } from "./components/Document";
 import Certifications from "./pages/Certifications";
 import CertificationDetail from "./pages/CertificationDetail";
 import Users from "./pages/Users";
@@ -74,9 +73,34 @@ function App() {
                     <Route path="/menu" element={<Menu />} />
                     <Route path="/notifications" element={<Notifications />} />
                     <Route path="/profile" element={<Profile />} />
-                    <Route path="/change-password" element={<ChangePassword />} />
-                    <Route path="/documents" element={<Documents />} />
-                    <Route path="/documents/:id" element={<DocumentDetail />} />
+                    <Route
+                      path="/change-password"
+                      element={<ChangePassword />}
+                    />
+                    <Route
+                      path="/documents"
+                      element={
+                        <DocumentsProvider>
+                          <Documents />
+                        </DocumentsProvider>
+                      }
+                    />
+                    <Route
+                      path="/document/:id"
+                      element={
+                        <DocumentsProvider>
+                          <DocumentDetail />
+                        </DocumentsProvider>
+                      }
+                    />
+                    <Route
+                      path="/documents/folders/:id"
+                      element={
+                        <DocumentsProvider>
+                          <Documents />
+                        </DocumentsProvider>
+                      }
+                    />
                     <Route path="/archive" element={<Archive />} />
                     <Route
                       path="/certifications"
