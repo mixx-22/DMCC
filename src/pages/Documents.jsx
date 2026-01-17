@@ -69,13 +69,11 @@ const Documents = () => {
     toggleViewMode,
     setSelectedDocument,
     loading,
-    documents,
   } = useDocuments();
 
   const [searchTerm, setSearchTerm] = useState("");
   const [lastClickTime, setLastClickTime] = useState(0);
   const [lastClickId, setLastClickId] = useState(null);
-  const [breadcrumbs, setBreadcrumbs] = useState([]);
 
   const isFolderView = location.pathname.includes("/folders/");
 
@@ -110,34 +108,6 @@ const Documents = () => {
       }
     }
   }, [id, isFolderView, currentFolderId, navigateToFolder]);
-
-  // Build breadcrumbs based on path and parentId
-  useEffect(() => {
-    if (!currentFolderId || documents.length === 0) {
-      setBreadcrumbs([]);
-      return;
-    }
-
-    const buildBreadcrumbs = () => {
-      const path = [];
-      let currentId = currentFolderId;
-      
-      // Traverse up the parent chain
-      while (currentId) {
-        const folder = documents.find((d) => d.id === currentId);
-        if (folder) {
-          path.unshift(folder);
-          currentId = folder.parentId;
-        } else {
-          break;
-        }
-      }
-      
-      setBreadcrumbs(path);
-    };
-
-    buildBreadcrumbs();
-  }, [currentFolderId, documents]);
 
   const {
     isOpen: isFolderModalOpen,
