@@ -43,6 +43,7 @@ import {
   FiHome,
   FiCalendar,
   FiMoreVertical,
+  FiAlertCircle,
 } from "react-icons/fi";
 import { useDocuments } from "../context/DocumentsContext";
 import PageHeader from "../components/PageHeader";
@@ -162,17 +163,37 @@ const Documents = () => {
     }
   };
 
-  // Get icon based on document type
-  const getDocumentIcon = (type) => {
+  // Get icon based on document type with validation
+  const getDocumentIcon = (doc) => {
+    // Validate document structure
+    if (!doc || typeof doc !== 'object') {
+      return <FiAlertCircle size={24} color="#E53E3E" />;
+    }
+
+    const type = doc?.type;
+    
     switch (type) {
       case "folder":
         return <FiFolder size={24} color="#3182CE" />;
       case "auditSchedule":
         return <FiCalendar size={24} color="#805AD5" />;
       case "file":
-      default:
+        // Check if file has valid metadata
+        if (!doc?.metadata?.filename) {
+          return <FiAlertCircle size={24} color="#E53E3E" title="Broken file - missing metadata" />;
+        }
         return <FiFile size={24} color="#718096" />;
+      default:
+        return <FiAlertCircle size={24} color="#E53E3E" title="Unknown document type" />;
     }
+  };
+
+  // Check if document is valid and can be displayed
+  const isDocumentValid = (doc) => {
+    if (!doc || typeof doc !== 'object') return false;
+    if (!doc.type) return false;
+    if (doc.type === 'file' && !doc?.metadata?.filename) return false;
+    return true;
   };
 
   return (
@@ -303,12 +324,12 @@ const Documents = () => {
           <Grid templateColumns="repeat(auto-fill, minmax(200px, 1fr))" gap={4}>
             {filteredDocuments.map((doc) => {
               const isFolderType =
-                doc.type === "folder" || doc.type === "auditSchedule";
+                doc?.type === "folder" || doc?.type === "auditSchedule";
               const CardWrapper = isFolderType ? Link : Box;
               const linkProps = isFolderType
                 ? {
                     as: RouterLink,
-                    to: `/documents/folders/${doc.id}`,
+                    to: `/documents/folders/${doc?.id}`,
                     style: { textDecoration: "none" },
                     onClick: (e) => {
                       e.preventDefault();
@@ -319,22 +340,20 @@ const Documents = () => {
                     onClick: () => handleDocumentClick(doc),
                   };
 
+              const isValid = isDocumentValid(doc);
+              const isSelected = selectedDocument?.id === doc?.id;
+
               return (
-                <CardWrapper key={doc.id} {...linkProps}>
+                <CardWrapper key={doc?.id || Math.random()} {...linkProps}>
                   <Card
+                    variant={isSelected ? "documentSelected" : "document"}
                     cursor="pointer"
-                    _hover={{ shadow: "md", transform: "translateY(-2px)" }}
-                    transition="all 0.2s"
-                    bg={selectedDocument?.id === doc.id ? "blue.50" : "white"}
-                    borderWidth={selectedDocument?.id === doc.id ? 2 : 1}
-                    borderColor={
-                      selectedDocument?.id === doc.id ? "blue.500" : "gray.200"
-                    }
+                    opacity={isValid ? 1 : 0.6}
                   >
                     <CardBody>
                       <VStack align="start" spacing={2}>
                         <HStack justify="space-between" w="full">
-                          {getDocumentIcon(doc.type)}
+                          {getDocumentIcon(doc)}
                           <IconButton
                             icon={<FiMoreVertical />}
                             size="sm"
@@ -351,9 +370,10 @@ const Documents = () => {
                           fontWeight="semibold"
                           isTruncated
                           maxW="full"
-                          title={doc.title}
+                          title={doc?.title || "Untitled"}
+                          color={isValid ? "inherit" : "red.500"}
                         >
-                          {doc.title || "Untitled"}
+                          {doc?.title || "Untitled"}
                         </Text>
                         {doc?.type === "file" && doc?.metadata?.filename && (
                           <Text
@@ -365,11 +385,23 @@ const Documents = () => {
                             {doc.metadata.filename}
                           </Text>
                         )}
-                        <Timestamp
-                          date={doc.updatedAt}
-                          fontSize="xs"
-                          color="gray.400"
-                        />
+                        {doc?.type === "file" && !doc?.metadata?.filename && (
+                          <Text
+                            fontSize="xs"
+                            color="red.500"
+                            isTruncated
+                            maxW="full"
+                          >
+                            Broken file - missing metadata
+                          </Text>
+                        )}
+                        {doc?.updatedAt && (
+                          <Timestamp
+                            date={doc.updatedAt}
+                            fontSize="xs"
+                            color="gray.400"
+                          />
+                        )}
                       </VStack>
                     </CardBody>
                   </Card>
@@ -391,11 +423,11 @@ const Documents = () => {
             <Tbody>
               {filteredDocuments.map((doc) => {
                 const isFolderType =
-                  doc.type === "folder" || doc.type === "auditSchedule";
+                  doc?.type === "folder" || doc?.type === "auditSchedule";
                 const RowWrapper = isFolderType ? "a" : "tr";
                 const rowProps = isFolderType
                   ? {
-                      href: `/documents/folders/${doc.id}`,
+                      href: `/documents/folders/${doc?.id}`,
                       onClick: (e) => {
                         e.preventDefault();
                         handleDocumentClick(doc);
@@ -404,29 +436,47 @@ const Documents = () => {
                     }
                   : {};
 
+                const isValid = isDocumentValid(doc);
+
                 return (
                   <Tr
                     as={RowWrapper}
                     {...rowProps}
-                    key={doc.id}
+                    key={doc?.id || Math.random()}
                     cursor="pointer"
                     _hover={{ bg: "gray.50" }}
                     bg={
-                      selectedDocument?.id === doc.id
+                      selectedDocument?.id === doc?.id
                         ? "blue.50"
                         : "transparent"
                     }
+                    opacity={isValid ? 1 : 0.6}
                   >
                     <Td>
                       <HStack>
-                        {getDocumentIcon(doc.type)}
+                        {getDocumentIcon(doc)}
                         <VStack align="start" spacing={0}>
-                          <Text fontWeight="semibold">
-                            {doc.title || "Untitled"}
-                          </Text>
-                          {doc.type === "file" && doc.metadata.filename && (
+                          <HStack spacing={2}>
+                            <Text 
+                              fontWeight="semibold"
+                              color={isValid ? "inherit" : "red.500"}
+                            >
+                              {doc?.title || "Untitled"}
+                            </Text>
+                            {!isValid && (
+                              <Text fontSize="xs" color="red.500">
+                                (Broken)
+                              </Text>
+                            )}
+                          </HStack>
+                          {doc?.type === "file" && doc?.metadata?.filename && (
                             <Text fontSize="xs" color="gray.500">
                               {doc.metadata.filename}
+                            </Text>
+                          )}
+                          {doc?.type === "file" && !doc?.metadata?.filename && (
+                            <Text fontSize="xs" color="red.500">
+                              Missing metadata
                             </Text>
                           )}
                         </VStack>
@@ -434,19 +484,27 @@ const Documents = () => {
                     </Td>
                     <Td>
                       <Text fontSize="sm">
-                        {doc.type === "auditSchedule"
+                        {doc?.type === "auditSchedule"
                           ? "Audit Schedule"
-                          : doc.type.charAt(0).toUpperCase() +
-                            doc.type.slice(1)}
+                          : doc?.type
+                          ? doc.type.charAt(0).toUpperCase() +
+                            doc.type.slice(1)
+                          : "Unknown"}
                       </Text>
                     </Td>
                     <Td>
                       <Text fontSize="sm">
-                        {doc.owner.firstName} {doc.owner.lastName}
+                        {doc?.owner?.firstName && doc?.owner?.lastName
+                          ? `${doc.owner.firstName} ${doc.owner.lastName}`
+                          : "Unknown"}
                       </Text>
                     </Td>
                     <Td>
-                      <Timestamp date={doc.updatedAt} />
+                      {doc?.updatedAt ? (
+                        <Timestamp date={doc.updatedAt} />
+                      ) : (
+                        <Text fontSize="sm" color="gray.400">-</Text>
+                      )}
                     </Td>
                     <Td>
                       <IconButton

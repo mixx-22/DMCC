@@ -23,6 +23,7 @@ import {
   FiFile,
   FiFolder,
   FiCalendar,
+  FiAlertCircle,
 } from "react-icons/fi";
 import Timestamp from "./Timestamp";
 import EditDocumentModal from "./EditDocumentModal";
@@ -57,16 +58,25 @@ const DocumentDrawer = ({ document, isOpen, onClose }) => {
 
   if (!document) return null;
 
-  // Get document icon
+  // Get document icon with validation
   const getDocumentIcon = () => {
-    switch (document.type) {
+    if (!document || typeof document !== 'object') {
+      return <FiAlertCircle size={48} color="#E53E3E" />;
+    }
+
+    switch (document?.type) {
       case "folder":
         return <FiFolder size={48} color="#3182CE" />;
       case "auditSchedule":
         return <FiCalendar size={48} color="#805AD5" />;
       case "file":
-      default:
+        // Check if file has valid metadata
+        if (!document?.metadata?.filename) {
+          return <FiAlertCircle size={48} color="#E53E3E" title="Broken file - missing metadata" />;
+        }
         return <FiFile size={48} color="#718096" />;
+      default:
+        return <FiAlertCircle size={48} color="#E53E3E" title="Unknown document type" />;
     }
   };
 
@@ -79,13 +89,23 @@ const DocumentDrawer = ({ document, isOpen, onClose }) => {
   };
 
   const handleDownload = () => {
-    if (document.type === "file" && document.metadata.key) {
+    if (document?.type === "file" && document?.metadata?.key) {
       const link = window.document.createElement("a");
       link.href = document.metadata.key;
-      link.download = document.metadata.filename || document.title;
+      link.download = document?.metadata?.filename || document?.title || "download";
       link.click();
     }
   };
+
+  // Check if document is valid
+  const isDocumentValid = () => {
+    if (!document || typeof document !== 'object') return false;
+    if (!document.type) return false;
+    if (document.type === 'file' && !document?.metadata?.filename) return false;
+    return true;
+  };
+
+  const isValid = isDocumentValid();
 
   return (
     <>
@@ -100,21 +120,27 @@ const DocumentDrawer = ({ document, isOpen, onClose }) => {
               {/* Icon and Title */}
               <VStack align="center" py={4}>
                 {getDocumentIcon()}
-                <Text fontSize="lg" fontWeight="bold" textAlign="center">
-                  {document.title || "Untitled"}
+                <Text fontSize="lg" fontWeight="bold" textAlign="center" color={isValid ? "inherit" : "red.500"}>
+                  {document?.title || "Untitled"}
                 </Text>
+                {!isValid && (
+                  <Badge colorScheme="red" fontSize="sm">
+                    Broken Document
+                  </Badge>
+                )}
               </VStack>
 
               <Divider />
 
               {/* Action Buttons */}
               <VStack spacing={2} align="stretch">
-                {document.type === "file" && (
+                {document?.type === "file" && document?.metadata?.key && (
                   <Button
                     leftIcon={<FiDownload />}
                     colorScheme="blue"
                     variant="outline"
                     onClick={handleDownload}
+                    isDisabled={!isValid}
                   >
                     Download
                   </Button>
@@ -166,14 +192,16 @@ const DocumentDrawer = ({ document, isOpen, onClose }) => {
                       Type
                     </Text>
                     <Text fontSize="sm">
-                      {document.type === "auditSchedule"
+                      {document?.type === "auditSchedule"
                         ? "Audit Schedule"
-                        : document.type.charAt(0).toUpperCase() +
-                          document.type.slice(1)}
+                        : document?.type
+                        ? document.type.charAt(0).toUpperCase() +
+                          document.type.slice(1)
+                        : "Unknown"}
                     </Text>
                   </Box>
 
-                  {document.description && (
+                  {document?.description && (
                     <Box>
                       <Text fontSize="sm" color="gray.600">
                         Description
@@ -187,26 +215,34 @@ const DocumentDrawer = ({ document, isOpen, onClose }) => {
                       Owner
                     </Text>
                     <Text fontSize="sm">
-                      {document.owner.firstName} {document.owner.lastName}
+                      {document?.owner?.firstName && document?.owner?.lastName
+                        ? `${document.owner.firstName} ${document.owner.lastName}`
+                        : "Unknown"}
                     </Text>
-                    <Text fontSize="xs" color="gray.500">
-                      {document.owner.team}
-                    </Text>
+                    {document?.owner?.team && (
+                      <Text fontSize="xs" color="gray.500">
+                        {document.owner.team}
+                      </Text>
+                    )}
                   </Box>
 
-                  <Box>
-                    <Text fontSize="sm" color="gray.600">
-                      Created
-                    </Text>
-                    <Timestamp date={document.createdAt} fontSize="sm" />
-                  </Box>
+                  {document?.createdAt && (
+                    <Box>
+                      <Text fontSize="sm" color="gray.600">
+                        Created
+                      </Text>
+                      <Timestamp date={document.createdAt} fontSize="sm" />
+                    </Box>
+                  )}
 
-                  <Box>
-                    <Text fontSize="sm" color="gray.600">
-                      Modified
-                    </Text>
-                    <Timestamp date={document.updatedAt} fontSize="sm" />
-                  </Box>
+                  {document?.updatedAt && (
+                    <Box>
+                      <Text fontSize="sm" color="gray.600">
+                        Modified
+                      </Text>
+                      <Timestamp date={document.updatedAt} fontSize="sm" />
+                    </Box>
+                  )}
                 </VStack>
               </Box>
 
@@ -219,28 +255,38 @@ const DocumentDrawer = ({ document, isOpen, onClose }) => {
                       File Details
                     </Text>
                     <VStack align="stretch" spacing={2}>
-                      <Box>
-                        <Text fontSize="sm" color="gray.600">
-                          Filename
-                        </Text>
-                        <Text fontSize="sm" wordBreak="break-all">
-                          {document?.metadata?.filename}
-                        </Text>
-                      </Box>
+                      {document?.metadata?.filename ? (
+                        <Box>
+                          <Text fontSize="sm" color="gray.600">
+                            Filename
+                          </Text>
+                          <Text fontSize="sm" wordBreak="break-all">
+                            {document.metadata.filename}
+                          </Text>
+                        </Box>
+                      ) : (
+                        <Box>
+                          <Text fontSize="sm" color="red.500">
+                            ⚠️ Missing filename metadata
+                          </Text>
+                        </Box>
+                      )}
                       <Box>
                         <Text fontSize="sm" color="gray.600">
                           Size
                         </Text>
                         <Text fontSize="sm">
-                          {formatFileSize(document.metadata.size)}
+                          {formatFileSize(document?.metadata?.size)}
                         </Text>
                       </Box>
-                      <Box>
-                        <Text fontSize="sm" color="gray.600">
-                          Version
-                        </Text>
-                        <Text fontSize="sm">{document.metadata.version}</Text>
-                      </Box>
+                      {document?.metadata?.version && (
+                        <Box>
+                          <Text fontSize="sm" color="gray.600">
+                            Version
+                          </Text>
+                          <Text fontSize="sm">{document.metadata.version}</Text>
+                        </Box>
+                      )}
                     </VStack>
                   </Box>
                 </>
@@ -261,12 +307,12 @@ const DocumentDrawer = ({ document, isOpen, onClose }) => {
                         </Text>
                         <Badge
                           colorScheme={
-                            document.metadata.allowInheritance
+                            document?.metadata?.allowInheritance
                               ? "green"
                               : "gray"
                           }
                         >
-                          {document.metadata.allowInheritance
+                          {document?.metadata?.allowInheritance
                             ? "Enabled"
                             : "Disabled"}
                         </Badge>
@@ -277,7 +323,7 @@ const DocumentDrawer = ({ document, isOpen, onClose }) => {
               )}
 
               {/* Audit Schedule-specific metadata */}
-              {document.type === "auditSchedule" && (
+              {document?.type === "auditSchedule" && (
                 <>
                   <Divider />
                   <Box>
@@ -285,7 +331,7 @@ const DocumentDrawer = ({ document, isOpen, onClose }) => {
                       Audit Details
                     </Text>
                     <VStack align="stretch" spacing={2}>
-                      {document.metadata.code && (
+                      {document?.metadata?.code && (
                         <Box>
                           <Text fontSize="sm" color="gray.600">
                             Code
@@ -293,7 +339,7 @@ const DocumentDrawer = ({ document, isOpen, onClose }) => {
                           <Text fontSize="sm">{document.metadata.code}</Text>
                         </Box>
                       )}
-                      {document.metadata.type && (
+                      {document?.metadata?.type && (
                         <Box>
                           <Text fontSize="sm" color="gray.600">
                             Audit Type
