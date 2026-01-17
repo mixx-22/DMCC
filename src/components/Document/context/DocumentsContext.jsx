@@ -1,6 +1,6 @@
 import { createContext, useContext, useState, useEffect, useRef } from "react";
-import { useUser } from "./useUser";
-import apiService from "../services/api";
+import { useUser } from "../../../context/useUser";
+import apiService from "../../../services/api";
 
 const DocumentsContext = createContext();
 
@@ -53,7 +53,7 @@ export const DocumentsProvider = ({ children }) => {
 
     if (!USE_API) {
       // Mock mode: use localStorage
-      const saved = localStorage.getItem("documentsV2");
+      const saved = localStorage.getItem("documents");
       setDocuments(saved ? JSON.parse(saved) : []);
       return;
     }
@@ -85,7 +85,7 @@ export const DocumentsProvider = ({ children }) => {
   const fetchDocumentById = async (documentId) => {
     if (!USE_API) {
       // Mock mode: find in localStorage
-      const saved = localStorage.getItem("documentsV2");
+      const saved = localStorage.getItem("documents");
       const docs = saved ? JSON.parse(saved) : [];
       return docs.find((doc) => doc.id === documentId);
     }
@@ -190,10 +190,10 @@ export const DocumentsProvider = ({ children }) => {
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       };
-      const saved = localStorage.getItem("documentsV2");
+      const saved = localStorage.getItem("documents");
       const docs = saved ? JSON.parse(saved) : [];
       const updated = [...docs, docWithId];
-      localStorage.setItem("documentsV2", JSON.stringify(updated));
+      localStorage.setItem("documents", JSON.stringify(updated));
       setDocuments(updated);
       return docWithId;
     }
@@ -219,7 +219,7 @@ export const DocumentsProvider = ({ children }) => {
   const updateDocument = async (id, updates) => {
     if (!USE_API) {
       // Mock mode: use localStorage
-      const saved = localStorage.getItem("documentsV2");
+      const saved = localStorage.getItem("documents");
       const docs = saved ? JSON.parse(saved) : [];
       const updated = docs.map((doc) =>
         doc.id === id
@@ -230,7 +230,7 @@ export const DocumentsProvider = ({ children }) => {
             }
           : doc,
       );
-      localStorage.setItem("documentsV2", JSON.stringify(updated));
+      localStorage.setItem("documents", JSON.stringify(updated));
       setDocuments(updated);
       return;
     }
@@ -254,7 +254,7 @@ export const DocumentsProvider = ({ children }) => {
   const deleteDocument = async (id) => {
     if (!USE_API) {
       // Mock mode: use localStorage
-      const saved = localStorage.getItem("documentsV2");
+      const saved = localStorage.getItem("documents");
       const docs = saved ? JSON.parse(saved) : [];
       // Also delete all children if it's a folder
       const doc = docs.find((d) => d.id === id);
@@ -264,7 +264,7 @@ export const DocumentsProvider = ({ children }) => {
         idsToDelete = [...idsToDelete, ...childIds];
       }
       const updated = docs.filter((doc) => !idsToDelete.includes(doc.id));
-      localStorage.setItem("documentsV2", JSON.stringify(updated));
+      localStorage.setItem("documents", JSON.stringify(updated));
       setDocuments(updated);
       return;
     }

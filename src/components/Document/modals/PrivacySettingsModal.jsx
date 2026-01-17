@@ -18,9 +18,9 @@ import {
 } from "@chakra-ui/react";
 import { toast } from "sonner";
 import { useDocuments } from "../context/DocumentsContext";
-import UserAsyncSelect from "./UserAsyncSelect";
-import TeamAsyncSelect from "./TeamAsyncSelect";
-import RoleAsyncSelect from "./RoleAsyncSelect";
+import UserAsyncSelect from "../../UserAsyncSelect";
+import TeamAsyncSelect from "../../TeamAsyncSelect";
+import RoleAsyncSelect from "../../RoleAsyncSelect";
 
 const PrivacySettingsModal = ({ isOpen, onClose, document }) => {
   const { updateDocument } = useDocuments();

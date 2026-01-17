@@ -32,12 +32,12 @@ import {
   FiHome,
 } from "react-icons/fi";
 import { useDocuments } from "../context/DocumentsContext";
-import PageHeader from "../components/PageHeader";
+import PageHeader from "../../../components/PageHeader";
 import PageFooter from "../components/PageFooter";
-import EditDocumentModal from "../components/EditDocumentModal";
-import DeleteDocumentModalV2 from "../components/DeleteDocumentModalV2";
-import MoveDocumentModal from "../components/MoveDocumentModal";
-import PrivacySettingsModal from "../components/PrivacySettingsModal";
+import EditDocumentModal from "../modals/EditDocumentModal";
+import DeleteDocumentModal from "../modals/DeleteDocumentModal";
+import MoveDocumentModal from "../modals/MoveDocumentModal";
+import PrivacySettingsModal from "../modals/PrivacySettingsModal";
 import Timestamp from "../components/Timestamp";
 
 const DocumentDetail = () => {
@@ -646,7 +646,7 @@ const DocumentDetail = () => {
         onClose={onPrivacyClose}
         document={document}
       />
-      <DeleteDocumentModalV2
+      <DeleteDocumentModal
         isOpen={isDeleteOpen}
         onClose={onDeleteClose}
         document={document}
