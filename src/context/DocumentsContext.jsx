@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect } from "react";
+import { createContext, useContext, useState, useEffect, useRef } from "react";
 import { useUser } from "./useUser";
 import apiService from "../services/api";
 
@@ -35,6 +35,10 @@ export const DocumentsProvider = ({ children }) => {
   // Selected document for drawer
   const [selectedDocument, setSelectedDocument] = useState(null);
 
+  // Refs to prevent duplicate fetch requests
+  const fetchingRef = useRef(false);
+  const lastFetchedFolderIdRef = useRef(null);
+
   // Persist view mode to localStorage only
   useEffect(() => {
     localStorage.setItem("documentsViewMode", viewMode);
@@ -42,6 +46,11 @@ export const DocumentsProvider = ({ children }) => {
 
   // Fetch documents from API
   const fetchDocuments = async (folderId = null) => {
+    // Prevent duplicate requests
+    if (fetchingRef.current && lastFetchedFolderIdRef.current === folderId) {
+      return;
+    }
+
     if (!USE_API) {
       // Mock mode: use localStorage
       const saved = localStorage.getItem("documentsV2");
@@ -49,6 +58,8 @@ export const DocumentsProvider = ({ children }) => {
       return;
     }
 
+    fetchingRef.current = true;
+    lastFetchedFolderIdRef.current = folderId;
     setLoading(true);
     setError(null);
     
@@ -66,6 +77,7 @@ export const DocumentsProvider = ({ children }) => {
       setDocuments([]);
     } finally {
       setLoading(false);
+      fetchingRef.current = false;
     }
   };
 
