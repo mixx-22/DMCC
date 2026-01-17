@@ -343,7 +343,6 @@ const Documents = () => {
               const docId = doc?.id || doc?._id;
               const isFolderType =
                 doc?.type === "folder" || doc?.type === "auditSchedule";
-              const CardWrapper = isFolderType ? Link : Box;
               const linkProps = {
                 as: RouterLink,
                 to: isFolderType
@@ -356,7 +355,7 @@ const Documents = () => {
               const isSelected = selectedDocument?.id === docId;
 
               return (
-                <CardWrapper
+                <Link
                   key={`document-${docIndex}-${doc.type}-${docId}`}
                   {...linkProps}
                 >
@@ -422,7 +421,7 @@ const Documents = () => {
                       </VStack>
                     </CardBody>
                   </Card>
-                </CardWrapper>
+                </Link>
               );
             })}
           </Grid>
