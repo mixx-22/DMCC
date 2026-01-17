@@ -75,7 +75,10 @@ function App() {
                     <Route path="/menu" element={<Menu />} />
                     <Route path="/notifications" element={<Notifications />} />
                     <Route path="/profile" element={<Profile />} />
-                    <Route path="/change-password" element={<ChangePassword />} />
+                    <Route
+                      path="/change-password"
+                      element={<ChangePassword />}
+                    />
                     <Route
                       path="/documents"
                       element={
@@ -85,7 +88,7 @@ function App() {
                       }
                     />
                     <Route
-                      path="/documents/:id"
+                      path="/document/:id"
                       element={
                         <DocumentsProvider>
                           <DocumentDetail />
