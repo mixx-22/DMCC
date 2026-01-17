@@ -32,6 +32,11 @@ import {
   Spinner,
   Center,
   Avatar,
+  Menu,
+  MenuButton,
+  MenuList,
+  MenuItem,
+  ButtonGroup,
 } from "@chakra-ui/react";
 import {
   FiPlus,
@@ -45,6 +50,8 @@ import {
   FiCalendar,
   FiMoreVertical,
   FiAlertCircle,
+  FiChevronDown,
+  FiUpload,
 } from "react-icons/fi";
 import { useDocuments } from "../context/DocumentsContext";
 import PageHeader from "../components/PageHeader";
@@ -228,29 +235,32 @@ const Documents = () => {
 
       <PageFooter>
         <Flex gap={4} justifyContent="flex-end">
-          <Button
-            leftIcon={<FiPlus />}
-            colorScheme="blue"
-            onClick={onFileModalOpen}
-          >
-            Upload File
-          </Button>
-          <Button
-            leftIcon={<FiFolder />}
-            variant="outline"
-            colorScheme="blue"
-            onClick={onFolderModalOpen}
-          >
-            New Folder
-          </Button>
-          <Button
-            leftIcon={<FiCalendar />}
-            variant="outline"
-            colorScheme="purple"
-            onClick={onAuditModalOpen}
-          >
-            New Audit Schedule
-          </Button>
+          <ButtonGroup isAttached colorScheme="blue">
+            <Button
+              leftIcon={<FiUpload />}
+              onClick={onFileModalOpen}
+            >
+              New+
+            </Button>
+            <Menu>
+              <MenuButton
+                as={IconButton}
+                icon={<FiChevronDown />}
+                aria-label="More options"
+              />
+              <MenuList>
+                <MenuItem icon={<FiUpload />} onClick={onFileModalOpen}>
+                  New File
+                </MenuItem>
+                <MenuItem icon={<FiFolder />} onClick={onFolderModalOpen}>
+                  New Folder
+                </MenuItem>
+                <MenuItem icon={<FiCalendar />} onClick={onAuditModalOpen}>
+                  New Audit Schedule
+                </MenuItem>
+              </MenuList>
+            </Menu>
+          </ButtonGroup>
         </Flex>
       </PageFooter>
 
