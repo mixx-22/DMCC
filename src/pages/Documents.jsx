@@ -235,12 +235,9 @@ const Documents = () => {
 
       <PageFooter>
         <Flex gap={4} justifyContent="flex-end">
-          <ButtonGroup isAttached colorScheme="blue">
-            <Button
-              leftIcon={<FiUpload />}
-              onClick={onFileModalOpen}
-            >
-              New+
+          <ButtonGroup isAttached colorScheme="brandPrimary">
+            <Button leftIcon={<FiPlus />} onClick={onFileModalOpen}>
+              New
             </Button>
             <Menu>
               <MenuButton
