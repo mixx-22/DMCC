@@ -355,56 +355,13 @@ const DocumentDetail = () => {
               </CardBody>
             </Card>
 
-            {/* Quick Actions - Spans 4 columns */}
-            <Card gridColumn={{ base: "1", lg: "9 / 13" }}>
-              <CardBody>
-                <Text fontWeight="semibold" mb={4}>
-                  Quick Actions
-                </Text>
-                <VStack spacing={2} align="stretch">
-                  {document?.type === "file" && document?.metadata?.key && (
-                    <Button
-                      leftIcon={<FiDownload />}
-                      size="sm"
-                      colorScheme="blue"
-                      variant="outline"
-                      onClick={handleDownload}
-                      isDisabled={!isValid}
-                      w="full"
-                    >
-                      Download
-                    </Button>
-                  )}
-                  <Button
-                    leftIcon={<FiEye />}
-                    size="sm"
-                    colorScheme="gray"
-                    variant="outline"
-                    w="full"
-                  >
-                    Preview
-                  </Button>
-                  <Button
-                    leftIcon={<FiShare2 />}
-                    size="sm"
-                    colorScheme="gray"
-                    variant="outline"
-                    onClick={onPrivacyOpen}
-                    w="full"
-                  >
-                    Share
-                  </Button>
-                </VStack>
-              </CardBody>
-            </Card>
-
-            {/* Check-In/Check-Out Section - Placeholder for future */}
-            <Card gridColumn={{ base: "1", lg: "9 / 13" }}>
+            {/* Version Control & Approval Status Combined - Spans 4 columns, 2 rows */}
+            <Card gridColumn={{ base: "1", lg: "9 / 13" }} gridRow={{ base: "auto", lg: "1 / 3" }}>
               <CardBody>
                 <Text fontWeight="semibold" mb={4}>
                   Version Control
                 </Text>
-                <VStack spacing={3} align="stretch">
+                <VStack spacing={3} align="stretch" mb={6}>
                   <HStack justify="space-between">
                     <HStack spacing={2}>
                       <Icon as={FiLock} color="gray.500" />
@@ -418,6 +375,10 @@ const DocumentDetail = () => {
                     colorScheme="orange"
                     variant="outline"
                     w="full"
+                    onClick={() => {
+                      // Pass full document object with ID from URL
+                      console.log("Check Out document:", { ...document, id });
+                    }}
                   >
                     Check Out
                   </Button>
@@ -428,32 +389,38 @@ const DocumentDetail = () => {
                     variant="outline"
                     w="full"
                     isDisabled
+                    onClick={() => {
+                      // Pass full document object with ID from URL
+                      console.log("Check In document:", { ...document, id });
+                    }}
                   >
                     Check In
                   </Button>
                 </VStack>
-              </CardBody>
-            </Card>
 
-            {/* Approval Workflow Section - Placeholder for future */}
-            <Card gridColumn={{ base: "1", lg: "1 / 7" }}>
-              <CardBody>
-                <HStack justify="space-between" mb={4}>
-                  <Text fontWeight="semibold">Approval Status</Text>
-                  <Badge colorScheme="yellow">Pending</Badge>
-                </HStack>
+                <Divider mb={4} />
+
+                <Text fontWeight="semibold" mb={4}>
+                  Approval Status
+                </Text>
                 <VStack spacing={3} align="stretch">
-                  <HStack>
-                    <Icon as={FiClock} color="orange.500" />
-                    <Text fontSize="sm">Awaiting review</Text>
+                  <HStack justify="space-between">
+                    <HStack spacing={2}>
+                      <Icon as={FiClock} color="orange.500" />
+                      <Text fontSize="sm">Awaiting review</Text>
+                    </HStack>
+                    <Badge colorScheme="yellow">Pending</Badge>
                   </HStack>
-                  <Divider />
                   <Button
                     leftIcon={<FiCheckCircle />}
                     size="sm"
                     colorScheme="green"
                     variant="outline"
                     w="full"
+                    onClick={() => {
+                      // Pass full document object with ID from URL
+                      console.log("Approve document:", { ...document, id });
+                    }}
                   >
                     Approve
                   </Button>
@@ -463,6 +430,10 @@ const DocumentDetail = () => {
                     colorScheme="red"
                     variant="outline"
                     w="full"
+                    onClick={() => {
+                      // Pass full document object with ID from URL
+                      console.log("Reject document:", { ...document, id });
+                    }}
                   >
                     Reject
                   </Button>
@@ -472,7 +443,7 @@ const DocumentDetail = () => {
 
             {/* File/Folder Specific Details */}
             {document?.type === "file" && (
-              <Card gridColumn={{ base: "1", lg: "7 / 13" }}>
+              <Card gridColumn={{ base: "1", lg: "1 / 13" }}>
                 <CardBody>
                   <Text fontWeight="semibold" mb={4}>
                     File Details
@@ -508,7 +479,7 @@ const DocumentDetail = () => {
             )}
 
             {document?.type === "folder" && (
-              <Card gridColumn={{ base: "1", lg: "7 / 13" }}>
+              <Card gridColumn={{ base: "1", lg: "1 / 13" }}>
                 <CardBody>
                   <Text fontWeight="semibold" mb={4}>
                     Folder Settings
@@ -530,7 +501,7 @@ const DocumentDetail = () => {
             )}
 
             {document?.type === "auditSchedule" && (
-              <Card gridColumn={{ base: "1", lg: "7 / 13" }}>
+              <Card gridColumn={{ base: "1", lg: "1 / 13" }}>
                 <CardBody>
                   <Text fontWeight="semibold" mb={4}>
                     Audit Details
@@ -641,28 +612,67 @@ const DocumentDetail = () => {
           </SimpleGrid>
         </Container>
       </Box>
-      <PageFooter />
+      
+      {/* Quick Actions in PageFooter */}
+      <PageFooter>
+        <HStack spacing={3} justify="flex-end" w="full">
+          {document?.type === "file" && document?.metadata?.key && (
+            <Tooltip label="Download this file">
+              <Button
+                leftIcon={<FiDownload />}
+                size="md"
+                colorScheme="blue"
+                onClick={handleDownload}
+                isDisabled={!isValid}
+              >
+                Download
+              </Button>
+            </Tooltip>
+          )}
+          <Tooltip label="Preview document">
+            <Button
+              leftIcon={<FiEye />}
+              size="md"
+              colorScheme="gray"
+              variant="outline"
+            >
+              Preview
+            </Button>
+          </Tooltip>
+          <Tooltip label="Share with others">
+            <Button
+              leftIcon={<FiShare2 />}
+              size="md"
+              colorScheme="gray"
+              variant="outline"
+              onClick={onPrivacyOpen}
+            >
+              Share
+            </Button>
+          </Tooltip>
+        </HStack>
+      </PageFooter>
 
-      {/* Modals */}
+      {/* Modals - All receive full document object with ID from URL */}
       <EditDocumentModal
         isOpen={isEditOpen}
         onClose={onEditClose}
-        document={document}
+        document={{ ...document, id }}
       />
       <MoveDocumentModal
         isOpen={isMoveOpen}
         onClose={onMoveClose}
-        document={document}
+        document={{ ...document, id }}
       />
       <PrivacySettingsModal
         isOpen={isPrivacyOpen}
         onClose={onPrivacyClose}
-        document={document}
+        document={{ ...document, id }}
       />
       <DeleteDocumentModal
         isOpen={isDeleteOpen}
         onClose={onDeleteClose}
-        document={document}
+        document={{ ...document, id }}
         onDelete={() => navigate("/documents")}
       />
     </>
