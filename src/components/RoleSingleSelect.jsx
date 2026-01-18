@@ -1,18 +1,6 @@
-import {
-  Box,
-  FormControl,
-  FormLabel,
-  Input,
-  VStack,
-  Text,
-  Spinner,
-  useOutsideClick,
-  useColorModeValue,
-  Tag,
-  TagLabel,
-  TagCloseButton,
-} from "@chakra-ui/react";
-import { useState, useRef, useCallback } from "react";
+import { FormControl, FormLabel, Text, useColorModeValue } from "@chakra-ui/react";
+import AsyncSelect from "react-select/async";
+import { useCallback } from "react";
 import apiService from "../services/api";
 
 const ROLES_ENDPOINT = import.meta.env.VITE_API_PACKAGE_ROLES;
@@ -27,177 +15,192 @@ const MOCK_ROLES = [
   { _id: "5", id: "5", title: "Analyst" },
 ];
 
-const RoleSingleSelect = ({ value, onChange, isInvalid, label = "Role", helperText, ...props }) => {
-  const [inputValue, setInputValue] = useState("");
-  const [options, setOptions] = useState([]);
-  const [loading, setLoading] = useState(false);
-  const [isOpen, setIsOpen] = useState(false);
-  const containerRef = useRef();
-  const debounceTimer = useRef(null);
-
+const RoleSingleSelect = ({
+  value,
+  onChange,
+  isInvalid,
+  label = "Role",
+  helperText,
+  ...props
+}) => {
+  // Chakra UI color mode values
   const bgColor = useColorModeValue("white", "gray.800");
-  const borderColor = useColorModeValue("gray.200", "gray.600");
-  const hoverBg = useColorModeValue("gray.100", "gray.700");
-  const textColor = useColorModeValue("gray.700", "gray.300");
+  const borderColor = useColorModeValue("gray.300", "gray.600");
+  const errorBorderColor = useColorModeValue("red.500", "red.300");
+  const focusBorderColor = useColorModeValue("purple.500", "purple.300");
+  const textColor = useColorModeValue("gray.900", "white");
+  const placeholderColor = useColorModeValue("gray.400", "gray.500");
+  const menuBg = useColorModeValue("white", "gray.800");
+  const optionBg = useColorModeValue("gray.50", "gray.700");
+  const optionSelectedBg = useColorModeValue("purple.500", "purple.300");
 
-  useOutsideClick({
-    ref: containerRef,
-    handler: () => setIsOpen(false),
-  });
-
-  const fetchRoles = useCallback(async (keyword) => {
-    if (keyword.length < 2) {
-      setOptions([]);
-      return;
+  const loadOptions = useCallback(async (inputValue) => {
+    if (inputValue.length < 2) {
+      return [];
     }
-
-    setLoading(true);
 
     if (!USE_API) {
       // Mock API call with delay
-      setTimeout(() => {
-        const filtered = MOCK_ROLES.filter((role) =>
-          role.title.toLowerCase().includes(keyword.toLowerCase())
-        );
-        setOptions(filtered);
-        setLoading(false);
-      }, 300);
-      return;
+      return new Promise((resolve) => {
+        setTimeout(() => {
+          const filtered = MOCK_ROLES.filter((role) =>
+            role.title.toLowerCase().includes(inputValue.toLowerCase())
+          );
+          resolve(
+            filtered.map((role) => ({
+              value: role.id || role._id,
+              label: role.title,
+            }))
+          );
+        }, 300);
+      });
     }
 
     try {
       const data = await apiService.request(ROLES_ENDPOINT, {
         method: "GET",
         params: {
-          keyword,
+          keyword: inputValue,
           limit: 20,
         },
       });
 
       const roles = data.data || data.roles || [];
-      setOptions(roles);
+      return roles.map((role) => ({
+        value: role.id || role._id,
+        label: role.title,
+      }));
     } catch (error) {
       console.error("Failed to fetch roles:", error);
-      setOptions([]);
-    } finally {
-      setLoading(false);
+      return [];
     }
   }, []);
 
-  const handleInputChange = (e) => {
-    const newValue = e.target.value;
-    setInputValue(newValue);
-    setIsOpen(true);
-
-    // Clear existing timeout
-    if (debounceTimer.current) {
-      clearTimeout(debounceTimer.current);
+  const handleChange = (selectedOption) => {
+    if (selectedOption) {
+      onChange({
+        id: selectedOption.value,
+        title: selectedOption.label,
+      });
+    } else {
+      onChange(null);
     }
-
-    // Debounce the API call
-    debounceTimer.current = setTimeout(() => {
-      fetchRoles(newValue);
-    }, 500);
   };
 
-  const handleSelectRole = (role) => {
-    // Store full role object with id and title
-    // Normalize ID to use _id if id is not present
-    const roleId = role.id || role._id;
-    onChange({ id: roleId, title: role.title });
-    setInputValue("");
-    setOptions([]);
-    setIsOpen(false);
-  };
+  const selectedValue = value
+    ? { value: value.id, label: value.title }
+    : null;
 
-  const handleRemoveRole = () => {
-    onChange(null);
+  // Custom styles to match Chakra UI theme
+  const customStyles = {
+    control: (provided, state) => ({
+      ...provided,
+      backgroundColor: bgColor,
+      borderColor: isInvalid 
+        ? errorBorderColor 
+        : state.isFocused 
+        ? focusBorderColor 
+        : borderColor,
+      borderWidth: isInvalid ? "2px" : "1px",
+      borderRadius: "0.375rem",
+      minHeight: "40px",
+      boxShadow: state.isFocused 
+        ? `0 0 0 1px ${isInvalid ? errorBorderColor : focusBorderColor}` 
+        : "none",
+      "&:hover": {
+        borderColor: isInvalid 
+          ? errorBorderColor 
+          : state.isFocused 
+          ? focusBorderColor 
+          : borderColor,
+      },
+    }),
+    valueContainer: (provided) => ({
+      ...provided,
+      padding: "0 0.75rem",
+    }),
+    input: (provided) => ({
+      ...provided,
+      color: textColor,
+      margin: 0,
+      padding: 0,
+    }),
+    placeholder: (provided) => ({
+      ...provided,
+      color: placeholderColor,
+    }),
+    singleValue: (provided) => ({
+      ...provided,
+      color: textColor,
+    }),
+    menu: (provided) => ({
+      ...provided,
+      backgroundColor: menuBg,
+      borderRadius: "0.375rem",
+      boxShadow: "0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)",
+      zIndex: 10,
+    }),
+    menuList: (provided) => ({
+      ...provided,
+      padding: "0.25rem",
+    }),
+    option: (provided, state) => ({
+      ...provided,
+      backgroundColor: state.isSelected
+        ? optionSelectedBg
+        : state.isFocused
+        ? optionBg
+        : "transparent",
+      color: state.isSelected ? "white" : textColor,
+      cursor: "pointer",
+      borderRadius: "0.25rem",
+      padding: "0.5rem 0.75rem",
+      "&:active": {
+        backgroundColor: optionSelectedBg,
+      },
+    }),
+    indicatorSeparator: () => ({
+      display: "none",
+    }),
+    dropdownIndicator: (provided) => ({
+      ...provided,
+      color: placeholderColor,
+      "&:hover": {
+        color: textColor,
+      },
+    }),
+    clearIndicator: (provided) => ({
+      ...provided,
+      color: placeholderColor,
+      "&:hover": {
+        color: textColor,
+      },
+    }),
+    loadingIndicator: (provided) => ({
+      ...provided,
+      color: focusBorderColor,
+    }),
   };
-
-  // Filter out the selected role from options
-  const filteredOptions = options.filter((option) => {
-    if (!value) return true;
-    const optionId = option.id || option._id;
-    return value.id !== optionId;
-  });
 
   return (
     <FormControl isInvalid={isInvalid} {...props}>
       {label && <FormLabel>{label}</FormLabel>}
-      <Box ref={containerRef} position="relative">
-        <VStack align="stretch" spacing={2}>
-          {value && (
-            <Tag
-              size="md"
-              borderRadius="full"
-              variant="solid"
-              colorScheme="purple"
-              w="fit-content"
-            >
-              <TagLabel>{value.title}</TagLabel>
-              <TagCloseButton onClick={handleRemoveRole} />
-            </Tag>
-          )}
-          <Input
-            value={inputValue}
-            onChange={handleInputChange}
-            onFocus={() => {
-              if (inputValue.length >= 2) {
-                setIsOpen(true);
-              }
-            }}
-            placeholder="Type at least 2 characters to search roles..."
-          />
-        </VStack>
-
-        {isOpen && inputValue.length >= 2 && (
-          <Box
-            position="absolute"
-            top="100%"
-            left={0}
-            right={0}
-            mt={1}
-            bg={bgColor}
-            boxShadow="lg"
-            borderRadius="md"
-            border="1px"
-            borderColor={borderColor}
-            maxH="200px"
-            overflowY="auto"
-            zIndex={10}
-          >
-            {loading ? (
-              <Box p={4} textAlign="center">
-                <Spinner size="sm" />
-                <Text fontSize="sm" color="gray.500" mt={2}>
-                  Loading roles...
-                </Text>
-              </Box>
-            ) : filteredOptions.length > 0 ? (
-              <VStack align="stretch" spacing={0}>
-                {filteredOptions.map((option) => (
-                  <Box
-                    key={option._id || option.id}
-                    p={3}
-                    cursor="pointer"
-                    color={textColor}
-                    _hover={{ bg: hoverBg }}
-                    onClick={() => handleSelectRole(option)}
-                  >
-                    <Text fontSize="sm">{option.title}</Text>
-                  </Box>
-                ))}
-              </VStack>
-            ) : (
-              <Box p={4} textAlign="center">
-                <Text fontSize="sm" color="gray.500">
-                  No roles found
-                </Text>
-              </Box>
-            )}
-          </Box>
-        )}
-      </Box>
+      <AsyncSelect
+        value={selectedValue}
+        onChange={handleChange}
+        loadOptions={loadOptions}
+        placeholder="Type at least 2 characters to search roles..."
+        noOptionsMessage={({ inputValue }) =>
+          inputValue.length < 2
+            ? "Type at least 2 characters to search"
+            : "No roles found"
+        }
+        isClearable
+        cacheOptions
+        defaultOptions={false}
+        styles={customStyles}
+        loadingMessage={() => "Loading roles..."}
+      />
       {helperText && (
         <Text fontSize="xs" color="gray.500" mt={1}>
           {helperText}
