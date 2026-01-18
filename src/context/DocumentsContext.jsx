@@ -65,12 +65,16 @@ export const DocumentsProvider = ({ children }) => {
 
     try {
       const params = folderId ? { folder: folderId } : {};
-      const data = await apiService.request(DOCUMENTS_ENDPOINT, {
+      const response = await apiService.request(DOCUMENTS_ENDPOINT, {
         method: "GET",
         params,
       });
-
-      setDocuments(data.data || data.documents || []);
+      const { success = false, data = { data: {}, documents: [] } } = response;
+      if (success) {
+        setDocuments(data.documents || []);
+      } else {
+        throw "Failed to fetch documents";
+      }
     } catch (err) {
       console.error("Failed to fetch documents:", err);
       setError(err.message || "Failed to load documents");
@@ -283,7 +287,7 @@ export const DocumentsProvider = ({ children }) => {
 
   // Get documents in current folder
   const getCurrentFolderDocuments = () => {
-    return documents.filter((doc) => doc.parentId === currentFolderId);
+    return documents?.filter((doc) => doc.parentId === currentFolderId);
   };
 
   // Navigate to folder
