@@ -1,13 +1,7 @@
-import {
-  useEffect,
-  useCallback,
-  useReducer,
-  useRef,
-  createContext,
-  useContext,
-} from "react";
+import { useEffect, useCallback, useReducer, useRef } from "react";
 import { useParams } from "react-router-dom";
 import apiService from "../services/api";
+import { RoleContext } from "./_contexts";
 
 const ROLES_ENDPOINT = import.meta.env.VITE_API_PACKAGE_ROLES;
 const USE_API = import.meta.env.VITE_USE_API !== "false";
@@ -67,8 +61,6 @@ const MOCK_ROLE = {
   createdAt: "2024-01-15T10:00:00.000Z",
   updatedAt: "2024-01-15T10:00:00.000Z",
 };
-
-const RoleContext = createContext();
 
 const reducer = (state, action) => {
   const { type, ...payload } = action;
@@ -187,7 +179,7 @@ export const RoleProvider = ({ children }) => {
         return { success: false, error: err.message };
       }
     },
-    [state.role]
+    [state.role],
   );
 
   const createRole = useCallback(async (roleData) => {
@@ -287,12 +279,4 @@ export const RoleProvider = ({ children }) => {
       {children}
     </RoleContext.Provider>
   );
-};
-
-export const useRole = () => {
-  const context = useContext(RoleContext);
-  if (!context) {
-    throw new Error("useRole must be used within RoleProvider");
-  }
-  return context;
 };

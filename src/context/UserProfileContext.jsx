@@ -1,13 +1,7 @@
-import {
-  useEffect,
-  useCallback,
-  useReducer,
-  useRef,
-  createContext,
-  useContext,
-} from "react";
+import { useEffect, useCallback, useReducer, useRef } from "react";
 import { useParams } from "react-router-dom";
 import apiService from "../services/api";
+import { UserProfileContext } from "./_contexts";
 
 const USERS_ENDPOINT = import.meta.env.VITE_API_PACKAGE_USERS;
 const USE_API = import.meta.env.VITE_USE_API !== "false";
@@ -69,8 +63,6 @@ const extractRoleIds = (roles) => {
 
   return roles;
 };
-
-const UserProfileContext = createContext();
 
 const reducer = (state, action) => {
   const { type, ...payload } = action;
@@ -228,7 +220,7 @@ export const UserProfileProvider = ({ children }) => {
         return { success: false, error: err.message };
       }
     },
-    [state.user]
+    [state.user],
   );
 
   const createUser = useCallback(async (userData) => {
@@ -341,7 +333,7 @@ export const UserProfileProvider = ({ children }) => {
           `${import.meta.env.VITE_API_PACKAGE_RESET_PASSWORD}/${userId}`,
           {
             method: "POST",
-          }
+          },
         );
 
         dispatch({ type: "SET_SAVING", value: false });
@@ -358,7 +350,7 @@ export const UserProfileProvider = ({ children }) => {
         return { success: false, error: err.message };
       }
     },
-    [state.user]
+    [state.user],
   );
 
   useEffect(() => {
@@ -385,12 +377,4 @@ export const UserProfileProvider = ({ children }) => {
       {children}
     </UserProfileContext.Provider>
   );
-};
-
-export const useUserProfile = () => {
-  const context = useContext(UserProfileContext);
-  if (!context) {
-    throw new Error("useUserProfile must be used within UserProfileProvider");
-  }
-  return context;
 };
