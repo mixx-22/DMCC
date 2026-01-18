@@ -1,18 +1,14 @@
 import { useState, useEffect, useRef } from "react";
-import { useParams, useNavigate, Link as RouterLink } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import {
   Box,
   VStack,
-  HStack,
   Text,
   Button,
   Card,
   CardBody,
   Divider,
   useDisclosure,
-  Breadcrumb,
-  BreadcrumbItem,
-  BreadcrumbLink,
   Spinner,
   Center,
   Badge,
@@ -28,8 +24,6 @@ import {
   FiFolder,
   FiCalendar,
   FiAlertCircle,
-  FiChevronRight,
-  FiHome,
 } from "react-icons/fi";
 import { useDocuments } from "../../context/DocumentsContext";
 import PageHeader from "../../components/PageHeader";
@@ -39,14 +33,14 @@ import DeleteDocumentModal from "../../components/Document/modals/DeleteDocument
 import MoveDocumentModal from "../../components/Document/modals/MoveDocumentModal";
 import PrivacySettingsModal from "../../components/Document/modals/PrivacySettingsModal";
 import Timestamp from "../../components/Timestamp";
+import Breadcrumbs from "../../components/Document/Breadcrumbs";
 
 const DocumentDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { fetchDocumentById, documents, loading } = useDocuments();
+  const { fetchDocumentById, loading } = useDocuments();
 
   const [document, setDocument] = useState(null);
-  const [breadcrumbs, setBreadcrumbs] = useState([]);
   const fetchedRef = useRef(false);
   const currentIdRef = useRef(null);
 
@@ -110,34 +104,6 @@ const DocumentDetail = () => {
       }
     };
   }, [id, fetchDocumentById, navigate]);
-
-  // Build breadcrumbs based on parentId
-  useEffect(() => {
-    if (!document || documents.length === 0) {
-      setBreadcrumbs([]);
-      return;
-    }
-
-    const buildBreadcrumbs = () => {
-      const path = [];
-      let current = document;
-
-      // Traverse up the parent chain
-      while (current && current.parentId) {
-        const parent = documents.find((d) => d.id === current.parentId);
-        if (parent) {
-          path.unshift(parent);
-          current = parent;
-        } else {
-          break;
-        }
-      }
-
-      setBreadcrumbs(path);
-    };
-
-    buildBreadcrumbs();
-  }, [document, documents]);
 
   // Get document icon
   const getDocumentIcon = () => {
@@ -250,32 +216,7 @@ const DocumentDetail = () => {
         <Container maxW="container.md">
           <VStack spacing={6} align="stretch">
             {/* Breadcrumbs */}
-            <Breadcrumb
-              spacing="8px"
-              separator={<FiChevronRight color="gray.500" />}
-            >
-              <BreadcrumbItem>
-                <BreadcrumbLink as={RouterLink} to="/documents">
-                  <HStack>
-                    <FiHome />
-                    <Text>All Documents</Text>
-                  </HStack>
-                </BreadcrumbLink>
-              </BreadcrumbItem>
-              {breadcrumbs.map((folder) => (
-                <BreadcrumbItem key={folder.id}>
-                  <BreadcrumbLink
-                    as={RouterLink}
-                    to={`/documents/folders/${folder.id}`}
-                  >
-                    {folder?.title || "Untitled"}
-                  </BreadcrumbLink>
-                </BreadcrumbItem>
-              ))}
-              <BreadcrumbItem isCurrentPage>
-                <BreadcrumbLink>{document?.title || "Untitled"}</BreadcrumbLink>
-              </BreadcrumbItem>
-            </Breadcrumb>
+            <Breadcrumbs document={document} />
 
             {/* Document Icon and Title Card */}
             <Card>
