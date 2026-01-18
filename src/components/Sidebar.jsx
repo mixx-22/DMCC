@@ -221,7 +221,7 @@ const Sidebar = () => {
         label: "Settings",
         icon: FiSettings,
         children: [
-          // { path: "/settings", label: "All Settings" },
+          { path: "/settings", label: "All Settings" },
           { path: "/roles", label: "Roles & Permissions" },
         ],
       });
