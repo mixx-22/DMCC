@@ -73,12 +73,13 @@ const Breadcrumbs = memo(({ data = {} }) => {
   );
 
   useEffect(() => {
-    console.log(lastFolderIdRef.current, currentFolderId);
     if (lastFolderIdRef.current !== currentFolderId) {
       lastFolderIdRef.current = currentFolderId;
       buildInitialBreadcrumb(data);
     } else {
-      setCrumbs([{ id: null, title: "All Documents", parentId: null }]);
+      if (currentFolderId === null) {
+        setCrumbs([{ id: null, title: "All Documents", parentId: null }]);
+      }
     }
   }, [buildInitialBreadcrumb, data, currentFolderId]);
 
@@ -95,7 +96,6 @@ const Breadcrumbs = memo(({ data = {} }) => {
           title: data.title,
           parentId: data.parentData?.id,
         };
-        console.log(data, newCrumb);
 
         let updated = [...prev];
 
