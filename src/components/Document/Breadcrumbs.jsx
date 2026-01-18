@@ -105,6 +105,7 @@ const Breadcrumbs = ({ data = {} }) => {
 
   return (
     <Breadcrumb
+      fontSize={{ base: "lg", lg: "xl" }}
       separator={
         <Icon boxSize={4} as={FiChevronRight} color={separatorColor} />
       }
