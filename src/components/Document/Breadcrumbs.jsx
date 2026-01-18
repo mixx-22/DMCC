@@ -15,6 +15,7 @@ import {
 import { Link as RouterLink } from "react-router-dom";
 import { FiChevronRight, FiArrowLeft } from "react-icons/fi";
 import { HiEllipsisHorizontal } from "react-icons/hi2";
+import { LuFolderTree } from "react-icons/lu";
 import apiService from "../../services/api";
 
 const BREADCRUMBS_ENDPOINT = "/documents";
@@ -29,6 +30,14 @@ const Breadcrumbs = memo(({ data = {} }) => {
   const lastFolderIdRef = useRef(null);
 
   const currentFolderId = useMemo(() => data?.id || data?._id || null, [data]);
+
+  const sliceTitle = useCallback(
+    (title = "") =>
+      title && title?.length > maxTitle
+        ? `${title?.slice(0, maxTitle)}...`
+        : title,
+    [maxTitle],
+  );
 
   const buildInitialBreadcrumb = useCallback(
     (data) => {
@@ -151,7 +160,7 @@ const Breadcrumbs = memo(({ data = {} }) => {
                 isRound
                 size="sm"
                 cursor="pointer"
-                icon={<Icon as={HiEllipsisHorizontal} boxSize={6} />}
+                icon={<Icon as={LuFolderTree} boxSize={6} />}
                 colorScheme="brandPrimary"
                 color={ellipsisColor}
                 _hover={{ color: hoverColor }}
@@ -169,7 +178,7 @@ const Breadcrumbs = memo(({ data = {} }) => {
                         : `/documents`
                     }
                   >
-                    {menuCrumb.title}
+                    {sliceTitle(menuCrumb.title)}
                   </MenuItem>
                 ))}
               </MenuList>
@@ -184,7 +193,6 @@ const Breadcrumbs = memo(({ data = {} }) => {
   const renderBreadcrumbItem = (crumb, index) => {
     const nextId = crumbs[index + 1]?.parentId;
     const isCurrentPage = index === crumbs?.length - 1;
-    const splicedTitle = crumb?.title?.slice(0, maxTitle);
 
     if (crumb.id === "previous") {
       return (
@@ -244,11 +252,7 @@ const Breadcrumbs = memo(({ data = {} }) => {
           noOfLines={isCurrentPage ? 1 : { base: 1, lg: 2 }}
           maxW={isCurrentPage ? { base: "xs", lg: "sm" } : "full"}
         >
-          {!isCurrentPage
-            ? crumb.title.length > maxTitle
-              ? `${splicedTitle}...`
-              : crumb.title
-            : crumb.title}
+          {!isCurrentPage ? sliceTitle(crumb.title) : crumb.title}
         </BreadcrumbLink>
       </BreadcrumbItem>
     );
