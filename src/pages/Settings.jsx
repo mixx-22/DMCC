@@ -9,7 +9,13 @@ import {
   useColorModeValue,
   Spinner,
   Flex,
-  Divider,
+  CardFooter,
+  Icon,
+  Accordion,
+  AccordionButton,
+  AccordionPanel,
+  AccordionItem,
+  AccordionIcon,
 } from "@chakra-ui/react";
 import { useState, useEffect } from "react";
 import { toast } from "sonner";
@@ -18,6 +24,7 @@ import PageFooter from "../components/PageFooter";
 import RoleSingleSelect from "../components/RoleSingleSelect";
 import apiService from "../services/api";
 import { useUser } from "../context/useUser";
+import { FaRegCircleQuestion } from "react-icons/fa6";
 
 const SETTINGS_ENDPOINT =
   import.meta.env.VITE_API_PACKAGE_SETTINGS || "/settings";
@@ -30,9 +37,7 @@ const Settings = () => {
   const [teamLeaderRole, setTeamLeaderRole] = useState(null);
   const [initialTeamLeaderRole, setInitialTeamLeaderRole] = useState(null);
 
-  const cardBg = useColorModeValue("white", "gray.800");
-  const textColor = useColorModeValue("gray.700", "gray.300");
-  const subTextColor = useColorModeValue("gray.500", "gray.400");
+  const footerBg = useColorModeValue("gray.300", "gray.600");
 
   useEffect(() => {
     fetchSettings();
@@ -148,20 +153,19 @@ const Settings = () => {
       </PageFooter>
 
       <VStack spacing={6} align="stretch">
-        <Card bg={cardBg}>
+        <Card>
           <CardBody>
-            <VStack spacing={4} align="stretch">
-              <Box>
-                <Heading size="md" mb={2} color={textColor}>
+            <Flex spacing={4} align="stretch">
+              <Box w="2xs">
+                <Heading size="md" mb={2}>
                   Team Leader Role
                 </Heading>
-                <Text fontSize="sm" color={subTextColor} mb={4}>
-                  Select a role that will be automatically assigned to users
-                  when they are designated as team leaders in the Teams module.
-                  This role should have appropriate permissions for team
-                  leadership responsibilities.
+                <Text fontSize="xs" mb={4}>
+                  Select a role that will be automatically assigned to
+                  designated Team Leaders
                 </Text>
-                <Divider mb={4} />
+              </Box>
+              <Box flex={1}>
                 <RoleSingleSelect
                   value={teamLeaderRole}
                   onChange={setTeamLeaderRole}
@@ -169,30 +173,49 @@ const Settings = () => {
                   helperText="Type at least 2 characters to search for roles"
                 />
               </Box>
-            </VStack>
+            </Flex>
           </CardBody>
-        </Card>
-
-        <Card bg={cardBg}>
-          <CardBody>
-            <VStack spacing={3} align="stretch">
-              <Heading size="sm" color={textColor}>
-                How it works
-              </Heading>
-              <Text fontSize="sm" color={subTextColor}>
-                • When you select a user as a leader in a team, the selected
-                role will be automatically added to that user&apos;s profile.
-              </Text>
-              <Text fontSize="sm" color={subTextColor}>
-                • This ensures consistent permissions across all team leaders in
-                your organization.
-              </Text>
-              <Text fontSize="sm" color={subTextColor}>
-                • You can change this role at any time. Note that changing it
-                won&apos;t affect existing team leaders retroactively.
-              </Text>
-            </VStack>
-          </CardBody>
+          <CardFooter
+            bg={footerBg}
+            overflow="hidden"
+            borderBottomRadius="md"
+            p={0}
+          >
+            <Accordion allowToggle w="full">
+              <AccordionItem border="none">
+                <AccordionButton>
+                  <Heading flex={1} size="xs" textAlign="left">
+                    <Icon
+                      as={FaRegCircleQuestion}
+                      boxSize={4}
+                      mr={2}
+                      pos="relative"
+                      top="3px"
+                    />
+                    How it works
+                  </Heading>
+                  <AccordionIcon />
+                </AccordionButton>
+                <AccordionPanel>
+                  <VStack spacing={3} align="stretch">
+                    <Text fontSize="sm">
+                      • When you select a user as a leader in a team, the
+                      selected role will be automatically added to that
+                      user&apos;s profile.
+                    </Text>
+                    <Text fontSize="sm">
+                      • This ensures consistent permissions across all team
+                      leaders in your organization.
+                    </Text>
+                    <Text fontSize="sm">
+                      • You can change this role at any time. Note that changing
+                      it won&apos;t affect existing team leaders retroactively.
+                    </Text>
+                  </VStack>
+                </AccordionPanel>
+              </AccordionItem>
+            </Accordion>
+          </CardFooter>
         </Card>
       </VStack>
     </Box>
