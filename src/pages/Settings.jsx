@@ -183,7 +183,7 @@ const Settings = () => {
           >
             <Accordion allowToggle w="full">
               <AccordionItem border="none">
-                <AccordionButton>
+                <AccordionButton px={5}>
                   <Heading flex={1} size="xs" textAlign="left">
                     <Icon
                       as={FaRegCircleQuestion}
@@ -196,20 +196,20 @@ const Settings = () => {
                   </Heading>
                   <AccordionIcon />
                 </AccordionButton>
-                <AccordionPanel>
-                  <VStack spacing={3} align="stretch">
+                <AccordionPanel p={5}>
+                  <VStack spacing={2} align="stretch">
                     <Text fontSize="sm">
-                      • When you select a user as a leader in a team, the
-                      selected role will be automatically added to that
-                      user&apos;s profile.
+                      When you select a User as a Leader in a Team, the selected
+                      role will be automatically added to that user&apos;s
+                      profile.
                     </Text>
                     <Text fontSize="sm">
-                      • This ensures consistent permissions across all team
-                      leaders in your organization.
+                      This ensures consistent permissions across all Team
+                      Leaders in your organization.
                     </Text>
                     <Text fontSize="sm">
-                      • You can change this role at any time. Note that changing
-                      it won&apos;t affect existing team leaders retroactively.
+                      You can change this role at any time. Note that changing
+                      it WILL affect existing team leaders retroactively.
                     </Text>
                   </VStack>
                 </AccordionPanel>
