@@ -13,6 +13,7 @@ import {
   Center,
   Badge,
   Container,
+  Heading,
 } from "@chakra-ui/react";
 import {
   FiEdit,
@@ -168,7 +169,9 @@ const DocumentDetail = () => {
   if (loading) {
     return (
       <>
-        <PageHeader title="Documents" />
+        <PageHeader>
+          <Heading variant="pageTitle">Documents</Heading>
+        </PageHeader>
         <Box flex="1" bg="gray.50" p={8}>
           <Center h="400px">
             <VStack>
@@ -187,7 +190,9 @@ const DocumentDetail = () => {
   if (!document) {
     return (
       <>
-        <PageHeader title="Documents" />
+        <PageHeader>
+          <Heading variant="pageTitle">Documents</Heading>
+        </PageHeader>
         <Box flex="1" bg="gray.50" p={8}>
           <Center h="400px">
             <VStack>
@@ -211,7 +216,9 @@ const DocumentDetail = () => {
 
   return (
     <>
-      <PageHeader title="Documents" />
+      <PageHeader>
+        <Heading variant="pageTitle">{document?.title || "Untitled"}</Heading>
+      </PageHeader>
       <Box flex="1" bg="gray.50" p={8}>
         <Container maxW="container.md">
           <VStack spacing={6} align="stretch">
