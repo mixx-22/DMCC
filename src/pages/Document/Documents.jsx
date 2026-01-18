@@ -131,7 +131,13 @@ const Documents = () => {
       </PageFooter>
 
       <Stack spacing={{ base: 4, lg: 6 }}>
-        <Breadcrumbs data={folder} />
+        <Breadcrumbs
+          data={folder}
+          onLastCrumbClick={() => setSelectedDocument(folder)}
+          activeLastCrumb={
+            !!selectedDocument && selectedDocument._id === folder._id
+          }
+        />
         {loading ? (
           <Center py={12}>
             <Spinner size="xl" color="blue.500" />
