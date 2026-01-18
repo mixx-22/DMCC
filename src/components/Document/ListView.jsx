@@ -1,3 +1,4 @@
+import { Link as RouterLink } from "react-router-dom";
 import {
   Table,
   Thead,
@@ -10,6 +11,7 @@ import {
   Text,
   IconButton,
   Avatar,
+  Link,
 } from "@chakra-ui/react";
 import { FiMoreVertical } from "react-icons/fi";
 import { getDocumentIcon, isDocumentValid } from "./DocumentIcon";
@@ -19,7 +21,6 @@ export const ListView = ({
   documents,
   selectedDocument,
   onDocumentClick,
-  onMoreOptions,
 }) => {
   return (
     <Table variant="simple">
@@ -33,30 +34,28 @@ export const ListView = ({
       </Thead>
       <Tbody>
         {documents.map((doc) => {
+          const docId = doc?.id || doc?._id;
           const isFolderType =
             doc?.type === "folder" || doc?.type === "auditSchedule";
-          const RowWrapper = isFolderType ? "a" : "tr";
-          const rowProps = isFolderType
-            ? {
-                href: `/documents/folders/${doc?.id}`,
-                onClick: (e) => {
-                  e.preventDefault();
-                  onDocumentClick(doc);
-                },
-                style: { display: "table-row" },
-              }
-            : {};
-
           const isValid = isDocumentValid(doc);
+          const isSelected = selectedDocument?.id === docId;
+
+          const linkProps = {
+            as: RouterLink,
+            to: isFolderType
+              ? `/documents/folders/${docId}`
+              : `/documents/${docId}`,
+            style: { textDecoration: "none", display: "table-row" },
+          };
 
           return (
             <Tr
-              as={RowWrapper}
-              {...rowProps}
+              as={Link}
+              {...linkProps}
               key={doc?.id || Math.random()}
               cursor="pointer"
               _hover={{ bg: "gray.50" }}
-              bg={selectedDocument?.id === doc?.id ? "blue.50" : "transparent"}
+              bg={isSelected ? "blue.50" : "transparent"}
               opacity={isValid ? 1 : 0.6}
             >
               <Td w="full">
@@ -133,7 +132,7 @@ export const ListView = ({
                   onClick={(e) => {
                     e.stopPropagation();
                     e.preventDefault();
-                    onMoreOptions(doc);
+                    onDocumentClick(doc);
                   }}
                 />
               </Td>
