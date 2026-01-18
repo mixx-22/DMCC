@@ -26,7 +26,7 @@ import {
 } from "@chakra-ui/react";
 import { toast } from "sonner";
 import { FiCheck, FiX } from "react-icons/fi";
-import { useApp } from "../context/AppContext";
+import { useApp } from "../context/_useContext";
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
 import Timestamp from "../components/Timestamp";
@@ -117,7 +117,9 @@ const Approvals = () => {
                       v{doc.versions?.length || 1}
                     </Badge>
                   </Td>
-                  <Td><Timestamp date={doc.createdAt} /></Td>
+                  <Td>
+                    <Timestamp date={doc.createdAt} />
+                  </Td>
                   <Td>
                     <HStack spacing={2} onClick={(e) => e.stopPropagation()}>
                       <Button

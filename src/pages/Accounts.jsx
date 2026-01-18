@@ -27,7 +27,7 @@ import {
 } from "@chakra-ui/react";
 import { toast } from "sonner";
 import { FiPlus, FiEdit, FiTrash2, FiSearch, FiUser } from "react-icons/fi";
-import { useApp } from "../context/AppContext";
+import { useApp } from "../context/_useContext";
 import { useNavigate } from "react-router-dom";
 import AccountModal from "../components/AccountModal";
 import PageHeader from "../components/PageHeader";

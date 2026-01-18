@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState } from "react";
 import {
   Modal,
   ModalOverlay,
@@ -15,47 +15,52 @@ import {
   Text,
   Alert,
   AlertIcon,
-} from '@chakra-ui/react'
-import { toast } from 'sonner'
-import { useApp } from '../context/AppContext'
-import { useNavigate } from 'react-router-dom'
+} from "@chakra-ui/react";
+import { toast } from "sonner";
+import { useNavigate } from "react-router-dom";
+import { useApp } from "../context/_useContext";
 
-const DeleteDocumentModal = ({ isOpen, onClose, documentId, documentTitle }) => {
-  const { archiveDocument } = useApp()
-  const navigate = useNavigate()
-  const [confirmText, setConfirmText] = useState('')
-  const [isDeleting, setIsDeleting] = useState(false)
+const DeleteDocumentModal = ({
+  isOpen,
+  onClose,
+  documentId,
+  documentTitle,
+}) => {
+  const { archiveDocument } = useApp();
+  const navigate = useNavigate();
+  const [confirmText, setConfirmText] = useState("");
+  const [isDeleting, setIsDeleting] = useState(false);
 
-  const isMatch = confirmText.trim() === documentTitle.trim()
+  const isMatch = confirmText.trim() === documentTitle.trim();
 
   const handleDelete = async () => {
     if (!isMatch) {
-      toast.error('Validation Error', {
-        description: 'Document title does not match',
+      toast.error("Validation Error", {
+        description: "Document title does not match",
         duration: 3000,
-      })
-      return
+      });
+      return;
     }
 
-    setIsDeleting(true)
+    setIsDeleting(true);
 
-    archiveDocument(documentId)
+    archiveDocument(documentId);
 
-    toast.success('Document Archived', {
-      description: 'Document has been moved to Archive',
+    toast.success("Document Archived", {
+      description: "Document has been moved to Archive",
       duration: 3000,
-    })
+    });
 
-    setIsDeleting(false)
-    setConfirmText('')
-    onClose()
-    navigate('/archive')
-  }
+    setIsDeleting(false);
+    setConfirmText("");
+    onClose();
+    navigate("/archive");
+  };
 
   const handleClose = () => {
-    setConfirmText('')
-    onClose()
-  }
+    setConfirmText("");
+    onClose();
+  };
 
   return (
     <Modal isOpen={isOpen} onClose={handleClose}>
@@ -67,13 +72,12 @@ const DeleteDocumentModal = ({ isOpen, onClose, documentId, documentTitle }) => 
           <VStack spacing={4} align="stretch">
             <Alert status="warning">
               <AlertIcon />
-              This will move the document to the Archive folder. You can restore it later if needed.
+              This will move the document to the Archive folder. You can restore
+              it later if needed.
             </Alert>
-            
-            <Text>
-              To confirm deletion, please type the document title:
-            </Text>
-            
+
+            <Text>To confirm deletion, please type the document title:</Text>
+
             <Text fontWeight="semibold" color="blue.600" fontSize="lg">
               {documentTitle}
             </Text>
@@ -91,7 +95,12 @@ const DeleteDocumentModal = ({ isOpen, onClose, documentId, documentTitle }) => 
         </ModalBody>
 
         <ModalFooter>
-          <Button variant="ghost" mr={3} onClick={handleClose} isDisabled={isDeleting}>
+          <Button
+            variant="ghost"
+            mr={3}
+            onClick={handleClose}
+            isDisabled={isDeleting}
+          >
             Cancel
           </Button>
           <Button
@@ -105,8 +114,7 @@ const DeleteDocumentModal = ({ isOpen, onClose, documentId, documentTitle }) => 
         </ModalFooter>
       </ModalContent>
     </Modal>
-  )
-}
+  );
+};
 
-export default DeleteDocumentModal
-
+export default DeleteDocumentModal;

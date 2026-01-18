@@ -22,7 +22,7 @@ import {
 } from "@chakra-ui/react";
 import { toast } from "sonner";
 import { FiEye, FiEyeOff } from "react-icons/fi";
-import { useApp } from "../context/AppContext";
+import { useApp } from "../context/_useContext";
 
 const AccountModal = ({ isOpen, onClose, account = null }) => {
   const { addAccount, updateAccount } = useApp();

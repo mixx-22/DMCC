@@ -15,9 +15,9 @@ import {
 } from "@chakra-ui/react";
 import { useNavigate } from "react-router-dom";
 import { FiLogOut, FiMoon, FiSun, FiSettings, FiKey } from "react-icons/fi";
-import { useUser } from "../context/useUser";
 import Swal from "sweetalert2";
 import { useEffect } from "react";
+import { useUser } from "../context/_useContext";
 
 const Profile = () => {
   const navigate = useNavigate();

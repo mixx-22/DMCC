@@ -42,7 +42,6 @@ import { useNavigate, useParams } from "react-router-dom";
 import { toast } from "sonner";
 import { useState, useEffect, useMemo } from "react";
 import Swal from "sweetalert2";
-import { useUserProfile } from "../../context/UserProfileContext";
 import PageHeader from "../../components/PageHeader";
 import PageFooter from "../../components/PageFooter";
 import RoleAsyncSelect from "../../components/RoleAsyncSelect";
@@ -51,6 +50,7 @@ import ProfileImageUpload from "../../components/ProfileImageUpload";
 import ProfileViewMode from "../../components/ProfileViewMode";
 import { generateKey as generatePassword } from "../../utils/passwordGenerator";
 import { generateUsername } from "../../utils/usernameGenerator";
+import { useUserProfile } from "../../context/_useContext";
 
 const isValidDate = (dateString) => {
   if (!dateString) return false;

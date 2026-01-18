@@ -18,8 +18,8 @@ import {
 } from "@chakra-ui/react";
 import { toast } from "sonner";
 import { FiEye, FiEyeOff, FiLock } from "react-icons/fi";
-import { useUser } from "../context/useUser";
 import apiService from "../services/api";
+import { useUser } from "../context/_useContext";
 
 const ChangePassword = () => {
   const { user: currentUser } = useUser();
@@ -85,7 +85,7 @@ const ChangePassword = () => {
             newPassword,
             confirmPassword,
           }),
-        }
+        },
       );
 
       toast.success("Password Changed", {

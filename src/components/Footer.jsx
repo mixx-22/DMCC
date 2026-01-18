@@ -1,5 +1,5 @@
 import { Flex, Box, useColorModeValue } from "@chakra-ui/react";
-import { useLayout } from "../context/Layout";
+import { useLayout } from "../context/_useContext";
 
 const Footer = () => {
   const { footerRef } = useLayout();

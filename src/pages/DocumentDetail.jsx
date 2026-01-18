@@ -31,7 +31,7 @@ import {
   FiTrash2,
   FiEye,
 } from "react-icons/fi";
-import { useApp } from "../context/AppContext";
+import { useApp } from "../context/_useContext";
 import CheckInModal from "../components/CheckInModal";
 import DeleteDocumentModal from "../components/DeleteDocumentModal";
 import Timestamp from "../components/Timestamp";
@@ -244,7 +244,13 @@ const DocumentDetail = () => {
                     For Revision
                   </Badge>
                   {document.checkedOutAt && (
-                    <Timestamp date={document.checkedOutAt} fontSize="xs" color="gray.500" display="block" mt={1} />
+                    <Timestamp
+                      date={document.checkedOutAt}
+                      fontSize="xs"
+                      color="gray.500"
+                      display="block"
+                      mt={1}
+                    />
                   )}
                 </Box>
               )}
