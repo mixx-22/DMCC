@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react'
-import { useParams, useNavigate, useSearchParams } from 'react-router-dom'
+import { useEffect } from "react";
+import { useParams, useNavigate, useSearchParams } from "react-router-dom";
 import {
   Box,
   Heading,
@@ -14,113 +14,119 @@ import {
   IconButton,
   Grid,
   useDisclosure,
-} from '@chakra-ui/react'
-import { FiArrowLeft, FiEdit, FiDownload, FiTrash2 } from 'react-icons/fi'
-import { useApp } from '../context/AppContext'
-import CertificationUploadModal from '../components/CertificationUploadModal'
-import Timestamp from '../components/Timestamp'
+} from "@chakra-ui/react";
+import { FiArrowLeft, FiEdit, FiDownload, FiTrash2 } from "react-icons/fi";
+import CertificationUploadModal from "../components/CertificationUploadModal";
+import Timestamp from "../components/Timestamp";
+import { useApp } from "../context/_useContext";
 
 const CertificationDetail = () => {
-  const { id } = useParams()
-  const navigate = useNavigate()
-  const [searchParams] = useSearchParams()
-  const isEdit = searchParams.get('edit') === 'true'
-  const { isOpen, onOpen, onClose } = useDisclosure()
+  const { id } = useParams();
+  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const isEdit = searchParams.get("edit") === "true";
+  const { isOpen, onOpen, onClose } = useDisclosure();
   const {
     certifications,
     deleteCertification,
     addRecentDocument,
     currentUser,
-  } = useApp()
+  } = useApp();
 
-  const certification = certifications.find(c => c.id === id)
+  const certification = certifications.find((c) => c.id === id);
 
   useEffect(() => {
     if (isEdit && certification) {
-      onOpen()
+      onOpen();
     }
-  }, [isEdit, certification, onOpen])
+  }, [isEdit, certification, onOpen]);
 
   useEffect(() => {
     if (certification) {
-      addRecentDocument(certification.id, certification.name, 'certifications')
+      addRecentDocument(certification.id, certification.name, "certifications");
     }
-  }, [id, certification, addRecentDocument])
+  }, [id, certification, addRecentDocument]);
 
   const canViewCertification = () => {
-    if (!certification) return false
-    if (currentUser?.userType === 'Admin') {
-      return true
+    if (!certification) return false;
+    if (currentUser?.userType === "Admin") {
+      return true;
     }
     if (!certification.department) {
-      return true
+      return true;
     }
-    return certification.department === currentUser?.department
-  }
+    return certification.department === currentUser?.department;
+  };
 
   if (!certification || !canViewCertification()) {
     return (
       <Box>
-        <Text>{certification ? 'You do not have permission to view this certification.' : 'Certification not found'}</Text>
-        <Button onClick={() => navigate('/certifications')}>Back to Certifications</Button>
+        <Text>
+          {certification
+            ? "You do not have permission to view this certification."
+            : "Certification not found"}
+        </Text>
+        <Button onClick={() => navigate("/certifications")}>
+          Back to Certifications
+        </Button>
       </Box>
-    )
+    );
   }
 
   const getExpirationStatus = (expirationDate) => {
-    if (!expirationDate) return { status: 'unknown', color: 'gray', text: 'No expiration date' }
-    
-    const expDate = new Date(expirationDate)
-    const now = new Date()
-    const twoMonthsFromNow = new Date()
-    twoMonthsFromNow.setMonth(twoMonthsFromNow.getMonth() + 2)
-    
-    if (expDate < now) {
-      return { status: 'expired', color: 'red', text: 'Expired' }
-    } else if (expDate <= twoMonthsFromNow) {
-      return { status: 'expiring', color: 'orange', text: 'Expiring Soon' }
-    } else {
-      return { status: 'valid', color: 'green', text: 'Valid' }
-    }
-  }
+    if (!expirationDate)
+      return { status: "unknown", color: "gray", text: "No expiration date" };
 
-  const expStatus = getExpirationStatus(certification.expirationDate)
+    const expDate = new Date(expirationDate);
+    const now = new Date();
+    const twoMonthsFromNow = new Date();
+    twoMonthsFromNow.setMonth(twoMonthsFromNow.getMonth() + 2);
+
+    if (expDate < now) {
+      return { status: "expired", color: "red", text: "Expired" };
+    } else if (expDate <= twoMonthsFromNow) {
+      return { status: "expiring", color: "orange", text: "Expiring Soon" };
+    } else {
+      return { status: "valid", color: "green", text: "Valid" };
+    }
+  };
+
+  const expStatus = getExpirationStatus(certification.expirationDate);
 
   const handleDownload = () => {
     if (certification.file) {
-      const link = window.document.createElement('a')
-      link.href = certification.file
-      link.download = certification.fileName || 'certification'
-      link.click()
+      const link = window.document.createElement("a");
+      link.href = certification.file;
+      link.download = certification.fileName || "certification";
+      link.click();
     }
-  }
+  };
 
   const handleDelete = () => {
-    if (window.confirm('Are you sure you want to delete this certification?')) {
-      deleteCertification(certification.id)
-      navigate('/certifications')
+    if (window.confirm("Are you sure you want to delete this certification?")) {
+      deleteCertification(certification.id);
+      navigate("/certifications");
     }
-  }
+  };
 
   const daysUntilExpiration = certification.expirationDate
-    ? Math.ceil((new Date(certification.expirationDate) - new Date()) / (1000 * 60 * 60 * 24))
-    : null
+    ? Math.ceil(
+        (new Date(certification.expirationDate) - new Date()) /
+          (1000 * 60 * 60 * 24),
+      )
+    : null;
 
   return (
     <Box>
       <HStack mb={6}>
         <IconButton
           icon={<FiArrowLeft />}
-          onClick={() => navigate('/certifications')}
+          onClick={() => navigate("/certifications")}
           aria-label="Back"
         />
         <Heading flex={1}>{certification.name}</Heading>
         <HStack>
-          <IconButton
-            icon={<FiEdit />}
-            onClick={onOpen}
-            aria-label="Edit"
-          />
+          <IconButton icon={<FiEdit />} onClick={onOpen} aria-label="Edit" />
           <IconButton
             icon={<FiDownload />}
             onClick={handleDownload}
@@ -144,21 +150,31 @@ const CertificationDetail = () => {
           <CardBody>
             <VStack align="stretch" spacing={3}>
               <Box>
-                <Text fontSize="sm" color="gray.600">Status</Text>
+                <Text fontSize="sm" color="gray.600">
+                  Status
+                </Text>
                 <Badge colorScheme={expStatus.color} mt={1}>
                   {expStatus.text}
                 </Badge>
               </Box>
               <Box>
-                <Text fontSize="sm" color="gray.600">Type</Text>
-                <Text fontWeight="semibold">{certification.type || 'N/A'}</Text>
+                <Text fontSize="sm" color="gray.600">
+                  Type
+                </Text>
+                <Text fontWeight="semibold">{certification.type || "N/A"}</Text>
               </Box>
               <Box>
-                <Text fontSize="sm" color="gray.600">Issuer</Text>
-                <Text fontWeight="semibold">{certification.issuer || 'N/A'}</Text>
+                <Text fontSize="sm" color="gray.600">
+                  Issuer
+                </Text>
+                <Text fontWeight="semibold">
+                  {certification.issuer || "N/A"}
+                </Text>
               </Box>
               <Box>
-                <Text fontSize="sm" color="gray.600">Created</Text>
+                <Text fontSize="sm" color="gray.600">
+                  Created
+                </Text>
                 <Timestamp date={certification.createdAt} />
               </Box>
             </VStack>
@@ -174,17 +190,27 @@ const CertificationDetail = () => {
               {certification.expirationDate ? (
                 <>
                   <Box>
-                    <Text fontSize="sm" color="gray.600">Expiration Date</Text>
+                    <Text fontSize="sm" color="gray.600">
+                      Expiration Date
+                    </Text>
                     <Text fontWeight="semibold">
                       <Timestamp date={certification.expirationDate} />
                     </Text>
                   </Box>
                   {daysUntilExpiration !== null && (
                     <Box>
-                      <Text fontSize="sm" color="gray.600">Days Remaining</Text>
+                      <Text fontSize="sm" color="gray.600">
+                        Days Remaining
+                      </Text>
                       <Text
                         fontWeight="semibold"
-                        color={daysUntilExpiration < 0 ? 'red.500' : daysUntilExpiration < 60 ? 'orange.500' : 'green.500'}
+                        color={
+                          daysUntilExpiration < 0
+                            ? "red.500"
+                            : daysUntilExpiration < 60
+                              ? "orange.500"
+                              : "green.500"
+                        }
                       >
                         {daysUntilExpiration < 0
                           ? `Expired ${Math.abs(daysUntilExpiration)} days ago`
@@ -205,7 +231,9 @@ const CertificationDetail = () => {
             <Heading size="sm">Description</Heading>
           </CardHeader>
           <CardBody>
-            <Text>{certification.description || 'No description provided'}</Text>
+            <Text>
+              {certification.description || "No description provided"}
+            </Text>
           </CardBody>
         </Card>
       </Grid>
@@ -223,14 +251,14 @@ const CertificationDetail = () => {
                   <Text fontSize="sm" color="gray.500">
                     {certification.fileSize
                       ? `${(certification.fileSize / 1024).toFixed(2)} KB`
-                      : 'Size unknown'}
+                      : "Size unknown"}
                   </Text>
                 </VStack>
                 <Button leftIcon={<FiDownload />} onClick={handleDownload}>
                   Download
                 </Button>
               </HStack>
-              {certification.file.startsWith('blob:') && (
+              {certification.file.startsWith("blob:") && (
                 <Box
                   as="iframe"
                   src={certification.file}
@@ -252,8 +280,7 @@ const CertificationDetail = () => {
         certification={certification}
       />
     </Box>
-  )
-}
+  );
+};
 
-export default CertificationDetail
-
+export default CertificationDetail;

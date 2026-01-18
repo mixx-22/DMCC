@@ -41,7 +41,7 @@ import {
   FiX,
   FiCheckCircle,
 } from "react-icons/fi";
-import { useApp } from "../context/AppContext";
+import { useApp } from "../context/_useContext";
 import { useNavigate } from "react-router-dom";
 import DocumentUploadModal from "../components/DocumentUploadModal";
 import PageHeader from "../components/PageHeader";
@@ -97,7 +97,7 @@ const Documents = () => {
     .map((folder) => ({
       ...folder,
       count: visibleDocuments.filter(
-        (doc) => (doc.category || "Uncategorized") === folder.name
+        (doc) => (doc.category || "Uncategorized") === folder.name,
       ).length,
     }))
     .filter((folder) => folder.count > 0);
@@ -285,7 +285,11 @@ const Documents = () => {
                     <Text fontSize="sm" color="gray.500">
                       {folder.count} document{folder.count !== 1 ? "s" : ""}
                     </Text>
-                    <Timestamp date={folder.openedAt} fontSize="xs" color="gray.400" />
+                    <Timestamp
+                      date={folder.openedAt}
+                      fontSize="xs"
+                      color="gray.400"
+                    />
                   </VStack>
                 </CardBody>
               </Card>
@@ -345,13 +349,17 @@ const Documents = () => {
                           doc.status === "approved"
                             ? "green"
                             : doc.status === "pending"
-                            ? "yellow"
-                            : "red"
+                              ? "yellow"
+                              : "red"
                         }
                       >
                         {doc.status}
                       </Badge>
-                      <Timestamp date={recentDoc.openedAt} fontSize="xs" color="gray.400" />
+                      <Timestamp
+                        date={recentDoc.openedAt}
+                        fontSize="xs"
+                        color="gray.400"
+                      />
                     </VStack>
                   </CardBody>
                 </Card>
@@ -412,7 +420,9 @@ const Documents = () => {
                         {String(doc.versions?.length || 1).padStart(2, "0")}
                       </Badge>
                     </Td>
-                    <Td><Timestamp date={doc.createdAt} /></Td>
+                    <Td>
+                      <Timestamp date={doc.createdAt} />
+                    </Td>
                     <Td>
                       {canApproveDocument(doc) ? (
                         <HStack
@@ -500,7 +510,9 @@ const Documents = () => {
                       </Badge>
                     </Td>
                     <Td>{doc.versions?.length || 1}</Td>
-                    <Td><Timestamp date={doc.createdAt} /></Td>
+                    <Td>
+                      <Timestamp date={doc.createdAt} />
+                    </Td>
                     <Td>
                       <IconButton
                         icon={<FiStar />}

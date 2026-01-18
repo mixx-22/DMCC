@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useCallback } from "react";
 import {
   Box,
   Heading,
@@ -27,9 +27,9 @@ import {
 } from "@chakra-ui/react";
 import { toast } from "sonner";
 import { FiDownload, FiTrash2, FiRefreshCw } from "react-icons/fi";
-import { useApp } from "../context/AppContext";
 import ArchiveDeleteConfirmModal from "../components/ArchiveDeleteConfirmModal";
 import ArchiveRestoreConfirmModal from "../components/ArchiveRestoreConfirmModal";
+import { useApp } from "../context/_useContext";
 
 const Archive = () => {
   const {
@@ -90,21 +90,18 @@ const Archive = () => {
     }
   };
 
-  const calculateDaysLeft = (archivedAt) => {
-    if (!archivedAt) return null;
-    const archiveDate = new Date(archivedAt).getTime();
-    const now = new Date().getTime();
-    const daysLeft = Math.ceil(
-      (TWO_YEARS_MS - (now - archiveDate)) / (24 * 60 * 60 * 1000)
-    );
-    return daysLeft > 0 ? daysLeft : 0;
-  };
-
-  const getObsoleteStatus = (daysLeft) => {
-    if (daysLeft === 0) return "obsolete";
-    if (daysLeft <= 30) return "expiring";
-    return "active";
-  };
+  const calculateDaysLeft = useCallback(
+    (archivedAt) => {
+      if (!archivedAt) return null;
+      const archiveDate = new Date(archivedAt).getTime();
+      const now = new Date().getTime();
+      const daysLeft = Math.ceil(
+        (TWO_YEARS_MS - (now - archiveDate)) / (24 * 60 * 60 * 1000),
+      );
+      return daysLeft > 0 ? daysLeft : 0;
+    },
+    [TWO_YEARS_MS],
+  );
 
   const handleDeleteClick = (id) => {
     setSelectedDocId(id);
@@ -143,7 +140,7 @@ const Archive = () => {
     if (!currentUser) return [];
     if (currentUser.userType === "Admin") return archivedDocuments || [];
     return (archivedDocuments || []).filter(
-      (doc) => doc.department === currentUser.department
+      (doc) => doc.department === currentUser.department,
     );
   }, [archivedDocuments, currentUser]);
 
@@ -154,7 +151,7 @@ const Archive = () => {
         deleteArchivedDocument(doc.id);
       }
     });
-  }, [visibleArchived]);
+  }, [calculateDaysLeft, deleteArchivedDocument, visibleArchived]);
 
   const expiringDocuments = React.useMemo(() => {
     const TWO_MONTHS_DAYS = 60;
@@ -162,7 +159,7 @@ const Archive = () => {
       const daysLeft = calculateDaysLeft(doc.archivedAt);
       return daysLeft > 0 && daysLeft <= TWO_MONTHS_DAYS;
     });
-  }, [visibleArchived]);
+  }, [calculateDaysLeft, visibleArchived]);
 
   return (
     <Box>

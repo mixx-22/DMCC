@@ -13,14 +13,12 @@ import {
   CardBody,
   Card,
   Flex,
-  HStack,
   Menu,
   MenuButton,
   MenuList,
   MenuItem,
   useColorModeValue,
   Textarea,
-  Avatar,
   Stack,
   CardHeader,
 } from "@chakra-ui/react";
@@ -31,17 +29,16 @@ import {
   FiX,
   FiMoreVertical,
   FiTrash2,
-  FiUsers,
 } from "react-icons/fi";
 import { useNavigate, useParams } from "react-router-dom";
 import { toast } from "sonner";
 import { useState, useEffect } from "react";
 import Swal from "sweetalert2";
-import { useTeamProfile } from "../../context/TeamProfileContext";
 import PageHeader from "../../components/PageHeader";
 import PageFooter from "../../components/PageFooter";
 import UserAsyncSelect from "../../components/UserAsyncSelect";
 import TeamProfileView from "../../components/TeamProfileView";
+import { useTeamProfile } from "../../context/_useContext";
 
 const isValidDate = (dateString) => {
   if (!dateString) return false;

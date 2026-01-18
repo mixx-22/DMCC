@@ -35,10 +35,10 @@ import { toast } from "sonner";
 import Swal from "sweetalert2";
 import { useState, useEffect } from "react";
 import PermissionsCheckboxGroup from "../../components/PermissionsCheckboxGroup";
-import { useRole } from "../../context/RoleContext";
 import PageHeader from "../../components/PageHeader";
 import PageFooter from "../../components/PageFooter";
 import Timestamp from "../../components/Timestamp";
+import { useRole } from "../../context/_useContext";
 
 const RolePage = () => {
   const navigate = useNavigate();
@@ -102,7 +102,7 @@ const RolePage = () => {
     // Check if any delete permission was toggled ON
     const hasNewDeleteEnabled = checkIfDeleteWasEnabled(
       formData.permissions,
-      newPermissions
+      newPermissions,
     );
 
     // If delete was enabled and not a system role, prompt to make it a system role
@@ -201,7 +201,7 @@ const RolePage = () => {
         // Set all delete permissions to 1
         const updatedPermissions = setAllDeletePermissions(
           formData.permissions,
-          true
+          true,
         );
         setFormData((prev) => ({
           ...prev,
@@ -219,7 +219,7 @@ const RolePage = () => {
       // When turning OFF, turn off all delete permissions without confirmation
       const updatedPermissions = setAllDeletePermissions(
         formData.permissions,
-        false
+        false,
       );
       setFormData((prev) => ({
         ...prev,

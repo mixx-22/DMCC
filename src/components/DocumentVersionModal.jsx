@@ -14,7 +14,7 @@ import {
   VStack,
 } from "@chakra-ui/react";
 import { toast } from "sonner";
-import { useApp } from "../context/AppContext";
+import { useApp } from "../context/_useContext";
 
 const DocumentVersionModal = ({ isOpen, onClose, documentId }) => {
   const { addDocumentVersion } = useApp();

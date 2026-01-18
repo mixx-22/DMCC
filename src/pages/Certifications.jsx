@@ -19,7 +19,7 @@ import {
   Flex,
 } from "@chakra-ui/react";
 import { FiPlus, FiEdit, FiTrash2, FiEye } from "react-icons/fi";
-import { useApp } from "../context/AppContext";
+import { useApp } from "../context/_useContext";
 import { useNavigate } from "react-router-dom";
 import CertificationUploadModal from "../components/CertificationUploadModal";
 import PageHeader from "../components/PageHeader";
@@ -55,7 +55,7 @@ const Certifications = () => {
     (cert) =>
       cert.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       cert.type?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      cert.issuer?.toLowerCase().includes(searchTerm.toLowerCase())
+      cert.issuer?.toLowerCase().includes(searchTerm.toLowerCase()),
   );
 
   const getExpirationStatus = (expirationDate) => {
@@ -169,10 +169,10 @@ const Certifications = () => {
                       {daysRemaining === null
                         ? "N/A"
                         : daysRemaining < 0
-                        ? "Expired"
-                        : `${daysRemaining} day${
-                            daysRemaining === 1 ? "" : "s"
-                          }`}
+                          ? "Expired"
+                          : `${daysRemaining} day${
+                              daysRemaining === 1 ? "" : "s"
+                            }`}
                     </Td>
                     <Td>
                       <Badge colorScheme={expStatus.color}>
