@@ -1,10 +1,9 @@
-import { createContext, useCallback, useEffect, useReducer } from "react";
+import { useCallback, useEffect, useReducer } from "react";
 import apiService from "../services/api";
 import cookieService from "../services/cookieService";
+import { UserContext } from "./_contexts";
 
 const USER_KEY = import.meta.env.VITE_USER_KEY || "currentUser";
-
-const UserContext = createContext();
 
 const reducer = (state, action) => {
   const { type, ...payload } = action;
@@ -100,7 +99,7 @@ export const UserProvider = ({ children }) => {
 
       // Store token in cookie using JWT parsing for automatic expiry
       const success = cookieService.setJWTToken(tokenValue);
-      
+
       if (!success) {
         console.warn("Failed to store token in cookie");
       }
@@ -121,13 +120,13 @@ export const UserProvider = ({ children }) => {
   const logout = useCallback(() => {
     try {
       dispatch({ type: "LOGOUT" });
-      
+
       // Clear cookie
       cookieService.removeToken();
-      
+
       // Clear localStorage (only user data)
       localStorage.removeItem(USER_KEY);
-      
+
       if (typeof sessionStorage !== "undefined") sessionStorage.clear();
     } catch (error) {
       console.warn("Error during logout:", error);

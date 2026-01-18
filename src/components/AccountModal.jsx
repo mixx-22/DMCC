@@ -22,7 +22,7 @@ import {
 } from "@chakra-ui/react";
 import { toast } from "sonner";
 import { FiEye, FiEyeOff } from "react-icons/fi";
-import { useApp } from "../context/AppContext";
+import { useApp } from "../context/_useContext";
 
 const AccountModal = ({ isOpen, onClose, account = null }) => {
   const { addAccount, updateAccount } = useApp();
@@ -299,32 +299,6 @@ const AccountModal = ({ isOpen, onClose, account = null }) => {
                   id="jobTitle"
                   name="jobTitle"
                 />
-              </FormControl>
-
-              <FormControl>
-                <FormLabel>Department</FormLabel>
-                <Select
-                  value={formData.department}
-                  onChange={(e) =>
-                    setFormData((prev) => ({
-                      ...prev,
-                      department: e.target.value,
-                    }))
-                  }
-                  placeholder="Select department"
-                  id="department"
-                  name="department"
-                >
-                  <option value="Administration">Administration</option>
-                  <option value="Human Resources">Human Resources</option>
-                  <option value="Finance">Finance</option>
-                  <option value="Operations">Operations</option>
-                  <option value="Quality Assurance">Quality Assurance</option>
-                  <option value="IT">IT</option>
-                  <option value="Sales">Sales</option>
-                  <option value="Marketing">Marketing</option>
-                  <option value="Other">Other</option>
-                </Select>
               </FormControl>
 
               <FormControl isRequired>

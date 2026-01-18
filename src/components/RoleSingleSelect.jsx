@@ -14,7 +14,14 @@ const MOCK_ROLES = [
   { _id: "5", id: "5", title: "Analyst" },
 ];
 
-const RoleAsyncSelect = ({ value = [], onChange, isInvalid, ...props }) => {
+const RoleSingleSelect = ({
+  value,
+  onChange,
+  isInvalid,
+  label = "Role",
+  helperText,
+  ...props
+}) => {
   const loadOptions = useCallback(async (inputValue) => {
     if (inputValue.length < 2) {
       return [];
@@ -56,25 +63,26 @@ const RoleAsyncSelect = ({ value = [], onChange, isInvalid, ...props }) => {
     }
   }, []);
 
-  const handleChange = (selectedOptions) => {
-    const roles = (selectedOptions || []).map((option) => ({
-      id: option.value,
-      title: option.label,
-    }));
-    onChange(roles);
+  const handleChange = (selectedOption) => {
+    if (selectedOption) {
+      onChange({
+        id: selectedOption.value,
+        title: selectedOption.label,
+      });
+    } else {
+      onChange(null);
+    }
   };
 
-  const selectedValues = value.map((role) => ({
-    value: role.id,
-    label: role.title,
-  }));
+  const selectedValue = value
+    ? { value: value.id, label: value.title }
+    : null;
 
   return (
     <FormControl isInvalid={isInvalid} {...props}>
-      <FormLabel>Roles</FormLabel>
+      {label && <FormLabel>{label}</FormLabel>}
       <AsyncSelect
-        isMulti
-        value={selectedValues}
+        value={selectedValue}
         onChange={handleChange}
         loadOptions={loadOptions}
         placeholder="Type at least 2 characters to search roles..."
@@ -90,11 +98,13 @@ const RoleAsyncSelect = ({ value = [], onChange, isInvalid, ...props }) => {
         colorScheme="purple"
         useBasicStyles
       />
-      <Text fontSize="xs" color="gray.500" mt={1}>
-        Type at least 2 characters to search for roles
-      </Text>
+      {helperText && (
+        <Text fontSize="xs" color="gray.500" mt={1}>
+          {helperText}
+        </Text>
+      )}
     </FormControl>
   );
 };
 
-export default RoleAsyncSelect;
+export default RoleSingleSelect;

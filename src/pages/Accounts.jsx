@@ -27,7 +27,7 @@ import {
 } from "@chakra-ui/react";
 import { toast } from "sonner";
 import { FiPlus, FiEdit, FiTrash2, FiSearch, FiUser } from "react-icons/fi";
-import { useApp } from "../context/AppContext";
+import { useApp } from "../context/_useContext";
 import { useNavigate } from "react-router-dom";
 import AccountModal from "../components/AccountModal";
 import PageHeader from "../components/PageHeader";
@@ -42,14 +42,6 @@ const Accounts = () => {
       navigate("/dashboard");
     }
   }, [currentUser, navigate]);
-
-  if (currentUser?.userType !== "Admin") {
-    return (
-      <Box>
-        <Text>Access Denied. Only administrators can access this page.</Text>
-      </Box>
-    );
-  }
   const { isOpen, onOpen, onClose } = useDisclosure();
   const {
     isOpen: isDeleteOpen,
@@ -60,6 +52,14 @@ const Accounts = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedAccount, setSelectedAccount] = useState(null);
   const [accountToDelete, setAccountToDelete] = useState(null);
+
+  if (currentUser?.userType !== "Admin") {
+    return (
+      <Box>
+        <Text>Access Denied. Only administrators can access this page.</Text>
+      </Box>
+    );
+  }
 
   const filteredAccounts = accounts.filter(
     (account) =>
@@ -120,7 +120,7 @@ const Accounts = () => {
         <Flex gap={4} justifyContent="flex-end">
           <Button
             leftIcon={<FiPlus />}
-            colorScheme="brandPrimary"
+            colorScheme="blue"
             onClick={handleCreate}
           >
             Create New Account
@@ -158,7 +158,6 @@ const Accounts = () => {
               <Th>Profile</Th>
               <Th>Name</Th>
               <Th>Job Title</Th>
-              <Th>Department</Th>
               <Th>User Type</Th>
               <Th>Actions</Th>
             </Tr>
@@ -192,7 +191,6 @@ const Accounts = () => {
                   </Td>
                   <Td fontWeight="semibold">{account.name}</Td>
                   <Td>{account.jobTitle || "N/A"}</Td>
-                  <Td>{account.department || "N/A"}</Td>
                   <Td>
                     <Badge colorScheme={getUserTypeColor(account.userType)}>
                       {account.userType || "N/A"}

@@ -2,15 +2,9 @@ import {
   Box,
   FormControl,
   FormLabel,
-  Input,
-  Tag,
-  TagLabel,
-  TagCloseButton,
   HStack,
   VStack,
   Text,
-  Spinner,
-  useOutsideClick,
   Avatar,
   Table,
   Thead,
@@ -19,16 +13,18 @@ import {
   Th,
   Td,
   IconButton,
+  Tag,
+  TagLabel,
 } from "@chakra-ui/react";
+import { AsyncSelect } from "chakra-react-select";
 import { FiEye, FiX } from "react-icons/fi";
-import { useState, useRef, useCallback } from "react";
+import { useCallback } from "react";
 import apiService from "../services/api";
 import { Link as RouterLink } from "react-router-dom";
 
 const USERS_ENDPOINT = import.meta.env.VITE_API_PACKAGE_USERS;
 const USE_API = import.meta.env.VITE_USE_API !== "false";
 
-// Mock users for development
 const MOCK_USERS = [
   {
     _id: "user-1",
@@ -64,7 +60,6 @@ const MOCK_USERS = [
   },
 ];
 
-// Helper function to get consistent user ID
 const getUserId = (user) => user.id || user._id || user.userId;
 
 const UserAsyncSelect = ({
@@ -74,107 +69,73 @@ const UserAsyncSelect = ({
   label = "Users",
   placeholder = "Type at least 2 characters to search users...",
   limit = 10,
-  displayMode = "badges", // "badges" or "table"
-  readonly = false, // if true, only shows the list without input
+  displayMode = "badges",
+  readonly = false,
   tableProps = {},
   ...props
 }) => {
-  const [inputValue, setInputValue] = useState("");
-  const [options, setOptions] = useState([]);
-  const [loading, setLoading] = useState(false);
-  const [isOpen, setIsOpen] = useState(false);
-  const containerRef = useRef();
-  const debounceTimer = useRef(null);
-
-  useOutsideClick({
-    ref: containerRef,
-    handler: () => setIsOpen(false),
-  });
-
-  const fetchUsers = useCallback(
-    async (keyword) => {
-      if (keyword.length < 2) {
-        setOptions([]);
-        return;
+  const loadOptions = useCallback(
+    async (inputValue) => {
+      if (inputValue.length < 2) {
+        return [];
       }
 
-      setLoading(true);
-
       if (!USE_API) {
-        // Mock API call with delay
-        setTimeout(() => {
-          const filtered = MOCK_USERS.filter((user) => {
-            const fullName = `${user.firstName} ${user.lastName}`.toLowerCase();
-            const email = user.email.toLowerCase();
-            return (
-              fullName.includes(keyword.toLowerCase()) ||
-              email.includes(keyword.toLowerCase())
+        return new Promise((resolve) => {
+          setTimeout(() => {
+            const filtered = MOCK_USERS.filter((user) => {
+              const fullName = `${user.firstName} ${user.lastName}`.toLowerCase();
+              const email = user.email.toLowerCase();
+              return (
+                fullName.includes(inputValue.toLowerCase()) ||
+                email.includes(inputValue.toLowerCase())
+              );
+            });
+            resolve(
+              filtered.slice(0, limit).map((user) => ({
+                value: getUserId(user),
+                label: `${user.firstName} ${user.lastName}`,
+                user: user,
+              }))
             );
-          });
-          setOptions(filtered.slice(0, limit));
-          setLoading(false);
-        }, 300);
-        return;
+          }, 300);
+        });
       }
 
       try {
         const data = await apiService.request(USERS_ENDPOINT, {
           method: "GET",
           params: {
-            keyword,
+            keyword: inputValue,
             limit,
           },
         });
 
         const users = data.data || data.users || [];
-        setOptions(users);
+        return users.map((user) => ({
+          value: getUserId(user),
+          label: `${user.firstName} ${user.lastName}`,
+          user: user,
+        }));
       } catch (error) {
         console.error("Failed to fetch users:", error);
-        setOptions([]);
-      } finally {
-        setLoading(false);
+        return [];
       }
     },
     [limit],
   );
 
-  const handleInputChange = (e) => {
-    const newValue = e.target.value;
-    setInputValue(newValue);
-    setIsOpen(true);
-
-    // Clear existing timeout
-    if (debounceTimer.current) {
-      clearTimeout(debounceTimer.current);
-    }
-
-    // Debounce the API call
-    debounceTimer.current = setTimeout(() => {
-      fetchUsers(newValue);
-    }, 500);
-  };
-
-  const handleSelectUser = (user) => {
-    // Store full user object with necessary properties
-    // Prevent duplicate selection by checking if id already exists
-    const userId = getUserId(user);
-    const isDuplicate = value.some((u) => getUserId(u) === userId);
-    if (!isDuplicate) {
-      onChange([
-        ...value,
-        {
-          id: userId,
-          _id: userId,
-          firstName: user.firstName,
-          lastName: user.lastName,
-          email: user.email,
-          employeeId: user.employeeId || "",
-        },
-      ]);
-    }
-    setInputValue("");
-    setOptions([]);
-    setIsOpen(false);
+  const handleChange = (selectedOptions) => {
+    const users = (selectedOptions || []).map((option) => ({
+      id: option.value,
+      _id: option.value,
+      firstName: option.user.firstName,
+      lastName: option.user.lastName,
+      email: option.user.email,
+      employeeId: option.user.employeeId || "",
+      profilePicture: option.user.profilePicture,
+    }));
+    onChange(users);
   };
 
   const handleRemoveUser = (userToRemove) => {
@@ -183,12 +144,29 @@ const UserAsyncSelect = ({
     );
   };
 
-  // Filter out already selected users by checking IDs
-  const filteredOptions = options.filter(
-    (option) => !value.some((u) => getUserId(u) === getUserId(option)),
-  );
+  const selectedValues = value.map((user) => ({
+    value: getUserId(user),
+    label: `${user.firstName || ""} ${user.lastName || ""}`.trim(),
+    user: user,
+  }));
 
-  // Readonly mode - only display the list, no input
+  const formatOptionLabel = ({ user }) => {
+    const fullName = `${user.firstName || ""} ${user.lastName || ""}`.trim();
+    return (
+      <HStack>
+        <Avatar size="sm" name={fullName} src={user.profilePicture} />
+        <VStack align="start" spacing={0}>
+          <Text fontSize="sm" fontWeight="medium">
+            {fullName}
+          </Text>
+          <Text fontSize="xs" color="gray.500">
+            {user.email}
+          </Text>
+        </VStack>
+      </HStack>
+    );
+  };
+
   if (readonly) {
     return (
       <FormControl {...props}>
@@ -272,122 +250,57 @@ const UserAsyncSelect = ({
     );
   }
 
-  // Editable mode with either badges or table display
   return (
     <>
       <FormControl isInvalid={isInvalid} {...props}>
         <FormLabel>{label}</FormLabel>
-        <Box ref={containerRef} position="relative">
-          <VStack
-            align="stretch"
-            spacing={2}
-            order={displayMode === "table" ? "revert" : "initial"}
-          >
-            {displayMode === "badges" && value.length > 0 && (
-              <HStack spacing={2} wrap="wrap">
-                {value.map((user) => {
-                  const fullName = `${user.firstName || ""} ${
-                    user.lastName || ""
-                  }`.trim();
-                  return (
-                    <Tag
-                      key={getUserId(user)}
-                      size="md"
-                      borderRadius="full"
-                      variant="solid"
-                      colorScheme="brandPrimary"
-                    >
-                      <Avatar
-                        size="xs"
-                        name={fullName}
-                        ml={-1}
-                        mr={2}
-                        src={user.profilePicture}
-                      />
-                      <TagLabel>{fullName}</TagLabel>
-                      <TagCloseButton onClick={() => handleRemoveUser(user)} />
-                    </Tag>
-                  );
-                })}
-              </HStack>
-            )}
-            <Input
-              value={inputValue}
-              onChange={handleInputChange}
-              onFocus={() => {
-                if (inputValue.length >= 2) {
-                  setIsOpen(true);
-                }
-              }}
-              placeholder={placeholder}
-            />
-          </VStack>
-
-          {isOpen && inputValue.length >= 2 && (
-            <Box
-              position="absolute"
-              top="100%"
-              left={0}
-              right={0}
-              mt={1}
-              bg="white"
-              boxShadow="lg"
-              borderRadius="md"
-              border="1px"
-              borderColor="gray.200"
-              maxH="200px"
-              overflowY="auto"
-              zIndex={10}
-            >
-              {loading ? (
-                <Box p={4} textAlign="center">
-                  <Spinner size="sm" />
-                  <Text fontSize="sm" color="gray.500" mt={2}>
-                    Loading users...
-                  </Text>
-                </Box>
-              ) : filteredOptions.length > 0 ? (
-                <VStack align="stretch" spacing={0}>
-                  {filteredOptions.map((option) => {
-                    const fullName = `${option.firstName || ""} ${
-                      option.lastName || ""
-                    }`.trim();
-                    return (
-                      <Box
-                        key={getUserId(option)}
-                        p={3}
-                        cursor="pointer"
-                        _hover={{ bg: "gray.100" }}
-                        onClick={() => handleSelectUser(option)}
-                      >
-                        <HStack>
-                          <Avatar
-                            size="sm"
-                            name={fullName}
-                            src={option.profilePicture}
-                          />
-                          <VStack align="start" spacing={0}>
-                            <Text fontSize="sm" fontWeight="medium">
-                              {fullName}
-                            </Text>
-                            <Text fontSize="xs" color="gray.500">
-                              {option.email}
-                            </Text>
-                          </VStack>
-                        </HStack>
-                      </Box>
-                    );
-                  })}
-                </VStack>
-              ) : (
-                <Box p={4} textAlign="center">
-                  <Text fontSize="sm" color="gray.500">
-                    No users found
-                  </Text>
-                </Box>
-              )}
-            </Box>
+        <Box>
+          {displayMode === "badges" && value.length > 0 && (
+            <HStack spacing={2} wrap="wrap" mb={2}>
+              {value.map((user) => {
+                const fullName = `${user.firstName || ""} ${
+                  user.lastName || ""
+                }`.trim();
+                return (
+                  <Tag
+                    key={getUserId(user)}
+                    size="md"
+                    borderRadius="full"
+                    variant="solid"
+                    colorScheme="blue"
+                  >
+                    <Avatar
+                      size="xs"
+                      name={fullName}
+                      ml={-1}
+                      mr={2}
+                      src={user.profilePicture}
+                    />
+                    <TagLabel>{fullName}</TagLabel>
+                  </Tag>
+                );
+              })}
+            </HStack>
           )}
+          <AsyncSelect
+            isMulti
+            value={selectedValues}
+            onChange={handleChange}
+            loadOptions={loadOptions}
+            placeholder={placeholder}
+            noOptionsMessage={({ inputValue }) =>
+              inputValue.length < 2
+                ? "Type at least 2 characters to search"
+                : "No users found"
+            }
+            formatOptionLabel={formatOptionLabel}
+            isClearable
+            cacheOptions
+            defaultOptions={false}
+            loadingMessage={() => "Loading users..."}
+            colorScheme="blue"
+            useBasicStyles
+          />
         </Box>
         {!readonly && (
           <Text fontSize="xs" color="gray.500" mt={1}>
@@ -399,12 +312,12 @@ const UserAsyncSelect = ({
         <Table variant="simple" size="sm" border="none" mt={6} {...tableProps}>
           <Tbody>
             {value.map((user) => {
-              const userId = user.id || user._id || user.userId;
+              const userId = getUserId(user);
               const fullName = `${user.firstName || ""} ${
                 user.lastName || ""
               }`.trim();
               return (
-                <Tr key={getUserId(user)}>
+                <Tr key={userId}>
                   <Td border="none">
                     <HStack spacing={3}>
                       <Avatar
@@ -429,7 +342,7 @@ const UserAsyncSelect = ({
                         variant="ghost"
                         colorScheme="brandPrimary"
                         icon={<FiEye />}
-                        aria-label="Remove user"
+                        aria-label="View user"
                         as={RouterLink}
                         to={`/users/${userId}`}
                       />

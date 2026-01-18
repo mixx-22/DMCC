@@ -1,15 +1,6 @@
-import { createContext, useContext, useState, useEffect } from "react";
-import { useUser } from "./useUser";
-
-const AppContext = createContext();
-
-export const useApp = () => {
-  const context = useContext(AppContext);
-  if (!context) {
-    throw new Error("useApp must be used within AppProvider");
-  }
-  return context;
-};
+import { useState, useEffect } from "react";
+import { AppContext } from "./_contexts";
+import { useUser } from "./_useContext";
 
 export const AppProvider = ({ children }) => {
   const { user: currentUser } = useUser();
@@ -61,7 +52,7 @@ export const AppProvider = ({ children }) => {
   useEffect(() => {
     localStorage.setItem(
       "archivedDocuments",
-      JSON.stringify(archivedDocuments)
+      JSON.stringify(archivedDocuments),
     );
   }, [archivedDocuments]);
 
@@ -178,8 +169,8 @@ export const AppProvider = ({ children }) => {
               lastModifiedBy: currentUser?.name || "Unknown",
               lastModifiedAt: new Date().toISOString(),
             }
-          : doc
-      )
+          : doc,
+      ),
     );
     addActivityLog("updated", "document", id, updates.title || "Document");
   };
@@ -223,7 +214,7 @@ export const AppProvider = ({ children }) => {
       "deleted_permanently",
       "document",
       id,
-      doc?.title || "Document"
+      doc?.title || "Document",
     );
   };
 
@@ -240,8 +231,8 @@ export const AppProvider = ({ children }) => {
               lastModifiedBy: currentUser?.name || "Unknown",
               lastModifiedAt: new Date().toISOString(),
             }
-          : doc
-      )
+          : doc,
+      ),
     );
     const doc = documents.find((d) => d.id === id);
     addActivityLog("approved", "document", id, doc?.title || "Document");
@@ -258,8 +249,8 @@ export const AppProvider = ({ children }) => {
               lastModifiedBy: currentUser?.name || "Unknown",
               lastModifiedAt: new Date().toISOString(),
             }
-          : doc
-      )
+          : doc,
+      ),
     );
     const doc = documents.find((d) => d.id === id);
     addActivityLog("rejected", "document", id, doc?.title || "Document");
@@ -285,7 +276,7 @@ export const AppProvider = ({ children }) => {
           };
         }
         return doc;
-      })
+      }),
     );
     addActivityLog("version_added", "document", id, "Document");
   };
@@ -302,8 +293,8 @@ export const AppProvider = ({ children }) => {
                 ? { id: currentUser.id, name: currentUser.name }
                 : { id: "anonymous", name: "Current User" },
             }
-          : doc
-      )
+          : doc,
+      ),
     );
     const doc = documents.find((d) => d.id === id);
     addActivityLog("checked_out", "document", id, doc?.title || "Document");
@@ -336,7 +327,7 @@ export const AppProvider = ({ children }) => {
           };
         }
         return doc;
-      })
+      }),
     );
     const doc = documents.find((d) => d.id === id);
     addActivityLog("checked_in", "document", id, doc?.title || "Document");
@@ -365,14 +356,14 @@ export const AppProvider = ({ children }) => {
               ...updates,
               department: updates.department ?? cert.department,
             }
-          : cert
-      )
+          : cert,
+      ),
     );
     addActivityLog(
       "updated",
       "certification",
       id,
-      updates.name || "Certification"
+      updates.name || "Certification",
     );
   };
 
@@ -383,7 +374,7 @@ export const AppProvider = ({ children }) => {
       "deleted",
       "certification",
       id,
-      cert?.name || "Certification"
+      cert?.name || "Certification",
     );
   };
 
@@ -414,8 +405,8 @@ export const AppProvider = ({ children }) => {
       prev.map((account) =>
         account.id === id
           ? { ...account, ...updates, updatedAt: new Date().toISOString() }
-          : account
-      )
+          : account,
+      ),
     );
     addActivityLog("updated", "account", id, updates.name || "Account");
   };

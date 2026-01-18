@@ -21,5 +21,5 @@ ReactDOM.createRoot(document.getElementById("root")).render(
         </AppProvider>
       </UserProvider>
     </ChakraProvider>
-  </React.StrictMode>
+  </React.StrictMode>,
 );

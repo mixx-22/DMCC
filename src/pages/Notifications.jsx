@@ -12,8 +12,8 @@ import {
 } from "@chakra-ui/react";
 import { useNavigate } from "react-router-dom";
 import { FiBell, FiAlertCircle } from "react-icons/fi";
-import { useApp } from "../context/AppContext";
 import Timestamp from "../components/Timestamp";
+import { useApp } from "../context/_useContext";
 
 const NotificationItem = ({ cert, onClick }) => {
   const bgColor = useColorModeValue("white", "gray.800");

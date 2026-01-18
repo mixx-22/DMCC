@@ -1,13 +1,7 @@
-import {
-  useEffect,
-  useCallback,
-  useReducer,
-  useRef,
-  createContext,
-  useContext,
-} from "react";
+import { useEffect, useCallback, useReducer, useRef } from "react";
 import { useParams } from "react-router-dom";
 import apiService from "../services/api";
+import { TeamProfileContext } from "./_contexts";
 
 const TEAMS_ENDPOINT = "/teams";
 const USE_API = import.meta.env.VITE_USE_API !== "false";
@@ -69,8 +63,6 @@ const extractUserIds = (users) => {
 
   return users.map((user) => user.id || user._id);
 };
-
-const TeamProfileContext = createContext();
 
 const reducer = (state, action) => {
   const { type, ...payload } = action;
@@ -229,7 +221,7 @@ export const TeamProfileProvider = ({ children }) => {
         return { success: false, error: err.message };
       }
     },
-    [state.team]
+    [state.team],
   );
 
   const createTeam = useCallback(async (teamData) => {
@@ -349,12 +341,4 @@ export const TeamProfileProvider = ({ children }) => {
       {children}
     </TeamProfileContext.Provider>
   );
-};
-
-export const useTeamProfile = () => {
-  const context = useContext(TeamProfileContext);
-  if (!context) {
-    throw new Error("useTeamProfile must be used within TeamProfileProvider");
-  }
-  return context;
 };

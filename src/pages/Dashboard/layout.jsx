@@ -19,7 +19,6 @@ import {
   FiActivity,
   FiPrinter,
 } from "react-icons/fi";
-import { useApp } from "../../context/AppContext";
 import { useNavigate } from "react-router-dom";
 import { formatDistanceToNow, differenceInCalendarDays } from "date-fns";
 import { useRef, useMemo } from "react";
@@ -31,6 +30,7 @@ import {
   Legend,
   Tooltip,
 } from "recharts";
+import { useApp } from "../../context/_useContext";
 
 const Layout = () => {
   const {

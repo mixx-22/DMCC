@@ -19,7 +19,7 @@ import {
   Flex,
 } from "@chakra-ui/react";
 import { FiPlus, FiEdit, FiTrash2, FiEye } from "react-icons/fi";
-import { useApp } from "../context/AppContext";
+import { useApp } from "../context/_useContext";
 import { useNavigate } from "react-router-dom";
 import CertificationUploadModal from "../components/CertificationUploadModal";
 import PageHeader from "../components/PageHeader";

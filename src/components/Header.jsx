@@ -24,11 +24,9 @@ import {
   FiSun,
   FiSettings,
 } from "react-icons/fi";
-import { useUser } from "../context/useUser";
 import Swal from "sweetalert2";
 import { useNavigate } from "react-router-dom";
-import { useLayout } from "../context/Layout";
-import { useApp } from "../context/AppContext";
+import { useApp, useLayout, useUser } from "../context/_useContext";
 
 const Header = () => {
   const { getExpiringCertifications } = useApp();

@@ -21,9 +21,9 @@ import {
 } from "@chakra-ui/react";
 import { toast } from "sonner";
 import { FiEye, FiEyeOff, FiLock, FiUser } from "react-icons/fi";
-import { useUser } from "../context/useUser";
 import { validateLoginInput } from "../helpers/validation";
 import logoWhite from "../images/auptilyze-white.png";
+import { useUser } from "../context/_useContext";
 
 const Login = () => {
   const { login } = useUser();

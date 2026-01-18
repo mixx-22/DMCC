@@ -42,7 +42,6 @@ import { useNavigate, useParams } from "react-router-dom";
 import { toast } from "sonner";
 import { useState, useEffect, useMemo } from "react";
 import Swal from "sweetalert2";
-import { useUserProfile } from "../../context/UserProfileContext";
 import PageHeader from "../../components/PageHeader";
 import PageFooter from "../../components/PageFooter";
 import RoleAsyncSelect from "../../components/RoleAsyncSelect";
@@ -51,6 +50,7 @@ import ProfileImageUpload from "../../components/ProfileImageUpload";
 import ProfileViewMode from "../../components/ProfileViewMode";
 import { generateKey as generatePassword } from "../../utils/passwordGenerator";
 import { generateUsername } from "../../utils/usernameGenerator";
+import { useUserProfile } from "../../context/_useContext";
 
 const isValidDate = (dateString) => {
   if (!dateString) return false;
@@ -74,7 +74,7 @@ const UserPage = () => {
   } = useUserProfile();
   const suggestionColor = useColorModeValue(
     "brandPrimary.600",
-    "brandPrimary.400"
+    "brandPrimary.400",
   );
   const errorColor = useColorModeValue("error.600", "error.400");
 
@@ -332,13 +332,16 @@ const UserPage = () => {
   const fullName = isEditMode
     ? `${formData.firstName} ${formData.middleName} ${formData.lastName}`.trim()
     : user
-    ? `${user.firstName || ""} ${user.middleName || ""} ${
-        user.lastName || ""
-      }`.trim()
-    : "";
+      ? `${user.firstName || ""} ${user.middleName || ""} ${
+          user.lastName || ""
+        }`.trim()
+      : "";
 
   const roleObjects =
     user && !isEditMode ? normalizeRoles(user.role || []) : [];
+
+  const teamObjects =
+    user && !isEditMode ? normalizeRoles(user.team || []) : [];
 
   return (
     <Box>
@@ -371,10 +374,7 @@ const UserPage = () => {
                   aria-label="More options"
                 />
                 <MenuList>
-                  <MenuItem
-                    icon={<FiKey />}
-                    onClick={handleResetPasswordClick}
-                  >
+                  <MenuItem icon={<FiKey />} onClick={handleResetPasswordClick}>
                     Reset Password
                   </MenuItem>
                   <MenuItem
@@ -425,6 +425,7 @@ const UserPage = () => {
         <ProfileViewMode
           user={user}
           roleObjects={roleObjects}
+          teamObjects={teamObjects}
           isValidDate={isValidDate}
         />
       )}
@@ -607,7 +608,7 @@ const UserPage = () => {
                           if (value.length === 10) {
                             const formatted = `${value.slice(
                               0,
-                              3
+                              3,
                             )} ${value.slice(3, 6)} ${value.slice(6, 10)}`;
                             handleFieldChange("contactNumber", formatted);
                           }
@@ -643,17 +644,6 @@ const UserPage = () => {
                     <FormErrorMessage>
                       {validationErrors.employeeId}
                     </FormErrorMessage>
-                  </FormControl>
-
-                  <FormControl>
-                    <FormLabel>Department</FormLabel>
-                    <Input
-                      value={formData.department}
-                      onChange={(e) =>
-                        handleFieldChange("department", e.target.value)
-                      }
-                      placeholder="Enter department"
-                    />
                   </FormControl>
 
                   <FormControl>

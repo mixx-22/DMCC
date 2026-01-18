@@ -38,8 +38,7 @@ import logoDefault from "../images/auptilyze.png";
 import logoWhite from "../images/auptilyze-white.png";
 import logoIconDefault from "../images/auptilyze-icon.svg";
 import logoIconWhite from "../images/auptilyze-icon-white.svg";
-import { useUser } from "../context/useUser";
-import { useApp } from "../context/AppContext";
+import { useApp, useUser } from "../context/_useContext";
 
 const isRouteMatch = (location, target) => {
   const [targetPath, targetQuery] = target.split("?");
@@ -221,7 +220,7 @@ const Sidebar = () => {
         label: "Settings",
         icon: FiSettings,
         children: [
-          // { path: "/settings", label: "All Settings" },
+          { path: "/settings", label: "All Settings" },
           { path: "/roles", label: "Roles & Permissions" },
         ],
       });
