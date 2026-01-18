@@ -1,4 +1,4 @@
-import { Link as RouterLink } from "react-router-dom";
+import { Link as RouterLink, useNavigate } from "react-router-dom";
 import {
   Table,
   Thead,
@@ -11,10 +11,11 @@ import {
   Text,
   IconButton,
   Avatar,
-  Link,
+  Box,
 } from "@chakra-ui/react";
 import { FiMoreVertical } from "react-icons/fi";
 import { getDocumentIcon, isDocumentValid } from "./DocumentIcon";
+import { DocumentHoverPopover } from "./DocumentHoverPopover";
 import Timestamp from "../Timestamp";
 
 export const ListView = ({
@@ -22,6 +23,8 @@ export const ListView = ({
   selectedDocument,
   onDocumentClick,
 }) => {
+  const navigate = useNavigate();
+
   return (
     <Table variant="simple">
       <Thead>
@@ -40,27 +43,24 @@ export const ListView = ({
           const isValid = isDocumentValid(doc);
           const isSelected = selectedDocument?.id === docId;
 
-          const linkProps = {
-            as: RouterLink,
-            to: isFolderType
-              ? `/documents/folders/${docId}`
-              : `/documents/${docId}`,
-            style: { textDecoration: "none", display: "table-row" },
-          };
+          const navigateTo = isFolderType
+            ? `/documents/folders/${docId}`
+            : `/documents/${docId}`;
 
           return (
             <Tr
-              as={Link}
-              {...linkProps}
               key={doc?.id || Math.random()}
               cursor="pointer"
               _hover={{ bg: "gray.50" }}
               bg={isSelected ? "blue.50" : "transparent"}
               opacity={isValid ? 1 : 0.6}
+              onClick={() => navigate(navigateTo)}
             >
               <Td w="full">
                 <HStack>
-                  {getDocumentIcon(doc)}
+                  <DocumentHoverPopover document={doc}>
+                    {getDocumentIcon(doc)}
+                  </DocumentHoverPopover>
                   <VStack align="start" spacing={0}>
                     <HStack spacing={2}>
                       <Text
