@@ -23,8 +23,8 @@ import PageHeader from "../components/PageHeader";
 import PageFooter from "../components/PageFooter";
 import RoleSingleSelect from "../components/RoleSingleSelect";
 import apiService from "../services/api";
-import { useUser } from "../context/useUser";
 import { FaRegCircleQuestion } from "react-icons/fa6";
+import { useUser } from "../context/_useContext";
 
 const SETTINGS_ENDPOINT =
   import.meta.env.VITE_API_PACKAGE_SETTINGS || "/settings";
