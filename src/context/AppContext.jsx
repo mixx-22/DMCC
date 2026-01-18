@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
-import { useUser } from "./useUser";
 import { AppContext } from "./_contexts";
+import { useUser } from "./_useContext";
 
 export const AppProvider = ({ children }) => {
   const { user: currentUser } = useUser();
