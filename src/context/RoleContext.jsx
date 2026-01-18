@@ -159,14 +159,17 @@ export const RoleProvider = ({ children }) => {
       }
 
       try {
-        const data = await apiService.request(`${ROLES_ENDPOINT}/${roleId}`, {
-          method: "PUT",
-          body: JSON.stringify(updates),
-        });
+        const response = await apiService.request(
+          `${ROLES_ENDPOINT}/${roleId}`,
+          {
+            method: "PUT",
+            body: JSON.stringify(updates),
+          },
+        );
 
         dispatch({
           type: "SET_ROLE",
-          role: data.data || data,
+          role: response.role || {},
         });
         dispatch({ type: "SET_SAVING", value: false });
         return { success: true };
