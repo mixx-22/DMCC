@@ -11,13 +11,13 @@ export const EmptyState = ({
         {currentFolderId ? "This folder is empty" : "No Documents"}
       </Text>
       <HStack>
-        <Button size="sm" colorScheme="blue" onClick={onUploadClick}>
+        <Button size="sm" colorScheme="brandPrimary" onClick={onUploadClick}>
           Upload File
         </Button>
         <Button
           size="sm"
           variant="outline"
-          colorScheme="blue"
+          colorScheme="brandPrimary"
           onClick={onCreateFolderClick}
         >
           Create Folder

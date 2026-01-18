@@ -240,7 +240,11 @@ const CertificationUploadModal = ({
             <Button variant="ghost" mr={3} onClick={onClose}>
               Cancel
             </Button>
-            <Button colorScheme="blue" type="submit" isLoading={isSubmitting}>
+            <Button
+              colorScheme="brandPrimary"
+              type="submit"
+              isLoading={isSubmitting}
+            >
               {isEdit ? "Update" : "Add"} Certification
             </Button>
           </ModalFooter>

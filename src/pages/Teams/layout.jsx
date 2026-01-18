@@ -209,7 +209,7 @@ const TeamsList = () => {
                                 );
                               })}
                             </AvatarGroup>
-                            <Badge colorScheme="blue">
+                            <Badge colorScheme="brandPrimary">
                               {allMembers.length}
                             </Badge>
                           </HStack>

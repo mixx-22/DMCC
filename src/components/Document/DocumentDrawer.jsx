@@ -155,7 +155,7 @@ const DocumentDrawer = ({ document, isOpen, onClose }) => {
                 {document?.type === "file" && document?.metadata?.key && (
                   <Button
                     leftIcon={<FiDownload />}
-                    colorScheme="blue"
+                    colorScheme="brandPrimary"
                     variant="outline"
                     onClick={handleDownload}
                     isDisabled={!isValid}

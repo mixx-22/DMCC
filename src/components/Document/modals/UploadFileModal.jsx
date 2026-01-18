@@ -170,7 +170,7 @@ const UploadFileModal = ({ isOpen, onClose, parentId, path }) => {
             <Button variant="ghost" mr={3} onClick={handleClose}>
               Cancel
             </Button>
-            <Button colorScheme="blue" type="submit">
+            <Button colorScheme="brandPrimary" type="submit">
               Upload
             </Button>
           </ModalFooter>

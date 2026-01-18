@@ -66,7 +66,7 @@ const Accounts = () => {
       account.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       account.jobTitle?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       account.department?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      account.userType?.toLowerCase().includes(searchTerm.toLowerCase())
+      account.userType?.toLowerCase().includes(searchTerm.toLowerCase()),
   );
 
   const handleCreate = () => {
@@ -118,7 +118,11 @@ const Accounts = () => {
       </PageHeader>
       <PageFooter>
         <Flex gap={4} justifyContent="flex-end">
-          <Button leftIcon={<FiPlus />} colorScheme="blue" onClick={handleCreate}>
+          <Button
+            leftIcon={<FiPlus />}
+            colorScheme="brandPrimary"
+            onClick={handleCreate}
+          >
             Create New Account
           </Button>
         </Flex>
@@ -166,7 +170,11 @@ const Accounts = () => {
                   <VStack>
                     <FiUser size={48} color="gray" />
                     <Text color="gray.500">No accounts found</Text>
-                    <Button size="sm" colorScheme="blue" onClick={handleCreate}>
+                    <Button
+                      size="sm"
+                      colorScheme="brandPrimary"
+                      onClick={handleCreate}
+                    >
                       Create Your First Account
                     </Button>
                   </VStack>
@@ -196,7 +204,7 @@ const Accounts = () => {
                         icon={<FiEdit />}
                         size="sm"
                         variant="ghost"
-                        colorScheme="blue"
+                        colorScheme="brandPrimary"
                         onClick={() => handleEdit(account)}
                         aria-label="Edit account"
                       />

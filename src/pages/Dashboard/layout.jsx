@@ -61,10 +61,10 @@ const Layout = () => {
   const visibleDocuments = documents.filter(canViewDocument);
   const visibleCertifications = certifications.filter(canViewCertification);
   const starredDocs = visibleDocuments.filter((doc) =>
-    [...new Set(starredDocuments)].includes(doc.id)
+    [...new Set(starredDocuments)].includes(doc.id),
   );
   const pendingApprovals = visibleDocuments.filter(
-    (doc) => doc.status === "pending"
+    (doc) => doc.status === "pending",
   );
 
   const filteredRecentDocuments = recentDocuments
@@ -74,7 +74,7 @@ const Layout = () => {
       return doc ? canViewDocument(doc) : false;
     })
     .filter(
-      (doc, index, self) => self.findIndex((d) => d.id === doc.id) === index
+      (doc, index, self) => self.findIndex((d) => d.id === doc.id) === index,
     );
 
   const visibleActivityLogs =
@@ -93,7 +93,7 @@ const Layout = () => {
         });
 
   const uniqueVisibleActivityLogs = visibleActivityLogs.filter(
-    (log, index, self) => self.findIndex((l) => l.id === log.id) === index
+    (log, index, self) => self.findIndex((l) => l.id === log.id) === index,
   );
 
   const handlePrintActivityLogs = () => {
@@ -138,7 +138,7 @@ const Layout = () => {
                   <td>${log.itemName}</td>
                   <td>${new Date(log.timestamp).toLocaleString()}</td>
                 </tr>
-              `
+              `,
                 )
                 .join("")}
             </tbody>
@@ -160,7 +160,7 @@ const Layout = () => {
       if (cert.createdAt) {
         const ageInDays = differenceInCalendarDays(
           now,
-          new Date(cert.createdAt)
+          new Date(cert.createdAt),
         );
         if (ageInDays <= 300) {
           greenCount++;
@@ -185,7 +185,7 @@ const Layout = () => {
       if (cert.expirationDate) {
         const daysRemaining = differenceInCalendarDays(
           new Date(cert.expirationDate),
-          now
+          now,
         );
         if (daysRemaining <= 300) {
           greenCount++;
@@ -293,7 +293,10 @@ const Layout = () => {
                       dataKey="value"
                     >
                       {certificateAgeData.map((entry) => (
-                        <Cell key={`age-${entry.name}-${entry.value}`} fill={entry.color} />
+                        <Cell
+                          key={`age-${entry.name}-${entry.value}`}
+                          fill={entry.color}
+                        />
                       ))}
                     </Pie>
                     <Tooltip />
@@ -359,7 +362,10 @@ const Layout = () => {
                       dataKey="value"
                     >
                       {remainingDaysData.map((entry) => (
-                        <Cell key={`remaining-${entry.name}-${entry.value}`} fill={entry.color} />
+                        <Cell
+                          key={`remaining-${entry.name}-${entry.value}`}
+                          fill={entry.color}
+                        />
                       ))}
                     </Pie>
                     <Tooltip />
@@ -471,8 +477,8 @@ const Layout = () => {
                           doc.status === "approved"
                             ? "green"
                             : doc.status === "pending"
-                            ? "yellow"
-                            : "red"
+                              ? "yellow"
+                              : "red"
                         }
                       >
                         {doc.status}
@@ -493,7 +499,7 @@ const Layout = () => {
                 <Button
                   leftIcon={<FiPrinter />}
                   size="sm"
-                  colorScheme="blue"
+                  colorScheme="brandPrimary"
                   variant="outline"
                   onClick={handlePrintActivityLogs}
                 >

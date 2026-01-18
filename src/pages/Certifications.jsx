@@ -55,7 +55,7 @@ const Certifications = () => {
     (cert) =>
       cert.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       cert.type?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      cert.issuer?.toLowerCase().includes(searchTerm.toLowerCase())
+      cert.issuer?.toLowerCase().includes(searchTerm.toLowerCase()),
   );
 
   const getExpirationStatus = (expirationDate) => {
@@ -96,7 +96,11 @@ const Certifications = () => {
       </PageHeader>
       <PageFooter>
         <Flex gap={4} justifyContent="flex-end">
-          <Button leftIcon={<FiPlus />} colorScheme="blue" onClick={onOpen}>
+          <Button
+            leftIcon={<FiPlus />}
+            colorScheme="brandPrimary"
+            onClick={onOpen}
+          >
             Add Certification
           </Button>
         </Flex>
@@ -147,7 +151,11 @@ const Certifications = () => {
                 <Td colSpan={6} textAlign="center" py={8}>
                   <VStack>
                     <Text color="gray.500">No certifications found</Text>
-                    <Button size="sm" colorScheme="blue" onClick={onOpen}>
+                    <Button
+                      size="sm"
+                      colorScheme="brandPrimary"
+                      onClick={onOpen}
+                    >
                       Add Your First Certification
                     </Button>
                   </VStack>
@@ -169,10 +177,10 @@ const Certifications = () => {
                       {daysRemaining === null
                         ? "N/A"
                         : daysRemaining < 0
-                        ? "Expired"
-                        : `${daysRemaining} day${
-                            daysRemaining === 1 ? "" : "s"
-                          }`}
+                          ? "Expired"
+                          : `${daysRemaining} day${
+                              daysRemaining === 1 ? "" : "s"
+                            }`}
                     </Td>
                     <Td>
                       <Badge colorScheme={expStatus.color}>

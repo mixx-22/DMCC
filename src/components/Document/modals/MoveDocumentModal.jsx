@@ -111,7 +111,7 @@ const MoveDocumentModal = ({ isOpen, onClose, document }) => {
           <Button variant="ghost" mr={3} onClick={handleClose}>
             Cancel
           </Button>
-          <Button colorScheme="blue" onClick={handleMove}>
+          <Button colorScheme="brandPrimary" onClick={handleMove}>
             Move
           </Button>
         </ModalFooter>

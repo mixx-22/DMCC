@@ -113,11 +113,13 @@ const Approvals = () => {
                   <Td fontWeight="semibold">{doc.title}</Td>
                   <Td>{doc.category || "Uncategorized"}</Td>
                   <Td>
-                    <Badge colorScheme="blue">
+                    <Badge colorScheme="brandPrimary">
                       v{doc.versions?.length || 1}
                     </Badge>
                   </Td>
-                  <Td><Timestamp date={doc.createdAt} /></Td>
+                  <Td>
+                    <Timestamp date={doc.createdAt} />
+                  </Td>
                   <Td>
                     <HStack spacing={2} onClick={(e) => e.stopPropagation()}>
                       <Button

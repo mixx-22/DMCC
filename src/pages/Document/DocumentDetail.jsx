@@ -200,7 +200,7 @@ const DocumentDetail = () => {
                 Document not found
               </Text>
               <Button
-                colorScheme="blue"
+                colorScheme="brandPrimary"
                 onClick={() => navigate("/documents")}
                 mt={4}
               >
@@ -254,7 +254,7 @@ const DocumentDetail = () => {
                   {document?.type === "file" && document?.metadata?.key && (
                     <Button
                       leftIcon={<FiDownload />}
-                      colorScheme="blue"
+                      colorScheme="brandPrimary"
                       onClick={handleDownload}
                       isDisabled={!isValid}
                     >

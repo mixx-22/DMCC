@@ -103,7 +103,7 @@ const EditDocumentModal = ({ isOpen, onClose, document }) => {
             <Button variant="ghost" mr={3} onClick={onClose}>
               Cancel
             </Button>
-            <Button colorScheme="blue" type="submit">
+            <Button colorScheme="brandPrimary" type="submit">
               Save Changes
             </Button>
           </ModalFooter>

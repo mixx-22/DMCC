@@ -135,7 +135,7 @@ const UserAsyncSelect = ({
         setLoading(false);
       }
     },
-    [limit]
+    [limit],
   );
 
   const handleInputChange = (e) => {
@@ -179,13 +179,13 @@ const UserAsyncSelect = ({
 
   const handleRemoveUser = (userToRemove) => {
     onChange(
-      value.filter((user) => getUserId(user) !== getUserId(userToRemove))
+      value.filter((user) => getUserId(user) !== getUserId(userToRemove)),
     );
   };
 
   // Filter out already selected users by checking IDs
   const filteredOptions = options.filter(
-    (option) => !value.some((u) => getUserId(u) === getUserId(option))
+    (option) => !value.some((u) => getUserId(u) === getUserId(option)),
   );
 
   // Readonly mode - only display the list, no input
@@ -248,7 +248,7 @@ const UserAsyncSelect = ({
                     size="md"
                     borderRadius="full"
                     variant="solid"
-                    colorScheme="blue"
+                    colorScheme="brandPrimary"
                   >
                     <Avatar
                       size="xs"
@@ -295,7 +295,7 @@ const UserAsyncSelect = ({
                       size="md"
                       borderRadius="full"
                       variant="solid"
-                      colorScheme="blue"
+                      colorScheme="brandPrimary"
                     >
                       <Avatar
                         size="xs"
