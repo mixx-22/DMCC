@@ -102,7 +102,9 @@ const RoleSingleSelect = ({ value, onChange, isInvalid, label = "Role", helperTe
 
   const handleSelectRole = (role) => {
     // Store full role object with id and title
-    onChange({ id: role.id || role._id, title: role.title });
+    // Normalize ID to use _id if id is not present
+    const roleId = role.id || role._id;
+    onChange({ id: roleId, title: role.title });
     setInputValue("");
     setOptions([]);
     setIsOpen(false);
@@ -113,9 +115,11 @@ const RoleSingleSelect = ({ value, onChange, isInvalid, label = "Role", helperTe
   };
 
   // Filter out the selected role from options
-  const filteredOptions = options.filter(
-    (option) => !value || (value.id !== option.id && value.id !== option._id)
-  );
+  const filteredOptions = options.filter((option) => {
+    if (!value) return true;
+    const optionId = option.id || option._id;
+    return value.id !== optionId;
+  });
 
   return (
     <FormControl isInvalid={isInvalid} {...props}>
