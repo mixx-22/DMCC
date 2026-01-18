@@ -31,6 +31,7 @@ import Menu from "./pages/Menu";
 import Notifications from "./pages/Notifications";
 import Profile from "./pages/Profile";
 import ChangePassword from "./pages/ChangePassword";
+import Settings from "./pages/Settings";
 
 const ProtectedRoute = ({ children }) => {
   const { currentUser } = useApp();
@@ -75,6 +76,7 @@ function App() {
                     <Route path="/notifications" element={<Notifications />} />
                     <Route path="/profile" element={<Profile />} />
                     <Route path="/change-password" element={<ChangePassword />} />
+                    <Route path="/settings" element={<Settings />} />
                     <Route path="/documents" element={<Documents />} />
                     <Route path="/documents/:id" element={<DocumentDetail />} />
                     <Route path="/archive" element={<Archive />} />
