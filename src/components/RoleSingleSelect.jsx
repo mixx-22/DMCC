@@ -6,7 +6,6 @@ import apiService from "../services/api";
 const ROLES_ENDPOINT = import.meta.env.VITE_API_PACKAGE_ROLES;
 const USE_API = import.meta.env.VITE_USE_API !== "false";
 
-// Mock roles for development
 const MOCK_ROLES = [
   { _id: "1", id: "1", title: "Admin" },
   { _id: "2", id: "2", title: "Manager" },
@@ -23,7 +22,6 @@ const RoleSingleSelect = ({
   helperText,
   ...props
 }) => {
-  // Chakra UI color mode values
   const bgColor = useColorModeValue("white", "gray.800");
   const borderColor = useColorModeValue("gray.300", "gray.600");
   const errorBorderColor = useColorModeValue("red.500", "red.300");
@@ -40,7 +38,6 @@ const RoleSingleSelect = ({
     }
 
     if (!USE_API) {
-      // Mock API call with delay
       return new Promise((resolve) => {
         setTimeout(() => {
           const filtered = MOCK_ROLES.filter((role) =>
@@ -91,7 +88,6 @@ const RoleSingleSelect = ({
     ? { value: value.id, label: value.title }
     : null;
 
-  // Custom styles to match Chakra UI theme
   const customStyles = {
     control: (provided, state) => ({
       ...provided,
