@@ -30,7 +30,6 @@ import { useUser } from "../../context/_useContext";
 export const GridView = ({ documents, selectedDocument, onDocumentClick }) => {
   const { user: currentUser } = useUser();
   const HoverContent = ({ data: doc }) => {
-    console.log(doc, currentUser);
     const fullName =
       `${doc.owner.firstName || ""} ${doc.owner.lastName || ""}`.trim();
     return (
