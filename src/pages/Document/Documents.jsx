@@ -22,6 +22,7 @@ import { GridView } from "../../components/Document/GridView";
 import { ListView } from "../../components/Document/ListView";
 import { EmptyState } from "../../components/Document/EmptyState";
 import { ActionButton } from "../../components/Document/ActionButton";
+import Breadcrumbs from "../../components/Document/Breadcrumbs";
 
 const Documents = () => {
   const { id } = useParams();
@@ -31,8 +32,8 @@ const Documents = () => {
     viewMode,
     currentFolderId,
     selectedDocument,
+    folder,
     documents,
-    getCurrentFolderDocuments,
     navigateToFolder,
     toggleViewMode,
     setSelectedDocument,
@@ -78,8 +79,6 @@ const Documents = () => {
     onOpen: onFileModalOpen,
     onClose: onFileModalClose,
   } = useDisclosure();
-
-  const folderDocuments = getCurrentFolderDocuments();
 
   const handleDocumentClick = (doc) => {
     const now = Date.now();
@@ -129,11 +128,12 @@ const Documents = () => {
       </PageFooter>
 
       <Box>
+        <Breadcrumbs data={folder} />
         {loading ? (
           <Center py={12}>
             <Spinner size="xl" color="blue.500" />
           </Center>
-        ) : folderDocuments.length === 0 ? (
+        ) : documents.length === 0 ? (
           <EmptyState
             currentFolderId={currentFolderId}
             onUploadClick={onFileModalOpen}
@@ -141,13 +141,13 @@ const Documents = () => {
           />
         ) : viewMode === "grid" ? (
           <GridView
-            documents={folderDocuments}
+            documents={documents}
             selectedDocument={selectedDocument}
             onDocumentClick={handleDocumentClick}
           />
         ) : (
           <ListView
-            documents={folderDocuments}
+            documents={documents}
             selectedDocument={selectedDocument}
             onDocumentClick={handleDocumentClick}
             onMoreOptions={setSelectedDocument}

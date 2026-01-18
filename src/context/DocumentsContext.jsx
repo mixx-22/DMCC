@@ -15,10 +15,17 @@ export const useDocuments = () => {
   return context;
 };
 
+const rootFolder = {
+  id: null,
+  title: "All Documents",
+  parentId: null,
+};
+
 export const DocumentsProvider = ({ children }) => {
   const { user: currentUser } = useUser();
 
   // Core documents state with new data structure
+  const [folder, setFolder] = useState(rootFolder);
   const [documents, setDocuments] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -69,8 +76,10 @@ export const DocumentsProvider = ({ children }) => {
         method: "GET",
         params,
       });
-      const { success = false, data = { data: {}, documents: [] } } = response;
+      const { success = false, data = { folder: {}, documents: [] } } =
+        response;
       if (success) {
+        setFolder(data.folder || rootFolder);
         setDocuments(data.documents || []);
       } else {
         throw "Failed to fetch documents";
@@ -285,11 +294,6 @@ export const DocumentsProvider = ({ children }) => {
     return updateDocument(id, { parentId: newParentId });
   };
 
-  // Get documents in current folder
-  const getCurrentFolderDocuments = () => {
-    return documents?.filter((doc) => doc.parentId === currentFolderId);
-  };
-
   // Navigate to folder
   const navigateToFolder = (folderId) => {
     setCurrentFolderId(folderId);
@@ -342,6 +346,7 @@ export const DocumentsProvider = ({ children }) => {
   };
 
   const value = {
+    folder,
     documents,
     viewMode,
     currentFolderId,
@@ -352,7 +357,6 @@ export const DocumentsProvider = ({ children }) => {
     updateDocument,
     deleteDocument,
     moveDocument,
-    getCurrentFolderDocuments,
     navigateToFolder,
     toggleViewMode,
     setViewMode,

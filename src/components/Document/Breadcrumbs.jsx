@@ -1,36 +1,76 @@
-import React, { useState, useEffect } from "react";
-import { HStack, Text, Link } from "@chakra-ui/react";
+import { useState, useEffect, useCallback } from "react";
+import {
+  Link,
+  Breadcrumb,
+  BreadcrumbItem,
+  useColorModeValue,
+  Icon,
+  IconButton,
+  useBreakpointValue,
+} from "@chakra-ui/react";
+import { Link as RouterLink } from "react-router-dom";
+import { FiChevronRight } from "react-icons/fi";
+import { HiEllipsisHorizontal } from "react-icons/hi2";
 import apiService from "../../services/api";
 
-const BREADCRUMBS_ENDPOINT = "/breadcrumbs";
+const BREADCRUMBS_ENDPOINT = "/documents";
 
-const Breadcrumbs = ({ document }) => {
+const Breadcrumbs = ({ data = {} }) => {
   const [crumbs, setCrumbs] = useState([]);
+  const separatorColor = useColorModeValue("gray.400", "gray.300");
+  const ellipsisColor = useColorModeValue("gray.600", "gray.500");
+  const hoverColor = useColorModeValue("brandPrimary.600", "brandPrimary.200");
+  const isMobile = useBreakpointValue({ base: true, md: false });
+
+  const buildInitialBreadcrumb = useCallback(
+    (data) => {
+      const rootCrumb = { id: null, title: "All Documents", parentId: null };
+      const id = data?.id || data?._id;
+      if (!id) {
+        setCrumbs([rootCrumb]);
+        return;
+      }
+
+      const thisCrumb = {
+        id,
+        title: data?.title,
+        parentId: data?.parentData?.id ?? null,
+      };
+
+      const parent = data?.parentData;
+      const parentCrumb = {
+        id: parent?.id || parent?._id || null,
+        title: parent?.title,
+        parentId: parent?.parentId,
+      };
+
+      if (isMobile) {
+        if (parent) {
+          setCrumbs([parentCrumb, thisCrumb]);
+          return;
+        }
+        setCrumbs([rootCrumb, thisCrumb]);
+        return;
+      }
+
+      if (!parent) {
+        setCrumbs([rootCrumb, thisCrumb]);
+        return;
+      }
+
+      setCrumbs([
+        rootCrumb,
+        ...(parent.parentId ? [{ id: "ellipsis" }] : []),
+        parentCrumb,
+        thisCrumb,
+      ]);
+    },
+    [isMobile],
+  );
 
   useEffect(() => {
-    buildInitialBreadcrumb(document);
-  }, [document]);
-
-  const buildInitialBreadcrumb = (doc) => {
-    const base = [{ id: null, name: "All Documents", parentId: null }];
-
-    if (!doc.parent) {
-      setCrumbs(base);
-      return;
-    }
-
-    const parentCrumb = {
-      id: doc.parent.id,
-      name: doc.parent.name,
-      parentId: doc.parent.parentId,
-    };
-
-    if (doc.parent.parentId) {
-      setCrumbs([...base, { id: "ellipsis" }, parentCrumb]);
-    } else {
-      setCrumbs([...base, parentCrumb]);
-    }
-  };
+    buildInitialBreadcrumb(data);
+  }, [buildInitialBreadcrumb, data]);
 
   const loadMore = async (id) => {
     try {
@@ -39,18 +79,18 @@ const Breadcrumbs = ({ document }) => {
       });
 
       setCrumbs((prev) => {
+        const { data = {} } = result;
         const newCrumb = {
-          id: result.id,
-          name: result.name,
-          parentId: result.parentId,
+          id: data.id ?? data._id,
+          title: data.title,
+          parentId: data.parentId,
         };
 
         let updated = [...prev];
 
-        // Remove existing ellipsis
         updated = updated.filter((c) => c.id !== "ellipsis");
 
-        if (result.parentId) {
+        if (data.parentId) {
           updated.splice(1, 0, { id: "ellipsis" });
         }
 
@@ -64,37 +104,60 @@ const Breadcrumbs = ({ document }) => {
   };
 
   return (
-    <HStack spacing={2}>
+    <Breadcrumb
+      separator={
+        <Icon boxSize={4} as={FiChevronRight} color={separatorColor} />
+      }
+      sx={{
+        "li span:has(svg)": {
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+        },
+      }}
+    >
       {crumbs.map((crumb, index) => {
         if (crumb.id === "ellipsis") {
           const nextId = crumbs[index + 1]?.parentId;
 
           return (
-            <Text
+            <BreadcrumbItem
+              h={6}
               key={`ellipsis-${index}`}
-              cursor="pointer"
               onClick={() => loadMore(nextId)}
             >
-              [...]
-            </Text>
+              <IconButton
+                isRound
+                size="sm"
+                cursor="pointer"
+                icon={<Icon as={HiEllipsisHorizontal} boxSize={6} />}
+                colorScheme="brandPrimary"
+                color={ellipsisColor}
+                _hover={{ color: hoverColor }}
+                variant="ghost"
+                p={1}
+              />
+            </BreadcrumbItem>
           );
         }
 
         return (
-          <React.Fragment key={crumb.id ?? "root"}>
+          <BreadcrumbItem
+            key={crumb.id ?? "root"}
+            isCurrentPage={index === crumb?.length - 1}
+          >
             <Link
-              onClick={() =>
-                crumb.id && console.log("navigate to folder", crumb.id)
-              }
+              as={RouterLink}
+              color={ellipsisColor}
+              _hover={{ color: hoverColor }}
+              to={crumb?.id ? `/documents/folders/${crumb.id}` : `/documents`}
             >
-              {crumb.name}
+              {crumb.title}
             </Link>
-
-            {index < crumbs.length - 1 && <Text>{">"}</Text>}
-          </React.Fragment>
+          </BreadcrumbItem>
         );
       })}
-    </HStack>
+    </Breadcrumb>
   );
 };
 
