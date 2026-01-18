@@ -3,6 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import {
   Box,
   VStack,
+  HStack,
   Text,
   Button,
   Card,
@@ -14,6 +15,16 @@ import {
   Badge,
   Container,
   Heading,
+  SimpleGrid,
+  Avatar,
+  Icon,
+  Menu,
+  MenuButton,
+  MenuList,
+  MenuItem,
+  IconButton,
+  Flex,
+  Tooltip,
 } from "@chakra-ui/react";
 import {
   FiEdit,
@@ -25,6 +36,14 @@ import {
   FiFolder,
   FiCalendar,
   FiAlertCircle,
+  FiMoreVertical,
+  FiCheckCircle,
+  FiClock,
+  FiXCircle,
+  FiUpload,
+  FiEye,
+  FiLock,
+  FiUnlock,
 } from "react-icons/fi";
 import PageHeader from "../../components/PageHeader";
 import PageFooter from "../../components/PageFooter";
@@ -72,7 +91,6 @@ const DocumentDetail = () => {
   // Fetch document using useRef to prevent duplicates
   useEffect(() => {
     const loadDocument = async () => {
-      // Prevent duplicate requests
       if (currentIdRef.current === id && fetchedRef.current) {
         return;
       }
@@ -85,7 +103,6 @@ const DocumentDetail = () => {
         if (doc) {
           setDocument(doc);
         } else {
-          // Document not found, redirect to documents root
           navigate("/documents");
         }
       } catch (error) {
@@ -98,7 +115,6 @@ const DocumentDetail = () => {
       loadDocument();
     }
 
-    // Reset fetchedRef when id changes
     return () => {
       if (currentIdRef.current !== id) {
         fetchedRef.current = false;
@@ -106,36 +122,23 @@ const DocumentDetail = () => {
     };
   }, [id, fetchDocumentById, navigate]);
 
-  // Get document icon
-  const getDocumentIcon = () => {
+  const getDocumentIcon = (size = 48) => {
     if (!document || typeof document !== "object") {
-      return <FiAlertCircle size={64} color="#E53E3E" />;
+      return <Icon as={FiAlertCircle} boxSize={size} color="red.500" />;
     }
 
     switch (document?.type) {
       case "folder":
-        return <FiFolder size={64} color="#3182CE" />;
+        return <Icon as={FiFolder} boxSize={size} color="blue.500" />;
       case "auditSchedule":
-        return <FiCalendar size={64} color="#805AD5" />;
+        return <Icon as={FiCalendar} boxSize={size} color="purple.500" />;
       case "file":
         if (!document?.metadata?.filename) {
-          return (
-            <FiAlertCircle
-              size={64}
-              color="#E53E3E"
-              title="Broken file - missing metadata"
-            />
-          );
+          return <Icon as={FiAlertCircle} boxSize={size} color="red.500" />;
         }
-        return <FiFile size={64} color="#718096" />;
+        return <Icon as={FiFile} boxSize={size} color="gray.500" />;
       default:
-        return (
-          <FiAlertCircle
-            size={64}
-            color="#E53E3E"
-            title="Unknown document type"
-          />
-        );
+        return <Icon as={FiAlertCircle} boxSize={size} color="red.500" />;
     }
   };
 
@@ -199,11 +202,7 @@ const DocumentDetail = () => {
               <Text fontSize="xl" color="gray.600">
                 Document not found
               </Text>
-              <Button
-                colorScheme="brandPrimary"
-                onClick={() => navigate("/documents")}
-                mt={4}
-              >
+              <Button colorScheme="blue" onClick={() => navigate("/documents")} mt={4}>
                 Back to Documents
               </Button>
             </VStack>
@@ -217,366 +216,429 @@ const DocumentDetail = () => {
   return (
     <>
       <PageHeader>
-        <Heading variant="pageTitle">{document?.title || "Untitled"}</Heading>
+        <Breadcrumbs data={document} />
       </PageHeader>
-      <Box flex="1" bg="gray.50" p={8}>
-        <Container maxW="container.md">
-          <VStack spacing={6} align="stretch">
-            {/* Breadcrumbs */}
-            <Breadcrumbs document={document} />
-
-            {/* Document Icon and Title Card */}
-            <Card>
+      <Box flex="1" bg="gray.50" p={{ base: 4, md: 8 }}>
+        <Container maxW="container.xl">
+          {/* Bento Grid Layout */}
+          <SimpleGrid
+            columns={{ base: 1, lg: 12 }}
+            gap={6}
+            autoRows="minmax(120px, auto)"
+          >
+            {/* Main Document Info - Spans 8 columns, 2 rows */}
+            <Card gridColumn={{ base: "1", lg: "1 / 9" }} gridRow={{ base: "auto", lg: "1 / 3" }}>
               <CardBody>
-                <VStack spacing={4}>
-                  {getDocumentIcon()}
-                  <Text
-                    fontSize="2xl"
-                    fontWeight="bold"
-                    textAlign="center"
-                    color={isValid ? "inherit" : "red.500"}
-                  >
-                    {document?.title || "Untitled"}
-                  </Text>
-                  {!isValid && (
-                    <Badge colorScheme="red" fontSize="sm">
-                      Broken Document
-                    </Badge>
+                <Flex justify="space-between" align="start" mb={4}>
+                  <HStack spacing={4} flex="1">
+                    {getDocumentIcon(56)}
+                    <VStack align="start" spacing={1} flex="1">
+                      <Heading
+                        size="lg"
+                        color={isValid ? "inherit" : "red.500"}
+                        wordBreak="break-word"
+                      >
+                        {document?.title || "Untitled"}
+                      </Heading>
+                      <HStack spacing={2}>
+                        <Badge colorScheme={document?.type === "folder" ? "blue" : document?.type === "auditSchedule" ? "purple" : "gray"}>
+                          {document?.type === "auditSchedule"
+                            ? "Audit Schedule"
+                            : document?.type
+                              ? document.type.charAt(0).toUpperCase() + document.type.slice(1)
+                              : "Unknown"}
+                        </Badge>
+                        {!isValid && (
+                          <Badge colorScheme="red">Broken</Badge>
+                        )}
+                      </HStack>
+                    </VStack>
+                  </HStack>
+                  <Menu>
+                    <MenuButton
+                      as={IconButton}
+                      icon={<FiMoreVertical />}
+                      variant="ghost"
+                      size="sm"
+                    />
+                    <MenuList>
+                      <MenuItem icon={<FiEdit />} onClick={onEditOpen}>
+                        Edit Details
+                      </MenuItem>
+                      <MenuItem icon={<FiMove />} onClick={onMoveOpen}>
+                        Move
+                      </MenuItem>
+                      <MenuItem icon={<FiShare2 />} onClick={onPrivacyOpen}>
+                        Privacy Settings
+                      </MenuItem>
+                      <Divider />
+                      <MenuItem icon={<FiTrash2 />} color="red.500" onClick={onDeleteOpen}>
+                        Delete
+                      </MenuItem>
+                    </MenuList>
+                  </Menu>
+                </Flex>
+
+                {document?.description && (
+                  <>
+                    <Divider mb={4} />
+                    <Text color="gray.700" fontSize="md" mb={4}>
+                      {document.description}
+                    </Text>
+                  </>
+                )}
+
+                <Divider mb={4} />
+                
+                <SimpleGrid columns={{ base: 1, md: 2 }} spacing={4}>
+                  <Box>
+                    <Text fontSize="sm" color="gray.600" fontWeight="medium">
+                      Owner
+                    </Text>
+                    <HStack mt={2}>
+                      <Avatar
+                        size="sm"
+                        name={
+                          document?.owner?.firstName && document?.owner?.lastName
+                            ? `${document.owner.firstName} ${document.owner.lastName}`
+                            : "Unknown"
+                        }
+                      />
+                      <VStack align="start" spacing={0}>
+                        <Text fontSize="sm" fontWeight="medium">
+                          {document?.owner?.firstName && document?.owner?.lastName
+                            ? `${document.owner.firstName} ${document.owner.lastName}`
+                            : "Unknown"}
+                        </Text>
+                        {document?.owner?.team && (
+                          <Text fontSize="xs" color="gray.500">
+                            {document.owner.team}
+                          </Text>
+                        )}
+                      </VStack>
+                    </HStack>
+                  </Box>
+
+                  {document?.createdAt && (
+                    <Box>
+                      <Text fontSize="sm" color="gray.600" fontWeight="medium">
+                        Created
+                      </Text>
+                      <Text fontSize="sm" mt={2}>
+                        <Timestamp date={document.createdAt} />
+                      </Text>
+                    </Box>
                   )}
-                </VStack>
+
+                  {document?.updatedAt && (
+                    <Box>
+                      <Text fontSize="sm" color="gray.600" fontWeight="medium">
+                        Last Modified
+                      </Text>
+                      <Text fontSize="sm" mt={2}>
+                        <Timestamp date={document.updatedAt} />
+                      </Text>
+                    </Box>
+                  )}
+
+                  {document?.type === "file" && document?.metadata?.size && (
+                    <Box>
+                      <Text fontSize="sm" color="gray.600" fontWeight="medium">
+                        File Size
+                      </Text>
+                      <Text fontSize="sm" mt={2}>
+                        {formatFileSize(document.metadata.size)}
+                      </Text>
+                    </Box>
+                  )}
+                </SimpleGrid>
               </CardBody>
             </Card>
 
-            {/* Action Buttons Card */}
-            <Card>
+            {/* Quick Actions - Spans 4 columns */}
+            <Card gridColumn={{ base: "1", lg: "9 / 13" }}>
               <CardBody>
-                <VStack spacing={3} align="stretch">
+                <Text fontWeight="semibold" mb={4}>
+                  Quick Actions
+                </Text>
+                <VStack spacing={2} align="stretch">
                   {document?.type === "file" && document?.metadata?.key && (
                     <Button
                       leftIcon={<FiDownload />}
-                      colorScheme="brandPrimary"
+                      size="sm"
+                      colorScheme="blue"
+                      variant="outline"
                       onClick={handleDownload}
                       isDisabled={!isValid}
+                      w="full"
                     >
                       Download
                     </Button>
                   )}
                   <Button
-                    leftIcon={<FiEdit />}
+                    leftIcon={<FiEye />}
+                    size="sm"
                     colorScheme="gray"
                     variant="outline"
-                    onClick={onEditOpen}
+                    w="full"
                   >
-                    Edit Details
-                  </Button>
-                  <Button
-                    leftIcon={<FiMove />}
-                    colorScheme="gray"
-                    variant="outline"
-                    onClick={onMoveOpen}
-                  >
-                    Move
+                    Preview
                   </Button>
                   <Button
                     leftIcon={<FiShare2 />}
+                    size="sm"
                     colorScheme="gray"
                     variant="outline"
                     onClick={onPrivacyOpen}
+                    w="full"
                   >
-                    Privacy Settings
+                    Share
+                  </Button>
+                </VStack>
+              </CardBody>
+            </Card>
+
+            {/* Check-In/Check-Out Section - Placeholder for future */}
+            <Card gridColumn={{ base: "1", lg: "9 / 13" }}>
+              <CardBody>
+                <Text fontWeight="semibold" mb={4}>
+                  Version Control
+                </Text>
+                <VStack spacing={3} align="stretch">
+                  <HStack justify="space-between">
+                    <HStack spacing={2}>
+                      <Icon as={FiLock} color="gray.500" />
+                      <Text fontSize="sm">Status</Text>
+                    </HStack>
+                    <Badge colorScheme="green">Available</Badge>
+                  </HStack>
+                  <Button
+                    leftIcon={<FiUnlock />}
+                    size="sm"
+                    colorScheme="orange"
+                    variant="outline"
+                    w="full"
+                  >
+                    Check Out
                   </Button>
                   <Button
-                    leftIcon={<FiTrash2 />}
-                    colorScheme="red"
+                    leftIcon={<FiUpload />}
+                    size="sm"
+                    colorScheme="green"
                     variant="outline"
-                    onClick={onDeleteOpen}
+                    w="full"
+                    isDisabled
                   >
-                    Delete
+                    Check In
                   </Button>
                 </VStack>
               </CardBody>
             </Card>
 
-            {/* Document Information Card */}
-            <Card>
+            {/* Approval Workflow Section - Placeholder for future */}
+            <Card gridColumn={{ base: "1", lg: "1 / 7" }}>
               <CardBody>
-                <Text fontWeight="semibold" mb={4} fontSize="lg">
-                  Information
-                </Text>
-                <VStack align="stretch" spacing={4}>
-                  <Box>
-                    <Text fontSize="sm" color="gray.600" mb={1}>
-                      Type
-                    </Text>
-                    <Text fontSize="md">
-                      {document?.type === "auditSchedule"
-                        ? "Audit Schedule"
-                        : document?.type
-                          ? document.type.charAt(0).toUpperCase() +
-                            document.type.slice(1)
-                          : "Unknown"}
-                    </Text>
-                  </Box>
-
-                  {document?.description && (
-                    <>
-                      <Divider />
-                      <Box>
-                        <Text fontSize="sm" color="gray.600" mb={1}>
-                          Description
-                        </Text>
-                        <Text fontSize="md">{document.description}</Text>
-                      </Box>
-                    </>
-                  )}
-
+                <HStack justify="space-between" mb={4}>
+                  <Text fontWeight="semibold">Approval Status</Text>
+                  <Badge colorScheme="yellow">Pending</Badge>
+                </HStack>
+                <VStack spacing={3} align="stretch">
+                  <HStack>
+                    <Icon as={FiClock} color="orange.500" />
+                    <Text fontSize="sm">Awaiting review</Text>
+                  </HStack>
                   <Divider />
-                  <Box>
-                    <Text fontSize="sm" color="gray.600" mb={1}>
-                      Owner
-                    </Text>
-                    <Text fontSize="md">
-                      {document?.owner?.firstName && document?.owner?.lastName
-                        ? `${document.owner.firstName} ${document.owner.lastName}`
-                        : "Unknown"}
-                    </Text>
-                    {document?.owner?.team && (
-                      <Text fontSize="sm" color="gray.500" mt={1}>
-                        {document.owner.team}
-                      </Text>
-                    )}
-                  </Box>
-
-                  {document?.createdAt && (
-                    <>
-                      <Divider />
-                      <Box>
-                        <Text fontSize="sm" color="gray.600" mb={1}>
-                          Created
-                        </Text>
-                        <Timestamp date={document.createdAt} fontSize="md" />
-                      </Box>
-                    </>
-                  )}
-
-                  {document?.updatedAt && (
-                    <>
-                      <Divider />
-                      <Box>
-                        <Text fontSize="sm" color="gray.600" mb={1}>
-                          Modified
-                        </Text>
-                        <Timestamp date={document.updatedAt} fontSize="md" />
-                      </Box>
-                    </>
-                  )}
+                  <Button
+                    leftIcon={<FiCheckCircle />}
+                    size="sm"
+                    colorScheme="green"
+                    variant="outline"
+                    w="full"
+                  >
+                    Approve
+                  </Button>
+                  <Button
+                    leftIcon={<FiXCircle />}
+                    size="sm"
+                    colorScheme="red"
+                    variant="outline"
+                    w="full"
+                  >
+                    Reject
+                  </Button>
                 </VStack>
               </CardBody>
             </Card>
 
-            {/* File-specific metadata */}
+            {/* File/Folder Specific Details */}
             {document?.type === "file" && (
-              <Card>
+              <Card gridColumn={{ base: "1", lg: "7 / 13" }}>
                 <CardBody>
-                  <Text fontWeight="semibold" mb={4} fontSize="lg">
+                  <Text fontWeight="semibold" mb={4}>
                     File Details
                   </Text>
-                  <VStack align="stretch" spacing={4}>
+                  <VStack align="stretch" spacing={3}>
                     {document?.metadata?.filename ? (
                       <Box>
-                        <Text fontSize="sm" color="gray.600" mb={1}>
+                        <Text fontSize="sm" color="gray.600">
                           Filename
                         </Text>
-                        <Text fontSize="md" wordBreak="break-all">
+                        <Text fontSize="sm" wordBreak="break-all" mt={1}>
                           {document.metadata.filename}
                         </Text>
                       </Box>
                     ) : (
+                      <Text fontSize="sm" color="red.500">
+                        ⚠️ Missing filename metadata
+                      </Text>
+                    )}
+                    {document?.metadata?.version && (
                       <Box>
-                        <Text fontSize="sm" color="red.500">
-                          ⚠️ Missing filename metadata
+                        <Text fontSize="sm" color="gray.600">
+                          Version
+                        </Text>
+                        <Text fontSize="sm" mt={1}>
+                          {document.metadata.version}
                         </Text>
                       </Box>
-                    )}
-
-                    <Divider />
-                    <Box>
-                      <Text fontSize="sm" color="gray.600" mb={1}>
-                        Size
-                      </Text>
-                      <Text fontSize="md">
-                        {formatFileSize(document?.metadata?.size)}
-                      </Text>
-                    </Box>
-
-                    {document?.metadata?.version && (
-                      <>
-                        <Divider />
-                        <Box>
-                          <Text fontSize="sm" color="gray.600" mb={1}>
-                            Version
-                          </Text>
-                          <Text fontSize="md">{document.metadata.version}</Text>
-                        </Box>
-                      </>
                     )}
                   </VStack>
                 </CardBody>
               </Card>
             )}
 
-            {/* Folder-specific metadata */}
             {document?.type === "folder" && (
-              <Card>
+              <Card gridColumn={{ base: "1", lg: "7 / 13" }}>
                 <CardBody>
-                  <Text fontWeight="semibold" mb={4} fontSize="lg">
+                  <Text fontWeight="semibold" mb={4}>
                     Folder Settings
                   </Text>
-                  <VStack align="stretch" spacing={4}>
-                    <Box>
-                      <Text fontSize="sm" color="gray.600" mb={1}>
-                        Privacy Inheritance
-                      </Text>
-                      <Badge
-                        colorScheme={
-                          document?.metadata?.allowInheritance
-                            ? "green"
-                            : "gray"
-                        }
-                        fontSize="md"
-                        px={3}
-                        py={1}
-                      >
-                        {document?.metadata?.allowInheritance
-                          ? "Enabled"
-                          : "Disabled"}
-                      </Badge>
-                    </Box>
-                  </VStack>
+                  <HStack justify="space-between">
+                    <Text fontSize="sm" color="gray.600">
+                      Privacy Inheritance
+                    </Text>
+                    <Badge
+                      colorScheme={
+                        document?.metadata?.allowInheritance ? "green" : "gray"
+                      }
+                    >
+                      {document?.metadata?.allowInheritance ? "Enabled" : "Disabled"}
+                    </Badge>
+                  </HStack>
                 </CardBody>
               </Card>
             )}
 
-            {/* Audit Schedule-specific metadata */}
             {document?.type === "auditSchedule" && (
-              <Card>
+              <Card gridColumn={{ base: "1", lg: "7 / 13" }}>
                 <CardBody>
-                  <Text fontWeight="semibold" mb={4} fontSize="lg">
+                  <Text fontWeight="semibold" mb={4}>
                     Audit Details
                   </Text>
-                  <VStack align="stretch" spacing={4}>
+                  <VStack align="stretch" spacing={3}>
                     {document?.metadata?.code && (
                       <Box>
-                        <Text fontSize="sm" color="gray.600" mb={1}>
+                        <Text fontSize="sm" color="gray.600">
                           Code
                         </Text>
-                        <Text fontSize="md">{document.metadata.code}</Text>
+                        <Text fontSize="sm" mt={1}>
+                          {document.metadata.code}
+                        </Text>
                       </Box>
                     )}
-
                     {document?.metadata?.type && (
-                      <>
-                        <Divider />
-                        <Box>
-                          <Text fontSize="sm" color="gray.600" mb={1}>
-                            Audit Type
-                          </Text>
-                          <Text fontSize="md">
-                            {document.metadata.type
-                              .split("-")
-                              .map(
-                                (word) =>
-                                  word.charAt(0).toUpperCase() + word.slice(1),
-                              )
-                              .join(" ")}
-                          </Text>
-                        </Box>
-                      </>
+                      <Box>
+                        <Text fontSize="sm" color="gray.600">
+                          Audit Type
+                        </Text>
+                        <Text fontSize="sm" mt={1}>
+                          {document.metadata.type
+                            .split("-")
+                            .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+                            .join(" ")}
+                        </Text>
+                      </Box>
                     )}
-
                     {document?.metadata?.standard && (
-                      <>
-                        <Divider />
-                        <Box>
-                          <Text fontSize="sm" color="gray.600" mb={1}>
-                            Standard
-                          </Text>
-                          <Text fontSize="md">
-                            {document.metadata.standard}
-                          </Text>
-                        </Box>
-                      </>
+                      <Box>
+                        <Text fontSize="sm" color="gray.600">
+                          Standard
+                        </Text>
+                        <Text fontSize="sm" mt={1}>
+                          {document.metadata.standard}
+                        </Text>
+                      </Box>
                     )}
                   </VStack>
                 </CardBody>
               </Card>
             )}
 
-            {/* Privacy Settings Card */}
-            <Card>
+            {/* Privacy & Permissions */}
+            <Card gridColumn={{ base: "1", lg: "1 / 13" }}>
               <CardBody>
-                <Text fontWeight="semibold" mb={4} fontSize="lg">
+                <Text fontWeight="semibold" mb={4}>
                   Privacy & Permissions
                 </Text>
-                <VStack align="stretch" spacing={4}>
+                <SimpleGrid columns={{ base: 1, md: 3 }} spacing={4}>
                   <Box>
-                    <Text fontSize="sm" color="gray.600" mb={1}>
-                      Access
+                    <Text fontSize="sm" color="gray.600" fontWeight="medium">
+                      Access Level
                     </Text>
-                    <Text fontSize="md">
+                    <Badge
+                      mt={2}
+                      colorScheme={
+                        document?.privacy?.users?.length === 0 &&
+                        document?.privacy?.teams?.length === 0 &&
+                        document?.privacy?.roles?.length === 0
+                          ? "green"
+                          : "orange"
+                      }
+                    >
                       {document?.privacy?.users?.length === 0 &&
                       document?.privacy?.teams?.length === 0 &&
                       document?.privacy?.roles?.length === 0
                         ? "Public"
                         : "Restricted"}
-                    </Text>
+                    </Badge>
                   </Box>
 
                   {document?.privacy?.users?.length > 0 && (
-                    <>
-                      <Divider />
-                      <Box>
-                        <Text fontSize="sm" color="gray.600" mb={1}>
-                          Shared with Users
-                        </Text>
-                        <Text fontSize="md">
-                          {document.privacy.users.length} user(s)
-                        </Text>
-                      </Box>
-                    </>
+                    <Box>
+                      <Text fontSize="sm" color="gray.600" fontWeight="medium">
+                        Shared with Users
+                      </Text>
+                      <Text fontSize="sm" mt={2}>
+                        {document.privacy.users.length} user(s)
+                      </Text>
+                    </Box>
                   )}
 
                   {document?.privacy?.teams?.length > 0 && (
-                    <>
-                      <Divider />
-                      <Box>
-                        <Text fontSize="sm" color="gray.600" mb={1}>
-                          Shared with Teams
-                        </Text>
-                        <Text fontSize="md">
-                          {document.privacy.teams.length} team(s)
-                        </Text>
-                      </Box>
-                    </>
+                    <Box>
+                      <Text fontSize="sm" color="gray.600" fontWeight="medium">
+                        Shared with Teams
+                      </Text>
+                      <Text fontSize="sm" mt={2}>
+                        {document.privacy.teams.length} team(s)
+                      </Text>
+                    </Box>
                   )}
 
                   {document?.privacy?.roles?.length > 0 && (
-                    <>
-                      <Divider />
-                      <Box>
-                        <Text fontSize="sm" color="gray.600" mb={1}>
-                          Shared with Roles
-                        </Text>
-                        <Text fontSize="md">
-                          {document.privacy.roles.length} role(s)
-                        </Text>
-                      </Box>
-                    </>
+                    <Box>
+                      <Text fontSize="sm" color="gray.600" fontWeight="medium">
+                        Shared with Roles
+                      </Text>
+                      <Text fontSize="sm" mt={2}>
+                        {document.privacy.roles.length} role(s)
+                      </Text>
+                    </Box>
                   )}
-                </VStack>
+                </SimpleGrid>
               </CardBody>
             </Card>
-          </VStack>
+          </SimpleGrid>
         </Container>
       </Box>
       <PageFooter />
