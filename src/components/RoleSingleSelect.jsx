@@ -26,6 +26,7 @@ const RoleSingleSelect = ({
   // Chakra UI color mode values
   const bgColor = useColorModeValue("white", "gray.800");
   const borderColor = useColorModeValue("gray.300", "gray.600");
+  const errorBorderColor = useColorModeValue("red.500", "red.300");
   const focusBorderColor = useColorModeValue("purple.500", "purple.300");
   const textColor = useColorModeValue("gray.900", "white");
   const placeholderColor = useColorModeValue("gray.400", "gray.500");
@@ -95,13 +96,23 @@ const RoleSingleSelect = ({
     control: (provided, state) => ({
       ...provided,
       backgroundColor: bgColor,
-      borderColor: state.isFocused ? focusBorderColor : borderColor,
+      borderColor: isInvalid 
+        ? errorBorderColor 
+        : state.isFocused 
+        ? focusBorderColor 
+        : borderColor,
       borderWidth: isInvalid ? "2px" : "1px",
       borderRadius: "0.375rem",
       minHeight: "40px",
-      boxShadow: state.isFocused ? `0 0 0 1px ${focusBorderColor}` : "none",
+      boxShadow: state.isFocused 
+        ? `0 0 0 1px ${isInvalid ? errorBorderColor : focusBorderColor}` 
+        : "none",
       "&:hover": {
-        borderColor: state.isFocused ? focusBorderColor : borderColor,
+        borderColor: isInvalid 
+          ? errorBorderColor 
+          : state.isFocused 
+          ? focusBorderColor 
+          : borderColor,
       },
     }),
     valueContainer: (provided) => ({
