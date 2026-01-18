@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef, useMemo, memo } from "react";
 import {
   Link,
   Breadcrumb,
@@ -15,12 +15,15 @@ import apiService from "../../services/api";
 
 const BREADCRUMBS_ENDPOINT = "/documents";
 
-const Breadcrumbs = ({ data = {} }) => {
+const Breadcrumbs = memo(({ data = {} }) => {
   const [crumbs, setCrumbs] = useState([]);
   const separatorColor = useColorModeValue("gray.400", "gray.300");
   const ellipsisColor = useColorModeValue("gray.600", "gray.500");
   const hoverColor = useColorModeValue("brandPrimary.600", "brandPrimary.200");
   const isMobile = useBreakpointValue({ base: true, md: false });
+  const lastFolderIdRef = useRef(null);
+
+  const currentFolderId = useMemo(() => data?.id || data?._id || null, [data?.id, data?._id]);
 
   const buildInitialBreadcrumb = useCallback(
     (data) => {
@@ -69,8 +72,11 @@ const Breadcrumbs = ({ data = {} }) => {
   );
 
   useEffect(() => {
-    buildInitialBreadcrumb(data);
-  }, [buildInitialBreadcrumb, data]);
+    if (lastFolderIdRef.current !== currentFolderId) {
+      lastFolderIdRef.current = currentFolderId;
+      buildInitialBreadcrumb(data);
+    }
+  }, [buildInitialBreadcrumb, data, currentFolderId]);
 
   const loadMore = async (id) => {
     try {
@@ -161,5 +167,8 @@ const Breadcrumbs = ({ data = {} }) => {
     </Breadcrumb>
   );
 };
+});
+
+Breadcrumbs.displayName = "Breadcrumbs";
 
 export default Breadcrumbs;
