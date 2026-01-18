@@ -83,18 +83,21 @@ const Breadcrumbs = ({ data = {} }) => {
         const newCrumb = {
           id: data.id ?? data._id,
           title: data.title,
-          parentId: data.parentId,
+          parentId: data.parentData?.id,
         };
+        console.log(data, newCrumb);
 
         let updated = [...prev];
 
         updated = updated.filter((c) => c.id !== "ellipsis");
 
-        if (data.parentId) {
+        let newCrumbIndex = 1;
+        if (data.parentData?.id) {
           updated.splice(1, 0, { id: "ellipsis" });
+          newCrumbIndex = 2;
         }
 
-        updated.splice(1, 0, newCrumb);
+        updated.splice(newCrumbIndex, 0, newCrumb);
 
         return updated;
       });
