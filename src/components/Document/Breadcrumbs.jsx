@@ -1,15 +1,15 @@
 import { useState, useEffect, useCallback } from "react";
 import {
-  Link,
   Breadcrumb,
   BreadcrumbItem,
   useColorModeValue,
   Icon,
   IconButton,
   useBreakpointValue,
+  BreadcrumbLink,
 } from "@chakra-ui/react";
 import { Link as RouterLink } from "react-router-dom";
-import { FiChevronRight } from "react-icons/fi";
+import { FiChevronRight, FiArrowLeft } from "react-icons/fi";
 import { HiEllipsisHorizontal } from "react-icons/hi2";
 import apiService from "../../services/api";
 
@@ -20,7 +20,8 @@ const Breadcrumbs = ({ data = {} }) => {
   const separatorColor = useColorModeValue("gray.400", "gray.300");
   const ellipsisColor = useColorModeValue("gray.600", "gray.500");
   const hoverColor = useColorModeValue("brandPrimary.600", "brandPrimary.200");
-  const isMobile = useBreakpointValue({ base: true, md: false });
+  const isMobile = useBreakpointValue({ base: true, lg: false });
+  const maxTitle = useBreakpointValue({ base: 16, lg: 24 });
 
   const buildInitialBreadcrumb = useCallback(
     (data) => {
@@ -46,7 +47,7 @@ const Breadcrumbs = ({ data = {} }) => {
 
       if (isMobile) {
         if (parent) {
-          setCrumbs([parentCrumb, thisCrumb]);
+          setCrumbs([{ id: "previous" }, thisCrumb]);
           return;
         }
         setCrumbs([rootCrumb, thisCrumb]);
@@ -108,7 +109,7 @@ const Breadcrumbs = ({ data = {} }) => {
 
   return (
     <Breadcrumb
-      fontSize={{ base: "lg", lg: "xl" }}
+      fontSize={{ base: "md", md: "lg", lg: "xl" }}
       separator={
         <Icon boxSize={4} as={FiChevronRight} color={separatorColor} />
       }
@@ -121,9 +122,35 @@ const Breadcrumbs = ({ data = {} }) => {
       }}
     >
       {crumbs.map((crumb, index) => {
-        if (crumb.id === "ellipsis") {
-          const nextId = crumbs[index + 1]?.parentId;
+        const nextId = crumbs[index + 1]?.parentId;
+        const isCurrentPage = index === crumbs?.length - 1;
+        const splicedTitle = crumb?.title?.slice(0, maxTitle);
+        if (crumb.id === "previous") {
+          return (
+            <BreadcrumbItem
+              h={6}
+              mr={2}
+              key={`previous-${index}`}
+              sx={{ ">span": { display: "none !important" } }}
+            >
+              <IconButton
+                isRound
+                size="sm"
+                cursor="pointer"
+                icon={<Icon as={FiArrowLeft} boxSize={6} />}
+                colorScheme="brandPrimary"
+                color={separatorColor}
+                _hover={{ color: hoverColor }}
+                variant="ghost"
+                p={1}
+                as={RouterLink}
+                to={nextId ? `/documents/folders/${nextId}` : `/documents`}
+              />
+            </BreadcrumbItem>
+          );
+        }
 
+        if (crumb.id === "ellipsis") {
           return (
             <BreadcrumbItem
               h={6}
@@ -146,18 +173,22 @@ const Breadcrumbs = ({ data = {} }) => {
         }
 
         return (
-          <BreadcrumbItem
-            key={crumb.id ?? "root"}
-            isCurrentPage={index === crumb?.length - 1}
-          >
-            <Link
+          <BreadcrumbItem key={crumb.id ?? "root"} {...{ isCurrentPage }}>
+            <BreadcrumbLink
               as={RouterLink}
               color={ellipsisColor}
+              textDecoration="none"
               _hover={{ color: hoverColor }}
               to={crumb?.id ? `/documents/folders/${crumb.id}` : `/documents`}
+              noOfLines={isCurrentPage ? 1 : { base: 1, lg: 2 }}
+              maxW={isCurrentPage ? { base: "xs", lg: "sm" } : "full"}
             >
-              {crumb.title}
-            </Link>
+              {!isCurrentPage
+                ? crumb.title.length > maxTitle
+                  ? `${splicedTitle}...`
+                  : crumb.title
+                : crumb.title}
+            </BreadcrumbLink>
           </BreadcrumbItem>
         );
       })}

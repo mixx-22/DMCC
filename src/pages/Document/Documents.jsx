@@ -106,7 +106,9 @@ const Documents = () => {
     <Box>
       <PageHeader>
         <Flex justify="space-between" align="center" w="full">
-          <Heading variant="pageTitle">{folder?.title ?? `Documents`}</Heading>
+          <Heading variant="pageTitle" noOfLines={1}>
+            {folder?.title ?? `Documents`}
+          </Heading>
           <HStack>
             <IconButton
               icon={viewMode === "grid" ? <FiList /> : <FiGrid />}
