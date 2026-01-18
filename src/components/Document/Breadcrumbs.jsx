@@ -7,6 +7,10 @@ import {
   IconButton,
   useBreakpointValue,
   BreadcrumbLink,
+  Menu,
+  MenuButton,
+  MenuList,
+  MenuItem,
 } from "@chakra-ui/react";
 import { Link as RouterLink } from "react-router-dom";
 import { FiChevronRight, FiArrowLeft } from "react-icons/fi";
@@ -116,6 +120,140 @@ const Breadcrumbs = memo(({ data = {} }) => {
     }
   };
 
+  const renderBreadcrumbs = () => {
+    if (crumbs.length <= 5) {
+      return crumbs.map((crumb, index) => renderBreadcrumbItem(crumb, index));
+    }
+
+    const ellipsisIndex = crumbs.findIndex((c) => c.id === "ellipsis");
+    const startIndex = ellipsisIndex >= 0 ? ellipsisIndex + 1 : 1;
+    const endIndex = crumbs.length - 1;
+    const middleCrumbs = crumbs.slice(startIndex, endIndex);
+
+    if (middleCrumbs.length < 2) {
+      return crumbs.map((crumb, index) => renderBreadcrumbItem(crumb, index));
+    }
+
+    const visibleCrumbs = [
+      crumbs[0],
+      ...(ellipsisIndex >= 0 ? [crumbs[ellipsisIndex]] : []),
+      { id: "dropdown", middleCrumbs },
+      crumbs[endIndex],
+    ];
+
+    return visibleCrumbs.map((crumb, index) => {
+      if (crumb.id === "dropdown") {
+        return (
+          <BreadcrumbItem h={6} key="dropdown-menu">
+            <Menu>
+              <MenuButton
+                as={IconButton}
+                isRound
+                size="sm"
+                cursor="pointer"
+                icon={<Icon as={HiEllipsisHorizontal} boxSize={6} />}
+                colorScheme="brandPrimary"
+                color={ellipsisColor}
+                _hover={{ color: hoverColor }}
+                variant="ghost"
+                p={1}
+              />
+              <MenuList>
+                {crumb.middleCrumbs.map((menuCrumb) => (
+                  <MenuItem
+                    key={menuCrumb.id}
+                    as={RouterLink}
+                    to={
+                      menuCrumb?.id
+                        ? `/documents/folders/${menuCrumb.id}`
+                        : `/documents`
+                    }
+                  >
+                    {menuCrumb.title}
+                  </MenuItem>
+                ))}
+              </MenuList>
+            </Menu>
+          </BreadcrumbItem>
+        );
+      }
+      return renderBreadcrumbItem(crumb, index);
+    });
+  };
+
+  const renderBreadcrumbItem = (crumb, index) => {
+    const nextId = crumbs[index + 1]?.parentId;
+    const isCurrentPage = index === crumbs?.length - 1;
+    const splicedTitle = crumb?.title?.slice(0, maxTitle);
+
+    if (crumb.id === "previous") {
+      return (
+        <BreadcrumbItem
+          h={6}
+          mr={2}
+          key={`previous-${index}`}
+          sx={{ ">span": { display: "none !important" } }}
+        >
+          <IconButton
+            isRound
+            size="sm"
+            cursor="pointer"
+            icon={<Icon as={FiArrowLeft} boxSize={6} />}
+            colorScheme="brandPrimary"
+            color={separatorColor}
+            _hover={{ color: hoverColor }}
+            variant="ghost"
+            p={1}
+            as={RouterLink}
+            to={nextId ? `/documents/folders/${nextId}` : `/documents`}
+          />
+        </BreadcrumbItem>
+      );
+    }
+
+    if (crumb.id === "ellipsis") {
+      return (
+        <BreadcrumbItem
+          h={6}
+          key={`ellipsis-${index}`}
+          onClick={() => loadMore(nextId)}
+        >
+          <IconButton
+            isRound
+            size="sm"
+            cursor="pointer"
+            icon={<Icon as={HiEllipsisHorizontal} boxSize={6} />}
+            colorScheme="brandPrimary"
+            color={ellipsisColor}
+            _hover={{ color: hoverColor }}
+            variant="ghost"
+            p={1}
+          />
+        </BreadcrumbItem>
+      );
+    }
+
+    return (
+      <BreadcrumbItem key={crumb.id ?? "root"} {...{ isCurrentPage }}>
+        <BreadcrumbLink
+          as={RouterLink}
+          color={ellipsisColor}
+          textDecoration="none"
+          _hover={{ color: hoverColor }}
+          to={crumb?.id ? `/documents/folders/${crumb.id}` : `/documents`}
+          noOfLines={isCurrentPage ? 1 : { base: 1, lg: 2 }}
+          maxW={isCurrentPage ? { base: "xs", lg: "sm" } : "full"}
+        >
+          {!isCurrentPage
+            ? crumb.title.length > maxTitle
+              ? `${splicedTitle}...`
+              : crumb.title
+            : crumb.title}
+        </BreadcrumbLink>
+      </BreadcrumbItem>
+    );
+  };
+
   return (
     <Breadcrumb
       fontSize={{ base: "md", md: "lg", lg: "xl" }}
@@ -130,77 +268,7 @@ const Breadcrumbs = memo(({ data = {} }) => {
         },
       }}
     >
-      {crumbs.map((crumb, index) => {
-        const nextId = crumbs[index + 1]?.parentId;
-        const isCurrentPage = index === crumbs?.length - 1;
-        const splicedTitle = crumb?.title?.slice(0, maxTitle);
-        if (crumb.id === "previous") {
-          return (
-            <BreadcrumbItem
-              h={6}
-              mr={2}
-              key={`previous-${index}`}
-              sx={{ ">span": { display: "none !important" } }}
-            >
-              <IconButton
-                isRound
-                size="sm"
-                cursor="pointer"
-                icon={<Icon as={FiArrowLeft} boxSize={6} />}
-                colorScheme="brandPrimary"
-                color={separatorColor}
-                _hover={{ color: hoverColor }}
-                variant="ghost"
-                p={1}
-                as={RouterLink}
-                to={nextId ? `/documents/folders/${nextId}` : `/documents`}
-              />
-            </BreadcrumbItem>
-          );
-        }
-
-        if (crumb.id === "ellipsis") {
-          return (
-            <BreadcrumbItem
-              h={6}
-              key={`ellipsis-${index}`}
-              onClick={() => loadMore(nextId)}
-            >
-              <IconButton
-                isRound
-                size="sm"
-                cursor="pointer"
-                icon={<Icon as={HiEllipsisHorizontal} boxSize={6} />}
-                colorScheme="brandPrimary"
-                color={ellipsisColor}
-                _hover={{ color: hoverColor }}
-                variant="ghost"
-                p={1}
-              />
-            </BreadcrumbItem>
-          );
-        }
-
-        return (
-          <BreadcrumbItem key={crumb.id ?? "root"} {...{ isCurrentPage }}>
-            <BreadcrumbLink
-              as={RouterLink}
-              color={ellipsisColor}
-              textDecoration="none"
-              _hover={{ color: hoverColor }}
-              to={crumb?.id ? `/documents/folders/${crumb.id}` : `/documents`}
-              noOfLines={isCurrentPage ? 1 : { base: 1, lg: 2 }}
-              maxW={isCurrentPage ? { base: "xs", lg: "sm" } : "full"}
-            >
-              {!isCurrentPage
-                ? crumb.title.length > maxTitle
-                  ? `${splicedTitle}...`
-                  : crumb.title
-                : crumb.title}
-            </BreadcrumbLink>
-          </BreadcrumbItem>
-        );
-      })}
+      {renderBreadcrumbs()}
     </Breadcrumb>
   );
 });
