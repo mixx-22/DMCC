@@ -9,6 +9,7 @@ import {
   useDisclosure,
   Spinner,
   Center,
+  Stack,
 } from "@chakra-ui/react";
 import { FiGrid, FiList } from "react-icons/fi";
 import { useDocuments } from "../../context/DocumentsContext";
@@ -127,7 +128,7 @@ const Documents = () => {
         </Flex>
       </PageFooter>
 
-      <Box>
+      <Stack spacing={{ base: 4, lg: 6 }}>
         <Breadcrumbs data={folder} />
         {loading ? (
           <Center py={12}>
@@ -153,7 +154,7 @@ const Documents = () => {
             onMoreOptions={setSelectedDocument}
           />
         )}
-      </Box>
+      </Stack>
 
       <CreateFolderModal
         isOpen={isFolderModalOpen}
