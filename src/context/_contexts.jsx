@@ -9,6 +9,7 @@ const UserContext = createContext();
 const UserProfileContext = createContext();
 const TeamsContext = createContext();
 const TeamProfileContext = createContext();
+const DocumentsContext = createContext();
 
 export {
   AppContext,
@@ -20,4 +21,5 @@ export {
   UserProfileContext,
   TeamsContext,
   TeamProfileContext,
+  DocumentsContext,
 };

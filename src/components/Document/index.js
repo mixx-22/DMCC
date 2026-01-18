@@ -1,7 +1,3 @@
-export {
-  DocumentsProvider,
-  useDocuments,
-} from "../../context/DocumentsContext";
 export { default as Documents } from "../../pages/Document/Documents";
 export { default as DocumentDetail } from "../../pages/Document/DocumentDetail";
 export { default as DocumentDrawer } from "./DocumentDrawer";

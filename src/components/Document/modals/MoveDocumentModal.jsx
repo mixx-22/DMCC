@@ -18,7 +18,7 @@ import {
 } from "@chakra-ui/react";
 import { FiFolder, FiHome } from "react-icons/fi";
 import { toast } from "sonner";
-import { useDocuments } from "../../../context/DocumentsContext";
+import { useDocuments } from "../../../context/_useContext";
 
 const MoveDocumentModal = ({ isOpen, onClose, document }) => {
   const { moveDocument, documents } = useDocuments();

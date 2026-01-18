@@ -17,7 +17,7 @@ import {
   Text,
 } from "@chakra-ui/react";
 import { toast } from "sonner";
-import { useDocuments } from "../../../context/DocumentsContext";
+import { useDocuments } from "../../../context/_useContext";
 
 const CreateFolderModal = ({ isOpen, onClose, parentId, path }) => {
   const { createDocument } = useDocuments();

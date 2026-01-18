@@ -1,19 +1,10 @@
-import { createContext, useContext, useState, useEffect, useRef } from "react";
-import { useUser } from "./useUser";
+import { useState, useEffect, useRef } from "react";
 import apiService from "../services/api";
-
-const DocumentsContext = createContext();
+import { DocumentsContext } from "./_contexts";
+import { useUser } from "./_useContext";
 
 const DOCUMENTS_ENDPOINT = "/documents";
 const USE_API = import.meta.env.VITE_USE_API !== "false";
-
-export const useDocuments = () => {
-  const context = useContext(DocumentsContext);
-  if (!context) {
-    throw new Error("useDocuments must be used within DocumentsProvider");
-  }
-  return context;
-};
 
 const rootFolder = {
   id: null,

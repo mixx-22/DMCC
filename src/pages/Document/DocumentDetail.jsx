@@ -26,7 +26,6 @@ import {
   FiCalendar,
   FiAlertCircle,
 } from "react-icons/fi";
-import { useDocuments } from "../../context/DocumentsContext";
 import PageHeader from "../../components/PageHeader";
 import PageFooter from "../../components/PageFooter";
 import EditDocumentModal from "../../components/Document/modals/EditDocumentModal";
@@ -35,6 +34,7 @@ import MoveDocumentModal from "../../components/Document/modals/MoveDocumentModa
 import PrivacySettingsModal from "../../components/Document/modals/PrivacySettingsModal";
 import Timestamp from "../../components/Timestamp";
 import Breadcrumbs from "../../components/Document/Breadcrumbs";
+import { useDocuments } from "../../context/_useContext";
 
 const DocumentDetail = () => {
   const { id } = useParams();

@@ -12,7 +12,6 @@ import {
   Stack,
 } from "@chakra-ui/react";
 import { FiGrid, FiList } from "react-icons/fi";
-import { useDocuments } from "../../context/DocumentsContext";
 import PageHeader from "../../components/PageHeader";
 import PageFooter from "../../components/PageFooter";
 import CreateFolderModal from "../../components/Document/modals/CreateFolderModal";
@@ -24,6 +23,7 @@ import { ListView } from "../../components/Document/ListView";
 import { EmptyState } from "../../components/Document/EmptyState";
 import { ActionButton } from "../../components/Document/ActionButton";
 import Breadcrumbs from "../../components/Document/Breadcrumbs";
+import { useDocuments } from "../../context/_useContext";
 
 const Documents = () => {
   const { id } = useParams();

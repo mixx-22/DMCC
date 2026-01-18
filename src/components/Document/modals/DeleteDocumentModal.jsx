@@ -13,7 +13,7 @@ import {
   AlertIcon,
 } from "@chakra-ui/react";
 import { toast } from "sonner";
-import { useDocuments } from "../../../context/DocumentsContext";
+import { useDocuments } from "../../../context/_useContext";
 
 const DeleteDocumentModal = ({
   isOpen,

@@ -8,7 +8,7 @@ import { Toaster } from "sonner";
 import Layout from "./components/Layout";
 import Login from "./pages/Login";
 import { Dashboard } from "./pages/Dashboard";
-import { Documents, DocumentDetail, DocumentsProvider } from "./components/Document";
+import { Documents, DocumentDetail } from "./components/Document";
 import Certifications from "./pages/Certifications";
 import CertificationDetail from "./pages/CertificationDetail";
 import Users from "./pages/Users";
@@ -31,6 +31,7 @@ import ChangePassword from "./pages/ChangePassword";
 import Settings from "./pages/Settings";
 import { useApp } from "./context/_useContext";
 import { UserProfileProvider } from "./context/UserProfileContext";
+import { DocumentsProvider } from "./context/DocumentsContext";
 
 const ProtectedRoute = ({ children }) => {
   const { currentUser } = useApp();

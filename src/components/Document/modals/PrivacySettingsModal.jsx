@@ -17,10 +17,10 @@ import {
   HStack,
 } from "@chakra-ui/react";
 import { toast } from "sonner";
-import { useDocuments } from "../../../context/DocumentsContext";
 import UserAsyncSelect from "../../UserAsyncSelect";
 import TeamAsyncSelect from "../../TeamAsyncSelect";
 import RoleAsyncSelect from "../../RoleAsyncSelect";
+import { useDocuments } from "../../../context/_useContext";
 
 const PrivacySettingsModal = ({ isOpen, onClose, document }) => {
   const { updateDocument } = useDocuments();

@@ -9,6 +9,7 @@ import {
   TeamProfileContext,
   UserProfileContext,
   RoleContext,
+  DocumentsContext,
 } from "./_contexts";
 
 export const useApp = () => {
@@ -75,6 +76,14 @@ export const useUserProfile = () => {
   const context = useContext(UserProfileContext);
   if (!context) {
     throw new Error("useUserProfile must be used within UserProfileProvider");
+  }
+  return context;
+};
+
+export const useDocuments = () => {
+  const context = useContext(DocumentsContext);
+  if (!context) {
+    throw new Error("useDocuments must be used within DocumentsProvider");
   }
   return context;
 };
