@@ -19,7 +19,8 @@ import RoleSingleSelect from "../components/RoleSingleSelect";
 import apiService from "../services/api";
 import { useUser } from "../context/useUser";
 
-const SETTINGS_ENDPOINT = import.meta.env.VITE_API_PACKAGE_SETTINGS || "/settings";
+const SETTINGS_ENDPOINT =
+  import.meta.env.VITE_API_PACKAGE_SETTINGS || "/settings";
 const USE_API = import.meta.env.VITE_USE_API !== "false";
 
 const Settings = () => {
@@ -50,18 +51,18 @@ const Settings = () => {
         };
         setTeamLeaderRole(mockSettings.data.teamLeaderRole);
         setInitialTeamLeaderRole(mockSettings.data.teamLeaderRole);
-        
+
         // Update user context with settings
         updateUserProfile({ settings: mockSettings.data });
       } else {
         const response = await apiService.request(SETTINGS_ENDPOINT, {
           method: "GET",
         });
-        
+
         const settings = response.data || response;
         setTeamLeaderRole(settings.teamLeaderRole || null);
         setInitialTeamLeaderRole(settings.teamLeaderRole || null);
-        
+
         // Update user context with settings
         updateUserProfile({ settings });
       }
@@ -77,7 +78,7 @@ const Settings = () => {
     setSaving(true);
     try {
       const payload = {
-        teamLeaderRole,
+        teamLeaderRole: teamLeaderRole?.id,
       };
 
       if (!USE_API) {
@@ -85,7 +86,7 @@ const Settings = () => {
         setTimeout(() => {
           toast.success("Settings saved successfully");
           setInitialTeamLeaderRole(teamLeaderRole);
-          
+
           // Update user context with new settings
           updateUserProfile({ settings: payload });
           setSaving(false);
@@ -100,7 +101,7 @@ const Settings = () => {
 
       toast.success("Settings saved successfully");
       setInitialTeamLeaderRole(teamLeaderRole);
-      
+
       // Update user context with new settings
       updateUserProfile({ settings: payload });
     } catch (error) {
@@ -111,7 +112,8 @@ const Settings = () => {
     }
   };
 
-  const hasChanges = JSON.stringify(teamLeaderRole) !== JSON.stringify(initialTeamLeaderRole);
+  const hasChanges =
+    JSON.stringify(teamLeaderRole) !== JSON.stringify(initialTeamLeaderRole);
 
   if (loading) {
     return (
@@ -131,7 +133,7 @@ const Settings = () => {
       <PageHeader>
         <Heading variant="pageTitle">Settings</Heading>
       </PageHeader>
-      
+
       <PageFooter>
         <Flex gap={4} justifyContent="flex-end">
           <Button
@@ -154,9 +156,10 @@ const Settings = () => {
                   Team Leader Role
                 </Heading>
                 <Text fontSize="sm" color={subTextColor} mb={4}>
-                  Select a role that will be automatically assigned to users when they are
-                  designated as team leaders in the Teams module. This role should have
-                  appropriate permissions for team leadership responsibilities.
+                  Select a role that will be automatically assigned to users
+                  when they are designated as team leaders in the Teams module.
+                  This role should have appropriate permissions for team
+                  leadership responsibilities.
                 </Text>
                 <Divider mb={4} />
                 <RoleSingleSelect
@@ -177,16 +180,16 @@ const Settings = () => {
                 How it works
               </Heading>
               <Text fontSize="sm" color={subTextColor}>
-                • When you select a user as a leader in a team, the selected role will be
-                automatically added to that user&apos;s profile.
+                • When you select a user as a leader in a team, the selected
+                role will be automatically added to that user&apos;s profile.
               </Text>
               <Text fontSize="sm" color={subTextColor}>
-                • This ensures consistent permissions across all team leaders in your
-                organization.
+                • This ensures consistent permissions across all team leaders in
+                your organization.
               </Text>
               <Text fontSize="sm" color={subTextColor}>
-                • You can change this role at any time. Note that changing it won&apos;t affect
-                existing team leaders retroactively.
+                • You can change this role at any time. Note that changing it
+                won&apos;t affect existing team leaders retroactively.
               </Text>
             </VStack>
           </CardBody>
