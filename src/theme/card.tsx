@@ -5,12 +5,12 @@ const document = defineStyle((props) => {
   return {
     container: {
       h: "full",
+      boxShadow: "none",
       borderRadius: "md",
-      bg: "transparent",
       overflow: "hidden",
       transition: "all 0.2s",
       _hover: {
-        shadow: "md",
+        boxShadow: "md",
         bg: mode("white", "gray.800")(props),
         transform: "translateY(-2px)",
         borderColor: mode("gray.300", "gray.600")(props),
