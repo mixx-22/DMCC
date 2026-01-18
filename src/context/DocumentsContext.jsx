@@ -130,13 +130,6 @@ export const DocumentsProvider = ({ children }) => {
       status: documentData.status ?? -1, // -1: draft, 0: under review, 1: approved, 2: archived, 3: expired
       parentId: documentData.parentId || currentFolderId,
       path: documentData.path || currentFolderId,
-      owner: {
-        type: currentUser?.userType || "",
-        id: currentUser?.id || "",
-        firstName: currentUser?.firstName || "",
-        lastName: currentUser?.lastName || "",
-        team: currentUser?.team || currentUser?.department || "",
-      },
       privacy: {
         users: documentData.privacy?.users || [],
         teams: documentData.privacy?.teams || [],
