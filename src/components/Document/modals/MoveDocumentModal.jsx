@@ -48,7 +48,7 @@ import apiService from "../../../services/api";
 const DOCUMENTS_ENDPOINT = "/documents";
 
 const MoveDocumentModal = ({ isOpen, onClose, document }) => {
-  const { updateDocument, createDocument } = useDocuments();
+  const { updateDocument, createDocument, navigateToFolder } = useDocuments();
 
   // State management
   const [currentLocation, setCurrentLocation] = useState(null); // Current folder being viewed
@@ -449,15 +449,25 @@ const MoveDocumentModal = ({ isOpen, onClose, document }) => {
 
     try {
       const docId = document._id || document.id;
+      const newParentId = selectedDestination?.id || null;
+      
       await updateDocument(docId, {
-        parentId: selectedDestination?.id || null,
+        parentId: newParentId,
       });
 
       const targetName = selectedDestination?.title || "All Documents (Root)";
 
+      // Create clickable toast that navigates to new location
       toast.success("Document Moved", {
-        description: `"${document.title}" has been moved to ${targetName}`,
-        duration: 3000,
+        description: `"${document.title}" has been moved to ${targetName}. Click to view.`,
+        duration: 5000,
+        action: {
+          label: "View",
+          onClick: () => {
+            navigateToFolder(newParentId);
+            handleClose();
+          },
+        },
       });
 
       handleClose();

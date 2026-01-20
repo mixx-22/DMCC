@@ -278,9 +278,22 @@ export const DocumentsProvider = ({ children }) => {
 
       // Optimize: Update document in existing array instead of re-fetching
       const updatedDoc = response.data || response.document || { ...updates, id, updatedAt: new Date().toISOString() };
-      setDocuments(prevDocs => 
-        prevDocs.map(doc => doc.id === id || doc._id === id ? { ...doc, ...updatedDoc } : doc)
-      );
+      
+      // Check if document is being moved to a different folder
+      const isMoving = 'parentId' in updates;
+      const newParentId = updates.parentId;
+      
+      if (isMoving && newParentId !== currentFolderId) {
+        // Document moved out of current folder - remove from list
+        setDocuments(prevDocs => 
+          prevDocs.filter(doc => (doc.id !== id && doc._id !== id))
+        );
+      } else {
+        // Document updated in current folder - update in list
+        setDocuments(prevDocs => 
+          prevDocs.map(doc => doc.id === id || doc._id === id ? { ...doc, ...updatedDoc } : doc)
+        );
+      }
       
       return updatedDoc;
     } catch (err) {
