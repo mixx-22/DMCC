@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import {
   Modal,
   ModalOverlay,
@@ -68,17 +68,103 @@ const MoveDocumentModal = ({ isOpen, onClose, document }) => {
   const emptyStateColor = useColorModeValue("gray.500", "gray.400");
   const bgColor = useColorModeValue("brandPrimary.50", "brandPrimary.900");
 
-  // Initialize: Load parent folder if document has one
-  useEffect(() => {
-    if (isOpen && document) {
-      initializeLocation();
-    }
-  }, [isOpen, document]);
+  // Build breadcrumb path by traversing parent chain
+  const buildBreadcrumbPath = useCallback(async (folder) => {
+    const path = [];
+    let current = folder;
 
-  const initializeLocation = async () => {
+    // Traverse up to root
+    while (current) {
+      path.unshift({ id: current.id, title: current.title });
+
+      if (!current.parentId) break;
+
+      try {
+        current = await fetchFolderById(current.parentId);
+      } catch (err) {
+        console.error("Error building path:", err);
+        break;
+      }
+    }
+
+    // Add root at the beginning
+    path.unshift({ id: null, title: "Root" });
+
+    return path;
+  }, []);
+
+  // Load folders in a given location
+  const loadFolders = useCallback(
+    async (parentId) => {
+      setLoading(true);
+      setError(null);
+
+      try {
+        let response;
+
+        if (parentId === null) {
+          // Load root folders
+          response = await apiService.request(DOCUMENTS_ENDPOINT, {
+            method: "GET",
+            params: { type: "folder" },
+          });
+        } else {
+          // Load subfolders of a folder
+          response = await apiService.request(
+            `${DOCUMENTS_ENDPOINT}/${parentId}`,
+            {
+              method: "GET",
+              params: { type: "folder" },
+            },
+          );
+        }
+
+        const folderList = response.data?.documents || response.documents || [];
+
+        // Map folders to normalize _id to id
+        const normalizedFolders = folderList.map((folder) => ({
+          ...folder,
+          id: folder._id || folder.id,
+        }));
+
+        // Filter out the document being moved and its children
+        const filteredFolders = normalizedFolders.filter((folder) => {
+          const docId = document._id || document.id;
+          if (folder.id === docId) return false;
+
+          // If moving a folder, prevent moving into its own children
+          if (document.type === "folder") {
+            // Check if this folder is a descendant of the document being moved
+            // This is a simplified check - in production, you'd want to do a full tree check
+            return folder.parentId !== docId;
+          }
+
+          return true;
+        });
+
+        setFolders(filteredFolders);
+      } catch (err) {
+        console.error("Error loading folders:", err);
+        setError(err.message || "Failed to load folders");
+        toast.error("Error", {
+          description: "Failed to load folders. Please try again.",
+          duration: 3000,
+        });
+        setFolders([]);
+      } finally {
+        setLoading(false);
+      }
+    },
+    [document],
+  );
+
+  const initializeLocation = useCallback(async () => {
     setError(null);
 
-    const docParentId = document.parentId || (document.parentData && (document.parentData._id || document.parentData.id));
+    const docParentId =
+      document.parentId ||
+      (document.parentData &&
+        (document.parentData._id || document.parentData.id));
 
     if (!docParentId) {
       // Document is in root
@@ -118,7 +204,14 @@ const MoveDocumentModal = ({ isOpen, onClose, document }) => {
         setLoading(false);
       }
     }
-  };
+  }, [buildBreadcrumbPath, document, loadFolders]);
+
+  // Initialize: Load parent folder if document has one
+  useEffect(() => {
+    if (isOpen && document) {
+      initializeLocation();
+    }
+  }, [isOpen, document, initializeLocation]);
 
   // Fetch single folder by ID
   const fetchFolderById = async (folderId) => {
@@ -130,8 +223,12 @@ const MoveDocumentModal = ({ isOpen, onClose, document }) => {
         },
       );
 
-      const folder = response.data?.document || response.data || response.document || response;
-      
+      const folder =
+        response.data?.document ||
+        response.data ||
+        response.document ||
+        response;
+
       // Normalize _id to id
       if (folder && folder._id) {
         return {
@@ -139,98 +236,11 @@ const MoveDocumentModal = ({ isOpen, onClose, document }) => {
           id: folder._id,
         };
       }
-      
+
       return folder;
     } catch (err) {
       console.error(`Error fetching folder ${folderId}:`, err);
       return null;
-    }
-  };
-
-  // Build breadcrumb path by traversing parent chain
-  const buildBreadcrumbPath = async (folder) => {
-    const path = [];
-    let current = folder;
-
-    // Traverse up to root
-    while (current) {
-      path.unshift({ id: current.id, title: current.title });
-
-      if (!current.parentId) break;
-
-      try {
-        current = await fetchFolderById(current.parentId);
-      } catch (err) {
-        console.error("Error building path:", err);
-        break;
-      }
-    }
-
-    // Add root at the beginning
-    path.unshift({ id: null, title: "Root" });
-
-    return path;
-  };
-
-  // Load folders in a given location
-  const loadFolders = async (parentId) => {
-    setLoading(true);
-    setError(null);
-
-    try {
-      let response;
-
-      if (parentId === null) {
-        // Load root folders
-        response = await apiService.request(DOCUMENTS_ENDPOINT, {
-          method: "GET",
-          params: { type: "folder" },
-        });
-      } else {
-        // Load subfolders of a folder
-        response = await apiService.request(
-          `${DOCUMENTS_ENDPOINT}/${parentId}`,
-          {
-            method: "GET",
-            params: { type: "folder" },
-          },
-        );
-      }
-
-      const folderList = response.data?.documents || response.documents || [];
-      
-      // Map folders to normalize _id to id
-      const normalizedFolders = folderList.map(folder => ({
-        ...folder,
-        id: folder._id || folder.id,
-      }));
-
-      // Filter out the document being moved and its children
-      const filteredFolders = normalizedFolders.filter((folder) => {
-        const docId = document._id || document.id;
-        if (folder.id === docId) return false;
-
-        // If moving a folder, prevent moving into its own children
-        if (document.type === "folder") {
-          // Check if this folder is a descendant of the document being moved
-          // This is a simplified check - in production, you'd want to do a full tree check
-          return folder.parentId !== docId;
-        }
-
-        return true;
-      });
-
-      setFolders(filteredFolders);
-    } catch (err) {
-      console.error("Error loading folders:", err);
-      setError(err.message || "Failed to load folders");
-      toast.error("Error", {
-        description: "Failed to load folders. Please try again.",
-        duration: 3000,
-      });
-      setFolders([]);
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -285,7 +295,6 @@ const MoveDocumentModal = ({ isOpen, onClose, document }) => {
         description: "",
         type: "folder",
         parentId: currentLocation?.id || null,
-        path: currentLocation?.path || "/",
         status: 1, // Auto-approved
         metadata: {
           allowInheritance: 0,
@@ -316,8 +325,11 @@ const MoveDocumentModal = ({ isOpen, onClose, document }) => {
 
   // Move document to selected destination
   const handleMove = async () => {
-    const docParentId = document.parentId || (document.parentData && (document.parentData._id || document.parentData.id));
-    
+    const docParentId =
+      document.parentId ||
+      (document.parentData &&
+        (document.parentData._id || document.parentData.id));
+
     if (
       selectedDestination?.id === docParentId &&
       selectedDestination?.id !== undefined
@@ -343,7 +355,6 @@ const MoveDocumentModal = ({ isOpen, onClose, document }) => {
       const docId = document._id || document.id;
       await updateDocument(docId, {
         parentId: selectedDestination?.id || null,
-        path: selectedDestination?.path || "/",
       });
 
       const targetName = selectedDestination?.title || "Root";
@@ -472,7 +483,6 @@ const MoveDocumentModal = ({ isOpen, onClose, document }) => {
                         currentLocation || {
                           id: null,
                           title: "Root",
-                          path: "/",
                         },
                       )
                     }
