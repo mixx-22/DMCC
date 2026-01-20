@@ -58,7 +58,7 @@ const MoveDocumentModal = ({ isOpen, onClose, document }) => {
   const [error, setError] = useState(null);
   const [selectedDestination, setSelectedDestination] = useState(null);
   const [subfolderCache, setSubfolderCache] = useState({}); // Cache for subfolder data
-  
+
   // Track last fetched folder to prevent duplicate requests
   const lastFetchedFolderRef = useRef(null);
 
@@ -188,12 +188,12 @@ const MoveDocumentModal = ({ isOpen, onClose, document }) => {
   const loadFolders = useCallback(
     async (parentId) => {
       // Memoization: Don't fetch if we just fetched this folder
-      const folderKey = parentId === null ? 'root' : parentId;
+      const folderKey = parentId === null ? "root" : parentId;
       if (lastFetchedFolderRef.current === folderKey) {
         console.log(`Skipping duplicate request for folder: ${folderKey}`);
         return;
       }
-      
+
       setLoading(true);
       setError(null);
 
@@ -233,7 +233,7 @@ const MoveDocumentModal = ({ isOpen, onClose, document }) => {
         });
 
         setFolders(filteredFolders);
-        
+
         // Update the last fetched folder reference
         lastFetchedFolderRef.current = folderKey;
 
@@ -507,7 +507,9 @@ const MoveDocumentModal = ({ isOpen, onClose, document }) => {
                 gap={1}
               >
                 {index === 0 ? <FiHome /> : <FiFolder />}
-                {crumb.title}
+                <Text as="span" noOfLines={1}>
+                  {crumb.title}
+                </Text>
               </BreadcrumbLink>
             </BreadcrumbItem>
           ))}
@@ -543,13 +545,12 @@ const MoveDocumentModal = ({ isOpen, onClose, document }) => {
               as={Button}
               size="xs"
               variant="ghost"
-              rightIcon={<FiChevronRight />}
               leftIcon={<FiMoreHorizontal />}
               minW="auto"
               px={1}
             />
             <MenuList>
-              {middle.map((crumb, index) => (
+              {middle.map((crumb) => (
                 <MenuItem
                   key={crumb.id}
                   icon={<FiFolder />}
@@ -572,7 +573,9 @@ const MoveDocumentModal = ({ isOpen, onClose, document }) => {
             gap={1}
           >
             <FiFolder />
-            {last.title}
+            <Text as="span" noOfLines={1} maxW={40}>
+              {last.title}
+            </Text>
           </BreadcrumbLink>
         </BreadcrumbItem>
       </Breadcrumb>
@@ -630,10 +633,7 @@ const MoveDocumentModal = ({ isOpen, onClose, document }) => {
                   </Button>
                 </Flex>
               ) : (
-                <VStack
-                  spacing={1}
-                  align="stretch"
-                >
+                <VStack spacing={1} align="stretch">
                   {/* Current location option */}
                   <Box
                     p={3}
