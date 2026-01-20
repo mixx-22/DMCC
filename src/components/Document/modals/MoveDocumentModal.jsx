@@ -101,7 +101,7 @@ const MoveDocumentModal = ({ isOpen, onClose, document }) => {
       if (depth >= maxDepth) return {};
 
       const cacheKey = folderId || "root";
-      
+
       // Return from cache if already fetched
       if (subfolderCache[cacheKey]) {
         return subfolderCache[cacheKey];
@@ -295,7 +295,7 @@ const MoveDocumentModal = ({ isOpen, onClose, document }) => {
     // Update breadcrumb path
     if (folder === null) {
       // Navigating to root
-      setBreadcrumbPath([{ id: null, title: "Root" }]);
+      setBreadcrumbPath([{ id: null, title: "All Documents (Root)" }]);
     } else {
       // Add folder to path if not already there
       const existingIndex = breadcrumbPath.findIndex(
@@ -387,7 +387,7 @@ const MoveDocumentModal = ({ isOpen, onClose, document }) => {
 
     if (selectedDestination?.id === undefined && !docParentId) {
       toast.info("Same Location", {
-        description: "Document is already in root",
+        description: "Document is already in All Documents (Root)",
         duration: 3000,
       });
       return;
@@ -401,7 +401,7 @@ const MoveDocumentModal = ({ isOpen, onClose, document }) => {
         parentId: selectedDestination?.id || null,
       });
 
-      const targetName = selectedDestination?.title || "Root";
+      const targetName = selectedDestination?.title || "All Documents (Root)";
 
       toast.success("Document Moved", {
         description: `"${document.title}" has been moved to ${targetName}`,
@@ -527,7 +527,7 @@ const MoveDocumentModal = ({ isOpen, onClose, document }) => {
                       setSelectedDestination(
                         currentLocation || {
                           id: null,
-                          title: "Root",
+                          title: "All Documents (Root)",
                         },
                       )
                     }
@@ -536,7 +536,8 @@ const MoveDocumentModal = ({ isOpen, onClose, document }) => {
                       <HStack>
                         {currentLocation ? <FiFolder /> : <FiHome />}
                         <Text fontWeight="medium">
-                          {currentLocation?.title || "Root"} (Current Location)
+                          {/* Opened Folder */}
+                          {currentLocation?.title || "All Documents (Root)"}
                         </Text>
                       </HStack>
                       {selectedDestination?.id === currentLocation?.id && (
@@ -548,9 +549,11 @@ const MoveDocumentModal = ({ isOpen, onClose, document }) => {
                   {/* Subfolder list */}
                   {folders.length > 0
                     ? folders.map((folder) => {
-                        const hasSubfolders = subfolderCache[folder.id]?.folders?.length > 0;
-                        const subfolderCount = subfolderCache[folder.id]?.folders?.length || 0;
-                        
+                        const hasSubfolders =
+                          subfolderCache[folder.id]?.folders?.length > 0;
+                        const subfolderCount =
+                          subfolderCache[folder.id]?.folders?.length || 0;
+
                         return (
                           <Box
                             key={folder.id}
@@ -575,7 +578,11 @@ const MoveDocumentModal = ({ isOpen, onClose, document }) => {
                                 <Text>{folder.title}</Text>
                                 {hasSubfolders && (
                                   <Text fontSize="xs" color={emptyStateColor}>
-                                    ({subfolderCount} {subfolderCount === 1 ? 'folder' : 'folders'})
+                                    ({subfolderCount}{" "}
+                                    {subfolderCount === 1
+                                      ? "folder"
+                                      : "folders"}
+                                    )
                                   </Text>
                                 )}
                                 {selectedDestination?.id === folder.id && (
