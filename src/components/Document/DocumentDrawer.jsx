@@ -27,7 +27,6 @@ import {
   MenuItem,
 } from "@chakra-ui/react";
 import {
-  FiEdit,
   FiTrash2,
   FiDownload,
   FiMove,
