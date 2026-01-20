@@ -57,9 +57,8 @@ const UploadFileModal = ({ isOpen, onClose, parentId, path }) => {
       return;
     }
 
-    // Create a blob URL for the file (in a real app, this would upload to a server)
-    const fileUrl = URL.createObjectURL(formData.file);
-
+    // When uploading, include the actual file in metadata
+    // Backend will process the file and return key & version
     createDocument({
       title: formData.title,
       description: formData.description,
@@ -68,10 +67,10 @@ const UploadFileModal = ({ isOpen, onClose, parentId, path }) => {
       path,
       status: 0, // Under review
       metadata: {
+        file: formData.file, // The actual file object
         filename: formData.file.name,
         size: formData.file.size,
-        version: "0.0",
-        key: fileUrl, // In production, this would be a secure key/URL from backend
+        // key and version will be returned from backend after upload
       },
     });
 
