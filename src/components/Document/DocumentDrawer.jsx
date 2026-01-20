@@ -132,7 +132,7 @@ const DocumentDrawer = ({ document, isOpen, onClose }) => {
   const isValid = isDocumentValid();
 
   // Handle inline title update
-  const handleTitleSubmit = (newTitle) => {
+  const handleTitleSubmit = async (newTitle) => {
     if (!newTitle.trim()) {
       toast.error("Validation Error", {
         description: "Title cannot be empty",
@@ -141,22 +141,46 @@ const DocumentDrawer = ({ document, isOpen, onClose }) => {
       return;
     }
 
-    updateDocument(document.id || document._id, { title: newTitle });
-    toast.success("Title Updated", {
-      description: "Document title has been updated",
-      duration: 2000,
-    });
+    // Only update if value actually changed
+    if (newTitle === document?.title) {
+      return;
+    }
+
+    try {
+      await updateDocument(document.id || document._id, { title: newTitle });
+      toast.success("Title Updated", {
+        description: "Document title has been updated",
+        duration: 2000,
+      });
+    } catch (error) {
+      toast.error("Update Failed", {
+        description: "Failed to update title",
+        duration: 3000,
+      });
+    }
   };
 
   // Handle inline description update
-  const handleDescriptionSubmit = (newDescription) => {
-    updateDocument(document.id || document._id, {
-      description: newDescription,
-    });
-    toast.success("Description Updated", {
-      description: "Document description has been updated",
-      duration: 2000,
-    });
+  const handleDescriptionSubmit = async (newDescription) => {
+    // Only update if value actually changed
+    if (newDescription === document?.description) {
+      return;
+    }
+
+    try {
+      await updateDocument(document.id || document._id, {
+        description: newDescription,
+      });
+      toast.success("Description Updated", {
+        description: "Document description has been updated",
+        duration: 2000,
+      });
+    } catch (error) {
+      toast.error("Update Failed", {
+        description: "Failed to update description",
+        duration: 3000,
+      });
+    }
   };
 
   // Editable controls component
@@ -191,7 +215,8 @@ const DocumentDrawer = ({ document, isOpen, onClose }) => {
               <VStack align="center" py={4}>
                 {getDocumentIcon()}
                 <Editable
-                  value={document?.title || "Untitled"}
+                  key={`drawer-title-${document?.id || document?._id}`}
+                  defaultValue={document?.title || "Untitled"}
                   onSubmit={handleTitleSubmit}
                   fontSize="lg"
                   fontWeight="bold"
@@ -234,7 +259,8 @@ const DocumentDrawer = ({ document, isOpen, onClose }) => {
                   Description
                 </Text>
                 <Editable
-                  value={document?.description || ""}
+                  key={`drawer-description-${document?.id || document?._id}`}
+                  defaultValue={document?.description || ""}
                   onSubmit={handleDescriptionSubmit}
                   placeholder="Add a description..."
                   w="full"
