@@ -26,11 +26,8 @@ import {
   Flex,
   Tooltip,
   Editable,
-  EditableInput,
   EditableTextarea,
   EditablePreview,
-  useEditableControls,
-  ButtonGroup,
 } from "@chakra-ui/react";
 import {
   FiEdit,
@@ -50,8 +47,6 @@ import {
   FiEye,
   FiLock,
   FiUnlock,
-  FiCheck,
-  FiX,
 } from "react-icons/fi";
 import PageHeader from "../../components/PageHeader";
 import PageFooter from "../../components/PageFooter";
@@ -171,24 +166,29 @@ const DocumentDetail = () => {
 
   const isValid = isDocumentValid();
 
-  // Handle inline title update
-  const handleTitleSubmit = async (newTitle) => {
-    if (!newTitle.trim()) {
+  // Handle inline title update on blur
+  const handleTitleBlur = async (newTitle) => {
+    const trimmedTitle = newTitle.trim();
+    
+    // If title is empty, revert and notify
+    if (!trimmedTitle) {
       toast.error("Validation Error", {
-        description: "Title cannot be empty",
+        description: "Title cannot be empty. Reverted to previous value.",
         duration: 3000,
       });
+      // Force re-render to show original value
+      setDocument(prev => ({ ...prev }));
       return;
     }
 
     // Only update if value actually changed
-    if (newTitle === document?.title) {
+    if (trimmedTitle === document?.title) {
       return;
     }
 
     try {
-      await updateDocument(id, { title: newTitle });
-      setDocument(prev => ({ ...prev, title: newTitle }));
+      await updateDocument(id, { title: trimmedTitle });
+      setDocument(prev => ({ ...prev, title: trimmedTitle }));
       toast.success("Title Updated", {
         description: "Document title has been updated",
         duration: 2000,
@@ -198,11 +198,14 @@ const DocumentDetail = () => {
         description: "Failed to update title",
         duration: 3000,
       });
+      // Revert on error
+      setDocument(prev => ({ ...prev }));
     }
   };
 
-  // Handle inline description update
-  const handleDescriptionSubmit = async (newDescription) => {
+  // Handle inline description update on blur
+  const handleDescriptionBlur = async (newDescription) => {
+    // Allow empty descriptions
     // Only update if value actually changed
     if (newDescription === document?.description) {
       return;
@@ -220,33 +223,10 @@ const DocumentDetail = () => {
         description: "Failed to update description",
         duration: 3000,
       });
+      // Revert on error
+      setDocument(prev => ({ ...prev }));
     }
   };
-
-  // Editable controls component
-  function EditableControls() {
-    const {
-      isEditing,
-      getSubmitButtonProps,
-      getCancelButtonProps,
-    } = useEditableControls();
-
-    return isEditing ? (
-      <ButtonGroup size="sm" ml={2}>
-        <IconButton
-          icon={<FiCheck />}
-          {...getSubmitButtonProps()}
-          colorScheme="green"
-          size="xs"
-        />
-        <IconButton
-          icon={<FiX />}
-          {...getCancelButtonProps()}
-          size="xs"
-        />
-      </ButtonGroup>
-    ) : null;
-  }
 
   if (loading) {
     return (
@@ -315,7 +295,7 @@ const DocumentDetail = () => {
                       <Editable
                         key={`title-${document?.id || document?._id}`}
                         defaultValue={document?.title || "Untitled"}
-                        onSubmit={handleTitleSubmit}
+                        onBlur={(e) => handleTitleBlur(e.target.value)}
                         fontSize="2xl"
                         fontWeight="bold"
                         color={isValid ? "inherit" : "red.500"}
@@ -323,19 +303,22 @@ const DocumentDetail = () => {
                         isPreviewFocusable={true}
                         selectAllOnFocus={false}
                       >
-                        <Flex align="center">
-                          <EditablePreview
-                            py={2}
-                            px={2}
-                            borderRadius="md"
-                            _hover={{
-                              background: "gray.100",
-                              cursor: "pointer",
-                            }}
-                          />
-                          <EditableInput py={2} px={2} />
-                          <EditableControls />
-                        </Flex>
+                        <EditablePreview
+                          py={2}
+                          px={2}
+                          borderRadius="md"
+                          _hover={{
+                            background: "gray.100",
+                            cursor: "pointer",
+                          }}
+                        />
+                        <EditableTextarea
+                          py={2}
+                          px={2}
+                          resize="vertical"
+                          minH="auto"
+                          rows={1}
+                        />
                       </Editable>
                       <HStack spacing={2}>
                         <Badge colorScheme={document?.type === "folder" ? "blue" : document?.type === "auditSchedule" ? "purple" : "gray"}>
@@ -375,33 +358,28 @@ const DocumentDetail = () => {
                 <Editable
                   key={`description-${document?.id || document?._id}`}
                   defaultValue={document?.description || ""}
-                  onSubmit={handleDescriptionSubmit}
+                  onBlur={(e) => handleDescriptionBlur(e.target.value)}
                   placeholder="Add a description..."
                   w="full"
                   isPreviewFocusable={true}
                 >
-                  <Flex direction="column">
-                    <EditablePreview
-                      py={2}
-                      px={2}
-                      borderRadius="md"
-                      color={document?.description ? "gray.700" : "gray.400"}
-                      minH="60px"
-                      _hover={{
-                        background: "gray.100",
-                        cursor: "pointer",
-                      }}
-                    />
-                    <EditableTextarea
-                      py={2}
-                      px={2}
-                      minH="60px"
-                      resize="vertical"
-                    />
-                    <Flex justify="flex-end" mt={2}>
-                      <EditableControls />
-                    </Flex>
-                  </Flex>
+                  <EditablePreview
+                    py={2}
+                    px={2}
+                    borderRadius="md"
+                    color={document?.description ? "gray.700" : "gray.400"}
+                    minH="60px"
+                    _hover={{
+                      background: "gray.100",
+                      cursor: "pointer",
+                    }}
+                  />
+                  <EditableTextarea
+                    py={2}
+                    px={2}
+                    minH="60px"
+                    resize="vertical"
+                  />
                 </Editable>
 
                 <Divider mb={4} />

@@ -14,13 +14,8 @@ import {
   Divider,
   useDisclosure,
   Editable,
-  EditableInput,
   EditableTextarea,
   EditablePreview,
-  useEditableControls,
-  ButtonGroup,
-  IconButton,
-  Flex,
   Menu,
   MenuButton,
   MenuList,
@@ -35,8 +30,6 @@ import {
   FiFolder,
   FiCalendar,
   FiAlertCircle,
-  FiCheck,
-  FiX,
   FiMoreVertical,
 } from "react-icons/fi";
 import Timestamp from "../Timestamp";
@@ -131,23 +124,26 @@ const DocumentDrawer = ({ document, isOpen, onClose }) => {
 
   const isValid = isDocumentValid();
 
-  // Handle inline title update
-  const handleTitleSubmit = async (newTitle) => {
-    if (!newTitle.trim()) {
+  // Handle inline title update on blur
+  const handleTitleBlur = async (newTitle) => {
+    const trimmedTitle = newTitle.trim();
+    
+    // If title is empty, revert and notify
+    if (!trimmedTitle) {
       toast.error("Validation Error", {
-        description: "Title cannot be empty",
+        description: "Title cannot be empty. Reverted to previous value.",
         duration: 3000,
       });
       return;
     }
 
     // Only update if value actually changed
-    if (newTitle === document?.title) {
+    if (trimmedTitle === document?.title) {
       return;
     }
 
     try {
-      await updateDocument(document.id || document._id, { title: newTitle });
+      await updateDocument(document.id || document._id, { title: trimmedTitle });
       toast.success("Title Updated", {
         description: "Document title has been updated",
         duration: 2000,
@@ -160,8 +156,9 @@ const DocumentDrawer = ({ document, isOpen, onClose }) => {
     }
   };
 
-  // Handle inline description update
-  const handleDescriptionSubmit = async (newDescription) => {
+  // Handle inline description update on blur
+  const handleDescriptionBlur = async (newDescription) => {
+    // Allow empty descriptions
     // Only update if value actually changed
     if (newDescription === document?.description) {
       return;
@@ -183,24 +180,6 @@ const DocumentDrawer = ({ document, isOpen, onClose }) => {
     }
   };
 
-  // Editable controls component
-  function EditableControls() {
-    const { isEditing, getSubmitButtonProps, getCancelButtonProps } =
-      useEditableControls();
-
-    return isEditing ? (
-      <ButtonGroup size="sm" ml={2}>
-        <IconButton
-          icon={<FiCheck />}
-          {...getSubmitButtonProps()}
-          colorScheme="green"
-          size="xs"
-        />
-        <IconButton icon={<FiX />} {...getCancelButtonProps()} size="xs" />
-      </ButtonGroup>
-    ) : null;
-  }
-
   return (
     <>
       <Drawer isOpen={isOpen} placement="right" onClose={onClose} size="xs">
@@ -217,7 +196,7 @@ const DocumentDrawer = ({ document, isOpen, onClose }) => {
                 <Editable
                   key={`drawer-title-${document?.id || document?._id}`}
                   defaultValue={document?.title || "Untitled"}
-                  onSubmit={handleTitleSubmit}
+                  onBlur={(e) => handleTitleBlur(e.target.value)}
                   fontSize="lg"
                   fontWeight="bold"
                   textAlign="center"
@@ -225,19 +204,23 @@ const DocumentDrawer = ({ document, isOpen, onClose }) => {
                   w="full"
                   isPreviewFocusable={true}
                 >
-                  <Flex align="center" justify="center">
-                    <EditablePreview
-                      py={2}
-                      px={2}
-                      borderRadius="md"
-                      _hover={{
-                        background: "gray.100",
-                        cursor: "pointer",
-                      }}
-                    />
-                    <EditableInput py={2} px={2} textAlign="center" />
-                    <EditableControls />
-                  </Flex>
+                  <EditablePreview
+                    py={2}
+                    px={2}
+                    borderRadius="md"
+                    _hover={{
+                      background: "gray.100",
+                      cursor: "pointer",
+                    }}
+                  />
+                  <EditableTextarea
+                    py={2}
+                    px={2}
+                    textAlign="center"
+                    resize="vertical"
+                    minH="auto"
+                    rows={1}
+                  />
                 </Editable>
                 {!isValid && (
                   <Badge colorScheme="red" fontSize="sm">
@@ -261,35 +244,30 @@ const DocumentDrawer = ({ document, isOpen, onClose }) => {
                 <Editable
                   key={`drawer-description-${document?.id || document?._id}`}
                   defaultValue={document?.description || ""}
-                  onSubmit={handleDescriptionSubmit}
+                  onBlur={(e) => handleDescriptionBlur(e.target.value)}
                   placeholder="Add a description..."
                   w="full"
                   isPreviewFocusable={true}
                 >
-                  <Flex direction="column">
-                    <EditablePreview
-                      py={2}
-                      px={2}
-                      borderRadius="md"
-                      color={document?.description ? "inherit" : "gray.400"}
-                      fontSize="sm"
-                      minH="60px"
-                      _hover={{
-                        background: "gray.100",
-                        cursor: "pointer",
-                      }}
-                    />
-                    <EditableTextarea
-                      py={2}
-                      px={2}
-                      fontSize="sm"
-                      minH="60px"
-                      resize="vertical"
-                    />
-                    <Flex justify="flex-end" mt={2}>
-                      <EditableControls />
-                    </Flex>
-                  </Flex>
+                  <EditablePreview
+                    py={2}
+                    px={2}
+                    borderRadius="md"
+                    color={document?.description ? "inherit" : "gray.400"}
+                    fontSize="sm"
+                    minH="60px"
+                    _hover={{
+                      background: "gray.100",
+                      cursor: "pointer",
+                    }}
+                  />
+                  <EditableTextarea
+                    py={2}
+                    px={2}
+                    fontSize="sm"
+                    minH="60px"
+                    resize="vertical"
+                  />
                 </Editable>
               </Box>
 
