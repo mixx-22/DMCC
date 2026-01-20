@@ -25,6 +25,7 @@ import {
   Flex,
   Collapse,
   useDisclosure,
+  Icon,
 } from "@chakra-ui/react";
 import {
   FiFolder,
@@ -68,6 +69,7 @@ const MoveDocumentModal = ({ isOpen, onClose, document }) => {
   const borderColor = useColorModeValue("gray.200", "gray.600");
   const emptyStateColor = useColorModeValue("gray.500", "gray.400");
   const bgColor = useColorModeValue("brandPrimary.50", "brandPrimary.900");
+  const checkColor = useColorModeValue("brandPrimary.600", "brandPrimary.200");
 
   // Build breadcrumb path by traversing parent chain
   const buildBreadcrumbPath = useCallback(async (folder) => {
@@ -193,8 +195,7 @@ const MoveDocumentModal = ({ isOpen, onClose, document }) => {
           response = await apiService.request(DOCUMENTS_ENDPOINT, {
             method: "GET",
             params: { folder: parentId, type: "folder" },
-            },
-          );
+          });
         }
 
         const folderList = response.data?.documents || response.documents || [];
@@ -608,9 +609,13 @@ const MoveDocumentModal = ({ isOpen, onClose, document }) => {
                                 onClick={() => setSelectedDestination(folder)}
                               >
                                 <FiFolder />
-                                <Text>{folder.title}</Text>
+                                <Text noOfLines={2}>{folder.title}</Text>
                                 {hasSubfolders && (
-                                  <Text fontSize="xs" color={emptyStateColor}>
+                                  <Text
+                                    fontSize="xs"
+                                    whiteSpace="nowrap"
+                                    color={emptyStateColor}
+                                  >
                                     ({subfolderCount}{" "}
                                     {subfolderCount === 1
                                       ? "folder"
@@ -619,7 +624,11 @@ const MoveDocumentModal = ({ isOpen, onClose, document }) => {
                                   </Text>
                                 )}
                                 {selectedDestination?.id === folder.id && (
-                                  <FiCheck color="blue" />
+                                  <Icon
+                                    as={FiCheck}
+                                    boxSize={6}
+                                    color={checkColor}
+                                  />
                                 )}
                               </HStack>
                               <IconButton
