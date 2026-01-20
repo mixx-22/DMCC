@@ -1,4 +1,4 @@
-import cookieService from './cookieService';
+import cookieService from "./cookieService";
 
 const API_ENDPOINT = import.meta.env.VITE_API_ENDPOINT;
 const LOGIN_ENDPOINT = import.meta.env.VITE_API_PACKAGE_LOGIN;
@@ -51,7 +51,7 @@ export const apiService = {
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
         throw new Error(
-          errorData.message || `Login failed with status ${response.status}`
+          errorData.message || `Login failed with status ${response.status}`,
         );
       }
 
@@ -59,7 +59,7 @@ export const apiService = {
       return data;
     } catch (error) {
       throw new Error(
-        error.message || "Failed to connect to authentication server"
+        error.message || "Failed to connect to authentication server",
       );
     }
   },
@@ -88,11 +88,11 @@ export const apiService = {
       if (options.params) {
         const queryString = new URLSearchParams(
           Object.entries(options.params).reduce((acc, [key, value]) => {
-            if (value !== undefined && value !== null && value !== '') {
+            if (value !== undefined && value !== null && value !== "") {
               acc[key] = value;
             }
             return acc;
-          }, {})
+          }, {}),
         ).toString();
         if (queryString) {
           url = `${url}?${queryString}`;
@@ -102,7 +102,7 @@ export const apiService = {
       const response = await fetch(url, {
         ...options,
         headers,
-        credentials: 'include', // Include cookies in requests for server-set HttpOnly cookies
+        credentials: "include", // Include cookies in requests for server-set HttpOnly cookies
       });
 
       if (!response.ok) {
@@ -113,14 +113,14 @@ export const apiService = {
         }
         const errorData = await response.json().catch(() => ({}));
         throw new Error(
-          errorData.message || `Request failed with status ${response.status}`
+          errorData.message || `Request failed with status ${response.status}`,
         );
       }
 
       return await response.json();
     } catch (error) {
       throw new Error(
-        error.message || "An error occurred while making the request"
+        error.message || "An error occurred while making the request",
       );
     }
   },
@@ -142,10 +142,10 @@ export const apiService = {
 
     const formData = new FormData();
     // Note: 'file' is the expected field name by the POST /upload endpoint
-    formData.append('file', file);
+    formData.append("file", file);
 
-    const response = await this.request('/upload', {
-      method: 'POST',
+    const response = await this.request("/documents/upload", {
+      method: "POST",
       body: formData,
     });
 
