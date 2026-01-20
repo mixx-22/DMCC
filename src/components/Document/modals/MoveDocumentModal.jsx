@@ -51,6 +51,7 @@ const MoveDocumentModal = ({ isOpen, onClose, document }) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [selectedDestination, setSelectedDestination] = useState(null);
+  const [subfolderCache, setSubfolderCache] = useState({}); // Cache for subfolder data
 
   // Inline folder creation
   const {
@@ -93,25 +94,30 @@ const MoveDocumentModal = ({ isOpen, onClose, document }) => {
     return path;
   }, []);
 
-  // Load folders in a given location
-  const loadFolders = useCallback(
-    async (parentId) => {
-      setLoading(true);
-      setError(null);
+  // Recursively fetch all subfolders for a folder
+  const fetchAllSubfolders = useCallback(
+    async (folderId, depth = 0, maxDepth = 5) => {
+      // Limit recursion depth to prevent infinite loops or too many requests
+      if (depth >= maxDepth) return {};
+
+      const cacheKey = folderId || "root";
+      
+      // Return from cache if already fetched
+      if (subfolderCache[cacheKey]) {
+        return subfolderCache[cacheKey];
+      }
 
       try {
         let response;
 
-        if (parentId === null) {
-          // Load root folders
+        if (folderId === null) {
           response = await apiService.request(DOCUMENTS_ENDPOINT, {
             method: "GET",
             params: { type: "folder" },
           });
         } else {
-          // Load subfolders of a folder
           response = await apiService.request(
-            `${DOCUMENTS_ENDPOINT}/${parentId}`,
+            `${DOCUMENTS_ENDPOINT}/${folderId}`,
             {
               method: "GET",
               params: { type: "folder" },
@@ -121,7 +127,6 @@ const MoveDocumentModal = ({ isOpen, onClose, document }) => {
 
         const folderList = response.data?.documents || response.documents || [];
 
-        // Map folders to normalize _id to id
         const normalizedFolders = folderList.map((folder) => ({
           ...folder,
           id: folder._id || folder.id,
@@ -132,17 +137,56 @@ const MoveDocumentModal = ({ isOpen, onClose, document }) => {
           const docId = document._id || document.id;
           if (folder.id === docId) return false;
 
-          // If moving a folder, prevent moving into its own children
           if (document.type === "folder") {
-            // Check if this folder is a descendant of the document being moved
-            // This is a simplified check - in production, you'd want to do a full tree check
             return folder.parentId !== docId;
           }
 
           return true;
         });
 
-        setFolders(filteredFolders);
+        // Recursively fetch subfolders for each folder
+        const subfolderData = {};
+        await Promise.all(
+          filteredFolders.map(async (folder) => {
+            const nestedSubfolders = await fetchAllSubfolders(
+              folder.id,
+              depth + 1,
+              maxDepth,
+            );
+            subfolderData[folder.id] = nestedSubfolders;
+          }),
+        );
+
+        const result = {
+          folders: filteredFolders,
+          subfolders: subfolderData,
+        };
+
+        // Cache the result
+        setSubfolderCache((prev) => ({
+          ...prev,
+          [cacheKey]: result,
+        }));
+
+        return result;
+      } catch (err) {
+        console.error(`Error fetching subfolders for ${folderId}:`, err);
+        return { folders: [], subfolders: {} };
+      }
+    },
+    [document, subfolderCache],
+  );
+
+  // Load folders in a given location
+  const loadFolders = useCallback(
+    async (parentId) => {
+      setLoading(true);
+      setError(null);
+
+      try {
+        // Fetch current level and all nested subfolders
+        const result = await fetchAllSubfolders(parentId);
+        setFolders(result.folders || []);
       } catch (err) {
         console.error("Error loading folders:", err);
         setError(err.message || "Failed to load folders");
@@ -155,7 +199,7 @@ const MoveDocumentModal = ({ isOpen, onClose, document }) => {
         setLoading(false);
       }
     },
-    [document],
+    [fetchAllSubfolders],
   );
 
   const initializeLocation = useCallback(async () => {
@@ -382,6 +426,7 @@ const MoveDocumentModal = ({ isOpen, onClose, document }) => {
     setFolders([]);
     setSelectedDestination(null);
     setError(null);
+    setSubfolderCache({});
     closeCreatingFolder();
     setNewFolderName("");
     onClose();
@@ -502,45 +547,55 @@ const MoveDocumentModal = ({ isOpen, onClose, document }) => {
 
                   {/* Subfolder list */}
                   {folders.length > 0
-                    ? folders.map((folder) => (
-                        <Box
-                          key={folder.id}
-                          p={3}
-                          borderWidth={1}
-                          borderColor={borderColor}
-                          borderRadius="md"
-                          cursor="pointer"
-                          bg={
-                            selectedDestination?.id === folder.id
-                              ? selectedBg
-                              : "transparent"
-                          }
-                          _hover={{ bg: hoverBg }}
-                        >
-                          <HStack justify="space-between">
-                            <HStack
-                              flex={1}
-                              onClick={() => setSelectedDestination(folder)}
-                            >
-                              <FiFolder />
-                              <Text>{folder.title}</Text>
-                              {selectedDestination?.id === folder.id && (
-                                <FiCheck color="blue" />
-                              )}
+                    ? folders.map((folder) => {
+                        const hasSubfolders = subfolderCache[folder.id]?.folders?.length > 0;
+                        const subfolderCount = subfolderCache[folder.id]?.folders?.length || 0;
+                        
+                        return (
+                          <Box
+                            key={folder.id}
+                            p={3}
+                            borderWidth={1}
+                            borderColor={borderColor}
+                            borderRadius="md"
+                            cursor="pointer"
+                            bg={
+                              selectedDestination?.id === folder.id
+                                ? selectedBg
+                                : "transparent"
+                            }
+                            _hover={{ bg: hoverBg }}
+                          >
+                            <HStack justify="space-between">
+                              <HStack
+                                flex={1}
+                                onClick={() => setSelectedDestination(folder)}
+                              >
+                                <FiFolder />
+                                <Text>{folder.title}</Text>
+                                {hasSubfolders && (
+                                  <Text fontSize="xs" color={emptyStateColor}>
+                                    ({subfolderCount} {subfolderCount === 1 ? 'folder' : 'folders'})
+                                  </Text>
+                                )}
+                                {selectedDestination?.id === folder.id && (
+                                  <FiCheck color="blue" />
+                                )}
+                              </HStack>
+                              <IconButton
+                                icon={<FiChevronRight />}
+                                size="sm"
+                                variant="ghost"
+                                aria-label="Open folder"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  navigateToFolder(folder);
+                                }}
+                              />
                             </HStack>
-                            <IconButton
-                              icon={<FiChevronRight />}
-                              size="sm"
-                              variant="ghost"
-                              aria-label="Open folder"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                navigateToFolder(folder);
-                              }}
-                            />
-                          </HStack>
-                        </Box>
-                      ))
+                          </Box>
+                        );
+                      })
                     : null}
 
                   {/* Inline folder creation */}
