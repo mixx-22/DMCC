@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import apiService from "../services/api";
 import { DocumentsContext } from "./_contexts";
 import { useUser } from "./_useContext";
-import { createDocumentFormData } from "../utils/fileUpload";
+import { uploadFileToServer } from "../utils/fileUpload";
 
 const DOCUMENTS_ENDPOINT = "/documents";
 const USE_API = import.meta.env.VITE_USE_API !== "false";
@@ -196,17 +196,28 @@ export const DocumentsProvider = ({ children }) => {
       return docWithId;
     }
 
-    // API mode: Use FormData for file uploads, JSON for others
+    // API mode: Two-step process for files, JSON for others
     try {
       let response;
       
       if (documentData.type === "file") {
-        // Use FormData for file uploads
-        const formData = await createDocumentFormData(newDocument);
+        // Step 1: Upload file to get metadata (filename, size, key)
+        if (documentData.metadata?.file) {
+          const uploadResult = await uploadFileToServer(documentData.metadata.file, apiService);
+          
+          // Step 2: Create document with file metadata
+          newDocument.metadata = {
+            filename: uploadResult.filename,
+            size: uploadResult.size,
+            key: uploadResult.key,
+            version: "0.0",
+          };
+        }
         
+        // Send JSON request with file metadata
         response = await apiService.request(DOCUMENTS_ENDPOINT, {
           method: "POST",
-          body: formData, // FormData will be sent with multipart/form-data
+          body: JSON.stringify(newDocument),
         });
       } else {
         // Use JSON for folders and audit schedules

@@ -4,6 +4,26 @@
  */
 
 /**
+ * Upload file to server via POST /upload endpoint
+ * @param {File} file - File to upload
+ * @param {Object} apiService - API service instance with uploadFile method
+ * @returns {Promise<{filename: string, size: number, key: string}>}
+ */
+export const uploadFileToServer = async (file, apiService) => {
+  if (!file) {
+    throw new Error("No file provided for upload");
+  }
+
+  try {
+    const uploadResult = await apiService.uploadFile(file);
+    return uploadResult;
+  } catch (error) {
+    console.error("File upload error:", error);
+    throw new Error(error.message || "Failed to upload file to server");
+  }
+};
+
+/**
  * Convert a File object or blob URL to a Blob
  * @param {File|string} fileOrUrl - File object or blob URL
  * @returns {Promise<{blob: Blob, filename: string}>}
@@ -33,22 +53,21 @@ export const getFileBlob = async (fileOrUrl) => {
 };
 
 /**
- * Create FormData for document upload
+ * Create FormData for document upload (DEPRECATED - kept for backwards compatibility)
+ * Note: This function is kept for compatibility but POST /documents no longer handles files.
+ * Use uploadFileToServer() first to get file metadata, then pass it to createDocument.
  * @param {Object} documentData - Document data including file
  * @returns {Promise<FormData>}
  */
 export const createDocumentFormData = async (documentData) => {
   const formData = new FormData();
 
-  // Handle file upload
+  // Handle file upload (DEPRECATED - kept for backwards compatibility)
   if (documentData.type === "file" && documentData.metadata?.file) {
     const { blob, filename } = await getFileBlob(documentData.metadata.file);
     
     // Append the file with the correct filename
     formData.append("file", blob, documentData.metadata.filename || filename);
-    
-    // Remove the file object from metadata before adding other fields
-    const { file, ...metadataWithoutFile } = documentData.metadata;
     
     // Append metadata as JSON string (only filename and size)
     formData.append("metadata", JSON.stringify({

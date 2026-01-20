@@ -124,6 +124,34 @@ export const apiService = {
       );
     }
   },
+
+  /**
+   * Upload a file to the server
+   * @param {File} file - The file to upload
+   * @returns {Promise<{filename: string, size: number, key: string}>}
+   */
+  async uploadFile(file) {
+    if (!USE_API) {
+      // Mock mode: simulate upload and return mock data
+      return {
+        filename: file.name,
+        size: file.size,
+        key: `mock-${Date.now()}-${file.name}`,
+      };
+    }
+
+    const formData = new FormData();
+    formData.append('file', file);
+
+    const response = await this.request('/upload', {
+      method: 'POST',
+      body: formData,
+    });
+
+    // Extract the data from response
+    const { filename, size, key } = response.data || response;
+    return { filename, size, key };
+  },
 };
 
 export default apiService;
