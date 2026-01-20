@@ -184,9 +184,47 @@ const MoveDocumentModal = ({ isOpen, onClose, document }) => {
       setError(null);
 
       try {
-        // Fetch current level and all nested subfolders
-        const result = await fetchAllSubfolders(parentId);
-        setFolders(result.folders || []);
+        let response;
+
+        // Always make a fresh API request when parentId has a value
+        if (parentId === null) {
+          response = await apiService.request(DOCUMENTS_ENDPOINT, {
+            method: "GET",
+            params: { type: "folder" },
+          });
+        } else {
+          response = await apiService.request(
+            `${DOCUMENTS_ENDPOINT}/${parentId}`,
+            {
+              method: "GET",
+              params: { type: "folder" },
+            },
+          );
+        }
+
+        const folderList = response.data?.documents || response.documents || [];
+
+        const normalizedFolders = folderList.map((folder) => ({
+          ...folder,
+          id: folder._id || folder.id,
+        }));
+
+        // Filter out the document being moved and its children
+        const filteredFolders = normalizedFolders.filter((folder) => {
+          const docId = document._id || document.id;
+          if (folder.id === docId) return false;
+
+          if (document.type === "folder") {
+            return folder.parentId !== docId;
+          }
+
+          return true;
+        });
+
+        setFolders(filteredFolders);
+
+        // Also fetch subfolders recursively for each folder (in background)
+        fetchAllSubfolders(parentId);
       } catch (err) {
         console.error("Error loading folders:", err);
         setError(err.message || "Failed to load folders");
@@ -199,7 +237,7 @@ const MoveDocumentModal = ({ isOpen, onClose, document }) => {
         setLoading(false);
       }
     },
-    [fetchAllSubfolders],
+    [document, fetchAllSubfolders],
   );
 
   const initializeLocation = useCallback(async () => {
