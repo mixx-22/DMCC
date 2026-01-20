@@ -150,8 +150,13 @@ export const apiService = {
     });
 
     // Extract the data from response
-    const { filename, size, key } = response.data || response;
-    return { filename, size, key };
+    // Note: API returns 'fileName' (camelCase) not 'filename'
+    const data = response.data || response;
+    return {
+      filename: data.fileName,
+      size: data.size,
+      key: data.key,
+    };
   },
 };
 
