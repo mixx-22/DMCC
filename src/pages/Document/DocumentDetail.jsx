@@ -66,6 +66,8 @@ const DocumentDetail = () => {
   const [document, setDocument] = useState(null);
   const fetchedRef = useRef(false);
   const currentIdRef = useRef(null);
+  const titleTextareaRef = useRef(null);
+  const descriptionTextareaRef = useRef(null);
 
   const {
     isOpen: isDeleteOpen,
@@ -314,11 +316,22 @@ const DocumentDetail = () => {
                           }}
                         />
                         <EditableTextarea
+                          ref={titleTextareaRef}
                           py={2}
                           px={2}
                           resize="vertical"
                           minH="auto"
                           rows={1}
+                          onFocus={(e) => {
+                            // Auto-resize on focus
+                            e.target.style.height = 'auto';
+                            e.target.style.height = `${e.target.scrollHeight}px`;
+                          }}
+                          onInput={(e) => {
+                            // Continue resizing as user types
+                            e.target.style.height = 'auto';
+                            e.target.style.height = `${e.target.scrollHeight}px`;
+                          }}
                         />
                       </Editable>
                       <HStack spacing={2}>
@@ -378,10 +391,21 @@ const DocumentDetail = () => {
                     }}
                   />
                   <EditableTextarea
+                    ref={descriptionTextareaRef}
                     py={2}
                     px={2}
                     minH="60px"
                     resize="vertical"
+                    onFocus={(e) => {
+                      // Auto-resize on focus
+                      e.target.style.height = 'auto';
+                      e.target.style.height = `${e.target.scrollHeight}px`;
+                    }}
+                    onInput={(e) => {
+                      // Continue resizing as user types
+                      e.target.style.height = 'auto';
+                      e.target.style.height = `${e.target.scrollHeight}px`;
+                    }}
                   />
                 </Editable>
 

@@ -49,6 +49,8 @@ const DocumentDrawer = ({ document, isOpen, onClose }) => {
   const { updateDocument } = useDocuments();
   const titleRef = useRef();
   const descriptionRef = useRef();
+  const titleTextareaRef = useRef(null);
+  const descriptionTextareaRef = useRef(null);
 
   useEffect(() => {
     titleRef.current = document?.title;
@@ -224,12 +226,23 @@ const DocumentDrawer = ({ document, isOpen, onClose }) => {
                     }}
                   />
                   <EditableTextarea
+                    ref={titleTextareaRef}
                     py={2}
                     px={2}
                     textAlign="center"
                     resize="vertical"
                     minH="auto"
                     rows={1}
+                    onFocus={(e) => {
+                      // Auto-resize on focus
+                      e.target.style.height = 'auto';
+                      e.target.style.height = `${e.target.scrollHeight}px`;
+                    }}
+                    onInput={(e) => {
+                      // Continue resizing as user types
+                      e.target.style.height = 'auto';
+                      e.target.style.height = `${e.target.scrollHeight}px`;
+                    }}
                   />
                 </Editable>
                 {!isValid && (
@@ -277,11 +290,22 @@ const DocumentDrawer = ({ document, isOpen, onClose }) => {
                     }}
                   />
                   <EditableTextarea
+                    ref={descriptionTextareaRef}
                     py={2}
                     px={2}
                     fontSize="sm"
                     minH="60px"
                     resize="vertical"
+                    onFocus={(e) => {
+                      // Auto-resize on focus
+                      e.target.style.height = 'auto';
+                      e.target.style.height = `${e.target.scrollHeight}px`;
+                    }}
+                    onInput={(e) => {
+                      // Continue resizing as user types
+                      e.target.style.height = 'auto';
+                      e.target.style.height = `${e.target.scrollHeight}px`;
+                    }}
                   />
                 </Editable>
               </Box>
