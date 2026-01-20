@@ -20,6 +20,7 @@ import {
   MenuButton,
   MenuList,
   MenuItem,
+  Flex,
 } from "@chakra-ui/react";
 import {
   FiTrash2,
@@ -127,7 +128,7 @@ const DocumentDrawer = ({ document, isOpen, onClose }) => {
   // Handle inline title update on blur
   const handleTitleBlur = async (newTitle) => {
     const trimmedTitle = newTitle.trim();
-    
+
     // If title is empty, revert and notify
     if (!trimmedTitle) {
       toast.error("Validation Error", {
@@ -143,7 +144,9 @@ const DocumentDrawer = ({ document, isOpen, onClose }) => {
     }
 
     try {
-      await updateDocument(document.id || document._id, { title: trimmedTitle });
+      await updateDocument(document.id || document._id, {
+        title: trimmedTitle,
+      });
       toast.success("Title Updated", {
         description: "Document title has been updated",
         duration: 2000,
@@ -232,7 +235,7 @@ const DocumentDrawer = ({ document, isOpen, onClose }) => {
               <Divider />
 
               {/* Editable Description */}
-              <Box>
+              <Box w="full">
                 <Text
                   fontSize="sm"
                   fontWeight="semibold"
@@ -250,6 +253,7 @@ const DocumentDrawer = ({ document, isOpen, onClose }) => {
                   isPreviewFocusable={true}
                 >
                   <EditablePreview
+                    w="full"
                     py={2}
                     px={2}
                     borderRadius="md"
