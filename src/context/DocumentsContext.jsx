@@ -6,6 +6,7 @@ import { uploadFileToServer } from "../utils/fileUpload";
 
 const DOCUMENTS_ENDPOINT = "/documents";
 const USE_API = import.meta.env.VITE_USE_API !== "false";
+const DEFAULT_FILE_VERSION = "0.0";
 
 const rootFolder = {
   id: null,
@@ -159,7 +160,7 @@ export const DocumentsProvider = ({ children }) => {
       newDocument.metadata = {
         filename: documentData.filename || "",
         size: documentData.size || "",
-        version: "0.0",
+        version: DEFAULT_FILE_VERSION,
         key: "",
       };
     } else if (documentData.type === "folder" && !documentData.metadata) {
@@ -210,8 +211,10 @@ export const DocumentsProvider = ({ children }) => {
             filename: uploadResult.filename,
             size: uploadResult.size,
             key: uploadResult.key,
-            version: "0.0",
+            version: DEFAULT_FILE_VERSION,
           };
+        } else {
+          throw new Error("File is required for document type 'file'");
         }
         
         // Send JSON request with file metadata
