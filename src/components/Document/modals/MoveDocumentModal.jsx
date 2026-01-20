@@ -78,7 +78,9 @@ const MoveDocumentModal = ({ isOpen, onClose, document }) => {
   const initializeLocation = async () => {
     setError(null);
 
-    if (!document.parentId) {
+    const docParentId = document.parentId || (document.parentData && (document.parentData._id || document.parentData.id));
+
+    if (!docParentId) {
       // Document is in root
       await loadFolders(null);
       setBreadcrumbPath([{ id: null, title: "Root" }]);
@@ -87,7 +89,7 @@ const MoveDocumentModal = ({ isOpen, onClose, document }) => {
       // Document is in a folder, load parent folder info first
       try {
         setLoading(true);
-        const parentFolder = await fetchFolderById(document.parentId);
+        const parentFolder = await fetchFolderById(docParentId);
 
         if (parentFolder) {
           // Build breadcrumb path from parent folder
@@ -128,7 +130,17 @@ const MoveDocumentModal = ({ isOpen, onClose, document }) => {
         },
       );
 
-      return response.data || response.document || response;
+      const folder = response.data?.document || response.data || response.document || response;
+      
+      // Normalize _id to id
+      if (folder && folder._id) {
+        return {
+          ...folder,
+          id: folder._id,
+        };
+      }
+      
+      return folder;
     } catch (err) {
       console.error(`Error fetching folder ${folderId}:`, err);
       return null;
@@ -186,16 +198,23 @@ const MoveDocumentModal = ({ isOpen, onClose, document }) => {
       }
 
       const folderList = response.data?.documents || response.documents || [];
+      
+      // Map folders to normalize _id to id
+      const normalizedFolders = folderList.map(folder => ({
+        ...folder,
+        id: folder._id || folder.id,
+      }));
 
       // Filter out the document being moved and its children
-      const filteredFolders = folderList.filter((folder) => {
-        if (folder.id === document.id) return false;
+      const filteredFolders = normalizedFolders.filter((folder) => {
+        const docId = document._id || document.id;
+        if (folder.id === docId) return false;
 
         // If moving a folder, prevent moving into its own children
         if (document.type === "folder") {
           // Check if this folder is a descendant of the document being moved
           // This is a simplified check - in production, you'd want to do a full tree check
-          return folder.parentId !== document.id;
+          return folder.parentId !== docId;
         }
 
         return true;
@@ -297,8 +316,10 @@ const MoveDocumentModal = ({ isOpen, onClose, document }) => {
 
   // Move document to selected destination
   const handleMove = async () => {
+    const docParentId = document.parentId || (document.parentData && (document.parentData._id || document.parentData.id));
+    
     if (
-      selectedDestination?.id === document.parentId &&
+      selectedDestination?.id === docParentId &&
       selectedDestination?.id !== undefined
     ) {
       toast.info("Same Location", {
@@ -308,7 +329,7 @@ const MoveDocumentModal = ({ isOpen, onClose, document }) => {
       return;
     }
 
-    if (selectedDestination?.id === undefined && !document.parentId) {
+    if (selectedDestination?.id === undefined && !docParentId) {
       toast.info("Same Location", {
         description: "Document is already in root",
         duration: 3000,
@@ -319,7 +340,8 @@ const MoveDocumentModal = ({ isOpen, onClose, document }) => {
     setLoading(true);
 
     try {
-      await updateDocument(document.id, {
+      const docId = document._id || document.id;
+      await updateDocument(docId, {
         parentId: selectedDestination?.id || null,
         path: selectedDestination?.path || "/",
       });
