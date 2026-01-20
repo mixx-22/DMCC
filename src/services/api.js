@@ -70,9 +70,14 @@ export const apiService = {
       const token = cookieService.getToken();
 
       const headers = {
-        "Content-Type": "application/json",
         ...options.headers,
       };
+
+      // Only set Content-Type for non-FormData requests
+      // FormData will set its own Content-Type with boundary
+      if (!(options.body instanceof FormData)) {
+        headers["Content-Type"] = "application/json";
+      }
 
       if (token) {
         headers.Authorization = `Bearer ${token}`;

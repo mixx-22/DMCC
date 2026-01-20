@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import apiService from "../services/api";
 import { DocumentsContext } from "./_contexts";
 import { useUser } from "./_useContext";
+import { createDocumentFormData } from "../utils/fileUpload";
 
 const DOCUMENTS_ENDPOINT = "/documents";
 const USE_API = import.meta.env.VITE_USE_API !== "false";
@@ -195,12 +196,26 @@ export const DocumentsProvider = ({ children }) => {
       return docWithId;
     }
 
-    // API mode: POST /documents
+    // API mode: Use FormData for file uploads, JSON for others
     try {
-      const response = await apiService.request(DOCUMENTS_ENDPOINT, {
-        method: "POST",
-        body: JSON.stringify(newDocument),
-      });
+      let response;
+      
+      if (documentData.type === "file") {
+        // Use FormData for file uploads
+        const formData = await createDocumentFormData(newDocument);
+        
+        response = await apiService.request(DOCUMENTS_ENDPOINT, {
+          method: "POST",
+          body: formData, // FormData will be sent with multipart/form-data
+        });
+      } else {
+        // Use JSON for folders and audit schedules
+        response = await apiService.request(DOCUMENTS_ENDPOINT, {
+          method: "POST",
+          body: JSON.stringify(newDocument),
+        });
+      }
+      
       console.log(response);
       if (response.success) {
         const createdDoc = response.data || response.document || response;
