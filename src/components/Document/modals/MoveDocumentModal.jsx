@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import {
   Modal,
   ModalOverlay,
@@ -52,6 +52,9 @@ const MoveDocumentModal = ({ isOpen, onClose, document }) => {
   const [error, setError] = useState(null);
   const [selectedDestination, setSelectedDestination] = useState(null);
   const [subfolderCache, setSubfolderCache] = useState({}); // Cache for subfolder data
+  
+  // Track last fetched folder to prevent duplicate requests
+  const lastFetchedFolderRef = useRef(null);
 
   // Inline folder creation
   const {
@@ -177,6 +180,13 @@ const MoveDocumentModal = ({ isOpen, onClose, document }) => {
   // Load folders in a given location
   const loadFolders = useCallback(
     async (parentId) => {
+      // Memoization: Don't fetch if we just fetched this folder
+      const folderKey = parentId === null ? 'root' : parentId;
+      if (lastFetchedFolderRef.current === folderKey) {
+        console.log(`Skipping duplicate request for folder: ${folderKey}`);
+        return;
+      }
+      
       setLoading(true);
       setError(null);
 
@@ -217,6 +227,9 @@ const MoveDocumentModal = ({ isOpen, onClose, document }) => {
         });
 
         setFolders(filteredFolders);
+        
+        // Update the last fetched folder reference
+        lastFetchedFolderRef.current = folderKey;
 
         // Also fetch subfolders recursively for each folder (in background)
         fetchAllSubfolders(parentId);
@@ -460,6 +473,7 @@ const MoveDocumentModal = ({ isOpen, onClose, document }) => {
     setSelectedDestination(null);
     setError(null);
     setSubfolderCache({});
+    lastFetchedFolderRef.current = null; // Reset memoization
     closeCreatingFolder();
     setNewFolderName("");
     onClose();
