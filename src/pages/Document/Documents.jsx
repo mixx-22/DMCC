@@ -10,13 +10,17 @@ import {
   Spinner,
   Center,
   Stack,
+  List,
+  ListItem,
+  Text,
+  Icon,
 } from "@chakra-ui/react";
-import { FiGrid, FiList } from "react-icons/fi";
+import { FiGrid, FiList, FiCheckCircle, FiXCircle } from "react-icons/fi";
+import { toast } from "sonner";
 import PageHeader from "../../components/PageHeader";
 import PageFooter from "../../components/PageFooter";
 import CreateFolderModal from "../../components/Document/modals/CreateFolderModal";
 import CreateAuditScheduleModal from "../../components/Document/modals/CreateAuditScheduleModal";
-import UploadFileModal from "../../components/Document/modals/UploadFileModal";
 import DocumentDrawer from "../../components/Document/DocumentDrawer";
 import { GridView } from "../../components/Document/GridView";
 import { ListView } from "../../components/Document/ListView";
@@ -39,6 +43,7 @@ const Documents = () => {
     toggleViewMode,
     setSelectedDocument,
     loading,
+    createDocument,
   } = useDocuments();
 
   const [lastClickTime, setLastClickTime] = useState(0);
@@ -75,11 +80,83 @@ const Documents = () => {
     onOpen: onAuditModalOpen,
     onClose: onAuditModalClose,
   } = useDisclosure();
-  const {
-    isOpen: isFileModalOpen,
-    onOpen: onFileModalOpen,
-    onClose: onFileModalClose,
-  } = useDisclosure();
+
+  const handleFileUpload = async (files) => {
+    const uploadPromises = files.map(async (file) => {
+      try {
+        const title = file.name.split(".").slice(0, -1).join(".") || file.name;
+        await createDocument({
+          title,
+          description: "",
+          type: "file",
+          parentId: currentFolderId,
+          path: "/",
+          status: 0,
+          metadata: {
+            file,
+            filename: file.name,
+            size: file.size,
+          },
+        });
+        return { success: true, filename: file.name };
+      } catch (error) {
+        return { success: false, filename: file.name, error: error?.message || error };
+      }
+    });
+
+    const results = await Promise.all(uploadPromises);
+    const successful = results.filter((r) => r.success);
+    const failed = results.filter((r) => !r.success);
+
+    if (successful.length > 0 && failed.length === 0) {
+      toast.success("Files Uploaded Successfully", {
+        description: `${successful.length} file${successful.length > 1 ? "s" : ""} uploaded`,
+        duration: 3000,
+      });
+    } else if (successful.length > 0 && failed.length > 0) {
+      toast.warning("Partial Upload", {
+        description: (
+          <Box>
+            <Text mb={2}>
+              {successful.length} successful, {failed.length} failed
+            </Text>
+            <List spacing={1} fontSize="sm">
+              {successful.map((r, i) => (
+                <ListItem key={`success-${i}`} display="flex" alignItems="center">
+                  <Icon as={FiCheckCircle} color="green.500" mr={2} />
+                  {r.filename}
+                </ListItem>
+              ))}
+              {failed.map((r, i) => (
+                <ListItem key={`failed-${i}`} display="flex" alignItems="center">
+                  <Icon as={FiXCircle} color="red.500" mr={2} />
+                  {r.filename}
+                </ListItem>
+              ))}
+            </List>
+          </Box>
+        ),
+        duration: 5000,
+      });
+    } else {
+      toast.error("Upload Failed", {
+        description: (
+          <Box>
+            <Text mb={2}>Failed to upload {failed.length} file{failed.length > 1 ? "s" : ""}</Text>
+            <List spacing={1} fontSize="sm">
+              {failed.map((r, i) => (
+                <ListItem key={i} display="flex" alignItems="center">
+                  <Icon as={FiXCircle} color="red.500" mr={2} />
+                  {r.filename}
+                </ListItem>
+              ))}
+            </List>
+          </Box>
+        ),
+        duration: 5000,
+      });
+    }
+  };
 
   const handleDocumentClick = (doc) => {
     const now = Date.now();
@@ -123,7 +200,7 @@ const Documents = () => {
       <PageFooter>
         <Flex gap={4} justifyContent="flex-end">
           <ActionButton
-            onFileModalOpen={onFileModalOpen}
+            onFileSelect={handleFileUpload}
             onFolderModalOpen={onFolderModalOpen}
             onAuditModalOpen={onAuditModalOpen}
           />
@@ -145,7 +222,7 @@ const Documents = () => {
         ) : documents.length === 0 ? (
           <EmptyState
             currentFolderId={currentFolderId}
-            onUploadClick={onFileModalOpen}
+            onUploadClick={() => document.querySelector('input[type="file"]')?.click()}
             onCreateFolderClick={onFolderModalOpen}
           />
         ) : viewMode === "grid" ? (
@@ -173,12 +250,6 @@ const Documents = () => {
       <CreateAuditScheduleModal
         isOpen={isAuditModalOpen}
         onClose={onAuditModalClose}
-        parentId={currentFolderId}
-        path={`/`}
-      />
-      <UploadFileModal
-        isOpen={isFileModalOpen}
-        onClose={onFileModalClose}
         parentId={currentFolderId}
         path={`/`}
       />
