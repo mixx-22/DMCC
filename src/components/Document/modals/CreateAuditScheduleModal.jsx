@@ -28,7 +28,7 @@ const CreateAuditScheduleModal = ({ isOpen, onClose, parentId, path }) => {
     standard: "",
   });
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
     if (!formData.title.trim()) {
@@ -40,7 +40,7 @@ const CreateAuditScheduleModal = ({ isOpen, onClose, parentId, path }) => {
     }
 
     try {
-      createDocument({
+      await createDocument({
         title: formData.title,
         description: formData.description,
         type: "auditSchedule",
@@ -72,7 +72,7 @@ const CreateAuditScheduleModal = ({ isOpen, onClose, parentId, path }) => {
       onClose();
     } catch (error) {
       toast.error("Failed to Create Audit Schedule", {
-        description: `Error: ${error ? `${error} ` : ""}Try again later or contact your System Administrator.`,
+        description: `${error?.message || error || "Unknown error"}. Try again later or contact your System Administrator.`,
         duration: 3000,
       });
     }

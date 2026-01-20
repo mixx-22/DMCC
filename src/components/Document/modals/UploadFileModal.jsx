@@ -38,7 +38,7 @@ const UploadFileModal = ({ isOpen, onClose, parentId, path }) => {
     }
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
     if (!formData.file) {
@@ -58,7 +58,7 @@ const UploadFileModal = ({ isOpen, onClose, parentId, path }) => {
     }
 
     try {
-      createDocument({
+      await createDocument({
         title: formData.title,
         description: formData.description,
         type: "file",
@@ -85,7 +85,7 @@ const UploadFileModal = ({ isOpen, onClose, parentId, path }) => {
       onClose();
     } catch (error) {
       toast.error("Failed to Upload File", {
-        description: `Error: ${error ? `${error} ` : ""}Try again later or contact your System Administrator.`,
+        description: `${error?.message || error || "Unknown error"}. Try again later or contact your System Administrator.`,
         duration: 3000,
       });
     }
