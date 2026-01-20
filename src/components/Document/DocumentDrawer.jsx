@@ -210,6 +210,8 @@ const DocumentDrawer = ({ document, isOpen, onClose }) => {
                   color={isValid ? "inherit" : "red.500"}
                   w="full"
                   isPreviewFocusable={true}
+                  submitOnBlur={true}
+                  selectAllOnFocus={false}
                 >
                   <EditablePreview
                     py={2}
@@ -255,6 +257,8 @@ const DocumentDrawer = ({ document, isOpen, onClose }) => {
                   placeholder="Add a description..."
                   w="full"
                   isPreviewFocusable={true}
+                  submitOnBlur={true}
+                  selectAllOnFocus={false}
                 >
                   <EditablePreview
                     w="full"

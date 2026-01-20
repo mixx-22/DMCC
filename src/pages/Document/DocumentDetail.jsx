@@ -301,6 +301,7 @@ const DocumentDetail = () => {
                         color={isValid ? "inherit" : "red.500"}
                         w="full"
                         isPreviewFocusable={true}
+                        submitOnBlur={true}
                         selectAllOnFocus={false}
                       >
                         <EditablePreview
@@ -362,6 +363,8 @@ const DocumentDetail = () => {
                   placeholder="Add a description..."
                   w="full"
                   isPreviewFocusable={true}
+                  submitOnBlur={true}
+                  selectAllOnFocus={false}
                 >
                   <EditablePreview
                     py={2}
