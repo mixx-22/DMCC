@@ -261,7 +261,7 @@ const DocumentDrawer = ({ document, isOpen, onClose }) => {
                     py={2}
                     px={2}
                     borderRadius="md"
-                    color={document?.description ? "inherit" : "gray.400"}
+                    color={descriptionRef ? "inherit" : "gray.400"}
                     fontSize="sm"
                     minH="60px"
                     _hover={{
