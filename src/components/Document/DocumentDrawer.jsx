@@ -13,6 +13,18 @@ import {
   Box,
   Divider,
   useDisclosure,
+  Editable,
+  EditableInput,
+  EditableTextarea,
+  EditablePreview,
+  useEditableControls,
+  ButtonGroup,
+  IconButton,
+  Flex,
+  Menu,
+  MenuButton,
+  MenuList,
+  MenuItem,
 } from "@chakra-ui/react";
 import {
   FiEdit,
@@ -24,19 +36,19 @@ import {
   FiFolder,
   FiCalendar,
   FiAlertCircle,
+  FiCheck,
+  FiX,
+  FiMoreVertical,
 } from "react-icons/fi";
 import Timestamp from "../Timestamp";
-import EditDocumentModal from "./modals/EditDocumentModal";
 import DeleteDocumentModal from "./modals/DeleteDocumentModal";
 import MoveDocumentModal from "./modals/MoveDocumentModal";
 import PrivacySettingsModal from "./modals/PrivacySettingsModal";
+import { useDocuments } from "../../context/_useContext";
+import { toast } from "sonner";
 
 const DocumentDrawer = ({ document, isOpen, onClose }) => {
-  const {
-    isOpen: isEditOpen,
-    onOpen: onEditOpen,
-    onClose: onEditClose,
-  } = useDisclosure();
+  const { updateDocument } = useDocuments();
 
   const {
     isOpen: isDeleteOpen,
@@ -120,6 +132,57 @@ const DocumentDrawer = ({ document, isOpen, onClose }) => {
 
   const isValid = isDocumentValid();
 
+  // Handle inline title update
+  const handleTitleSubmit = (newTitle) => {
+    if (!newTitle.trim()) {
+      toast.error("Validation Error", {
+        description: "Title cannot be empty",
+        duration: 3000,
+      });
+      return;
+    }
+
+    updateDocument(document.id || document._id, { title: newTitle });
+    toast.success("Title Updated", {
+      description: "Document title has been updated",
+      duration: 2000,
+    });
+  };
+
+  // Handle inline description update
+  const handleDescriptionSubmit = (newDescription) => {
+    updateDocument(document.id || document._id, { description: newDescription });
+    toast.success("Description Updated", {
+      description: "Document description has been updated",
+      duration: 2000,
+    });
+  };
+
+  // Editable controls component
+  function EditableControls() {
+    const {
+      isEditing,
+      getSubmitButtonProps,
+      getCancelButtonProps,
+    } = useEditableControls();
+
+    return isEditing ? (
+      <ButtonGroup size="sm" ml={2}>
+        <IconButton
+          icon={<FiCheck />}
+          {...getSubmitButtonProps()}
+          colorScheme="green"
+          size="xs"
+        />
+        <IconButton
+          icon={<FiX />}
+          {...getCancelButtonProps()}
+          size="xs"
+        />
+      </ButtonGroup>
+    ) : null;
+  }
+
   return (
     <>
       <Drawer isOpen={isOpen} placement="right" onClose={onClose} size="md">
@@ -130,17 +193,33 @@ const DocumentDrawer = ({ document, isOpen, onClose }) => {
 
           <DrawerBody>
             <VStack align="stretch" spacing={4}>
-              {/* Icon and Title */}
+              {/* Icon and Editable Title */}
               <VStack align="center" py={4}>
                 {getDocumentIcon()}
-                <Text
+                <Editable
+                  value={document?.title || "Untitled"}
+                  onSubmit={handleTitleSubmit}
                   fontSize="lg"
                   fontWeight="bold"
                   textAlign="center"
                   color={isValid ? "inherit" : "red.500"}
+                  w="full"
+                  isPreviewFocusable={true}
                 >
-                  {document?.title || "Untitled"}
-                </Text>
+                  <Flex align="center" justify="center">
+                    <EditablePreview
+                      py={2}
+                      px={2}
+                      borderRadius="md"
+                      _hover={{
+                        background: "gray.100",
+                        cursor: "pointer",
+                      }}
+                    />
+                    <EditableInput py={2} px={2} textAlign="center" />
+                    <EditableControls />
+                  </Flex>
+                </Editable>
                 {!isValid && (
                   <Badge colorScheme="red" fontSize="sm">
                     Broken Document
@@ -150,12 +229,53 @@ const DocumentDrawer = ({ document, isOpen, onClose }) => {
 
               <Divider />
 
+              {/* Editable Description */}
+              <Box>
+                <Text fontSize="sm" fontWeight="semibold" mb={2} color="gray.600">
+                  Description
+                </Text>
+                <Editable
+                  value={document?.description || ""}
+                  onSubmit={handleDescriptionSubmit}
+                  placeholder="Add a description..."
+                  w="full"
+                  isPreviewFocusable={true}
+                >
+                  <Flex direction="column">
+                    <EditablePreview
+                      py={2}
+                      px={2}
+                      borderRadius="md"
+                      color={document?.description ? "inherit" : "gray.400"}
+                      fontSize="sm"
+                      minH="60px"
+                      _hover={{
+                        background: "gray.100",
+                        cursor: "pointer",
+                      }}
+                    />
+                    <EditableTextarea
+                      py={2}
+                      px={2}
+                      fontSize="sm"
+                      minH="60px"
+                      resize="vertical"
+                    />
+                    <Flex justify="flex-end" mt={2}>
+                      <EditableControls />
+                    </Flex>
+                  </Flex>
+                </Editable>
+              </Box>
+
+              <Divider />
+
               {/* Action Buttons */}
               <VStack spacing={2} align="stretch">
                 {document?.type === "file" && document?.metadata?.key && (
                   <Button
                     leftIcon={<FiDownload />}
-                    colorScheme="brandPrimary"
+                    colorScheme="blue"
                     variant="outline"
                     onClick={handleDownload}
                     isDisabled={!isValid}
@@ -164,14 +284,6 @@ const DocumentDrawer = ({ document, isOpen, onClose }) => {
                   </Button>
                 )}
                 <Button
-                  leftIcon={<FiEdit />}
-                  colorScheme="gray"
-                  variant="outline"
-                  onClick={onEditOpen}
-                >
-                  Edit Details
-                </Button>
-                <Button
                   leftIcon={<FiMove />}
                   colorScheme="gray"
                   variant="outline"
@@ -179,22 +291,21 @@ const DocumentDrawer = ({ document, isOpen, onClose }) => {
                 >
                   Move
                 </Button>
-                <Button
-                  leftIcon={<FiShare2 />}
-                  colorScheme="gray"
-                  variant="outline"
-                  onClick={onPrivacyOpen}
-                >
-                  Privacy Settings
-                </Button>
-                <Button
-                  leftIcon={<FiTrash2 />}
-                  colorScheme="red"
-                  variant="outline"
-                  onClick={onDeleteOpen}
-                >
-                  Delete
-                </Button>
+                <Menu>
+                  <MenuButton
+                    as={Button}
+                    leftIcon={<FiMoreVertical />}
+                    colorScheme="gray"
+                    variant="outline"
+                  >
+                    More Options
+                  </MenuButton>
+                  <MenuList>
+                    <MenuItem icon={<FiTrash2 />} color="red.500" onClick={onDeleteOpen}>
+                      Delete
+                    </MenuItem>
+                  </MenuList>
+                </Menu>
               </VStack>
 
               <Divider />
@@ -399,9 +510,18 @@ const DocumentDrawer = ({ document, isOpen, onClose }) => {
               {/* Privacy Information */}
               <Divider />
               <Box>
-                <Text fontWeight="semibold" mb={2}>
-                  Privacy
-                </Text>
+                <Flex justify="space-between" align="center" mb={2}>
+                  <Text fontWeight="semibold">Privacy</Text>
+                  <Button
+                    leftIcon={<FiShare2 />}
+                    size="xs"
+                    colorScheme="blue"
+                    variant="outline"
+                    onClick={onPrivacyOpen}
+                  >
+                    Settings
+                  </Button>
+                </Flex>
                 <VStack align="stretch" spacing={2}>
                   <Box>
                     <Text fontSize="sm" color="gray.600">
@@ -470,11 +590,6 @@ const DocumentDrawer = ({ document, isOpen, onClose }) => {
       </Drawer>
 
       {/* Modals */}
-      <EditDocumentModal
-        isOpen={isEditOpen}
-        onClose={onEditClose}
-        document={document}
-      />
       <DeleteDocumentModal
         isOpen={isDeleteOpen}
         onClose={onDeleteClose}

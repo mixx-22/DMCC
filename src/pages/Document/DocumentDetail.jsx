@@ -25,6 +25,12 @@ import {
   IconButton,
   Flex,
   Tooltip,
+  Editable,
+  EditableInput,
+  EditableTextarea,
+  EditablePreview,
+  useEditableControls,
+  ButtonGroup,
 } from "@chakra-ui/react";
 import {
   FiEdit,
@@ -44,31 +50,27 @@ import {
   FiEye,
   FiLock,
   FiUnlock,
+  FiCheck,
+  FiX,
 } from "react-icons/fi";
 import PageHeader from "../../components/PageHeader";
 import PageFooter from "../../components/PageFooter";
-import EditDocumentModal from "../../components/Document/modals/EditDocumentModal";
 import DeleteDocumentModal from "../../components/Document/modals/DeleteDocumentModal";
 import MoveDocumentModal from "../../components/Document/modals/MoveDocumentModal";
 import PrivacySettingsModal from "../../components/Document/modals/PrivacySettingsModal";
 import Timestamp from "../../components/Timestamp";
 import Breadcrumbs from "../../components/Document/Breadcrumbs";
 import { useDocuments } from "../../context/_useContext";
+import { toast } from "sonner";
 
 const DocumentDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { fetchDocumentById, loading } = useDocuments();
+  const { fetchDocumentById, updateDocument, loading } = useDocuments();
 
   const [document, setDocument] = useState(null);
   const fetchedRef = useRef(false);
   const currentIdRef = useRef(null);
-
-  const {
-    isOpen: isEditOpen,
-    onOpen: onEditOpen,
-    onClose: onEditClose,
-  } = useDisclosure();
 
   const {
     isOpen: isDeleteOpen,
@@ -169,6 +171,59 @@ const DocumentDetail = () => {
 
   const isValid = isDocumentValid();
 
+  // Handle inline title update
+  const handleTitleSubmit = (newTitle) => {
+    if (!newTitle.trim()) {
+      toast.error("Validation Error", {
+        description: "Title cannot be empty",
+        duration: 3000,
+      });
+      return;
+    }
+
+    updateDocument(id, { title: newTitle });
+    setDocument(prev => ({ ...prev, title: newTitle }));
+    toast.success("Title Updated", {
+      description: "Document title has been updated",
+      duration: 2000,
+    });
+  };
+
+  // Handle inline description update
+  const handleDescriptionSubmit = (newDescription) => {
+    updateDocument(id, { description: newDescription });
+    setDocument(prev => ({ ...prev, description: newDescription }));
+    toast.success("Description Updated", {
+      description: "Document description has been updated",
+      duration: 2000,
+    });
+  };
+
+  // Editable controls component
+  function EditableControls() {
+    const {
+      isEditing,
+      getSubmitButtonProps,
+      getCancelButtonProps,
+    } = useEditableControls();
+
+    return isEditing ? (
+      <ButtonGroup size="sm" ml={2}>
+        <IconButton
+          icon={<FiCheck />}
+          {...getSubmitButtonProps()}
+          colorScheme="green"
+          size="xs"
+        />
+        <IconButton
+          icon={<FiX />}
+          {...getCancelButtonProps()}
+          size="xs"
+        />
+      </ButtonGroup>
+    ) : null;
+  }
+
   if (loading) {
     return (
       <>
@@ -230,16 +285,33 @@ const DocumentDetail = () => {
             <Card gridColumn={{ base: "1", lg: "1 / 9" }} gridRow={{ base: "auto", lg: "1 / 3" }}>
               <CardBody>
                 <Flex justify="space-between" align="start" mb={4}>
-                  <HStack spacing={4} flex="1">
+                  <HStack spacing={4} flex="1" align="start">
                     {getDocumentIcon(56)}
-                    <VStack align="start" spacing={1} flex="1">
-                      <Heading
-                        size="lg"
+                    <VStack align="start" spacing={2} flex="1">
+                      <Editable
+                        value={document?.title || "Untitled"}
+                        onSubmit={handleTitleSubmit}
+                        fontSize="2xl"
+                        fontWeight="bold"
                         color={isValid ? "inherit" : "red.500"}
-                        wordBreak="break-word"
+                        w="full"
+                        isPreviewFocusable={true}
+                        selectAllOnFocus={false}
                       >
-                        {document?.title || "Untitled"}
-                      </Heading>
+                        <Flex align="center">
+                          <EditablePreview
+                            py={2}
+                            px={2}
+                            borderRadius="md"
+                            _hover={{
+                              background: "gray.100",
+                              cursor: "pointer",
+                            }}
+                          />
+                          <EditableInput py={2} px={2} />
+                          <EditableControls />
+                        </Flex>
+                      </Editable>
                       <HStack spacing={2}>
                         <Badge colorScheme={document?.type === "folder" ? "blue" : document?.type === "auditSchedule" ? "purple" : "gray"}>
                           {document?.type === "auditSchedule"
@@ -262,14 +334,8 @@ const DocumentDetail = () => {
                       size="sm"
                     />
                     <MenuList>
-                      <MenuItem icon={<FiEdit />} onClick={onEditOpen}>
-                        Edit Details
-                      </MenuItem>
                       <MenuItem icon={<FiMove />} onClick={onMoveOpen}>
                         Move
-                      </MenuItem>
-                      <MenuItem icon={<FiShare2 />} onClick={onPrivacyOpen}>
-                        Privacy Settings
                       </MenuItem>
                       <Divider />
                       <MenuItem icon={<FiTrash2 />} color="red.500" onClick={onDeleteOpen}>
@@ -279,14 +345,38 @@ const DocumentDetail = () => {
                   </Menu>
                 </Flex>
 
-                {document?.description && (
-                  <>
-                    <Divider mb={4} />
-                    <Text color="gray.700" fontSize="md" mb={4}>
-                      {document.description}
-                    </Text>
-                  </>
-                )}
+                <Divider mb={4} />
+                
+                <Editable
+                  value={document?.description || ""}
+                  onSubmit={handleDescriptionSubmit}
+                  placeholder="Add a description..."
+                  w="full"
+                  isPreviewFocusable={true}
+                >
+                  <Flex direction="column">
+                    <EditablePreview
+                      py={2}
+                      px={2}
+                      borderRadius="md"
+                      color={document?.description ? "gray.700" : "gray.400"}
+                      minH="60px"
+                      _hover={{
+                        background: "gray.100",
+                        cursor: "pointer",
+                      }}
+                    />
+                    <EditableTextarea
+                      py={2}
+                      px={2}
+                      minH="60px"
+                      resize="vertical"
+                    />
+                    <Flex justify="flex-end" mt={2}>
+                      <EditableControls />
+                    </Flex>
+                  </Flex>
+                </Editable>
 
                 <Divider mb={4} />
                 
@@ -548,9 +638,20 @@ const DocumentDetail = () => {
             {/* Privacy & Permissions */}
             <Card gridColumn={{ base: "1", lg: "1 / 13" }}>
               <CardBody>
-                <Text fontWeight="semibold" mb={4}>
-                  Privacy & Permissions
-                </Text>
+                <Flex justify="space-between" align="center" mb={4}>
+                  <Text fontWeight="semibold">
+                    Privacy & Permissions
+                  </Text>
+                  <Button
+                    leftIcon={<FiShare2 />}
+                    size="sm"
+                    colorScheme="blue"
+                    variant="outline"
+                    onClick={onPrivacyOpen}
+                  >
+                    Privacy Settings
+                  </Button>
+                </Flex>
                 <SimpleGrid columns={{ base: 1, md: 3 }} spacing={4}>
                   <Box>
                     <Text fontSize="sm" color="gray.600" fontWeight="medium">
@@ -654,11 +755,6 @@ const DocumentDetail = () => {
       </PageFooter>
 
       {/* Modals - All receive full document object with ID from URL */}
-      <EditDocumentModal
-        isOpen={isEditOpen}
-        onClose={onEditClose}
-        document={{ ...document, id }}
-      />
       <MoveDocumentModal
         isOpen={isMoveOpen}
         onClose={onMoveClose}
