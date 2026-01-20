@@ -219,7 +219,13 @@ export const DocumentsProvider = ({ children }) => {
       console.log(response);
       if (response.success) {
         const createdDoc = response.data || response.document || response;
-        await fetchDocuments(currentFolderId);
+        
+        // Optimize: Add new document to existing array instead of re-fetching
+        // Only add if it belongs to the current folder
+        if ((createdDoc.parentId || null) === currentFolderId) {
+          setDocuments(prevDocs => [...prevDocs, createdDoc]);
+        }
+        
         return createdDoc;
       } else {
         throw response.message;
@@ -252,13 +258,18 @@ export const DocumentsProvider = ({ children }) => {
 
     // API mode: PUT /documents/:id
     try {
-      await apiService.request(`${DOCUMENTS_ENDPOINT}/${id}`, {
+      const response = await apiService.request(`${DOCUMENTS_ENDPOINT}/${id}`, {
         method: "PUT",
         body: JSON.stringify(updates),
       });
 
-      // Refresh documents list
-      await fetchDocuments(currentFolderId);
+      // Optimize: Update document in existing array instead of re-fetching
+      const updatedDoc = response.data || response.document || { ...updates, id, updatedAt: new Date().toISOString() };
+      setDocuments(prevDocs => 
+        prevDocs.map(doc => doc.id === id || doc._id === id ? { ...doc, ...updatedDoc } : doc)
+      );
+      
+      return updatedDoc;
     } catch (err) {
       console.error("Failed to update document:", err);
       throw new Error(err.message || "Failed to update document");
@@ -290,8 +301,8 @@ export const DocumentsProvider = ({ children }) => {
         method: "DELETE",
       });
 
-      // Refresh documents list
-      await fetchDocuments(currentFolderId);
+      // Optimize: Remove document from existing array instead of re-fetching
+      setDocuments(prevDocs => prevDocs.filter(doc => doc.id !== id && doc._id !== id));
     } catch (err) {
       console.error("Failed to delete document:", err);
       throw new Error(err.message || "Failed to delete document");
