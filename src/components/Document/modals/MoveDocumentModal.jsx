@@ -43,7 +43,7 @@ const DOCUMENTS_ENDPOINT = "/documents";
 
 const MoveDocumentModal = ({ isOpen, onClose, document }) => {
   const { updateDocument, createDocument } = useDocuments();
-  
+
   // State management
   const [currentLocation, setCurrentLocation] = useState(null); // Current folder being viewed
   const [breadcrumbPath, setBreadcrumbPath] = useState([]); // Path from root to current
@@ -51,17 +51,22 @@ const MoveDocumentModal = ({ isOpen, onClose, document }) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [selectedDestination, setSelectedDestination] = useState(null);
-  
+
   // Inline folder creation
-  const { isOpen: isCreatingFolder, onToggle: toggleCreatingFolder, onClose: closeCreatingFolder } = useDisclosure();
+  const {
+    isOpen: isCreatingFolder,
+    onToggle: toggleCreatingFolder,
+    onClose: closeCreatingFolder,
+  } = useDisclosure();
   const [newFolderName, setNewFolderName] = useState("");
   const [creatingFolder, setCreatingFolder] = useState(false);
-  
+
   // Colors
   const hoverBg = useColorModeValue("gray.50", "gray.700");
-  const selectedBg = useColorModeValue("blue.50", "blue.900");
+  const selectedBg = useColorModeValue("brandPrimary.50", "brandPrimary.900");
   const borderColor = useColorModeValue("gray.200", "gray.600");
   const emptyStateColor = useColorModeValue("gray.500", "gray.400");
+  const bgColor = useColorModeValue("brandPrimary.50", "brandPrimary.900");
 
   // Initialize: Load parent folder if document has one
   useEffect(() => {
@@ -72,7 +77,7 @@ const MoveDocumentModal = ({ isOpen, onClose, document }) => {
 
   const initializeLocation = async () => {
     setError(null);
-    
+
     if (!document.parentId) {
       // Document is in root
       await loadFolders(null);
@@ -83,13 +88,13 @@ const MoveDocumentModal = ({ isOpen, onClose, document }) => {
       try {
         setLoading(true);
         const parentFolder = await fetchFolderById(document.parentId);
-        
+
         if (parentFolder) {
           // Build breadcrumb path from parent folder
           const path = await buildBreadcrumbPath(parentFolder);
           setBreadcrumbPath(path);
           setCurrentLocation(parentFolder);
-          
+
           // Load folders in parent location
           await loadFolders(parentFolder.id);
         } else {
@@ -116,10 +121,13 @@ const MoveDocumentModal = ({ isOpen, onClose, document }) => {
   // Fetch single folder by ID
   const fetchFolderById = async (folderId) => {
     try {
-      const response = await apiService.request(`${DOCUMENTS_ENDPOINT}/${folderId}`, {
-        method: "GET",
-      });
-      
+      const response = await apiService.request(
+        `${DOCUMENTS_ENDPOINT}/${folderId}`,
+        {
+          method: "GET",
+        },
+      );
+
       return response.data || response.document || response;
     } catch (err) {
       console.error(`Error fetching folder ${folderId}:`, err);
@@ -131,13 +139,13 @@ const MoveDocumentModal = ({ isOpen, onClose, document }) => {
   const buildBreadcrumbPath = async (folder) => {
     const path = [];
     let current = folder;
-    
+
     // Traverse up to root
     while (current) {
       path.unshift({ id: current.id, title: current.title });
-      
+
       if (!current.parentId) break;
-      
+
       try {
         current = await fetchFolderById(current.parentId);
       } catch (err) {
@@ -145,10 +153,10 @@ const MoveDocumentModal = ({ isOpen, onClose, document }) => {
         break;
       }
     }
-    
+
     // Add root at the beginning
     path.unshift({ id: null, title: "Root" });
-    
+
     return path;
   };
 
@@ -156,10 +164,10 @@ const MoveDocumentModal = ({ isOpen, onClose, document }) => {
   const loadFolders = async (parentId) => {
     setLoading(true);
     setError(null);
-    
+
     try {
       let response;
-      
+
       if (parentId === null) {
         // Load root folders
         response = await apiService.request(DOCUMENTS_ENDPOINT, {
@@ -168,28 +176,31 @@ const MoveDocumentModal = ({ isOpen, onClose, document }) => {
         });
       } else {
         // Load subfolders of a folder
-        response = await apiService.request(`${DOCUMENTS_ENDPOINT}/${parentId}`, {
-          method: "GET",
-          params: { type: "folder" },
-        });
+        response = await apiService.request(
+          `${DOCUMENTS_ENDPOINT}/${parentId}`,
+          {
+            method: "GET",
+            params: { type: "folder" },
+          },
+        );
       }
-      
+
       const folderList = response.data?.documents || response.documents || [];
-      
+
       // Filter out the document being moved and its children
       const filteredFolders = folderList.filter((folder) => {
         if (folder.id === document.id) return false;
-        
+
         // If moving a folder, prevent moving into its own children
         if (document.type === "folder") {
           // Check if this folder is a descendant of the document being moved
           // This is a simplified check - in production, you'd want to do a full tree check
           return folder.parentId !== document.id;
         }
-        
+
         return true;
       });
-      
+
       setFolders(filteredFolders);
     } catch (err) {
       console.error("Error loading folders:", err);
@@ -207,26 +218,31 @@ const MoveDocumentModal = ({ isOpen, onClose, document }) => {
   // Navigate to a folder
   const navigateToFolder = async (folder) => {
     setCurrentLocation(folder);
-    
+
     // Update breadcrumb path
     if (folder === null) {
       // Navigating to root
       setBreadcrumbPath([{ id: null, title: "Root" }]);
     } else {
       // Add folder to path if not already there
-      const existingIndex = breadcrumbPath.findIndex(item => item.id === folder.id);
+      const existingIndex = breadcrumbPath.findIndex(
+        (item) => item.id === folder.id,
+      );
       if (existingIndex >= 0) {
         // Clicked on breadcrumb - trim path
         setBreadcrumbPath(breadcrumbPath.slice(0, existingIndex + 1));
       } else {
         // Drilling into subfolder
-        setBreadcrumbPath([...breadcrumbPath, { id: folder.id, title: folder.title }]);
+        setBreadcrumbPath([
+          ...breadcrumbPath,
+          { id: folder.id, title: folder.title },
+        ]);
       }
     }
-    
+
     // Load folders in new location
     await loadFolders(folder?.id || null);
-    
+
     // Close inline folder creation if open
     closeCreatingFolder();
     setNewFolderName("");
@@ -241,11 +257,11 @@ const MoveDocumentModal = ({ isOpen, onClose, document }) => {
       });
       return;
     }
-    
+
     setCreatingFolder(true);
-    
+
     try {
-      const newFolder = await createDocument({
+      await createDocument({
         title: newFolderName.trim(),
         description: "",
         type: "folder",
@@ -256,15 +272,15 @@ const MoveDocumentModal = ({ isOpen, onClose, document }) => {
           allowInheritance: 0,
         },
       });
-      
+
       toast.success("Folder Created", {
         description: `Folder "${newFolderName}" has been created`,
         duration: 3000,
       });
-      
+
       // Refresh folder list
       await loadFolders(currentLocation?.id || null);
-      
+
       // Close inline creation
       closeCreatingFolder();
       setNewFolderName("");
@@ -281,14 +297,17 @@ const MoveDocumentModal = ({ isOpen, onClose, document }) => {
 
   // Move document to selected destination
   const handleMove = async () => {
-    if (selectedDestination?.id === document.parentId && selectedDestination?.id !== undefined) {
+    if (
+      selectedDestination?.id === document.parentId &&
+      selectedDestination?.id !== undefined
+    ) {
       toast.info("Same Location", {
         description: "Document is already in this location",
         duration: 3000,
       });
       return;
     }
-    
+
     if (selectedDestination?.id === undefined && !document.parentId) {
       toast.info("Same Location", {
         description: "Document is already in root",
@@ -296,22 +315,22 @@ const MoveDocumentModal = ({ isOpen, onClose, document }) => {
       });
       return;
     }
-    
+
     setLoading(true);
-    
+
     try {
       await updateDocument(document.id, {
         parentId: selectedDestination?.id || null,
         path: selectedDestination?.path || "/",
       });
-      
+
       const targetName = selectedDestination?.title || "Root";
-      
+
       toast.success("Document Moved", {
         description: `"${document.title}" has been moved to ${targetName}`,
         duration: 3000,
       });
-      
+
       handleClose();
     } catch (err) {
       console.error("Error moving document:", err);
@@ -341,7 +360,7 @@ const MoveDocumentModal = ({ isOpen, onClose, document }) => {
     <Modal isOpen={isOpen} onClose={handleClose} size="lg">
       <ModalOverlay />
       <ModalContent>
-        <ModalHeader>Move "{document.title}"</ModalHeader>
+        <ModalHeader>Move {document.title}</ModalHeader>
         <ModalCloseButton />
         <ModalBody>
           <VStack spacing={4} align="stretch">
@@ -381,7 +400,7 @@ const MoveDocumentModal = ({ isOpen, onClose, document }) => {
               <Text fontSize="sm" fontWeight="medium" mb={2}>
                 Select Destination:
               </Text>
-              
+
               {loading ? (
                 <Flex justify="center" align="center" py={8}>
                   <Spinner size="md" />
@@ -407,7 +426,12 @@ const MoveDocumentModal = ({ isOpen, onClose, document }) => {
                   </Button>
                 </Flex>
               ) : (
-                <VStack spacing={1} align="stretch" maxH="300px" overflowY="auto">
+                <VStack
+                  spacing={1}
+                  align="stretch"
+                  maxH="300px"
+                  overflowY="auto"
+                >
                   {/* Current location option */}
                   <Box
                     p={3}
@@ -421,7 +445,15 @@ const MoveDocumentModal = ({ isOpen, onClose, document }) => {
                         : "transparent"
                     }
                     _hover={{ bg: hoverBg }}
-                    onClick={() => setSelectedDestination(currentLocation || { id: null, title: "Root", path: "/" })}
+                    onClick={() =>
+                      setSelectedDestination(
+                        currentLocation || {
+                          id: null,
+                          title: "Root",
+                          path: "/",
+                        },
+                      )
+                    }
                   >
                     <HStack justify="space-between">
                       <HStack>
@@ -437,47 +469,47 @@ const MoveDocumentModal = ({ isOpen, onClose, document }) => {
                   </Box>
 
                   {/* Subfolder list */}
-                  {folders.length > 0 ? (
-                    folders.map((folder) => (
-                      <Box
-                        key={folder.id}
-                        p={3}
-                        borderWidth={1}
-                        borderColor={borderColor}
-                        borderRadius="md"
-                        cursor="pointer"
-                        bg={
-                          selectedDestination?.id === folder.id
-                            ? selectedBg
-                            : "transparent"
-                        }
-                        _hover={{ bg: hoverBg }}
-                      >
-                        <HStack justify="space-between">
-                          <HStack
-                            flex={1}
-                            onClick={() => setSelectedDestination(folder)}
-                          >
-                            <FiFolder />
-                            <Text>{folder.title}</Text>
-                            {selectedDestination?.id === folder.id && (
-                              <FiCheck color="blue" />
-                            )}
+                  {folders.length > 0
+                    ? folders.map((folder) => (
+                        <Box
+                          key={folder.id}
+                          p={3}
+                          borderWidth={1}
+                          borderColor={borderColor}
+                          borderRadius="md"
+                          cursor="pointer"
+                          bg={
+                            selectedDestination?.id === folder.id
+                              ? selectedBg
+                              : "transparent"
+                          }
+                          _hover={{ bg: hoverBg }}
+                        >
+                          <HStack justify="space-between">
+                            <HStack
+                              flex={1}
+                              onClick={() => setSelectedDestination(folder)}
+                            >
+                              <FiFolder />
+                              <Text>{folder.title}</Text>
+                              {selectedDestination?.id === folder.id && (
+                                <FiCheck color="blue" />
+                              )}
+                            </HStack>
+                            <IconButton
+                              icon={<FiChevronRight />}
+                              size="sm"
+                              variant="ghost"
+                              aria-label="Open folder"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                navigateToFolder(folder);
+                              }}
+                            />
                           </HStack>
-                          <IconButton
-                            icon={<FiChevronRight />}
-                            size="sm"
-                            variant="ghost"
-                            aria-label="Open folder"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              navigateToFolder(folder);
-                            }}
-                          />
-                        </HStack>
-                      </Box>
-                    ))
-                  ) : null}
+                        </Box>
+                      ))
+                    : null}
 
                   {/* Inline folder creation */}
                   {folders.length === 0 && !isCreatingFolder && (
@@ -521,7 +553,7 @@ const MoveDocumentModal = ({ isOpen, onClose, document }) => {
                       borderWidth={1}
                       borderColor="blue.300"
                       borderRadius="md"
-                      bg={useColorModeValue("blue.50", "blue.900")}
+                      bg={bgColor}
                     >
                       <FormControl>
                         <FormLabel fontSize="sm">New Folder Name</FormLabel>
