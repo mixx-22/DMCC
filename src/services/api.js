@@ -141,6 +141,7 @@ export const apiService = {
     }
 
     const formData = new FormData();
+    // Note: 'file' is the expected field name by the POST /upload endpoint
     formData.append('file', file);
 
     const response = await this.request('/upload', {

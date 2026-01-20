@@ -69,7 +69,7 @@ export const createDocumentFormData = async (documentData) => {
     // Append the file with the correct filename
     formData.append("file", blob, documentData.metadata.filename || filename);
     
-    // Append metadata as JSON string (only filename and size)
+    // Append metadata as JSON string
     formData.append("metadata", JSON.stringify({
       filename: documentData.metadata.filename,
       size: documentData.metadata.size,

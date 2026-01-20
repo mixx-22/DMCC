@@ -230,7 +230,6 @@ export const DocumentsProvider = ({ children }) => {
         });
       }
       
-      console.log(response);
       if (response.success) {
         const createdDoc = response.data || response.document || response;
         
@@ -242,7 +241,7 @@ export const DocumentsProvider = ({ children }) => {
         
         return createdDoc;
       } else {
-        throw response.message;
+        throw new Error(response.message || "Unknown error occurred while creating document");
       }
     } catch (err) {
       console.error("Failed to create document:", err);
