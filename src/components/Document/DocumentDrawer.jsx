@@ -39,9 +39,20 @@ import MoveDocumentModal from "./modals/MoveDocumentModal";
 import PrivacySettingsModal from "./modals/PrivacySettingsModal";
 import { useDocuments } from "../../context/_useContext";
 import { toast } from "sonner";
+import { useEffect, useRef } from "react";
 
 const DocumentDrawer = ({ document, isOpen, onClose }) => {
   const { updateDocument } = useDocuments();
+  const titleRef = useRef();
+  const descriptionRef = useRef();
+
+  useEffect(() => {
+    console.log("ran");
+    console.log(document);
+
+    titleRef.current = document?.title;
+    descriptionRef.current = document?.description;
+  }, [document]);
 
   const {
     isOpen: isDeleteOpen,
@@ -63,7 +74,6 @@ const DocumentDrawer = ({ document, isOpen, onClose }) => {
 
   if (!document) return null;
 
-  // Get document icon with validation
   const getDocumentIcon = () => {
     if (!document || typeof document !== "object") {
       return <FiAlertCircle size={48} color="#E53E3E" />;
@@ -115,7 +125,6 @@ const DocumentDrawer = ({ document, isOpen, onClose }) => {
     }
   };
 
-  // Check if document is valid
   const isDocumentValid = () => {
     if (!document || typeof document !== "object") return false;
     if (!document.type) return false;
@@ -125,11 +134,9 @@ const DocumentDrawer = ({ document, isOpen, onClose }) => {
 
   const isValid = isDocumentValid();
 
-  // Handle inline title update on blur
   const handleTitleBlur = async (newTitle) => {
     const trimmedTitle = newTitle.trim();
 
-    // If title is empty, revert and notify
     if (!trimmedTitle) {
       toast.error("Validation Error", {
         description: "Title cannot be empty. Reverted to previous value.",
@@ -138,8 +145,7 @@ const DocumentDrawer = ({ document, isOpen, onClose }) => {
       return;
     }
 
-    // Only update if value actually changed
-    if (trimmedTitle === document?.title) {
+    if (titleRef.current === trimmedTitle) {
       return;
     }
 
@@ -151,6 +157,7 @@ const DocumentDrawer = ({ document, isOpen, onClose }) => {
         description: "Document title has been updated",
         duration: 2000,
       });
+      titleRef.current = trimmedTitle;
     } catch (error) {
       toast.error("Update Failed", {
         description: "Failed to update title",
@@ -159,11 +166,8 @@ const DocumentDrawer = ({ document, isOpen, onClose }) => {
     }
   };
 
-  // Handle inline description update on blur
   const handleDescriptionBlur = async (newDescription) => {
-    // Allow empty descriptions
-    // Only update if value actually changed
-    if (newDescription === document?.description) {
+    if (descriptionRef.current === newDescription) {
       return;
     }
 
@@ -175,6 +179,7 @@ const DocumentDrawer = ({ document, isOpen, onClose }) => {
         description: "Document description has been updated",
         duration: 2000,
       });
+      descriptionRef.current = newDescription;
     } catch (error) {
       toast.error("Update Failed", {
         description: "Failed to update description",
@@ -193,7 +198,6 @@ const DocumentDrawer = ({ document, isOpen, onClose }) => {
 
           <DrawerBody>
             <VStack align="stretch" spacing={4}>
-              {/* Icon and Editable Title */}
               <VStack align="center" py={4}>
                 {getDocumentIcon()}
                 <Editable
