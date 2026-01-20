@@ -151,7 +151,9 @@ const DocumentDrawer = ({ document, isOpen, onClose }) => {
 
   // Handle inline description update
   const handleDescriptionSubmit = (newDescription) => {
-    updateDocument(document.id || document._id, { description: newDescription });
+    updateDocument(document.id || document._id, {
+      description: newDescription,
+    });
     toast.success("Description Updated", {
       description: "Document description has been updated",
       duration: 2000,
@@ -160,11 +162,8 @@ const DocumentDrawer = ({ document, isOpen, onClose }) => {
 
   // Editable controls component
   function EditableControls() {
-    const {
-      isEditing,
-      getSubmitButtonProps,
-      getCancelButtonProps,
-    } = useEditableControls();
+    const { isEditing, getSubmitButtonProps, getCancelButtonProps } =
+      useEditableControls();
 
     return isEditing ? (
       <ButtonGroup size="sm" ml={2}>
@@ -174,18 +173,14 @@ const DocumentDrawer = ({ document, isOpen, onClose }) => {
           colorScheme="green"
           size="xs"
         />
-        <IconButton
-          icon={<FiX />}
-          {...getCancelButtonProps()}
-          size="xs"
-        />
+        <IconButton icon={<FiX />} {...getCancelButtonProps()} size="xs" />
       </ButtonGroup>
     ) : null;
   }
 
   return (
     <>
-      <Drawer isOpen={isOpen} placement="right" onClose={onClose} size="md">
+      <Drawer isOpen={isOpen} placement="right" onClose={onClose} size="xs">
         <DrawerOverlay />
         <DrawerContent>
           <DrawerCloseButton />
@@ -231,7 +226,12 @@ const DocumentDrawer = ({ document, isOpen, onClose }) => {
 
               {/* Editable Description */}
               <Box>
-                <Text fontSize="sm" fontWeight="semibold" mb={2} color="gray.600">
+                <Text
+                  fontSize="sm"
+                  fontWeight="semibold"
+                  mb={2}
+                  color="gray.600"
+                >
                   Description
                 </Text>
                 <Editable
@@ -301,7 +301,11 @@ const DocumentDrawer = ({ document, isOpen, onClose }) => {
                     More Options
                   </MenuButton>
                   <MenuList>
-                    <MenuItem icon={<FiTrash2 />} color="red.500" onClick={onDeleteOpen}>
+                    <MenuItem
+                      icon={<FiTrash2 />}
+                      color="red.500"
+                      onClick={onDeleteOpen}
+                    >
                       Delete
                     </MenuItem>
                   </MenuList>
