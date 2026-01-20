@@ -116,13 +116,10 @@ const MoveDocumentModal = ({ isOpen, onClose, document }) => {
             params: { type: "folder" },
           });
         } else {
-          response = await apiService.request(
-            `${DOCUMENTS_ENDPOINT}/${folderId}`,
-            {
-              method: "GET",
-              params: { type: "folder" },
-            },
-          );
+          response = await apiService.request(DOCUMENTS_ENDPOINT, {
+            method: "GET",
+            params: { folder: folderId, type: "folder" },
+          });
         }
 
         const folderList = response.data?.documents || response.documents || [];
@@ -193,11 +190,9 @@ const MoveDocumentModal = ({ isOpen, onClose, document }) => {
             params: { type: "folder" },
           });
         } else {
-          response = await apiService.request(
-            `${DOCUMENTS_ENDPOINT}/${parentId}`,
-            {
-              method: "GET",
-              params: { type: "folder" },
+          response = await apiService.request(DOCUMENTS_ENDPOINT, {
+            method: "GET",
+            params: { folder: parentId, type: "folder" },
             },
           );
         }
