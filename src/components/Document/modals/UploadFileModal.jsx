@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import {
   Modal,
   ModalOverlay,
@@ -15,7 +15,11 @@ import {
   VStack,
   Text,
   Box,
+  Icon,
+  Center,
 } from "@chakra-ui/react";
+import { useDropzone } from "react-dropzone";
+import { FiUploadCloud, FiFile, FiX } from "react-icons/fi";
 import { toast } from "sonner";
 import { useDocuments } from "../../../context/_useContext";
 
@@ -27,8 +31,8 @@ const UploadFileModal = ({ isOpen, onClose, parentId, path }) => {
     file: null,
   });
 
-  const handleFileChange = (e) => {
-    const file = e.target.files[0];
+  const onDrop = useCallback((acceptedFiles) => {
+    const file = acceptedFiles[0];
     if (file) {
       setFormData((prev) => ({
         ...prev,
@@ -36,6 +40,20 @@ const UploadFileModal = ({ isOpen, onClose, parentId, path }) => {
         title: prev.title || file.name.split(".").slice(0, -1).join("."),
       }));
     }
+  }, []);
+
+  const { getRootProps, getInputProps, isDragActive } = useDropzone({
+    onDrop,
+    multiple: false,
+    noClick: false,
+    noKeyboard: false,
+  });
+
+  const handleFileRemove = () => {
+    setFormData((prev) => ({
+      ...prev,
+      file: null,
+    }));
   };
 
   const handleSubmit = async (e) => {
@@ -119,21 +137,71 @@ const UploadFileModal = ({ isOpen, onClose, parentId, path }) => {
             <VStack spacing={4}>
               <FormControl isRequired>
                 <FormLabel>File</FormLabel>
-                <Input
-                  type="file"
-                  onChange={handleFileChange}
-                  pt={1}
-                  id="file"
-                  name="file"
-                />
-                {formData.file && (
-                  <Box mt={2} p={2} bg="gray.50" borderRadius="md">
-                    <Text fontSize="sm" fontWeight="medium">
-                      {formData.file.name}
+                {!formData.file ? (
+                  <Box
+                    {...getRootProps()}
+                    border="2px dashed"
+                    borderColor={isDragActive ? "blue.400" : "gray.300"}
+                    borderRadius="lg"
+                    p={8}
+                    textAlign="center"
+                    cursor="pointer"
+                    bg={isDragActive ? "blue.50" : "gray.50"}
+                    transition="all 0.2s"
+                    _hover={{
+                      borderColor: "blue.400",
+                      bg: "blue.50",
+                    }}
+                  >
+                    <input {...getInputProps()} />
+                    <Center>
+                      <Icon
+                        as={FiUploadCloud}
+                        w={12}
+                        h={12}
+                        color={isDragActive ? "blue.500" : "gray.400"}
+                        mb={3}
+                      />
+                    </Center>
+                    <Text fontSize="md" fontWeight="medium" mb={1}>
+                      {isDragActive
+                        ? "Drop your file here"
+                        : "Drag & drop a file here"}
                     </Text>
-                    <Text fontSize="xs" color="gray.600">
-                      {formatFileSize(formData.file.size)}
+                    <Text fontSize="sm" color="gray.500">
+                      or click to browse
                     </Text>
+                  </Box>
+                ) : (
+                  <Box
+                    p={4}
+                    bg="gray.50"
+                    borderRadius="lg"
+                    border="1px solid"
+                    borderColor="gray.200"
+                  >
+                    <Box display="flex" alignItems="center" justifyContent="space-between">
+                      <Box display="flex" alignItems="center" flex="1">
+                        <Icon as={FiFile} w={5} h={5} color="blue.500" mr={3} />
+                        <Box flex="1">
+                          <Text fontSize="sm" fontWeight="medium" noOfLines={1}>
+                            {formData.file.name}
+                          </Text>
+                          <Text fontSize="xs" color="gray.600">
+                            {formatFileSize(formData.file.size)}
+                          </Text>
+                        </Box>
+                      </Box>
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        colorScheme="red"
+                        onClick={handleFileRemove}
+                        leftIcon={<FiX />}
+                      >
+                        Remove
+                      </Button>
+                    </Box>
                   </Box>
                 )}
               </FormControl>
