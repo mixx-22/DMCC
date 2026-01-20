@@ -2,10 +2,11 @@ import { useState, useEffect, useRef } from "react";
 import apiService from "../services/api";
 import { DocumentsContext } from "./_contexts";
 import { useUser } from "./_useContext";
-import { createDocumentFormData } from "../utils/fileUpload";
+import { uploadFileToServer } from "../utils/fileUpload";
 
 const DOCUMENTS_ENDPOINT = "/documents";
 const USE_API = import.meta.env.VITE_USE_API !== "false";
+const DEFAULT_FILE_VERSION = "0.0";
 
 const rootFolder = {
   id: null,
@@ -159,7 +160,7 @@ export const DocumentsProvider = ({ children }) => {
       newDocument.metadata = {
         filename: documentData.filename || "",
         size: documentData.size || "",
-        version: "0.0",
+        version: DEFAULT_FILE_VERSION,
         key: "",
       };
     } else if (documentData.type === "folder" && !documentData.metadata) {
@@ -196,17 +197,30 @@ export const DocumentsProvider = ({ children }) => {
       return docWithId;
     }
 
-    // API mode: Use FormData for file uploads, JSON for others
+    // API mode: Two-step process for files, JSON for others
     try {
       let response;
       
       if (documentData.type === "file") {
-        // Use FormData for file uploads
-        const formData = await createDocumentFormData(newDocument);
+        // Step 1: Upload file to get metadata (filename, size, key)
+        if (documentData.metadata?.file) {
+          const uploadResult = await uploadFileToServer(documentData.metadata.file, apiService);
+          
+          // Step 2: Create document with file metadata
+          newDocument.metadata = {
+            filename: uploadResult.filename,
+            size: uploadResult.size,
+            key: uploadResult.key,
+            version: DEFAULT_FILE_VERSION,
+          };
+        } else {
+          throw new Error("File is required for document type 'file'");
+        }
         
+        // Send JSON request with file metadata
         response = await apiService.request(DOCUMENTS_ENDPOINT, {
           method: "POST",
-          body: formData, // FormData will be sent with multipart/form-data
+          body: JSON.stringify(newDocument),
         });
       } else {
         // Use JSON for folders and audit schedules
@@ -216,7 +230,6 @@ export const DocumentsProvider = ({ children }) => {
         });
       }
       
-      console.log(response);
       if (response.success) {
         const createdDoc = response.data || response.document || response;
         
@@ -228,7 +241,7 @@ export const DocumentsProvider = ({ children }) => {
         
         return createdDoc;
       } else {
-        throw response.message;
+        throw new Error(response.message || "Unknown error occurred while creating document");
       }
     } catch (err) {
       console.error("Failed to create document:", err);
