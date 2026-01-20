@@ -48,7 +48,7 @@ import apiService from "../../../services/api";
 const DOCUMENTS_ENDPOINT = "/documents";
 
 const MoveDocumentModal = ({ isOpen, onClose, document }) => {
-  const { updateDocument, createDocument, navigateToFolder } = useDocuments();
+  const { updateDocument, createDocument, navigateToFolder: navigateToFolderContext } = useDocuments();
 
   // State management
   const [currentLocation, setCurrentLocation] = useState(null); // Current folder being viewed
@@ -464,7 +464,7 @@ const MoveDocumentModal = ({ isOpen, onClose, document }) => {
         action: {
           label: "View",
           onClick: () => {
-            navigateToFolder(newParentId);
+            navigateToFolderContext(newParentId);
             handleClose();
           },
         },
