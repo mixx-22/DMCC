@@ -203,7 +203,7 @@ const DocumentDrawer = ({ document, isOpen, onClose }) => {
                 <Editable
                   key={`drawer-title-${document?.id || document?._id}`}
                   defaultValue={document?.title || "Untitled"}
-                  onBlur={handleTitleBlur}
+                  onSubmit={handleTitleBlur}
                   fontSize="lg"
                   fontWeight="bold"
                   textAlign="center"
@@ -253,7 +253,7 @@ const DocumentDrawer = ({ document, isOpen, onClose }) => {
                 <Editable
                   key={`drawer-description-${document?.id || document?._id}`}
                   defaultValue={document?.description || ""}
-                  onBlur={handleDescriptionBlur}
+                  onSubmit={handleDescriptionBlur}
                   placeholder="Add a description..."
                   w="full"
                   isPreviewFocusable={true}

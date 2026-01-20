@@ -295,7 +295,7 @@ const DocumentDetail = () => {
                       <Editable
                         key={`title-${document?.id || document?._id}`}
                         defaultValue={document?.title || "Untitled"}
-                        onBlur={handleTitleBlur}
+                        onSubmit={handleTitleBlur}
                         fontSize="2xl"
                         fontWeight="bold"
                         color={isValid ? "inherit" : "red.500"}
@@ -359,7 +359,7 @@ const DocumentDetail = () => {
                 <Editable
                   key={`description-${document?.id || document?._id}`}
                   defaultValue={document?.description || ""}
-                  onBlur={handleDescriptionBlur}
+                  onSubmit={handleDescriptionBlur}
                   placeholder="Add a description..."
                   w="full"
                   isPreviewFocusable={true}
