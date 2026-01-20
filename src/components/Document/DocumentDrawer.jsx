@@ -40,21 +40,21 @@ import MoveDocumentModal from "./modals/MoveDocumentModal";
 import PrivacySettingsModal from "./modals/PrivacySettingsModal";
 import { useDocuments } from "../../context/_useContext";
 import { toast } from "sonner";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 
 const DocumentDrawer = ({ document, isOpen, onClose }) => {
   const errorColor = useColorModeValue("error.600", "error.400");
   const infoColor = useColorModeValue("info.600", "info.400");
   const schedColor = useColorModeValue("purple.600", "purple.400");
   const { updateDocument } = useDocuments();
-  const titleRef = useRef();
-  const descriptionRef = useRef();
+  const [titleCache, setTitleCache] = useState("");
+  const [descriptionCache, setDescriptionCache] = useState("");
   const titleTextareaRef = useRef(null);
   const descriptionTextareaRef = useRef(null);
 
   useEffect(() => {
-    titleRef.current = document?.title;
-    descriptionRef.current = document?.description;
+    setTitleCache(document?.title || "");
+    setDescriptionCache(document?.description || "");
   }, [document]);
 
   const {
@@ -148,7 +148,7 @@ const DocumentDrawer = ({ document, isOpen, onClose }) => {
       return;
     }
 
-    if (titleRef.current === trimmedTitle) {
+    if (titleCache === trimmedTitle) {
       return;
     }
 
@@ -160,7 +160,7 @@ const DocumentDrawer = ({ document, isOpen, onClose }) => {
         description: "Document title has been updated",
         duration: 2000,
       });
-      titleRef.current = trimmedTitle;
+      setTitleCache(trimmedTitle);
     } catch (error) {
       toast.error("Update Failed", {
         description: "Failed to update title",
@@ -170,7 +170,7 @@ const DocumentDrawer = ({ document, isOpen, onClose }) => {
   };
 
   const handleDescriptionBlur = async (newDescription) => {
-    if (descriptionRef.current === newDescription) {
+    if (descriptionCache === newDescription) {
       return;
     }
 
@@ -182,7 +182,7 @@ const DocumentDrawer = ({ document, isOpen, onClose }) => {
         description: "Document description has been updated",
         duration: 2000,
       });
-      descriptionRef.current = newDescription;
+      setDescriptionCache(newDescription);
     } catch (error) {
       toast.error("Update Failed", {
         description: "Failed to update description",
@@ -234,13 +234,11 @@ const DocumentDrawer = ({ document, isOpen, onClose }) => {
                     minH="auto"
                     rows={1}
                     onFocus={(e) => {
-                      // Auto-resize on focus
-                      e.target.style.height = 'auto';
+                      e.target.style.height = "auto";
                       e.target.style.height = `${e.target.scrollHeight}px`;
                     }}
                     onInput={(e) => {
-                      // Continue resizing as user types
-                      e.target.style.height = 'auto';
+                      e.target.style.height = "auto";
                       e.target.style.height = `${e.target.scrollHeight}px`;
                     }}
                   />
@@ -279,9 +277,7 @@ const DocumentDrawer = ({ document, isOpen, onClose }) => {
                     py={2}
                     px={2}
                     borderRadius="md"
-                    color={
-                      descriptionRef.current?.length ? "inherit" : "gray.400"
-                    }
+                    color={descriptionCache?.length ? "inherit" : "gray.400"}
                     fontSize="sm"
                     minH="60px"
                     _hover={{
@@ -298,12 +294,12 @@ const DocumentDrawer = ({ document, isOpen, onClose }) => {
                     resize="vertical"
                     onFocus={(e) => {
                       // Auto-resize on focus
-                      e.target.style.height = 'auto';
+                      e.target.style.height = "auto";
                       e.target.style.height = `${e.target.scrollHeight}px`;
                     }}
                     onInput={(e) => {
                       // Continue resizing as user types
-                      e.target.style.height = 'auto';
+                      e.target.style.height = "auto";
                       e.target.style.height = `${e.target.scrollHeight}px`;
                     }}
                   />
