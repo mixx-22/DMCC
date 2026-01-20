@@ -26,6 +26,10 @@ import {
   Collapse,
   useDisclosure,
   Icon,
+  Menu,
+  MenuButton,
+  MenuList,
+  MenuItem,
 } from "@chakra-ui/react";
 import {
   FiFolder,
@@ -35,6 +39,7 @@ import {
   FiAlertCircle,
   FiCheck,
   FiX,
+  FiMoreHorizontal,
 } from "react-icons/fi";
 import { toast } from "sonner";
 import { useDocuments } from "../../../context/_useContext";
@@ -480,6 +485,100 @@ const MoveDocumentModal = ({ isOpen, onClose, document }) => {
     onClose();
   };
 
+  // Render breadcrumbs with collapse for long paths
+  const renderBreadcrumbs = () => {
+    if (breadcrumbPath.length <= 3) {
+      // Show all if 3 or less
+      return (
+        <Breadcrumb separator={<FiChevronRight />} fontSize="sm">
+          {breadcrumbPath.map((crumb, index) => (
+            <BreadcrumbItem key={crumb.id || "root"}>
+              <BreadcrumbLink
+                onClick={() => {
+                  if (index === 0) {
+                    navigateToFolder(null);
+                  } else {
+                    navigateToFolder(crumb);
+                  }
+                }}
+                cursor="pointer"
+                display="flex"
+                alignItems="center"
+                gap={1}
+              >
+                {index === 0 ? <FiHome /> : <FiFolder />}
+                {crumb.title}
+              </BreadcrumbLink>
+            </BreadcrumbItem>
+          ))}
+        </Breadcrumb>
+      );
+    }
+
+    // Collapse middle items if more than 3
+    const first = breadcrumbPath[0];
+    const last = breadcrumbPath[breadcrumbPath.length - 1];
+    const middle = breadcrumbPath.slice(1, -1);
+
+    return (
+      <Breadcrumb separator={<FiChevronRight />} fontSize="sm">
+        {/* First item (Root) */}
+        <BreadcrumbItem>
+          <BreadcrumbLink
+            onClick={() => navigateToFolder(null)}
+            cursor="pointer"
+            display="flex"
+            alignItems="center"
+            gap={1}
+          >
+            <FiHome />
+            {first.title}
+          </BreadcrumbLink>
+        </BreadcrumbItem>
+
+        {/* Dropdown for middle items */}
+        <BreadcrumbItem>
+          <Menu>
+            <MenuButton
+              as={Button}
+              size="xs"
+              variant="ghost"
+              rightIcon={<FiChevronRight />}
+              leftIcon={<FiMoreHorizontal />}
+              minW="auto"
+              px={1}
+            />
+            <MenuList>
+              {middle.map((crumb, index) => (
+                <MenuItem
+                  key={crumb.id}
+                  icon={<FiFolder />}
+                  onClick={() => navigateToFolder(crumb)}
+                >
+                  {crumb.title}
+                </MenuItem>
+              ))}
+            </MenuList>
+          </Menu>
+        </BreadcrumbItem>
+
+        {/* Last item (Current location) */}
+        <BreadcrumbItem isCurrentPage>
+          <BreadcrumbLink
+            onClick={() => navigateToFolder(last)}
+            cursor="pointer"
+            display="flex"
+            alignItems="center"
+            gap={1}
+          >
+            <FiFolder />
+            {last.title}
+          </BreadcrumbLink>
+        </BreadcrumbItem>
+      </Breadcrumb>
+    );
+  };
+
   if (!document) return null;
 
   return (
@@ -488,35 +587,14 @@ const MoveDocumentModal = ({ isOpen, onClose, document }) => {
       <ModalContent>
         <ModalHeader>Move {document.title}</ModalHeader>
         <ModalCloseButton />
-        <ModalBody>
+        <ModalBody maxH="60vh" overflowY="auto">
           <VStack spacing={4} align="stretch">
             {/* Breadcrumb navigation */}
             <Box>
               <Text fontSize="sm" fontWeight="medium" mb={2}>
                 Current Location:
               </Text>
-              <Breadcrumb separator={<FiChevronRight />} fontSize="sm">
-                {breadcrumbPath.map((crumb, index) => (
-                  <BreadcrumbItem key={crumb.id || "root"}>
-                    <BreadcrumbLink
-                      onClick={() => {
-                        if (index === 0) {
-                          navigateToFolder(null);
-                        } else {
-                          navigateToFolder(crumb);
-                        }
-                      }}
-                      cursor="pointer"
-                      display="flex"
-                      alignItems="center"
-                      gap={1}
-                    >
-                      {index === 0 ? <FiHome /> : <FiFolder />}
-                      {crumb.title}
-                    </BreadcrumbLink>
-                  </BreadcrumbItem>
-                ))}
-              </Breadcrumb>
+              {renderBreadcrumbs()}
             </Box>
 
             <Divider />
@@ -555,8 +633,6 @@ const MoveDocumentModal = ({ isOpen, onClose, document }) => {
                 <VStack
                   spacing={1}
                   align="stretch"
-                  maxH="300px"
-                  overflowY="auto"
                 >
                   {/* Current location option */}
                   <Box
