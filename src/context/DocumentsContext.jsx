@@ -197,15 +197,18 @@ export const DocumentsProvider = ({ children }) => {
 
     // API mode: POST /documents
     try {
-      const data = await apiService.request(DOCUMENTS_ENDPOINT, {
+      const response = await apiService.request(DOCUMENTS_ENDPOINT, {
         method: "POST",
         body: JSON.stringify(newDocument),
       });
-
-      const createdDoc = data.data || data.document || data;
-      // Refresh documents list
-      await fetchDocuments(currentFolderId);
-      return createdDoc;
+      console.log(response);
+      if (response.success) {
+        const createdDoc = response.data || response.document || response;
+        await fetchDocuments(currentFolderId);
+        return createdDoc;
+      } else {
+        throw response.message;
+      }
     } catch (err) {
       console.error("Failed to create document:", err);
       throw new Error(err.message || "Failed to create document");

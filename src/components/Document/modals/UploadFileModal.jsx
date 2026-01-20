@@ -57,34 +57,38 @@ const UploadFileModal = ({ isOpen, onClose, parentId, path }) => {
       return;
     }
 
-    // When uploading, include the actual file in metadata
-    // Backend will process the file and return key & version
-    createDocument({
-      title: formData.title,
-      description: formData.description,
-      type: "file",
-      parentId,
-      path,
-      status: 0, // Under review
-      metadata: {
-        file: formData.file, // The actual file object
-        filename: formData.file.name,
-        size: formData.file.size,
-        // key and version will be returned from backend after upload
-      },
-    });
+    try {
+      createDocument({
+        title: formData.title,
+        description: formData.description,
+        type: "file",
+        parentId,
+        path,
+        status: 0,
+        metadata: {
+          file: formData.file,
+          filename: formData.file.name,
+          size: formData.file.size,
+        },
+      });
 
-    toast.success("File Uploaded", {
-      description: `"${formData.title}" has been uploaded successfully`,
-      duration: 3000,
-    });
+      toast.success("File Uploaded", {
+        description: `"${formData.title}" has been uploaded successfully`,
+        duration: 3000,
+      });
 
-    setFormData({
-      title: "",
-      description: "",
-      file: null,
-    });
-    onClose();
+      setFormData({
+        title: "",
+        description: "",
+        file: null,
+      });
+      onClose();
+    } catch (error) {
+      toast.error("Failed to Upload File", {
+        description: `Error: ${error ? `${error} ` : ""}Try again later or contact your System Administrator.`,
+        duration: 3000,
+      });
+    }
   };
 
   const handleClose = () => {

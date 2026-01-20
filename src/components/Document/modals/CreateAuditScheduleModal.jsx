@@ -39,36 +39,43 @@ const CreateAuditScheduleModal = ({ isOpen, onClose, parentId, path }) => {
       return;
     }
 
-    createDocument({
-      title: formData.title,
-      description: formData.description,
-      type: "auditSchedule",
-      parentId,
-      path,
-      status: -1, // Draft
-      metadata: {
-        code: formData.code,
-        type: formData.type,
-        standard: formData.standard,
-        status: 0,
-        auditors: [],
-        organization: {},
-      },
-    });
+    try {
+      createDocument({
+        title: formData.title,
+        description: formData.description,
+        type: "auditSchedule",
+        parentId,
+        path,
+        status: -1, // Draft
+        metadata: {
+          code: formData.code,
+          type: formData.type,
+          standard: formData.standard,
+          status: 0,
+          auditors: [],
+          organization: {},
+        },
+      });
 
-    toast.success("Audit Schedule Created", {
-      description: `"${formData.title}" has been created as a draft`,
-      duration: 3000,
-    });
+      toast.success("Audit Schedule Created", {
+        description: `"${formData.title}" has been created as a draft`,
+        duration: 3000,
+      });
 
-    setFormData({
-      title: "",
-      description: "",
-      code: "",
-      type: "",
-      standard: "",
-    });
-    onClose();
+      setFormData({
+        title: "",
+        description: "",
+        code: "",
+        type: "",
+        standard: "",
+      });
+      onClose();
+    } catch (error) {
+      toast.error("Failed to Create Audit Schedule", {
+        description: `Error: ${error ? `${error} ` : ""}Try again later or contact your System Administrator.`,
+        duration: 3000,
+      });
+    }
   };
 
   const handleClose = () => {

@@ -38,29 +38,36 @@ const CreateFolderModal = ({ isOpen, onClose, parentId, path }) => {
       return;
     }
 
-    createDocument({
-      title: formData.title,
-      description: formData.description,
-      type: "folder",
-      parentId,
-      path,
-      status: 1, // Folders are auto-approved
-      metadata: {
-        allowInheritance: formData.allowInheritance ? 1 : 0,
-      },
-    });
+    try {
+      createDocument({
+        title: formData.title,
+        description: formData.description,
+        type: "folder",
+        parentId,
+        path,
+        status: 1, // Folders are auto-approved
+        metadata: {
+          allowInheritance: formData.allowInheritance ? 1 : 0,
+        },
+      });
 
-    toast.success("Folder Created", {
-      description: `Folder "${formData.title}" has been created`,
-      duration: 3000,
-    });
+      toast.success("Folder Created", {
+        description: `Folder "${formData.title}" has been created`,
+        duration: 3000,
+      });
 
-    setFormData({
-      title: "",
-      description: "",
-      allowInheritance: false,
-    });
-    onClose();
+      setFormData({
+        title: "",
+        description: "",
+        allowInheritance: false,
+      });
+      onClose();
+    } catch (error) {
+      toast.error("Failed to Create Folder", {
+        description: `Error: ${error ? `${error} ` : ""}Try again later or contact your System Administrator.`,
+        duration: 3000,
+      });
+    }
   };
 
   const handleClose = () => {
