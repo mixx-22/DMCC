@@ -21,6 +21,7 @@ import {
   MenuList,
   MenuItem,
   Flex,
+  useColorModeValue,
 } from "@chakra-ui/react";
 import {
   FiTrash2,
@@ -42,14 +43,14 @@ import { toast } from "sonner";
 import { useEffect, useRef } from "react";
 
 const DocumentDrawer = ({ document, isOpen, onClose }) => {
+  const errorColor = useColorModeValue("error.600", "error.400");
+  const infoColor = useColorModeValue("info.600", "info.400");
+  const schedColor = useColorModeValue("purple.600", "purple.400");
   const { updateDocument } = useDocuments();
   const titleRef = useRef();
   const descriptionRef = useRef();
 
   useEffect(() => {
-    console.log("ran");
-    console.log(document);
-
     titleRef.current = document?.title;
     descriptionRef.current = document?.description;
   }, [document]);
@@ -76,21 +77,21 @@ const DocumentDrawer = ({ document, isOpen, onClose }) => {
 
   const getDocumentIcon = () => {
     if (!document || typeof document !== "object") {
-      return <FiAlertCircle size={48} color="#E53E3E" />;
+      return <FiAlertCircle size={48} color={errorColor} />;
     }
 
     switch (document?.type) {
       case "folder":
-        return <FiFolder size={48} color="#3182CE" />;
+        return <FiFolder size={48} color={infoColor} />;
       case "auditSchedule":
-        return <FiCalendar size={48} color="#805AD5" />;
+        return <FiCalendar size={48} color={schedColor} />;
       case "file":
         // Check if file has valid metadata
         if (!document?.metadata?.filename) {
           return (
             <FiAlertCircle
               size={48}
-              color="#E53E3E"
+              color={errorColor}
               title="Broken file - missing metadata"
             />
           );
@@ -100,7 +101,7 @@ const DocumentDrawer = ({ document, isOpen, onClose }) => {
         return (
           <FiAlertCircle
             size={48}
-            color="#E53E3E"
+            color={errorColor}
             title="Unknown document type"
           />
         );
