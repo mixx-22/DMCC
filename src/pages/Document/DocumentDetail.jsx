@@ -700,10 +700,19 @@ const DocumentDetail = () => {
             {document?.type === "formTemplate" && (
               <Card gridColumn={{ base: "1", lg: "1 / 13" }}>
                 <CardBody>
-                  <Text fontWeight="semibold" mb={4}>
-                    Form Questions ({document?.metadata?.questions?.length || 0}
-                    )
-                  </Text>
+                  <Flex justify="space-between" align="center" mb={4}>
+                    <Text fontWeight="semibold">
+                      Form Questions ({document?.metadata?.questions?.length || 0})
+                    </Text>
+                    <Button
+                      size="sm"
+                      colorScheme="blue"
+                      leftIcon={<FiEdit />}
+                      onClick={() => navigate(`/edit-form/${document.id}`)}
+                    >
+                      Edit Form
+                    </Button>
+                  </Flex>
                   {document?.metadata?.questions &&
                   document.metadata.questions.length > 0 ? (
                     <VStack align="stretch" spacing={4}>

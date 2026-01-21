@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { useNavigate, useLocation, useParams } from "react-router-dom";
 import {
   Box,
   Button,
@@ -28,7 +28,9 @@ import {
   Checkbox,
   Stack,
 } from "@chakra-ui/react";
-import { FiPlus, FiTrash2, FiSave, FiMenu, FiArrowLeft } from "react-icons/fi";
+import { Select as ChakraSelect } from "chakra-react-select";
+import { SingleDatepicker } from "chakra-dayzed-datepicker";
+import { FiPlus, FiTrash2, FiSave, FiMenu, FiArrowLeft, FiEdit2 } from "react-icons/fi";
 import { toast } from "sonner";
 import { useDocuments } from "../context/_useContext";
 import {
@@ -57,7 +59,7 @@ import PageHeader from "../components/PageHeader";
 import PageFooter from "../components/PageFooter";
 
 // Sortable Question Component
-const SortableQuestion = ({ question, index, onRemove }) => {
+const SortableQuestion = ({ question, index, onRemove, onEdit }) => {
   const {
     attributes,
     listeners,
@@ -100,17 +102,30 @@ const SortableQuestion = ({ question, index, onRemove }) => {
       case INPUT_TYPES.TEXTAREA:
         return <Textarea {...commonProps} rows={3} />;
       case INPUT_TYPES.DATE:
-        return <Input {...commonProps} type="date" />;
+        return (
+          <SingleDatepicker
+            name="date-input"
+            date={new Date()}
+            disabled
+            configs={{
+              dateFormat: "MM/dd/yyyy",
+            }}
+          />
+        );
       case INPUT_TYPES.SELECT:
       case INPUT_TYPES.DROPDOWN:
         return (
-          <Select {...commonProps} placeholder="Select option...">
-            {question.options?.map((option, idx) => (
-              <option key={idx} value={option}>
-                {option}
-              </option>
-            ))}
-          </Select>
+          <ChakraSelect
+            isReadOnly
+            isDisabled
+            placeholder="Select option..."
+            options={
+              question.options?.map((opt) => ({
+                value: opt,
+                label: opt,
+              })) || []
+            }
+          />
         );
       case INPUT_TYPES.CHECKBOXES:
         return (
@@ -171,6 +186,14 @@ const SortableQuestion = ({ question, index, onRemove }) => {
                 </HStack>
                 <HStack spacing={1}>
                   <IconButton
+                    icon={<FiEdit2 />}
+                    onClick={() => onEdit(question)}
+                    size="sm"
+                    colorScheme="blue"
+                    variant="ghost"
+                    aria-label="Edit question"
+                  />
+                  <IconButton
                     icon={<FiTrash2 />}
                     onClick={() => onRemove(question.id)}
                     size="sm"
@@ -197,7 +220,8 @@ const SortableQuestion = ({ question, index, onRemove }) => {
 const FormTemplateBuilder = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { createDocument } = useDocuments();
+  const { id } = useParams();
+  const { createDocument, updateDocument, getDocument } = useDocuments();
   const { parentId, path } = location.state || {};
 
   const [formData, setFormData] = useState({
@@ -206,6 +230,7 @@ const FormTemplateBuilder = () => {
   });
 
   const [questions, setQuestions] = useState([]);
+  const [editingQuestionId, setEditingQuestionId] = useState(null);
 
   const [currentQuestion, setCurrentQuestion] = useState({
     label: "",
@@ -215,6 +240,33 @@ const FormTemplateBuilder = () => {
   });
 
   const [currentOption, setCurrentOption] = useState("");
+  const [isEditMode, setIsEditMode] = useState(false);
+  const [documentId, setDocumentId] = useState(null);
+
+  // Load existing form template if editing
+  useEffect(() => {
+    const loadFormTemplate = async () => {
+      if (id) {
+        try {
+          const document = await getDocument(id);
+          if (document && document.type === "formTemplate") {
+            setFormData({
+              title: document.title || "",
+              description: document.description || "",
+            });
+            setQuestions(document.metadata?.questions || []);
+            setIsEditMode(true);
+            setDocumentId(id);
+          }
+        } catch (error) {
+          toast.error("Failed to load form template", {
+            description: error.message,
+          });
+        }
+      }
+    };
+    loadFormTemplate();
+  }, [id, getDocument]);
 
   const sensors = useSensors(
     useSensor(PointerSensor),
@@ -283,10 +335,22 @@ const FormTemplateBuilder = () => {
             : undefined,
       });
 
-      setQuestions((prev) => [...prev, question]); // Add to bottom
-      resetCurrentQuestion();
+      if (editingQuestionId) {
+        // Update existing question
+        setQuestions((prev) =>
+          prev.map((q) =>
+            q.id === editingQuestionId ? { ...question, id: editingQuestionId } : q
+          )
+        );
+        toast.success("Question updated");
+        setEditingQuestionId(null);
+      } else {
+        // Add new question to bottom
+        setQuestions((prev) => [...prev, question]);
+        toast.success("Question added");
+      }
 
-      toast.success("Question added");
+      resetCurrentQuestion();
     } catch (error) {
       toast.error("Failed to add question", {
         description: error.message,
@@ -294,8 +358,24 @@ const FormTemplateBuilder = () => {
     }
   };
 
+  const handleEditQuestion = (question) => {
+    setCurrentQuestion({
+      label: question.label,
+      type: question.type,
+      required: question.required,
+      options: question.options || [],
+    });
+    setEditingQuestionId(question.id);
+    // Scroll to add question section
+    window.scrollTo({ top: document.body.scrollHeight, behavior: "smooth" });
+  };
+
   const handleRemoveQuestion = (questionId) => {
     setQuestions((prev) => prev.filter((q) => q.id !== questionId));
+    if (editingQuestionId === questionId) {
+      resetCurrentQuestion();
+      setEditingQuestionId(null);
+    }
     toast.success("Question removed");
   };
 
@@ -324,27 +404,42 @@ const FormTemplateBuilder = () => {
     }
 
     try {
-      await createDocument({
+      const formTemplateData = {
         title: formData.title,
         description: formData.description,
         type: "formTemplate",
-        parentId,
-        path,
         status: 1, // Auto-approved
         metadata: {
           questions,
         },
-      });
+      };
 
-      toast.success("Form Template Created", {
-        description: `"${formData.title}" has been created successfully`,
-      });
+      if (isEditMode && documentId) {
+        // Update existing form template
+        await updateDocument(documentId, formTemplateData);
+        toast.success("Form Template Updated", {
+          description: `"${formData.title}" has been updated successfully`,
+        });
+      } else {
+        // Create new form template
+        await createDocument({
+          ...formTemplateData,
+          parentId,
+          path,
+        });
+        toast.success("Form Template Created", {
+          description: `"${formData.title}" has been created successfully`,
+        });
+      }
 
       navigate("/documents");
     } catch (error) {
-      toast.error("Failed to Create Form Template", {
-        description: `${error?.message || error || "Unknown error"}. Try again later or contact your System Administrator.`,
-      });
+      toast.error(
+        isEditMode ? "Failed to Update Form Template" : "Failed to Create Form Template",
+        {
+          description: `${error?.message || error || "Unknown error"}. Try again later or contact your System Administrator.`,
+        }
+      );
     }
   };
 
@@ -360,7 +455,9 @@ const FormTemplateBuilder = () => {
             variant="ghost"
             aria-label="Back to documents"
           />
-          <Heading variant="pageTitle">Create Form Template</Heading>{" "}
+          <Heading variant="pageTitle">
+            {isEditMode ? "Edit Form Template" : "Create Form Template"}
+          </Heading>{" "}
         </HStack>
       </PageHeader>
       <PageFooter>
@@ -462,6 +559,7 @@ const FormTemplateBuilder = () => {
                             question={question}
                             index={index}
                             onRemove={handleRemoveQuestion}
+                            onEdit={handleEditQuestion}
                           />
                         ))}
                       </VStack>
@@ -597,14 +695,27 @@ const FormTemplateBuilder = () => {
                     )}
 
                     <Button
-                      leftIcon={<FiPlus />}
+                      leftIcon={editingQuestionId ? <FiEdit2 /> : <FiPlus />}
                       onClick={handleAddQuestion}
-                      colorScheme="blue"
+                      colorScheme={editingQuestionId ? "orange" : "blue"}
                       size="md"
                       w="full"
                     >
-                      Add Question
+                      {editingQuestionId ? "Update Question" : "Add Question"}
                     </Button>
+                    {editingQuestionId && (
+                      <Button
+                        onClick={() => {
+                          resetCurrentQuestion();
+                          setEditingQuestionId(null);
+                        }}
+                        variant="ghost"
+                        size="sm"
+                        w="full"
+                      >
+                        Cancel Edit
+                      </Button>
+                    )}
                   </VStack>
                 </Box>
               </VStack>

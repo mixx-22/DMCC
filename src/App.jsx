@@ -113,6 +113,14 @@ function App() {
                         </DocumentsProvider>
                       }
                     />
+                    <Route
+                      path="/edit-form/:id"
+                      element={
+                        <DocumentsProvider>
+                          <FormTemplateBuilder />
+                        </DocumentsProvider>
+                      }
+                    />
                     <Route path="/archive" element={<Archive />} />
                     <Route
                       path="/certifications"
