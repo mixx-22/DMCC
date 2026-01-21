@@ -27,13 +27,7 @@ import {
   NumberInputField,
   Checkbox,
 } from "@chakra-ui/react";
-import {
-  FiPlus,
-  FiTrash2,
-  FiSave,
-  FiMenu,
-  FiArrowLeft,
-} from "react-icons/fi";
+import { FiPlus, FiTrash2, FiSave, FiMenu, FiArrowLeft } from "react-icons/fi";
 import { toast } from "sonner";
 import { useDocuments } from "../context/_useContext";
 import {
@@ -59,6 +53,7 @@ import {
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import PageHeader from "../components/PageHeader";
+import PageFooter from "../components/PageFooter";
 
 // Sortable Question Component
 const SortableQuestion = ({ question, index, onRemove }) => {
@@ -144,6 +139,7 @@ const SortableQuestion = ({ question, index, onRemove }) => {
         borderColor={isDragging ? "blue.400" : "gray.200"}
         bg="white"
         _hover={{ borderColor: "blue.300" }}
+        variant="filled"
       >
         <CardBody>
           <Flex gap={3} align="start">
@@ -223,7 +219,7 @@ const FormTemplateBuilder = () => {
     useSensor(PointerSensor),
     useSensor(KeyboardSensor, {
       coordinateGetter: sortableKeyboardCoordinates,
-    })
+    }),
   );
 
   const handleDragEnd = (event) => {
@@ -356,16 +352,19 @@ const FormTemplateBuilder = () => {
   return (
     <Box>
       <PageHeader>
-        <Flex justify="space-between" align="center" w="full">
-          <HStack spacing={4}>
-            <IconButton
-              icon={<FiArrowLeft />}
-              onClick={() => navigate("/documents")}
-              variant="ghost"
-              aria-label="Back to documents"
-            />
-            <Heading size="lg">Create Form Template</Heading>
-          </HStack>
+        <HStack spacing={4}>
+          <IconButton
+            icon={<FiArrowLeft />}
+            onClick={() => navigate("/documents")}
+            variant="ghost"
+            aria-label="Back to documents"
+          />
+          <Heading size="lg">Create Form Template</Heading>
+        </HStack>
+      </PageHeader>
+
+      <PageFooter>
+        <HStack spacing={3} justify="flex-end" w="full">
           <Button
             leftIcon={<FiSave />}
             colorScheme="brandPrimary"
@@ -373,13 +372,13 @@ const FormTemplateBuilder = () => {
           >
             Save Form Template
           </Button>
-        </Flex>
-      </PageHeader>
+        </HStack>
+      </PageFooter>
 
       <Box p={{ base: 4, md: 8 }} maxW="1400px" mx="auto">
         <Flex gap={8} direction={{ base: "column", lg: "row" }}>
           {/* Left Panel - Form Builder */}
-          <Box flex={1} minW={0}>
+          <Box w="sm">
             <Card mb={6}>
               <CardBody>
                 <VStack spacing={4} align="stretch">
@@ -389,7 +388,10 @@ const FormTemplateBuilder = () => {
                     <Input
                       value={formData.title}
                       onChange={(e) =>
-                        setFormData((prev) => ({ ...prev, title: e.target.value }))
+                        setFormData((prev) => ({
+                          ...prev,
+                          title: e.target.value,
+                        }))
                       }
                       placeholder="Enter form template title"
                       size="lg"
@@ -483,7 +485,11 @@ const FormTemplateBuilder = () => {
                         <Wrap mt={2}>
                           {currentQuestion.options.map((option, index) => (
                             <WrapItem key={index}>
-                              <Tag size="md" colorScheme="blue" variant="subtle">
+                              <Tag
+                                size="md"
+                                colorScheme="blue"
+                                variant="subtle"
+                              >
                                 <TagLabel>{option}</TagLabel>
                                 <TagCloseButton
                                   onClick={() => handleRemoveOption(index)}
@@ -531,7 +537,8 @@ const FormTemplateBuilder = () => {
                   <Flex justify="space-between" align="center">
                     <Heading size="md">Form Preview</Heading>
                     <Text fontSize="sm" color="gray.600">
-                      {questions.length} question{questions.length !== 1 ? "s" : ""}
+                      {questions.length} question
+                      {questions.length !== 1 ? "s" : ""}
                     </Text>
                   </Flex>
                   <Divider />
