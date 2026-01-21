@@ -201,6 +201,19 @@ const TeamsList = () => {
                                 const fullName = `${member.firstName || ""} ${
                                   member.lastName || ""
                                 }`.trim();
+                                
+                                if (!memberId) {
+                                  return (
+                                    <Tooltip key={`member-${memberIndex}-no-id`} label={fullName}>
+                                      <Avatar
+                                        name={fullName}
+                                        src={member?.profilePicture}
+                                        borderColor={avatarBorderColor}
+                                      />
+                                    </Tooltip>
+                                  );
+                                }
+                                
                                 return (
                                   <Tooltip key={`member-${memberIndex}-${memberId}`} label={fullName}>
                                     <Link
