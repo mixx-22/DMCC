@@ -33,6 +33,22 @@ const DOCUMENTS_ENDPOINT = "/documents";
 const USE_API = import.meta.env.VITE_USE_API !== "false";
 const DEBOUNCE_DELAY = 500; // 500ms debounce
 
+// Date range options for the dropdown
+const DATE_RANGE_OPTIONS = [
+  { value: "today", label: "Today" },
+  { value: "last7days", label: "Last 7 days" },
+  { value: "last30days", label: "Last 30 days" },
+  { value: "thisYear", label: "This year" },
+  { value: "lastYear", label: "Last year" },
+  { value: "custom", label: "Custom range" },
+];
+
+// Helper function to get the label for a date range value
+const getDateRangeLabel = (value) => {
+  const option = DATE_RANGE_OPTIONS.find(opt => opt.value === value);
+  return option ? option.label : null;
+};
+
 const Search = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
@@ -170,12 +186,13 @@ const Search = () => {
           });
         }
       } else if (dateRange === "custom" && selectedDates[0] && selectedDates[1]) {
+        const startOfDay = new Date(selectedDates[0]);
+        const endOfDay = new Date(selectedDates[1]);
+        endOfDay.setHours(23, 59, 59, 999);
+        
         filtered = filtered.filter((doc) => {
           const docDate = new Date(doc.createdAt || doc.updatedAt);
-          return (
-            docDate >= selectedDates[0] &&
-            docDate <= new Date(selectedDates[1].getTime() + 24 * 60 * 60 * 1000 - 1)
-          );
+          return docDate >= startOfDay && docDate <= endOfDay;
         });
       }
       
@@ -265,7 +282,8 @@ const Search = () => {
         clearTimeout(debounceTimerRef.current);
       }
     };
-  }, [keyword, type, dateRange, selectedDates, owners, performSearch]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [keyword, type, dateRange, selectedDates, owners]);
 
   const toggleViewMode = () => {
     setViewMode((prev) => (prev === "grid" ? "list" : "grid"));
@@ -345,16 +363,9 @@ const Search = () => {
                   <FormControl>
                     <FormLabel>Date Range</FormLabel>
                     <Select
-                      value={dateRange ? { value: dateRange, label: dateRange === "last7days" ? "Last 7 days" : dateRange === "last30days" ? "Last 30 days" : dateRange === "thisYear" ? "This year" : dateRange === "lastYear" ? "Last year" : dateRange === "today" ? "Today" : "Custom range" } : null}
+                      value={dateRange ? { value: dateRange, label: getDateRangeLabel(dateRange) } : null}
                       onChange={(option) => setDateRange(option ? option.value : "")}
-                      options={[
-                        { value: "today", label: "Today" },
-                        { value: "last7days", label: "Last 7 days" },
-                        { value: "last30days", label: "Last 30 days" },
-                        { value: "thisYear", label: "This year" },
-                        { value: "lastYear", label: "Last year" },
-                        { value: "custom", label: "Custom range" },
-                      ]}
+                      options={DATE_RANGE_OPTIONS}
                       placeholder="All dates"
                       isClearable
                       colorScheme="blue"
