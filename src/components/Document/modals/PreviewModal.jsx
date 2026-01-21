@@ -12,7 +12,7 @@ import {
   Spinner,
   Center,
 } from "@chakra-ui/react";
-import { getPreviewType } from "../../utils/fileTypes";
+import { getPreviewType } from "../../../utils/fileTypes";
 
 /**
  * PreviewModal component for displaying file previews in a lightbox
