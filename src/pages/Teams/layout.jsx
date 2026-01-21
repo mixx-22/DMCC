@@ -18,6 +18,8 @@ import {
   Avatar,
   AvatarGroup,
   useColorModeValue,
+  Tooltip,
+  Link,
 } from "@chakra-ui/react";
 import { motion } from "framer-motion";
 import { useEffect } from "react";
@@ -200,12 +202,21 @@ const TeamsList = () => {
                                   member.lastName || ""
                                 }`.trim();
                                 return (
-                                  <Avatar
-                                    name={fullName}
-                                    src={member?.profilePicture}
-                                    borderColor={avatarBorderColor}
-                                    key={`member-${memberIndex}-${memberId}`}
-                                  />
+                                  <Tooltip key={`member-${memberIndex}-${memberId}`} label={fullName}>
+                                    <Link
+                                      as={RouterLink}
+                                      to={`/users/${memberId}`}
+                                      onClick={(e) => e.stopPropagation()}
+                                    >
+                                      <Avatar
+                                        name={fullName}
+                                        src={member?.profilePicture}
+                                        borderColor={avatarBorderColor}
+                                        cursor="pointer"
+                                        _hover={{ opacity: 0.8 }}
+                                      />
+                                    </Link>
+                                  </Tooltip>
                                 );
                               })}
                             </AvatarGroup>
