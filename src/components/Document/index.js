@@ -1,6 +1,7 @@
 export { default as Documents } from "../../pages/Document/Documents";
 export { default as DocumentDetail } from "../../pages/Document/DocumentDetail";
 export { default as DocumentDrawer } from "./DocumentDrawer";
+export { default as DownloadButton } from "./DownloadButton";
 export { default as CreateFolderModal } from "./modals/CreateFolderModal";
 export { default as CreateAuditScheduleModal } from "./modals/CreateAuditScheduleModal";
 export { default as UploadFileModal } from "./modals/UploadFileModal";

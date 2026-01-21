@@ -25,7 +25,6 @@ import {
 } from "@chakra-ui/react";
 import {
   FiTrash2,
-  FiDownload,
   FiMove,
   FiShare2,
   FiFile,
@@ -38,6 +37,7 @@ import Timestamp from "../Timestamp";
 import DeleteDocumentModal from "./modals/DeleteDocumentModal";
 import MoveDocumentModal from "./modals/MoveDocumentModal";
 import PrivacySettingsModal from "./modals/PrivacySettingsModal";
+import DownloadButton from "./DownloadButton";
 import { useDocuments } from "../../context/_useContext";
 import { toast } from "sonner";
 import { useEffect, useRef, useState } from "react";
@@ -116,16 +116,6 @@ const DocumentDrawer = ({ document, isOpen, onClose }) => {
     const sizes = ["Bytes", "KB", "MB", "GB"];
     const i = Math.floor(Math.log(bytes) / Math.log(k));
     return Math.round((bytes / Math.pow(k, i)) * 100) / 100 + " " + sizes[i];
-  };
-
-  const handleDownload = () => {
-    if (document?.type === "file" && document?.metadata?.key) {
-      const link = window.document.createElement("a");
-      link.href = document.metadata.key;
-      link.download =
-        document?.metadata?.filename || document?.title || "download";
-      link.click();
-    }
   };
 
   const isDocumentValid = () => {
@@ -311,15 +301,12 @@ const DocumentDrawer = ({ document, isOpen, onClose }) => {
               {/* Action Buttons */}
               <VStack spacing={2} align="stretch">
                 {document?.type === "file" && document?.metadata?.key && (
-                  <Button
-                    leftIcon={<FiDownload />}
-                    colorScheme="blue"
+                  <DownloadButton
+                    document={document}
                     variant="outline"
-                    onClick={handleDownload}
+                    fullWidth={true}
                     isDisabled={!isValid}
-                  >
-                    Download
-                  </Button>
+                  />
                 )}
                 <Button
                   leftIcon={<FiMove />}

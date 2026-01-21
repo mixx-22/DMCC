@@ -158,6 +158,41 @@ export const apiService = {
       key: data.key,
     };
   },
+
+  /**
+   * Download a document from the server
+   * @param {string} fileName - The name of the file to download
+   * @param {string} key - The unique key/identifier for the file
+   * @returns {Promise<Blob>} - The file blob for download
+   */
+  async downloadDocument(fileName, key) {
+    if (!USE_API) {
+      // Mock mode: create a simple text file blob
+      const mockContent = `Mock file: ${fileName}\nKey: ${key}\nDownloaded at: ${new Date().toISOString()}`;
+      return new Blob([mockContent], { type: 'text/plain' });
+    }
+
+    const response = await this.request("/documents/download", {
+      method: "POST",
+      body: JSON.stringify({ fileName, key }),
+    });
+
+    // The response should be a blob or contain download URL
+    // For now, assuming the API returns the file data directly
+    const data = response.data || response;
+    
+    // If response contains a URL, fetch it
+    if (data.url) {
+      const fileResponse = await fetch(data.url);
+      if (!fileResponse.ok) {
+        throw new Error(`Failed to download file: ${fileResponse.status}`);
+      }
+      return await fileResponse.blob();
+    }
+    
+    // Otherwise, assume response is already the file data
+    return data;
+  },
 };
 
 export default apiService;
