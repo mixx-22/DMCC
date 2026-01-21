@@ -172,7 +172,7 @@ export const PreviewButton = ({
       const fileName = getFileName();
       return getPreviewDisabledMessage(fileName);
     }
-    return "Preview";
+    return "Preview document";
   };
 
   // If iconOnly, render IconButton
@@ -203,7 +203,11 @@ export const PreviewButton = ({
   // Render regular Button
   return (
     <>
-      <Tooltip label={!canPreview() ? getTooltipLabel() : ""} placement="top">
+      <Tooltip 
+        label={!canPreview() ? getTooltipLabel() : ""} 
+        placement="top"
+        isDisabled={canPreview()}
+      >
         <Button
           leftIcon={<FiEye />}
           onClick={handlePreview}
