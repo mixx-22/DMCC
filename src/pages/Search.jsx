@@ -26,12 +26,14 @@ import PageHeader from "../components/PageHeader";
 import UserAsyncSelect from "../components/UserAsyncSelect";
 import { GridView } from "../components/Document/GridView";
 import { ListView } from "../components/Document/ListView";
-import { useDocuments } from "../context/_useContext";
+import apiService from "../services/api";
+
+const DOCUMENTS_ENDPOINT = "/documents";
+const USE_API = import.meta.env.VITE_USE_API !== "false";
 
 const Search = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
-  const { documents: allDocuments, loading: documentsLoading } = useDocuments();
 
   // View mode
   const [viewMode, setViewMode] = useState(() => {
@@ -53,9 +55,11 @@ const Search = () => {
   );
   const [owners, setOwners] = useState([]);
 
-  // Search results
-  const [filteredDocuments, setFilteredDocuments] = useState([]);
+  // Search results and loading state
+  const [searchResults, setSearchResults] = useState([]);
   const [selectedDocument, setSelectedDocument] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [hasSearched, setHasSearched] = useState(false);
 
   // Load owners from query params when URL changes
   useEffect(() => {
@@ -95,92 +99,162 @@ const Search = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [keyword, type, dateRange, customStartDate, customEndDate, owners]);
 
-  // Filter documents based on search criteria
-  useEffect(() => {
-    let filtered = [...allDocuments];
-
-    // Filter by keyword
-    if (keyword.trim()) {
-      const lowerKeyword = keyword.toLowerCase().trim();
-      filtered = filtered.filter((doc) => {
-        const title = (doc.title || "").toLowerCase();
-        const description = (doc.description || "").toLowerCase();
-        return title.includes(lowerKeyword) || description.includes(lowerKeyword);
-      });
+  // Perform search with API request
+  const performSearch = async () => {
+    // Check if we have any filters applied
+    const hasFilters = keyword.trim() || type || dateRange || owners.length > 0;
+    
+    if (!hasFilters) {
+      // Don't load all documents when filters are cleared
+      setSearchResults([]);
+      setHasSearched(false);
+      return;
     }
 
-    // Filter by type
-    if (type) {
-      filtered = filtered.filter((doc) => doc.type === type);
-    }
-
-    // Filter by date range
-    if (dateRange && dateRange !== "custom") {
-      const now = new Date();
-      let startDate = new Date();
-
-      switch (dateRange) {
-        case "today": {
-          startDate.setHours(0, 0, 0, 0);
-          break;
-        }
-        case "last7days": {
-          startDate.setDate(now.getDate() - 7);
-          break;
-        }
-        case "last30days": {
-          startDate.setDate(now.getDate() - 30);
-          break;
-        }
-        case "thisYear": {
-          startDate = new Date(now.getFullYear(), 0, 1);
-          break;
-        }
-        case "lastYear": {
-          startDate = new Date(now.getFullYear() - 1, 0, 1);
-          const endDate = new Date(now.getFullYear() - 1, 11, 31, 23, 59, 59);
-          filtered = filtered.filter((doc) => {
-            const docDate = new Date(doc.createdAt || doc.updatedAt);
-            return docDate >= startDate && docDate <= endDate;
-          });
-          break;
-        }
-      }
-
-      if (dateRange !== "lastYear") {
+    if (!USE_API) {
+      // Mock mode: use localStorage
+      const saved = localStorage.getItem("documents");
+      const allDocs = saved ? JSON.parse(saved) : [];
+      
+      // Apply client-side filtering in mock mode
+      let filtered = [...allDocs];
+      
+      if (keyword.trim()) {
+        const lowerKeyword = keyword.toLowerCase().trim();
         filtered = filtered.filter((doc) => {
-          const docDate = new Date(doc.createdAt || doc.updatedAt);
-          return docDate >= startDate;
+          const title = (doc.title || "").toLowerCase();
+          const description = (doc.description || "").toLowerCase();
+          return title.includes(lowerKeyword) || description.includes(lowerKeyword);
         });
       }
-    } else if (dateRange === "custom" && (customStartDate || customEndDate)) {
-      filtered = filtered.filter((doc) => {
-        const docDate = new Date(doc.createdAt || doc.updatedAt);
-        if (customStartDate && customEndDate) {
-          return (
-            docDate >= new Date(customStartDate) &&
-            docDate <= new Date(customEndDate + "T23:59:59")
-          );
-        } else if (customStartDate) {
-          return docDate >= new Date(customStartDate);
-        } else if (customEndDate) {
-          return docDate <= new Date(customEndDate + "T23:59:59");
+      
+      if (type) {
+        filtered = filtered.filter((doc) => doc.type === type);
+      }
+      
+      if (dateRange && dateRange !== "custom") {
+        const now = new Date();
+        let startDate = new Date();
+
+        switch (dateRange) {
+          case "today": {
+            startDate.setHours(0, 0, 0, 0);
+            break;
+          }
+          case "last7days": {
+            startDate.setDate(now.getDate() - 7);
+            break;
+          }
+          case "last30days": {
+            startDate.setDate(now.getDate() - 30);
+            break;
+          }
+          case "thisYear": {
+            startDate = new Date(now.getFullYear(), 0, 1);
+            break;
+          }
+          case "lastYear": {
+            startDate = new Date(now.getFullYear() - 1, 0, 1);
+            const endDate = new Date(now.getFullYear() - 1, 11, 31, 23, 59, 59);
+            filtered = filtered.filter((doc) => {
+              const docDate = new Date(doc.createdAt || doc.updatedAt);
+              return docDate >= startDate && docDate <= endDate;
+            });
+            break;
+          }
         }
-        return true;
-      });
+
+        if (dateRange !== "lastYear") {
+          filtered = filtered.filter((doc) => {
+            const docDate = new Date(doc.createdAt || doc.updatedAt);
+            return docDate >= startDate;
+          });
+        }
+      } else if (dateRange === "custom" && (customStartDate || customEndDate)) {
+        filtered = filtered.filter((doc) => {
+          const docDate = new Date(doc.createdAt || doc.updatedAt);
+          if (customStartDate && customEndDate) {
+            return (
+              docDate >= new Date(customStartDate) &&
+              docDate <= new Date(customEndDate + "T23:59:59")
+            );
+          } else if (customStartDate) {
+            return docDate >= new Date(customStartDate);
+          } else if (customEndDate) {
+            return docDate <= new Date(customEndDate + "T23:59:59");
+          }
+          return true;
+        });
+      }
+      
+      if (owners.length > 0) {
+        const ownerIds = owners.map((o) => o.id || o._id);
+        filtered = filtered.filter((doc) => {
+          const creatorId = doc.createdBy?.id || doc.createdBy?._id || doc.createdBy;
+          return ownerIds.includes(creatorId);
+        });
+      }
+      
+      setSearchResults(filtered);
+      setHasSearched(true);
+      return;
     }
 
-    // Filter by owners
-    if (owners.length > 0) {
-      const ownerIds = owners.map((o) => o.id || o._id);
-      filtered = filtered.filter((doc) => {
-        const creatorId = doc.createdBy?.id || doc.createdBy?._id || doc.createdBy;
-        return ownerIds.includes(creatorId);
-      });
-    }
+    // API mode: Make server request with filters
+    setLoading(true);
+    setHasSearched(true);
 
-    setFilteredDocuments(filtered);
-  }, [allDocuments, keyword, type, dateRange, customStartDate, customEndDate, owners]);
+    try {
+      const params = {};
+      
+      if (keyword.trim()) {
+        params.keyword = keyword.trim();
+      }
+      
+      if (type) {
+        params.type = type;
+      }
+      
+      if (dateRange) {
+        params.dateRange = dateRange;
+        if (dateRange === "custom") {
+          if (customStartDate) params.startDate = customStartDate;
+          if (customEndDate) params.endDate = customEndDate;
+        }
+      }
+      
+      if (owners.length > 0) {
+        // Send owner IDs as comma-separated string
+        params.owners = owners.map((o) => o.id || o._id).join(",");
+      }
+
+      const response = await apiService.request(DOCUMENTS_ENDPOINT, {
+        method: "GET",
+        params,
+      });
+
+      const { success = false, data = { documents: [] } } = response;
+      
+      if (success) {
+        setSearchResults(data.documents || []);
+      } else {
+        console.error("Search failed:", response);
+        setSearchResults([]);
+      }
+    } catch (error) {
+      console.error("Failed to search documents:", error);
+      setSearchResults([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Trigger search when filters change
+  useEffect(() => {
+    performSearch();
+    // We want this to run when filters change
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [keyword, type, dateRange, customStartDate, customEndDate, owners]);
 
   const toggleViewMode = () => {
     setViewMode((prev) => (prev === "grid" ? "list" : "grid"));
@@ -332,17 +406,29 @@ const Search = () => {
         {/* Results Summary */}
         <Flex justify="space-between" align="center">
           <Text fontSize="sm" color="gray.600">
-            {filteredDocuments.length} result{filteredDocuments.length !== 1 ? "s" : ""}{" "}
-            found
+            {hasSearched
+              ? `${searchResults.length} result${searchResults.length !== 1 ? "s" : ""} found`
+              : "Enter search criteria to find documents"}
           </Text>
         </Flex>
 
         {/* Search Results */}
-        {documentsLoading ? (
+        {loading ? (
           <Center py={12}>
             <Spinner size="xl" color="blue.500" />
           </Center>
-        ) : filteredDocuments.length === 0 ? (
+        ) : !hasSearched ? (
+          <Center py={12}>
+            <VStack spacing={4}>
+              <Text fontSize="lg" color="gray.500">
+                Start by entering search criteria
+              </Text>
+              <Text fontSize="sm" color="gray.400">
+                Use the filters above to search for documents
+              </Text>
+            </VStack>
+          </Center>
+        ) : searchResults.length === 0 ? (
           <Center py={12}>
             <VStack spacing={4}>
               <Text fontSize="lg" color="gray.500">
@@ -355,13 +441,13 @@ const Search = () => {
           </Center>
         ) : viewMode === "grid" ? (
           <GridView
-            documents={filteredDocuments}
+            documents={searchResults}
             selectedDocument={selectedDocument}
             onDocumentClick={handleDocumentClick}
           />
         ) : (
           <ListView
-            documents={filteredDocuments}
+            documents={searchResults}
             selectedDocument={selectedDocument}
             onDocumentClick={handleDocumentClick}
             onMoreOptions={setSelectedDocument}
