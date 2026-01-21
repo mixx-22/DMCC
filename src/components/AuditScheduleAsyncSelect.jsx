@@ -144,6 +144,15 @@ const AuditScheduleAsyncSelect = ({
       }
     : null;
 
+  const getStatusLabel = (status) => {
+    const statusMap = {
+      0: "Scheduled",
+      1: "In Progress",
+      2: "Completed",
+    };
+    return statusMap[status] || "Unknown";
+  };
+
   const formatOptionLabel = ({ audit }) => {
     return (
       <HStack>
@@ -153,7 +162,7 @@ const AuditScheduleAsyncSelect = ({
             {audit.title}
           </Text>
           <Text fontSize="xs" color="gray.500">
-            {audit.metadata?.code || "No code"} • Status: {audit.status}
+            {audit.metadata?.code || "No code"} • {getStatusLabel(audit.status)}
           </Text>
         </VStack>
       </HStack>

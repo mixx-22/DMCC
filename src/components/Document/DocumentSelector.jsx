@@ -56,7 +56,9 @@ const DocumentSelector = ({
 
         for (const file of acceptedFiles) {
           try {
-            const title = file.name.split(".").slice(0, -1).join(".") || file.name;
+            // Extract filename without extension properly
+            const lastDotIndex = file.name.lastIndexOf(".");
+            const title = lastDotIndex > 0 ? file.name.substring(0, lastDotIndex) : file.name;
             const newDoc = await createDocument({
               title,
               description: `Uploaded for audit ${auditScheduleId}`,

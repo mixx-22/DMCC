@@ -49,7 +49,7 @@ const AddOrganizationModal = ({ isOpen, onClose, onAdd }) => {
     }
 
     // Validate that visit date is not in the past
-    const visitDateObj = new Date(formData.visitDate);
+    const visitDateObj = new Date(formData.visitDate + "T00:00:00");
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
@@ -63,7 +63,7 @@ const AddOrganizationModal = ({ isOpen, onClose, onAdd }) => {
 
     // Validate revisit date if provided
     if (formData.revisitDate) {
-      const revisitDateObj = new Date(formData.revisitDate);
+      const revisitDateObj = new Date(formData.revisitDate + "T00:00:00");
       if (revisitDateObj <= visitDateObj) {
         toast.error("Validation Error", {
           description: "Revisit date must be after the visit date",
