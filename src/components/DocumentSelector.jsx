@@ -242,7 +242,7 @@ const DocumentSelector = ({
                 <IconButton
                   size="sm"
                   variant="ghost"
-                  colorScheme="error"
+                  colorScheme="red"
                   icon={<FiX />}
                   aria-label="Remove document"
                   onClick={() => handleRemove(doc.id)}

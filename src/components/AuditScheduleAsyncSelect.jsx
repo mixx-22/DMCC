@@ -190,7 +190,7 @@ const AuditScheduleAsyncSelect = ({
             <IconButton
               size="sm"
               variant="ghost"
-              colorScheme="error"
+              colorScheme="red"
               icon={<FiX />}
               aria-label="Remove audit"
               onClick={handleRemove}
