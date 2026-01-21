@@ -1,4 +1,4 @@
-import { FiFolder, FiFile, FiCalendar, FiAlertCircle } from "react-icons/fi";
+import { FiFolder, FiFile, FiCalendar, FiAlertCircle, FiFileText } from "react-icons/fi";
 
 export const getDocumentIcon = (doc) => {
   if (!doc || typeof doc !== "object") {
@@ -12,6 +12,8 @@ export const getDocumentIcon = (doc) => {
       return <FiFolder size={24} color="#3182CE" />;
     case "auditSchedule":
       return <FiCalendar size={24} color="#805AD5" />;
+    case "formTemplate":
+      return <FiFileText size={24} color="#38A169" />;
     case "file":
       if (!doc?.metadata?.filename) {
         return (

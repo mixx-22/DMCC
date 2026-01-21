@@ -335,12 +335,14 @@ const DocumentDetail = () => {
                         />
                       </Editable>
                       <HStack spacing={2}>
-                        <Badge colorScheme={document?.type === "folder" ? "blue" : document?.type === "auditSchedule" ? "purple" : "gray"}>
+                        <Badge colorScheme={document?.type === "folder" ? "blue" : document?.type === "auditSchedule" ? "purple" : document?.type === "formTemplate" ? "green" : "gray"}>
                           {document?.type === "auditSchedule"
                             ? "Audit Schedule"
-                            : document?.type
-                              ? document.type.charAt(0).toUpperCase() + document.type.slice(1)
-                              : "Unknown"}
+                            : document?.type === "formTemplate"
+                              ? "Form Template"
+                              : document?.type
+                                ? document.type.charAt(0).toUpperCase() + document.type.slice(1)
+                                : "Unknown"}
                         </Badge>
                         {!isValid && (
                           <Badge colorScheme="red">Broken</Badge>
@@ -662,6 +664,62 @@ const DocumentDetail = () => {
                       </Box>
                     )}
                   </VStack>
+                </CardBody>
+              </Card>
+            )}
+
+            {document?.type === "formTemplate" && (
+              <Card gridColumn={{ base: "1", lg: "1 / 13" }}>
+                <CardBody>
+                  <Text fontWeight="semibold" mb={4}>
+                    Form Questions ({document?.metadata?.questions?.length || 0})
+                  </Text>
+                  {document?.metadata?.questions && document.metadata.questions.length > 0 ? (
+                    <VStack align="stretch" spacing={4}>
+                      {document.metadata.questions.map((question, index) => (
+                        <Box
+                          key={question.id}
+                          p={4}
+                          borderWidth={1}
+                          borderRadius="md"
+                          borderColor="gray.200"
+                          bg="gray.50"
+                        >
+                          <HStack justify="space-between" align="start" mb={2}>
+                            <Text fontWeight="medium" flex={1}>
+                              {index + 1}. {question.label}
+                            </Text>
+                            {question.required && (
+                              <Badge colorScheme="red" size="sm">
+                                Required
+                              </Badge>
+                            )}
+                          </HStack>
+                          <Text fontSize="sm" color="gray.600" mb={1}>
+                            Type: <strong>{question.type}</strong>
+                          </Text>
+                          {question.options && question.options.length > 0 && (
+                            <Box mt={2}>
+                              <Text fontSize="sm" color="gray.600" mb={1}>
+                                Options:
+                              </Text>
+                              <VStack align="start" spacing={1} pl={4}>
+                                {question.options.map((option, optIndex) => (
+                                  <Text key={optIndex} fontSize="sm">
+                                    • {option}
+                                  </Text>
+                                ))}
+                              </VStack>
+                            </Box>
+                          )}
+                        </Box>
+                      ))}
+                    </VStack>
+                  ) : (
+                    <Text fontSize="sm" color="gray.500">
+                      No questions have been added to this form template yet.
+                    </Text>
+                  )}
                 </CardBody>
               </Card>
             )}

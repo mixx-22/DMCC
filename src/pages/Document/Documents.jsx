@@ -21,6 +21,7 @@ import PageHeader from "../../components/PageHeader";
 import PageFooter from "../../components/PageFooter";
 import CreateFolderModal from "../../components/Document/modals/CreateFolderModal";
 import CreateAuditScheduleModal from "../../components/Document/modals/CreateAuditScheduleModal";
+import CreateFormTemplateModal from "../../components/Document/modals/CreateFormTemplateModal";
 import DocumentDrawer from "../../components/Document/DocumentDrawer";
 import { GridView } from "../../components/Document/GridView";
 import { ListView } from "../../components/Document/ListView";
@@ -79,6 +80,11 @@ const Documents = () => {
     isOpen: isAuditModalOpen,
     onOpen: onAuditModalOpen,
     onClose: onAuditModalClose,
+  } = useDisclosure();
+  const {
+    isOpen: isFormTemplateModalOpen,
+    onOpen: onFormTemplateModalOpen,
+    onClose: onFormTemplateModalClose,
   } = useDisclosure();
 
   const handleFileUpload = async (files) => {
@@ -167,7 +173,7 @@ const Documents = () => {
         const folderTitle = doc?.title || "Untitled";
         navigateToFolder(doc.id, folderTitle);
         navigate(`/documents/folders/${doc.id}`);
-      } else if (doc.type === "file") {
+      } else if (doc.type === "file" || doc.type === "formTemplate") {
         navigate(`/document/${doc.id}`);
       }
       setLastClickTime(0);
@@ -203,6 +209,7 @@ const Documents = () => {
             onFileSelect={handleFileUpload}
             onFolderModalOpen={onFolderModalOpen}
             onAuditModalOpen={onAuditModalOpen}
+            onFormTemplateModalOpen={onFormTemplateModalOpen}
           />
         </Flex>
       </PageFooter>
@@ -250,6 +257,12 @@ const Documents = () => {
       <CreateAuditScheduleModal
         isOpen={isAuditModalOpen}
         onClose={onAuditModalClose}
+        parentId={currentFolderId}
+        path={`/`}
+      />
+      <CreateFormTemplateModal
+        isOpen={isFormTemplateModalOpen}
+        onClose={onFormTemplateModalClose}
         parentId={currentFolderId}
         path={`/`}
       />

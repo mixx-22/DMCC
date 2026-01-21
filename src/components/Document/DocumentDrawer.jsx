@@ -365,10 +365,12 @@ const DocumentDrawer = ({ document, isOpen, onClose }) => {
                     <Text fontSize="sm">
                       {document?.type === "auditSchedule"
                         ? "Audit Schedule"
-                        : document?.type
-                          ? document.type.charAt(0).toUpperCase() +
-                            document.type.slice(1)
-                          : "Unknown"}
+                        : document?.type === "formTemplate"
+                          ? "Form Template"
+                          : document?.type
+                            ? document.type.charAt(0).toUpperCase() +
+                              document.type.slice(1)
+                            : "Unknown"}
                     </Text>
                   </Box>
 
@@ -545,6 +547,41 @@ const DocumentDrawer = ({ document, isOpen, onClose }) => {
                         </Text>
                       </Box>
                     </VStack>
+                  </Box>
+                </>
+              )}
+
+              {/* Form Template-specific metadata */}
+              {document?.type === "formTemplate" && (
+                <>
+                  <Divider />
+                  <Box>
+                    <Text fontWeight="semibold" mb={2}>
+                      Form Questions
+                    </Text>
+                    {document?.metadata?.questions && document.metadata.questions.length > 0 ? (
+                      <VStack align="stretch" spacing={2}>
+                        <Text fontSize="sm" color="gray.600">
+                          {document.metadata.questions.length} question{document.metadata.questions.length !== 1 ? 's' : ''} defined
+                        </Text>
+                        <VStack align="stretch" spacing={1}>
+                          {document.metadata.questions.slice(0, 3).map((question, index) => (
+                            <Text key={question.id} fontSize="sm">
+                              {index + 1}. {question.label} ({question.type})
+                            </Text>
+                          ))}
+                          {document.metadata.questions.length > 3 && (
+                            <Text fontSize="sm" color="gray.500" fontStyle="italic">
+                              ... and {document.metadata.questions.length - 3} more
+                            </Text>
+                          )}
+                        </VStack>
+                      </VStack>
+                    ) : (
+                      <Text fontSize="sm" color="gray.500">
+                        No questions defined
+                      </Text>
+                    )}
                   </Box>
                 </>
               )}
