@@ -9,6 +9,7 @@ import Layout from "./components/Layout";
 import Login from "./pages/Login";
 import { Dashboard } from "./pages/Dashboard";
 import { Documents, DocumentDetail } from "./components/Document";
+import AuditScheduleDetail from "./pages/Document/AuditScheduleDetail";
 import Certifications from "./pages/Certifications";
 import CertificationDetail from "./pages/CertificationDetail";
 import Users from "./pages/Users";
@@ -101,6 +102,14 @@ function App() {
                       element={
                         <DocumentsProvider>
                           <Documents />
+                        </DocumentsProvider>
+                      }
+                    />
+                    <Route
+                      path="/documents/audit/:id"
+                      element={
+                        <DocumentsProvider>
+                          <AuditScheduleDetail />
                         </DocumentsProvider>
                       }
                     />
