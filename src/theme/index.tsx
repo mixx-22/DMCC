@@ -7,6 +7,7 @@ import sizes from "./sizes";
 import styles from "./styles";
 import { headingTheme } from "./heading";
 import { tableTheme } from "./table";
+import { cardTheme } from "./card";
 
 export const transition = {
   smooth: "200ms ease-out",
@@ -23,6 +24,7 @@ export const theme = extendTheme({
   components: {
     Heading: headingTheme,
     Table: tableTheme,
+    Card: cardTheme,
   },
   styles,
 });

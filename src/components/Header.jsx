@@ -129,7 +129,19 @@ const Header = () => {
                   <HStack spacing={3}>
                     <Avatar
                       src={currentUser?.profilePicture}
-                      name={currentUser?.name || "User"}
+                      name={
+                        currentUser
+                          ? [
+                              currentUser.firstName,
+                              currentUser.middleName,
+                              currentUser.lastName,
+                            ]
+                              .filter(Boolean)
+                              .join(" ") ||
+                            currentUser.name ||
+                            "User"
+                          : "User"
+                      }
                       size="sm"
                     />
                     <VStack spacing={0} align="start">

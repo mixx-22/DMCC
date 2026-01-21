@@ -17,7 +17,7 @@ const Timestamp = ({ date, showTime = true, ...textProps }) => {
     localStorage.setItem(STORAGE_KEY, displayMode);
     // Dispatch a custom event to notify other Timestamp components
     window.dispatchEvent(
-      new CustomEvent("timestampFormatChange", { detail: displayMode })
+      new CustomEvent("timestampFormatChange", { detail: displayMode }),
     );
   }, [displayMode]);
 
@@ -35,6 +35,7 @@ const Timestamp = ({ date, showTime = true, ...textProps }) => {
   }, []);
 
   const toggleMode = (e) => {
+    e.preventDefault();
     e.stopPropagation(); // Prevent parent click events
     setDisplayMode((prev) => (prev === "ago" ? "timestamp" : "ago"));
   };

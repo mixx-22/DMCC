@@ -169,7 +169,11 @@ const Accounts = () => {
                   <VStack>
                     <FiUser size={48} color="gray" />
                     <Text color="gray.500">No accounts found</Text>
-                    <Button size="sm" colorScheme="blue" onClick={handleCreate}>
+                    <Button
+                      size="sm"
+                      colorScheme="brandPrimary"
+                      onClick={handleCreate}
+                    >
                       Create Your First Account
                     </Button>
                   </VStack>
@@ -198,7 +202,7 @@ const Accounts = () => {
                         icon={<FiEdit />}
                         size="sm"
                         variant="ghost"
-                        colorScheme="blue"
+                        colorScheme="brandPrimary"
                         onClick={() => handleEdit(account)}
                         aria-label="Edit account"
                       />

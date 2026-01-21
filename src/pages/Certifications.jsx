@@ -96,7 +96,11 @@ const Certifications = () => {
       </PageHeader>
       <PageFooter>
         <Flex gap={4} justifyContent="flex-end">
-          <Button leftIcon={<FiPlus />} colorScheme="blue" onClick={onOpen}>
+          <Button
+            leftIcon={<FiPlus />}
+            colorScheme="brandPrimary"
+            onClick={onOpen}
+          >
             Add Certification
           </Button>
         </Flex>
@@ -147,7 +151,11 @@ const Certifications = () => {
                 <Td colSpan={6} textAlign="center" py={8}>
                   <VStack>
                     <Text color="gray.500">No certifications found</Text>
-                    <Button size="sm" colorScheme="blue" onClick={onOpen}>
+                    <Button
+                      size="sm"
+                      colorScheme="brandPrimary"
+                      onClick={onOpen}
+                    >
                       Add Your First Certification
                     </Button>
                   </VStack>

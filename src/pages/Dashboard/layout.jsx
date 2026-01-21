@@ -499,7 +499,7 @@ const Layout = () => {
                 <Button
                   leftIcon={<FiPrinter />}
                   size="sm"
-                  colorScheme="blue"
+                  colorScheme="brandPrimary"
                   variant="outline"
                   onClick={handlePrintActivityLogs}
                 >

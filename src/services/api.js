@@ -1,4 +1,4 @@
-import cookieService from './cookieService';
+import cookieService from "./cookieService";
 
 const API_ENDPOINT = import.meta.env.VITE_API_ENDPOINT;
 const LOGIN_ENDPOINT = import.meta.env.VITE_API_PACKAGE_LOGIN;
@@ -51,7 +51,7 @@ export const apiService = {
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
         throw new Error(
-          errorData.message || `Login failed with status ${response.status}`
+          errorData.message || `Login failed with status ${response.status}`,
         );
       }
 
@@ -59,7 +59,7 @@ export const apiService = {
       return data;
     } catch (error) {
       throw new Error(
-        error.message || "Failed to connect to authentication server"
+        error.message || "Failed to connect to authentication server",
       );
     }
   },
@@ -70,9 +70,14 @@ export const apiService = {
       const token = cookieService.getToken();
 
       const headers = {
-        "Content-Type": "application/json",
         ...options.headers,
       };
+
+      // Only set Content-Type for non-FormData requests
+      // FormData will set its own Content-Type with boundary
+      if (!(options.body instanceof FormData)) {
+        headers["Content-Type"] = "application/json";
+      }
 
       if (token) {
         headers.Authorization = `Bearer ${token}`;
@@ -83,11 +88,11 @@ export const apiService = {
       if (options.params) {
         const queryString = new URLSearchParams(
           Object.entries(options.params).reduce((acc, [key, value]) => {
-            if (value !== undefined && value !== null && value !== '') {
+            if (value !== undefined && value !== null && value !== "") {
               acc[key] = value;
             }
             return acc;
-          }, {})
+          }, {}),
         ).toString();
         if (queryString) {
           url = `${url}?${queryString}`;
@@ -97,7 +102,7 @@ export const apiService = {
       const response = await fetch(url, {
         ...options,
         headers,
-        credentials: 'include', // Include cookies in requests for server-set HttpOnly cookies
+        credentials: "include", // Include cookies in requests for server-set HttpOnly cookies
       });
 
       if (!response.ok) {
@@ -108,16 +113,50 @@ export const apiService = {
         }
         const errorData = await response.json().catch(() => ({}));
         throw new Error(
-          errorData.message || `Request failed with status ${response.status}`
+          errorData.message || `Request failed with status ${response.status}`,
         );
       }
 
       return await response.json();
     } catch (error) {
       throw new Error(
-        error.message || "An error occurred while making the request"
+        error.message || "An error occurred while making the request",
       );
     }
+  },
+
+  /**
+   * Upload a file to the server
+   * @param {File} file - The file to upload
+   * @returns {Promise<{filename: string, size: number, key: string}>}
+   */
+  async uploadFile(file) {
+    if (!USE_API) {
+      // Mock mode: simulate upload and return mock data
+      return {
+        filename: file.name,
+        size: file.size,
+        key: `mock-${Date.now()}-${file.name}`,
+      };
+    }
+
+    const formData = new FormData();
+    // Note: 'file' is the expected field name by the POST /upload endpoint
+    formData.append("file", file);
+
+    const response = await this.request("/documents/upload", {
+      method: "POST",
+      body: formData,
+    });
+
+    // Extract the data from response
+    // Note: API returns 'fileName' (camelCase) not 'filename'
+    const data = response.data || response;
+    return {
+      filename: data.fileName,
+      size: data.size,
+      key: data.key,
+    };
   },
 };
 

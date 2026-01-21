@@ -8,8 +8,7 @@ import { Toaster } from "sonner";
 import Layout from "./components/Layout";
 import Login from "./pages/Login";
 import { Dashboard } from "./pages/Dashboard";
-import Documents from "./pages/Documents";
-import DocumentDetail from "./pages/DocumentDetail";
+import { Documents, DocumentDetail } from "./components/Document";
 import Certifications from "./pages/Certifications";
 import CertificationDetail from "./pages/CertificationDetail";
 import Users from "./pages/Users";
@@ -32,6 +31,7 @@ import ChangePassword from "./pages/ChangePassword";
 import Settings from "./pages/Settings";
 import { useApp } from "./context/_useContext";
 import { UserProfileProvider } from "./context/UserProfileContext";
+import { DocumentsProvider } from "./context/DocumentsContext";
 
 const ProtectedRoute = ({ children }) => {
   const { currentUser } = useApp();
@@ -80,8 +80,30 @@ function App() {
                       element={<ChangePassword />}
                     />
                     <Route path="/settings" element={<Settings />} />
-                    <Route path="/documents" element={<Documents />} />
-                    <Route path="/documents/:id" element={<DocumentDetail />} />
+                    <Route
+                      path="/documents"
+                      element={
+                        <DocumentsProvider>
+                          <Documents />
+                        </DocumentsProvider>
+                      }
+                    />
+                    <Route
+                      path="/document/:id"
+                      element={
+                        <DocumentsProvider>
+                          <DocumentDetail />
+                        </DocumentsProvider>
+                      }
+                    />
+                    <Route
+                      path="/documents/folders/:id"
+                      element={
+                        <DocumentsProvider>
+                          <Documents />
+                        </DocumentsProvider>
+                      }
+                    />
                     <Route path="/archive" element={<Archive />} />
                     <Route
                       path="/certifications"

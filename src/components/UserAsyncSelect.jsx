@@ -122,7 +122,7 @@ const UserAsyncSelect = ({
         return [];
       }
     },
-    [limit]
+    [limit],
   );
 
   const handleChange = (selectedOptions) => {
@@ -140,7 +140,7 @@ const UserAsyncSelect = ({
 
   const handleRemoveUser = (userToRemove) => {
     onChange(
-      value.filter((user) => getUserId(user) !== getUserId(userToRemove))
+      value.filter((user) => getUserId(user) !== getUserId(userToRemove)),
     );
   };
 
@@ -226,7 +226,7 @@ const UserAsyncSelect = ({
                     size="md"
                     borderRadius="full"
                     variant="solid"
-                    colorScheme="blue"
+                    colorScheme="brandPrimary"
                   >
                     <Avatar
                       size="xs"
