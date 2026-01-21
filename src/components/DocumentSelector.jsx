@@ -40,7 +40,7 @@ import {
 import { useDropzone } from "react-dropzone";
 import { toast } from "sonner";
 import { useDocuments } from "../context/_useContext";
-import DocumentIcon from "./Document/DocumentIcon";
+import { getDocumentIcon } from "./Document/DocumentIcon";
 
 const DocumentSelector = ({
   value = [],
@@ -181,7 +181,7 @@ const DocumentSelector = ({
                 borderRadius="md"
                 spacing={3}
               >
-                <DocumentIcon type={doc.type} size="sm" />
+                {getDocumentIcon(doc)}
                 <VStack align="start" spacing={0} flex={1}>
                   <Text fontSize="sm" fontWeight="medium">
                     {doc.title}
@@ -223,7 +223,7 @@ const DocumentSelector = ({
                 borderRadius="md"
                 spacing={3}
               >
-                <DocumentIcon type={doc.type} size="sm" />
+                {getDocumentIcon(doc)}
                 <VStack align="start" spacing={0} flex={1}>
                   <Text fontSize="sm" fontWeight="medium">
                     {doc.title}
@@ -340,7 +340,7 @@ const DocumentSelector = ({
                                 isDisabled={isAlreadyAdded}
                                 pointerEvents="none"
                               />
-                              <DocumentIcon type={doc.type} size="sm" />
+                              {getDocumentIcon(doc)}
                               <VStack align="start" spacing={0} flex={1}>
                                 <Text fontSize="sm" fontWeight="medium">
                                   {doc.title}
