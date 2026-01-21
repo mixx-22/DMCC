@@ -21,7 +21,6 @@ import PageHeader from "../../components/PageHeader";
 import PageFooter from "../../components/PageFooter";
 import CreateFolderModal from "../../components/Document/modals/CreateFolderModal";
 import CreateAuditScheduleModal from "../../components/Document/modals/CreateAuditScheduleModal";
-import CreateFormTemplateModal from "../../components/Document/modals/CreateFormTemplateModal";
 import DocumentDrawer from "../../components/Document/DocumentDrawer";
 import { GridView } from "../../components/Document/GridView";
 import { ListView } from "../../components/Document/ListView";
@@ -81,11 +80,12 @@ const Documents = () => {
     onOpen: onAuditModalOpen,
     onClose: onAuditModalClose,
   } = useDisclosure();
-  const {
-    isOpen: isFormTemplateModalOpen,
-    onOpen: onFormTemplateModalOpen,
-    onClose: onFormTemplateModalClose,
-  } = useDisclosure();
+
+  const handleFormTemplateCreate = () => {
+    navigate("/form-template-builder", {
+      state: { parentId: currentFolderId, path: "/" },
+    });
+  };
 
   const handleFileUpload = async (files) => {
     const uploadPromises = files.map(async (file) => {
@@ -209,7 +209,7 @@ const Documents = () => {
             onFileSelect={handleFileUpload}
             onFolderModalOpen={onFolderModalOpen}
             onAuditModalOpen={onAuditModalOpen}
-            onFormTemplateModalOpen={onFormTemplateModalOpen}
+            onFormTemplateModalOpen={handleFormTemplateCreate}
           />
         </Flex>
       </PageFooter>
@@ -257,12 +257,6 @@ const Documents = () => {
       <CreateAuditScheduleModal
         isOpen={isAuditModalOpen}
         onClose={onAuditModalClose}
-        parentId={currentFolderId}
-        path={`/`}
-      />
-      <CreateFormTemplateModal
-        isOpen={isFormTemplateModalOpen}
-        onClose={onFormTemplateModalClose}
         parentId={currentFolderId}
         path={`/`}
       />

@@ -32,6 +32,7 @@ import Settings from "./pages/Settings";
 import { useApp } from "./context/_useContext";
 import { UserProfileProvider } from "./context/UserProfileContext";
 import { DocumentsProvider } from "./context/DocumentsContext";
+import FormTemplateBuilder from "./pages/FormTemplateBuilder";
 
 const ProtectedRoute = ({ children }) => {
   const { currentUser } = useApp();
@@ -101,6 +102,14 @@ function App() {
                       element={
                         <DocumentsProvider>
                           <Documents />
+                        </DocumentsProvider>
+                      }
+                    />
+                    <Route
+                      path="/form-template-builder"
+                      element={
+                        <DocumentsProvider>
+                          <FormTemplateBuilder />
                         </DocumentsProvider>
                       }
                     />
