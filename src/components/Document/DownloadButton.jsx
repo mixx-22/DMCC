@@ -30,6 +30,15 @@ export const DownloadButton = ({
   const [isDownloading, setIsDownloading] = useState(false);
 
   /**
+   * Helper to get filename from document metadata
+   * Handles both 'filename' and 'fileName' properties for consistency
+   * @returns {string|null} - The filename or null if not found
+   */
+  const getFileName = () => {
+    return document?.metadata?.filename || document?.metadata?.fileName || null;
+  };
+
+  /**
    * Validates document metadata before download
    * @returns {Object} - Validation result with isValid and error message
    */
@@ -55,7 +64,7 @@ export const DownloadButton = ({
       };
     }
 
-    if (!document?.metadata?.filename && !document?.metadata?.fileName) {
+    if (!getFileName()) {
       return {
         isValid: false,
         error: "Document filename is missing",
@@ -88,7 +97,7 @@ export const DownloadButton = ({
 
     try {
       // Extract fileName and key from metadata
-      const fileName = document.metadata.filename || document.metadata.fileName;
+      const fileName = getFileName();
       const key = document.metadata.key;
 
       // Call API to download document

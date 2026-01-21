@@ -172,26 +172,50 @@ export const apiService = {
       return new Blob([mockContent], { type: 'text/plain' });
     }
 
-    const response = await this.request("/documents/download", {
+    // Get token from cookie
+    const token = cookieService.getToken();
+
+    const headers = {
+      "Content-Type": "application/json",
+    };
+
+    if (token) {
+      headers.Authorization = `Bearer ${token}`;
+    }
+
+    const response = await fetch(createApiUrl("/documents/download"), {
       method: "POST",
+      headers,
+      credentials: "include",
       body: JSON.stringify({ fileName, key }),
     });
 
-    // The response should be a blob or contain download URL
-    // For now, assuming the API returns the file data directly
-    const data = response.data || response;
-    
-    // If response contains a URL, fetch it
-    if (data.url) {
-      const fileResponse = await fetch(data.url);
-      if (!fileResponse.ok) {
-        throw new Error(`Failed to download file: ${fileResponse.status}`);
+    if (!response.ok) {
+      if (response.status === 401) {
+        cookieService.removeToken();
+        window.location.href = "/login";
       }
-      return await fileResponse.blob();
+      throw new Error(`Download failed with status ${response.status}`);
+    }
+
+    // Check content type to determine if it's a blob or JSON
+    const contentType = response.headers.get("content-type");
+    
+    if (contentType && contentType.includes("application/json")) {
+      // Response is JSON, might contain a URL
+      const data = await response.json();
+      if (data.url) {
+        const fileResponse = await fetch(data.url);
+        if (!fileResponse.ok) {
+          throw new Error(`Failed to download file: ${fileResponse.status}`);
+        }
+        return await fileResponse.blob();
+      }
+      throw new Error("Invalid response format: expected file or URL");
     }
     
-    // Otherwise, assume response is already the file data
-    return data;
+    // Response is the file itself
+    return await response.blob();
   },
 };
 
