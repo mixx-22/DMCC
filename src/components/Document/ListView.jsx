@@ -12,6 +12,7 @@ import {
   IconButton,
   Avatar,
   Box,
+  Link,
 } from "@chakra-ui/react";
 import { FiMoreVertical } from "react-icons/fi";
 import { getDocumentIcon, isDocumentValid } from "./DocumentIcon";
@@ -89,30 +90,64 @@ export const ListView = ({
                 </HStack>
               </Td>
               <Td whiteSpace="nowrap">
-                <HStack>
-                  <Avatar
-                    src={doc?.owner?.profilePicture}
-                    name={
-                      doc?.owner
-                        ? [
-                            doc?.owner.firstName,
-                            doc?.owner.middleName,
-                            doc?.owner.lastName,
-                          ]
-                            .filter(Boolean)
-                            .join(" ") ||
-                          doc?.owner.name ||
-                          "User"
-                        : "User"
-                    }
-                    size="xs"
-                  />
-                  <Text fontSize="sm">
-                    {doc?.owner?.firstName && doc?.owner?.lastName
-                      ? `${doc.owner.firstName} ${doc.owner.lastName}`
-                      : "Unknown"}
-                  </Text>
-                </HStack>
+                {doc?.owner?.id ? (
+                  <Link
+                    as={RouterLink}
+                    to={`/users/${doc.owner.id}`}
+                    onClick={(e) => e.stopPropagation()}
+                    _hover={{ textDecoration: "none" }}
+                  >
+                    <HStack _hover={{ opacity: 0.8 }}>
+                      <Avatar
+                        src={doc?.owner?.profilePicture}
+                        name={
+                          doc?.owner
+                            ? [
+                                doc?.owner.firstName,
+                                doc?.owner.middleName,
+                                doc?.owner.lastName,
+                              ]
+                                .filter(Boolean)
+                                .join(" ") ||
+                              doc?.owner.name ||
+                              "User"
+                            : "User"
+                        }
+                        size="xs"
+                      />
+                      <Text fontSize="sm">
+                        {doc?.owner?.firstName && doc?.owner?.lastName
+                          ? `${doc.owner.firstName} ${doc.owner.lastName}`
+                          : "Unknown"}
+                      </Text>
+                    </HStack>
+                  </Link>
+                ) : (
+                  <HStack>
+                    <Avatar
+                      src={doc?.owner?.profilePicture}
+                      name={
+                        doc?.owner
+                          ? [
+                              doc?.owner.firstName,
+                              doc?.owner.middleName,
+                              doc?.owner.lastName,
+                            ]
+                              .filter(Boolean)
+                              .join(" ") ||
+                            doc?.owner.name ||
+                            "User"
+                          : "User"
+                      }
+                      size="xs"
+                    />
+                    <Text fontSize="sm">
+                      {doc?.owner?.firstName && doc?.owner?.lastName
+                        ? `${doc.owner.firstName} ${doc.owner.lastName}`
+                        : "Unknown"}
+                    </Text>
+                  </HStack>
+                )}
               </Td>
               <Td whiteSpace="nowrap">
                 {doc?.updatedAt ? (
