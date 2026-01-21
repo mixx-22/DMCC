@@ -53,7 +53,6 @@ import {
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import PageHeader from "../components/PageHeader";
-import PageFooter from "../components/PageFooter";
 
 // Sortable Question Component
 const SortableQuestion = ({ question, index, onRemove }) => {
@@ -282,7 +281,7 @@ const FormTemplateBuilder = () => {
             : undefined,
       });
 
-      setQuestions((prev) => [question, ...prev]); // Add to beginning
+      setQuestions((prev) => [...prev, question]); // Add to bottom
       resetCurrentQuestion();
 
       toast.success("Question added");
@@ -352,38 +351,36 @@ const FormTemplateBuilder = () => {
   return (
     <Box>
       <PageHeader>
-        <HStack spacing={4}>
-          <IconButton
-            icon={<FiArrowLeft />}
-            onClick={() => navigate("/documents")}
-            variant="ghost"
-            aria-label="Back to documents"
-          />
-          <Heading size="lg">Create Form Template</Heading>
-        </HStack>
-      </PageHeader>
-
-      <PageFooter>
-        <HStack spacing={3} justify="flex-end" w="full">
+        <Flex justify="space-between" align="center" w="full">
+          <HStack spacing={4}>
+            <IconButton
+              icon={<FiArrowLeft />}
+              onClick={() => navigate("/documents")}
+              variant="ghost"
+              aria-label="Back to documents"
+            />
+            <Heading size="lg">Create Form Template</Heading>
+          </HStack>
           <Button
             leftIcon={<FiSave />}
             colorScheme="brandPrimary"
             onClick={handleSave}
+            size="lg"
           >
             Save Form Template
           </Button>
-        </HStack>
-      </PageFooter>
+        </Flex>
+      </PageHeader>
 
-      <Box p={{ base: 4, md: 8 }} maxW="1400px" mx="auto">
-        <Flex gap={8} direction={{ base: "column", lg: "row" }}>
-          {/* Left Panel - Form Builder */}
-          <Box w="sm">
-            <Card mb={6}>
-              <CardBody>
-                <VStack spacing={4} align="stretch">
-                  <Heading size="md">Form Information</Heading>
-                  <FormControl isRequired>
+      <Box p={{ base: 4, md: 8 }} maxW="900px" mx="auto">
+        <VStack spacing={6} align="stretch">
+          {/* Form Information */}
+          <Card>
+            <CardBody>
+              <VStack spacing={4} align="stretch">
+                <Heading size="md">Form Information</Heading>
+                <Flex gap={4} direction={{ base: "column", md: "row" }}>
+                  <FormControl isRequired flex={1}>
                     <FormLabel>Form Title</FormLabel>
                     <Input
                       value={formData.title}
@@ -398,9 +395,9 @@ const FormTemplateBuilder = () => {
                     />
                   </FormControl>
 
-                  <FormControl>
+                  <FormControl flex={1}>
                     <FormLabel>Description</FormLabel>
-                    <Textarea
+                    <Input
                       value={formData.description}
                       onChange={(e) =>
                         setFormData((prev) => ({
@@ -409,181 +406,203 @@ const FormTemplateBuilder = () => {
                         }))
                       }
                       placeholder="Optional description"
-                      rows={3}
+                      size="lg"
                     />
                   </FormControl>
-                </VStack>
-              </CardBody>
-            </Card>
+                </Flex>
+              </VStack>
+            </CardBody>
+          </Card>
 
-            <Card>
-              <CardBody>
-                <VStack spacing={4} align="stretch">
-                  <Heading size="md">Add New Question</Heading>
+          {/* Form Preview with Questions */}
+          <Card>
+            <CardBody>
+              <VStack spacing={4} align="stretch">
+                <Flex justify="space-between" align="center">
+                  <Heading size="md">Form Preview</Heading>
+                  <Text fontSize="sm" color="gray.600" fontWeight="medium">
+                    {questions.length} question
+                    {questions.length !== 1 ? "s" : ""}
+                  </Text>
+                </Flex>
+                <Divider />
 
-                  <FormControl>
-                    <FormLabel>Question Label</FormLabel>
-                    <Input
-                      value={currentQuestion.label}
-                      onChange={(e) =>
-                        setCurrentQuestion((prev) => ({
-                          ...prev,
-                          label: e.target.value,
-                        }))
-                      }
-                      placeholder="Enter question text (optional)"
-                    />
-                  </FormControl>
-
-                  <FormControl>
-                    <FormLabel>Input Type</FormLabel>
-                    <Select
-                      value={currentQuestion.type}
-                      onChange={(e) =>
-                        setCurrentQuestion((prev) => ({
-                          ...prev,
-                          type: e.target.value,
-                          options: [], // Reset options when type changes
-                        }))
-                      }
-                    >
-                      <option value={INPUT_TYPES.TEXT}>Text</option>
-                      <option value={INPUT_TYPES.NUMBER}>Number</option>
-                      <option value={INPUT_TYPES.CURRENCY}>Currency</option>
-                      <option value={INPUT_TYPES.TEXTAREA}>Text Area</option>
-                      <option value={INPUT_TYPES.DATE}>Date</option>
-                      <option value={INPUT_TYPES.SELECT}>Select</option>
-                      <option value={INPUT_TYPES.DROPDOWN}>Dropdown</option>
-                      <option value={INPUT_TYPES.CHECKBOXES}>Checkboxes</option>
-                    </Select>
-                  </FormControl>
-
-                  {needsOptions && (
-                    <FormControl>
-                      <FormLabel>Options</FormLabel>
-                      <HStack>
-                        <Input
-                          value={currentOption}
-                          onChange={(e) => setCurrentOption(e.target.value)}
-                          placeholder="Enter an option"
-                          onKeyPress={(e) => {
-                            if (e.key === "Enter") {
-                              e.preventDefault();
-                              handleAddOption();
-                            }
-                          }}
-                        />
-                        <IconButton
-                          icon={<FiPlus />}
-                          onClick={handleAddOption}
-                          colorScheme="green"
-                          aria-label="Add option"
-                        />
-                      </HStack>
-
-                      {currentQuestion.options.length > 0 && (
-                        <Wrap mt={2}>
-                          {currentQuestion.options.map((option, index) => (
-                            <WrapItem key={index}>
-                              <Tag
-                                size="md"
-                                colorScheme="blue"
-                                variant="subtle"
-                              >
-                                <TagLabel>{option}</TagLabel>
-                                <TagCloseButton
-                                  onClick={() => handleRemoveOption(index)}
-                                />
-                              </Tag>
-                            </WrapItem>
-                          ))}
-                        </Wrap>
-                      )}
-                    </FormControl>
-                  )}
-
-                  <FormControl display="flex" alignItems="center">
-                    <FormLabel mb="0">Required Field</FormLabel>
-                    <Switch
-                      isChecked={currentQuestion.required}
-                      onChange={(e) =>
-                        setCurrentQuestion((prev) => ({
-                          ...prev,
-                          required: e.target.checked,
-                        }))
-                      }
-                    />
-                  </FormControl>
-
-                  <Button
-                    leftIcon={<FiPlus />}
-                    onClick={handleAddQuestion}
-                    colorScheme="green"
-                    size="lg"
-                    w="full"
+                {/* Questions List */}
+                {questions.length === 0 ? (
+                  <Box
+                    p={8}
+                    textAlign="center"
+                    borderWidth={2}
+                    borderStyle="dashed"
+                    borderColor="gray.300"
+                    borderRadius="md"
                   >
-                    Add Question to Form
-                  </Button>
-                </VStack>
-              </CardBody>
-            </Card>
-          </Box>
-
-          {/* Right Panel - Live Preview */}
-          <Box flex={1} minW={0}>
-            <Card position="sticky" top={4}>
-              <CardBody>
-                <VStack spacing={4} align="stretch">
-                  <Flex justify="space-between" align="center">
-                    <Heading size="md">Form Preview</Heading>
-                    <Text fontSize="sm" color="gray.600">
-                      {questions.length} question
-                      {questions.length !== 1 ? "s" : ""}
+                    <Text color="gray.500" mb={2}>
+                      No questions yet. Add your first question below.
                     </Text>
-                  </Flex>
-                  <Divider />
+                  </Box>
+                ) : (
+                  <DndContext
+                    sensors={sensors}
+                    collisionDetection={closestCenter}
+                    onDragEnd={handleDragEnd}
+                  >
+                    <SortableContext
+                      items={questions.map((q) => q.id)}
+                      strategy={verticalListSortingStrategy}
+                    >
+                      <VStack spacing={3} align="stretch">
+                        {questions.map((question, index) => (
+                          <SortableQuestion
+                            key={question.id}
+                            question={question}
+                            index={index}
+                            onRemove={handleRemoveQuestion}
+                          />
+                        ))}
+                      </VStack>
+                    </SortableContext>
+                  </DndContext>
+                )}
 
-                  {questions.length === 0 ? (
-                    <Box
-                      p={8}
-                      textAlign="center"
-                      borderWidth={2}
-                      borderStyle="dashed"
-                      borderColor="gray.300"
-                      borderRadius="md"
+                <Divider />
+
+                {/* Add New Question - Inline at bottom */}
+                <Box
+                  p={4}
+                  borderWidth={2}
+                  borderStyle="dashed"
+                  borderColor="blue.300"
+                  borderRadius="md"
+                  bg="blue.50"
+                >
+                  <VStack spacing={4} align="stretch">
+                    <Flex justify="space-between" align="center">
+                      <Heading size="sm" color="blue.700">
+                        Add New Question
+                      </Heading>
+                      <HStack>
+                        <FormControl display="flex" alignItems="center">
+                          <FormLabel mb="0" fontSize="sm" mr={2}>
+                            Required
+                          </FormLabel>
+                          <Switch
+                            size="sm"
+                            isChecked={currentQuestion.required}
+                            onChange={(e) =>
+                              setCurrentQuestion((prev) => ({
+                                ...prev,
+                                required: e.target.checked,
+                              }))
+                            }
+                            colorScheme="blue"
+                          />
+                        </FormControl>
+                      </HStack>
+                    </Flex>
+
+                    <Flex gap={3} direction={{ base: "column", md: "row" }}>
+                      <FormControl flex={2}>
+                        <Input
+                          value={currentQuestion.label}
+                          onChange={(e) =>
+                            setCurrentQuestion((prev) => ({
+                              ...prev,
+                              label: e.target.value,
+                            }))
+                          }
+                          placeholder="Question label (optional)"
+                          size="md"
+                          bg="white"
+                        />
+                      </FormControl>
+
+                      <FormControl flex={1}>
+                        <Select
+                          value={currentQuestion.type}
+                          onChange={(e) =>
+                            setCurrentQuestion((prev) => ({
+                              ...prev,
+                              type: e.target.value,
+                              options: [],
+                            }))
+                          }
+                          size="md"
+                          bg="white"
+                        >
+                          <option value={INPUT_TYPES.TEXT}>Text</option>
+                          <option value={INPUT_TYPES.NUMBER}>Number</option>
+                          <option value={INPUT_TYPES.CURRENCY}>Currency</option>
+                          <option value={INPUT_TYPES.TEXTAREA}>Text Area</option>
+                          <option value={INPUT_TYPES.DATE}>Date</option>
+                          <option value={INPUT_TYPES.SELECT}>Select</option>
+                          <option value={INPUT_TYPES.DROPDOWN}>Dropdown</option>
+                          <option value={INPUT_TYPES.CHECKBOXES}>Checkboxes</option>
+                        </Select>
+                      </FormControl>
+                    </Flex>
+
+                    {needsOptions && (
+                      <FormControl>
+                        <HStack>
+                          <Input
+                            value={currentOption}
+                            onChange={(e) => setCurrentOption(e.target.value)}
+                            placeholder="Enter an option"
+                            size="sm"
+                            bg="white"
+                            onKeyPress={(e) => {
+                              if (e.key === "Enter") {
+                                e.preventDefault();
+                                handleAddOption();
+                              }
+                            }}
+                          />
+                          <IconButton
+                            icon={<FiPlus />}
+                            onClick={handleAddOption}
+                            colorScheme="blue"
+                            size="sm"
+                            aria-label="Add option"
+                          />
+                        </HStack>
+
+                        {currentQuestion.options.length > 0 && (
+                          <Wrap mt={2}>
+                            {currentQuestion.options.map((option, index) => (
+                              <WrapItem key={index}>
+                                <Tag
+                                  size="sm"
+                                  colorScheme="blue"
+                                  variant="solid"
+                                >
+                                  <TagLabel>{option}</TagLabel>
+                                  <TagCloseButton
+                                    onClick={() => handleRemoveOption(index)}
+                                  />
+                                </Tag>
+                              </WrapItem>
+                            ))}
+                          </Wrap>
+                        )}
+                      </FormControl>
+                    )}
+
+                    <Button
+                      leftIcon={<FiPlus />}
+                      onClick={handleAddQuestion}
+                      colorScheme="blue"
+                      size="md"
+                      w="full"
                     >
-                      <Text color="gray.500">
-                        No questions yet. Add questions to see them appear here.
-                      </Text>
-                    </Box>
-                  ) : (
-                    <DndContext
-                      sensors={sensors}
-                      collisionDetection={closestCenter}
-                      onDragEnd={handleDragEnd}
-                    >
-                      <SortableContext
-                        items={questions.map((q) => q.id)}
-                        strategy={verticalListSortingStrategy}
-                      >
-                        <Box maxH="70vh" overflowY="auto" pr={2}>
-                          {questions.map((question, index) => (
-                            <SortableQuestion
-                              key={question.id}
-                              question={question}
-                              index={index}
-                              onRemove={handleRemoveQuestion}
-                            />
-                          ))}
-                        </Box>
-                      </SortableContext>
-                    </DndContext>
-                  )}
-                </VStack>
-              </CardBody>
-            </Card>
-          </Box>
-        </Flex>
+                      Add Question
+                    </Button>
+                  </VStack>
+                </Box>
+              </VStack>
+            </CardBody>
+          </Card>
+        </VStack>
       </Box>
     </Box>
   );
