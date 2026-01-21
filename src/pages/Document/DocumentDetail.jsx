@@ -38,6 +38,7 @@ import {
   FiFolder,
   FiCalendar,
   FiAlertCircle,
+  FiEdit,
   FiMoreVertical,
   FiCheckCircle,
   FiClock,
