@@ -11,7 +11,7 @@ import PreviewModal from "./modals/PreviewModal";
 
 /**
  * Reusable preview button component for documents
- * @param {Object} document - Document object with id and metadata {fileName, key}
+ * @param {Object} document - Document object with id and metadata {fileName}
  * @param {boolean} isDisabled - Disable the button
  * @param {string} variant - Chakra UI button variant (default: "outline")
  * @param {string} size - Chakra UI button size (default: "md")
@@ -71,13 +71,6 @@ export const PreviewButton = ({
       };
     }
 
-    if (!document?.metadata?.key) {
-      return {
-        isValid: false,
-        error: "Document key is missing",
-      };
-    }
-
     if (!getFileName()) {
       return {
         isValid: false,
@@ -130,13 +123,12 @@ export const PreviewButton = ({
     onPreviewStart?.();
 
     try {
-      // Extract fileName, key, and id from document
+      // Extract fileName and id from document
       const fileName = getFileName();
-      const key = document.metadata.key;
       const id = document.id;
 
-      // Call API to preview document
-      const blob = await apiService.previewDocument(id, fileName, key);
+      // Call API to preview document (fileName only used in mock mode)
+      const blob = await apiService.previewDocument(id, fileName);
 
       // Set the blob and open the modal
       setFileBlob(blob);

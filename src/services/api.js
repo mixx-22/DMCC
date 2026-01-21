@@ -221,16 +221,15 @@ export const apiService = {
   /**
    * Preview a document from the server
    * @param {string} id - The document ID
-   * @param {string} fileName - The name of the file to preview
-   * @param {string} key - The unique key/identifier for the file
+   * @param {string} fileName - (Optional) The name of the file for mock mode only
    * @returns {Promise<Blob>} - The file blob for preview
    */
-  async previewDocument(id, fileName, key) {
+  async previewDocument(id, fileName = '') {
     if (!USE_API) {
       // Mock mode: create a mock file blob based on file extension
       const extension = fileName.split('.').pop().toLowerCase();
       let mimeType = 'application/octet-stream';
-      let mockContent = `Mock preview: ${fileName}\nKey: ${key}\nID: ${id}`;
+      let mockContent = `Mock preview: ${fileName}\nID: ${id}`;
       
       if (['jpg', 'jpeg', 'png', 'gif', 'webp'].includes(extension)) {
         mimeType = `image/${extension === 'jpg' ? 'jpeg' : extension}`;
@@ -256,9 +255,7 @@ export const apiService = {
     // Get token from cookie
     const token = cookieService.getToken();
 
-    const headers = {
-      "Content-Type": "application/json",
-    };
+    const headers = {};
 
     if (token) {
       headers.Authorization = `Bearer ${token}`;
