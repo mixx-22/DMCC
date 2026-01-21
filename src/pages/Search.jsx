@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import {
   Box,
@@ -14,7 +14,6 @@ import {
   Input,
   Button,
   VStack,
-  Select,
   Spinner,
   Center,
   Text,
@@ -22,6 +21,8 @@ import {
   GridItem,
 } from "@chakra-ui/react";
 import { FiGrid, FiList } from "react-icons/fi";
+import { Select } from "chakra-react-select";
+import { RangeDatepicker } from "chakra-dayzed-datepicker";
 import PageHeader from "../components/PageHeader";
 import UserAsyncSelect from "../components/UserAsyncSelect";
 import { GridView } from "../components/Document/GridView";
@@ -30,6 +31,7 @@ import apiService from "../services/api";
 
 const DOCUMENTS_ENDPOINT = "/documents";
 const USE_API = import.meta.env.VITE_USE_API !== "false";
+const DEBOUNCE_DELAY = 500; // 500ms debounce
 
 const Search = () => {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -47,12 +49,10 @@ const Search = () => {
   const [dateRange, setDateRange] = useState(
     searchParams.get("dateRange") || ""
   );
-  const [customStartDate, setCustomStartDate] = useState(
-    searchParams.get("startDate") || ""
-  );
-  const [customEndDate, setCustomEndDate] = useState(
-    searchParams.get("endDate") || ""
-  );
+  const [selectedDates, setSelectedDates] = useState([
+    searchParams.get("startDate") ? new Date(searchParams.get("startDate")) : null,
+    searchParams.get("endDate") ? new Date(searchParams.get("endDate")) : null,
+  ]);
   const [owners, setOwners] = useState([]);
 
   // Search results and loading state
@@ -60,6 +60,9 @@ const Search = () => {
   const [selectedDocument, setSelectedDocument] = useState(null);
   const [loading, setLoading] = useState(false);
   const [hasSearched, setHasSearched] = useState(false);
+
+  // Debounce timer ref
+  const debounceTimerRef = useRef(null);
 
   // Load owners from query params when URL changes
   useEffect(() => {
@@ -81,31 +84,27 @@ const Search = () => {
     localStorage.setItem("searchViewMode", viewMode);
   }, [viewMode]);
 
-  // Update URL when filters change
+  // Update URL when filters change (without debounce)
   useEffect(() => {
     const params = {};
     if (keyword) params.keyword = keyword;
     if (type) params.type = type;
     if (dateRange) params.dateRange = dateRange;
-    if (dateRange === "custom") {
-      if (customStartDate) params.startDate = customStartDate;
-      if (customEndDate) params.endDate = customEndDate;
+    if (dateRange === "custom" && selectedDates[0] && selectedDates[1]) {
+      params.startDate = selectedDates[0].toISOString().split('T')[0];
+      params.endDate = selectedDates[1].toISOString().split('T')[0];
     }
     if (owners.length > 0) {
       params.owners = encodeURIComponent(JSON.stringify(owners));
     }
     setSearchParams(params, { replace: true });
-    // We want this to run when filters change, not when setSearchParams changes
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [keyword, type, dateRange, customStartDate, customEndDate, owners]);
+  }, [keyword, type, dateRange, selectedDates, owners]);
 
   // Perform search with API request
-  const performSearch = async () => {
-    // Check if we have any filters applied
-    const hasFilters = keyword.trim() || type || dateRange || owners.length > 0;
-    
-    if (!hasFilters) {
-      // Don't load all documents when filters are cleared
+  const performSearch = useCallback(async () => {
+    // Only search if we have a keyword (as per requirement)
+    if (!keyword.trim()) {
       setSearchResults([]);
       setHasSearched(false);
       return;
@@ -170,20 +169,13 @@ const Search = () => {
             return docDate >= startDate;
           });
         }
-      } else if (dateRange === "custom" && (customStartDate || customEndDate)) {
+      } else if (dateRange === "custom" && selectedDates[0] && selectedDates[1]) {
         filtered = filtered.filter((doc) => {
           const docDate = new Date(doc.createdAt || doc.updatedAt);
-          if (customStartDate && customEndDate) {
-            return (
-              docDate >= new Date(customStartDate) &&
-              docDate <= new Date(customEndDate + "T23:59:59")
-            );
-          } else if (customStartDate) {
-            return docDate >= new Date(customStartDate);
-          } else if (customEndDate) {
-            return docDate <= new Date(customEndDate + "T23:59:59");
-          }
-          return true;
+          return (
+            docDate >= selectedDates[0] &&
+            docDate <= new Date(selectedDates[1].getTime() + 24 * 60 * 60 * 1000 - 1)
+          );
         });
       }
       
@@ -217,9 +209,9 @@ const Search = () => {
       
       if (dateRange) {
         params.dateRange = dateRange;
-        if (dateRange === "custom") {
-          if (customStartDate) params.startDate = customStartDate;
-          if (customEndDate) params.endDate = customEndDate;
+        if (dateRange === "custom" && selectedDates[0] && selectedDates[1]) {
+          params.startDate = selectedDates[0].toISOString().split('T')[0];
+          params.endDate = selectedDates[1].toISOString().split('T')[0];
         }
       }
       
@@ -247,14 +239,33 @@ const Search = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [keyword, type, dateRange, selectedDates, owners]);
 
-  // Trigger search when filters change
+  // Debounced search effect - only trigger when user is idle and has a keyword
   useEffect(() => {
-    performSearch();
-    // We want this to run when filters change
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [keyword, type, dateRange, customStartDate, customEndDate, owners]);
+    // Clear any existing timer
+    if (debounceTimerRef.current) {
+      clearTimeout(debounceTimerRef.current);
+    }
+
+    // Only debounce if we have a keyword
+    if (keyword.trim()) {
+      debounceTimerRef.current = setTimeout(() => {
+        performSearch();
+      }, DEBOUNCE_DELAY);
+    } else {
+      // If no keyword, clear results immediately
+      setSearchResults([]);
+      setHasSearched(false);
+    }
+
+    // Cleanup function
+    return () => {
+      if (debounceTimerRef.current) {
+        clearTimeout(debounceTimerRef.current);
+      }
+    };
+  }, [keyword, type, dateRange, selectedDates, owners, performSearch]);
 
   const toggleViewMode = () => {
     setViewMode((prev) => (prev === "grid" ? "list" : "grid"));
@@ -312,16 +323,20 @@ const Search = () => {
                   <FormControl>
                     <FormLabel>Type</FormLabel>
                     <Select
-                      value={type}
-                      onChange={(e) => setType(e.target.value)}
+                      value={type ? { value: type, label: type.charAt(0).toUpperCase() + type.slice(1) } : null}
+                      onChange={(option) => setType(option ? option.value : "")}
+                      options={[
+                        { value: "file", label: "File" },
+                        { value: "folder", label: "Folder" },
+                        { value: "auditSchedule", label: "Audit Schedule" },
+                        { value: "formTemplate", label: "Form Template" },
+                        { value: "formResponse", label: "Form Response" },
+                      ]}
                       placeholder="All types"
-                    >
-                      <option value="file">File</option>
-                      <option value="folder">Folder</option>
-                      <option value="auditSchedule">Audit Schedule</option>
-                      <option value="formTemplate">Form Template</option>
-                      <option value="formResponse">Form Response</option>
-                    </Select>
+                      isClearable
+                      colorScheme="blue"
+                      useBasicStyles
+                    />
                   </FormControl>
                 </GridItem>
 
@@ -330,44 +345,40 @@ const Search = () => {
                   <FormControl>
                     <FormLabel>Date Range</FormLabel>
                     <Select
-                      value={dateRange}
-                      onChange={(e) => setDateRange(e.target.value)}
+                      value={dateRange ? { value: dateRange, label: dateRange === "last7days" ? "Last 7 days" : dateRange === "last30days" ? "Last 30 days" : dateRange === "thisYear" ? "This year" : dateRange === "lastYear" ? "Last year" : dateRange === "today" ? "Today" : "Custom range" } : null}
+                      onChange={(option) => setDateRange(option ? option.value : "")}
+                      options={[
+                        { value: "today", label: "Today" },
+                        { value: "last7days", label: "Last 7 days" },
+                        { value: "last30days", label: "Last 30 days" },
+                        { value: "thisYear", label: "This year" },
+                        { value: "lastYear", label: "Last year" },
+                        { value: "custom", label: "Custom range" },
+                      ]}
                       placeholder="All dates"
-                    >
-                      <option value="today">Today</option>
-                      <option value="last7days">Last 7 days</option>
-                      <option value="last30days">Last 30 days</option>
-                      <option value="thisYear">This year</option>
-                      <option value="lastYear">Last year</option>
-                      <option value="custom">Custom range</option>
-                    </Select>
+                      isClearable
+                      colorScheme="blue"
+                      useBasicStyles
+                    />
                   </FormControl>
                 </GridItem>
 
                 {/* Custom Date Range */}
                 {dateRange === "custom" && (
-                  <>
-                    <GridItem>
-                      <FormControl>
-                        <FormLabel>Start Date</FormLabel>
-                        <Input
-                          type="date"
-                          value={customStartDate}
-                          onChange={(e) => setCustomStartDate(e.target.value)}
-                        />
-                      </FormControl>
-                    </GridItem>
-                    <GridItem>
-                      <FormControl>
-                        <FormLabel>End Date</FormLabel>
-                        <Input
-                          type="date"
-                          value={customEndDate}
-                          onChange={(e) => setCustomEndDate(e.target.value)}
-                        />
-                      </FormControl>
-                    </GridItem>
-                  </>
+                  <GridItem colSpan={{ base: 1, md: 2 }}>
+                    <FormControl>
+                      <FormLabel>Select Date Range</FormLabel>
+                      <RangeDatepicker
+                        selectedDates={selectedDates}
+                        onDateChange={setSelectedDates}
+                        propsConfigs={{
+                          inputProps: {
+                            placeholder: "Select date range",
+                          },
+                        }}
+                      />
+                    </FormControl>
+                  </GridItem>
                 )}
 
                 {/* Owners Filter */}
@@ -391,8 +402,7 @@ const Search = () => {
                     setKeyword("");
                     setType("");
                     setDateRange("");
-                    setCustomStartDate("");
-                    setCustomEndDate("");
+                    setSelectedDates([null, null]);
                     setOwners([]);
                   }}
                 >
@@ -408,7 +418,7 @@ const Search = () => {
           <Text fontSize="sm" color="gray.600">
             {hasSearched
               ? `${searchResults.length} result${searchResults.length !== 1 ? "s" : ""} found`
-              : "Enter search criteria to find documents"}
+              : "Enter a keyword to start searching"}
           </Text>
         </Flex>
 
@@ -421,10 +431,10 @@ const Search = () => {
           <Center py={12}>
             <VStack spacing={4}>
               <Text fontSize="lg" color="gray.500">
-                Start by entering search criteria
+                Enter a keyword to search
               </Text>
               <Text fontSize="sm" color="gray.400">
-                Use the filters above to search for documents
+                Search will start automatically as you type
               </Text>
             </VStack>
           </Center>
