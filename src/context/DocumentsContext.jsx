@@ -117,10 +117,8 @@ export const DocumentsProvider = ({ children }) => {
     }
   };
 
-  // Load documents on mount and when folder changes
-  useEffect(() => {
-    fetchDocuments(currentFolderId);
-  }, [currentFolderId]);
+  // Note: fetchDocuments is no longer called automatically here.
+  // Pages that need documents (like /documents) should call fetchDocuments explicitly.
 
   // Generate unique ID
   const generateId = () => {
