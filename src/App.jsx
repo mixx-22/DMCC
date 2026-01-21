@@ -106,7 +106,7 @@ function App() {
                       }
                     />
                     <Route
-                      path="/form-template-builder"
+                      path="/create-form"
                       element={
                         <DocumentsProvider>
                           <FormTemplateBuilder />

@@ -82,7 +82,7 @@ const Documents = () => {
   } = useDisclosure();
 
   const handleFormTemplateCreate = () => {
-    navigate("/form-template-builder", {
+    navigate("/create-form", {
       state: { parentId: currentFolderId, path: "/" },
     });
   };
@@ -106,7 +106,11 @@ const Documents = () => {
         });
         return { success: true, filename: file.name };
       } catch (error) {
-        return { success: false, filename: file.name, error: error?.message || error };
+        return {
+          success: false,
+          filename: file.name,
+          error: error?.message || error,
+        };
       }
     });
 
@@ -128,13 +132,21 @@ const Documents = () => {
             </Text>
             <List spacing={1} fontSize="sm">
               {successful.map((r, i) => (
-                <ListItem key={`success-${i}`} display="flex" alignItems="center">
+                <ListItem
+                  key={`success-${i}`}
+                  display="flex"
+                  alignItems="center"
+                >
                   <Icon as={FiCheckCircle} color="green.500" mr={2} />
                   {r.filename}
                 </ListItem>
               ))}
               {failed.map((r, i) => (
-                <ListItem key={`failed-${i}`} display="flex" alignItems="center">
+                <ListItem
+                  key={`failed-${i}`}
+                  display="flex"
+                  alignItems="center"
+                >
                   <Icon as={FiXCircle} color="red.500" mr={2} />
                   {r.filename}
                 </ListItem>
@@ -148,7 +160,10 @@ const Documents = () => {
       toast.error("Upload Failed", {
         description: (
           <Box>
-            <Text mb={2}>Failed to upload {failed.length} file{failed.length > 1 ? "s" : ""}</Text>
+            <Text mb={2}>
+              Failed to upload {failed.length} file
+              {failed.length > 1 ? "s" : ""}
+            </Text>
             <List spacing={1} fontSize="sm">
               {failed.map((r, i) => (
                 <ListItem key={i} display="flex" alignItems="center">
@@ -229,7 +244,9 @@ const Documents = () => {
         ) : documents.length === 0 ? (
           <EmptyState
             currentFolderId={currentFolderId}
-            onUploadClick={() => document.querySelector('input[type="file"]')?.click()}
+            onUploadClick={() =>
+              document.querySelector('input[type="file"]')?.click()
+            }
             onCreateFolderClick={onFolderModalOpen}
           />
         ) : viewMode === "grid" ? (

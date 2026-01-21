@@ -26,6 +26,7 @@ import {
   NumberInput,
   NumberInputField,
   Checkbox,
+  Stack,
 } from "@chakra-ui/react";
 import { FiPlus, FiTrash2, FiSave, FiMenu, FiArrowLeft } from "react-icons/fi";
 import { toast } from "sonner";
@@ -53,6 +54,7 @@ import {
 } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import PageHeader from "../components/PageHeader";
+import PageFooter from "../components/PageFooter";
 
 // Sortable Question Component
 const SortableQuestion = ({ question, index, onRemove }) => {
@@ -351,16 +353,18 @@ const FormTemplateBuilder = () => {
   return (
     <Box>
       <PageHeader>
-        <Flex justify="space-between" align="center" w="full">
-          <HStack spacing={4}>
-            <IconButton
-              icon={<FiArrowLeft />}
-              onClick={() => navigate("/documents")}
-              variant="ghost"
-              aria-label="Back to documents"
-            />
-            <Heading size="lg">Create Form Template</Heading>
-          </HStack>
+        <HStack spacing={4}>
+          <IconButton
+            icon={<FiArrowLeft />}
+            onClick={() => navigate("/documents")}
+            variant="ghost"
+            aria-label="Back to documents"
+          />
+          <Heading variant="pageTitle">Create Form Template</Heading>{" "}
+        </HStack>
+      </PageHeader>
+      <PageFooter>
+        <Flex gap={4} justifyContent="flex-end">
           <Button
             leftIcon={<FiSave />}
             colorScheme="brandPrimary"
@@ -370,7 +374,7 @@ const FormTemplateBuilder = () => {
             Save Form Template
           </Button>
         </Flex>
-      </PageHeader>
+      </PageFooter>
 
       <Box p={{ base: 4, md: 8 }} maxW="900px" mx="auto">
         <VStack spacing={6} align="stretch">
@@ -379,7 +383,7 @@ const FormTemplateBuilder = () => {
             <CardBody>
               <VStack spacing={4} align="stretch">
                 <Heading size="md">Form Information</Heading>
-                <Flex gap={4} direction={{ base: "column", md: "row" }}>
+                <Stack spacing={4}>
                   <FormControl isRequired flex={1}>
                     <FormLabel>Form Title</FormLabel>
                     <Input
@@ -409,7 +413,7 @@ const FormTemplateBuilder = () => {
                       size="lg"
                     />
                   </FormControl>
-                </Flex>
+                </Stack>
               </VStack>
             </CardBody>
           </Card>
@@ -533,11 +537,15 @@ const FormTemplateBuilder = () => {
                           <option value={INPUT_TYPES.TEXT}>Text</option>
                           <option value={INPUT_TYPES.NUMBER}>Number</option>
                           <option value={INPUT_TYPES.CURRENCY}>Currency</option>
-                          <option value={INPUT_TYPES.TEXTAREA}>Text Area</option>
+                          <option value={INPUT_TYPES.TEXTAREA}>
+                            Text Area
+                          </option>
                           <option value={INPUT_TYPES.DATE}>Date</option>
                           <option value={INPUT_TYPES.SELECT}>Select</option>
                           <option value={INPUT_TYPES.DROPDOWN}>Dropdown</option>
-                          <option value={INPUT_TYPES.CHECKBOXES}>Checkboxes</option>
+                          <option value={INPUT_TYPES.CHECKBOXES}>
+                            Checkboxes
+                          </option>
                         </Select>
                       </FormControl>
                     </Flex>
