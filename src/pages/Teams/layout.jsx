@@ -18,8 +18,6 @@ import {
   Avatar,
   AvatarGroup,
   useColorModeValue,
-  Tooltip,
-  Link,
 } from "@chakra-ui/react";
 import { motion } from "framer-motion";
 import { useEffect } from "react";
@@ -201,35 +199,13 @@ const TeamsList = () => {
                                 const fullName = `${member.firstName || ""} ${
                                   member.lastName || ""
                                 }`.trim();
-                                
-                                if (!memberId) {
-                                  return (
-                                    <Tooltip key={`member-${memberIndex}-no-id`} label={fullName}>
-                                      <Avatar
-                                        name={fullName}
-                                        src={member?.profilePicture}
-                                        borderColor={avatarBorderColor}
-                                      />
-                                    </Tooltip>
-                                  );
-                                }
-                                
                                 return (
-                                  <Tooltip key={`member-${memberIndex}-${memberId}`} label={fullName}>
-                                    <Link
-                                      as={RouterLink}
-                                      to={`/users/${memberId}`}
-                                      onClick={(e) => e.stopPropagation()}
-                                    >
-                                      <Avatar
-                                        name={fullName}
-                                        src={member?.profilePicture}
-                                        borderColor={avatarBorderColor}
-                                        cursor="pointer"
-                                        _hover={{ opacity: 0.8 }}
-                                      />
-                                    </Link>
-                                  </Tooltip>
+                                  <Avatar
+                                    name={fullName}
+                                    src={member?.profilePicture}
+                                    borderColor={avatarBorderColor}
+                                    key={`member-${memberIndex}-${memberId}`}
+                                  />
                                 );
                               })}
                             </AvatarGroup>
