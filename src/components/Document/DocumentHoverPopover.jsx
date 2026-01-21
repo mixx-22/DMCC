@@ -13,12 +13,14 @@ import {
   Icon,
   Avatar,
   Box,
+  Link,
 } from "@chakra-ui/react";
 import { FiFile, FiFolder } from "react-icons/fi";
 import { RxCounterClockwiseClock } from "react-icons/rx";
 import { getDocumentIcon } from "./DocumentIcon";
 import Timestamp from "../Timestamp";
 import { useUser } from "../../context/_useContext";
+import { Link as RouterLink } from "react-router-dom";
 
 export const DocumentHoverPopover = ({ document: doc, children }) => {
   const { user: currentUser } = useUser();
@@ -58,9 +60,22 @@ export const DocumentHoverPopover = ({ document: doc, children }) => {
                   name={fullName}
                   src={doc?.owner?.profilePicture}
                 />
-                <Text>
-                  {currentUser._id === doc?.owner?.id ? "You" : fullName}
-                </Text>
+                {doc?.owner?.id ? (
+                  <Link
+                    as={RouterLink}
+                    to={`/users/${doc.owner.id}`}
+                    onClick={(e) => e.stopPropagation()}
+                    _hover={{ textDecoration: "underline" }}
+                  >
+                    <Text>
+                      {currentUser._id === doc?.owner?.id ? "You" : fullName}
+                    </Text>
+                  </Link>
+                ) : (
+                  <Text>
+                    {currentUser._id === doc?.owner?.id ? "You" : fullName}
+                  </Text>
+                )}
               </HStack>
               {doc?.type === "file" && doc?.metadata?.filename && (
                 <HStack>

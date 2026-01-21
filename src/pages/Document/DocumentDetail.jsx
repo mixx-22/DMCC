@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, Link as RouterLink } from "react-router-dom";
 import {
   Box,
   VStack,
@@ -28,6 +28,7 @@ import {
   Editable,
   EditableTextarea,
   EditablePreview,
+  Link,
 } from "@chakra-ui/react";
 import {
   FiEdit,
@@ -416,28 +417,59 @@ const DocumentDetail = () => {
                     <Text fontSize="sm" color="gray.600" fontWeight="medium">
                       Owner
                     </Text>
-                    <HStack mt={2}>
-                      <Avatar
-                        size="sm"
-                        name={
-                          document?.owner?.firstName && document?.owner?.lastName
-                            ? `${document.owner.firstName} ${document.owner.lastName}`
-                            : "Unknown"
-                        }
-                      />
-                      <VStack align="start" spacing={0}>
-                        <Text fontSize="sm" fontWeight="medium">
-                          {document?.owner?.firstName && document?.owner?.lastName
-                            ? `${document.owner.firstName} ${document.owner.lastName}`
-                            : "Unknown"}
-                        </Text>
-                        {document?.owner?.team && (
-                          <Text fontSize="xs" color="gray.500">
-                            {document.owner.team}
+                    {document?.owner?.id ? (
+                      <Link
+                        as={RouterLink}
+                        to={`/users/${document.owner.id}`}
+                        _hover={{ textDecoration: "none" }}
+                      >
+                        <HStack mt={2} _hover={{ opacity: 0.8 }}>
+                          <Avatar
+                            size="sm"
+                            name={
+                              document?.owner?.firstName && document?.owner?.lastName
+                                ? `${document.owner.firstName} ${document.owner.lastName}`
+                                : "Unknown"
+                            }
+                          />
+                          <VStack align="start" spacing={0}>
+                            <Text fontSize="sm" fontWeight="medium">
+                              {document?.owner?.firstName && document?.owner?.lastName
+                                ? `${document.owner.firstName} ${document.owner.lastName}`
+                                : "Unknown"}
+                            </Text>
+                            {document?.owner?.team && (
+                              <Text fontSize="xs" color="gray.500">
+                                {document.owner.team}
+                              </Text>
+                            )}
+                          </VStack>
+                        </HStack>
+                      </Link>
+                    ) : (
+                      <HStack mt={2}>
+                        <Avatar
+                          size="sm"
+                          name={
+                            document?.owner?.firstName && document?.owner?.lastName
+                              ? `${document.owner.firstName} ${document.owner.lastName}`
+                              : "Unknown"
+                          }
+                        />
+                        <VStack align="start" spacing={0}>
+                          <Text fontSize="sm" fontWeight="medium">
+                            {document?.owner?.firstName && document?.owner?.lastName
+                              ? `${document.owner.firstName} ${document.owner.lastName}`
+                              : "Unknown"}
                           </Text>
-                        )}
-                      </VStack>
-                    </HStack>
+                          {document?.owner?.team && (
+                            <Text fontSize="xs" color="gray.500">
+                              {document.owner.team}
+                            </Text>
+                          )}
+                        </VStack>
+                      </HStack>
+                    )}
                   </Box>
 
                   {document?.createdAt && (

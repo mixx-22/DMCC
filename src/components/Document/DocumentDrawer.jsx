@@ -22,6 +22,7 @@ import {
   MenuItem,
   Flex,
   useColorModeValue,
+  Link,
 } from "@chakra-ui/react";
 import {
   FiTrash2,
@@ -41,6 +42,7 @@ import PrivacySettingsModal from "./modals/PrivacySettingsModal";
 import { useDocuments } from "../../context/_useContext";
 import { toast } from "sonner";
 import { useEffect, useRef, useState } from "react";
+import { Link as RouterLink } from "react-router-dom";
 
 const DocumentDrawer = ({ document, isOpen, onClose }) => {
   const errorColor = useColorModeValue("error.600", "error.400");
@@ -385,11 +387,24 @@ const DocumentDrawer = ({ document, isOpen, onClose }) => {
                     <Text fontSize="sm" color="gray.600">
                       Owner
                     </Text>
-                    <Text fontSize="sm">
-                      {document?.owner?.firstName && document?.owner?.lastName
-                        ? `${document.owner.firstName} ${document.owner.lastName}`
-                        : "Unknown"}
-                    </Text>
+                    {document?.owner?.id ? (
+                      <Link
+                        as={RouterLink}
+                        to={`/users/${document.owner.id}`}
+                        fontSize="sm"
+                        _hover={{ textDecoration: "underline" }}
+                      >
+                        {document?.owner?.firstName && document?.owner?.lastName
+                          ? `${document.owner.firstName} ${document.owner.lastName}`
+                          : "Unknown"}
+                      </Link>
+                    ) : (
+                      <Text fontSize="sm">
+                        {document?.owner?.firstName && document?.owner?.lastName
+                          ? `${document.owner.firstName} ${document.owner.lastName}`
+                          : "Unknown"}
+                      </Text>
+                    )}
                     {document?.owner?.team && (
                       <Text fontSize="xs" color="gray.500">
                         {document.owner.team}
