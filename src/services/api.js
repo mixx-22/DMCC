@@ -207,7 +207,7 @@ export const apiService = {
       if (data.url) {
         const fileResponse = await fetch(data.url);
         if (!fileResponse.ok) {
-          throw new Error(`Failed to download file: ${fileResponse.status}`);
+          throw new Error(`Failed to download file from URL: HTTP ${fileResponse.status}`);
         }
         return await fileResponse.blob();
       }

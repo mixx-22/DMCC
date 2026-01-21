@@ -113,8 +113,8 @@ export const DownloadButton = ({
       // Cleanup
       window.URL.revokeObjectURL(url);
 
-      toast.success("Download Started", {
-        description: `${fileName} is downloading`,
+      toast.success("Download Initiated", {
+        description: `${fileName} download has been initiated`,
         duration: 2000,
       });
 
