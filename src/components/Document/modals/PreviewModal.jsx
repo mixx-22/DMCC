@@ -3,25 +3,26 @@ import {
   Modal,
   ModalOverlay,
   ModalContent,
-  ModalHeader,
-  ModalBody,
-  ModalCloseButton,
   Box,
   Image,
   Text,
   Spinner,
   Center,
+  VStack,
+  IconButton,
 } from "@chakra-ui/react";
+import { FiX } from "react-icons/fi";
 import { getPreviewType } from "../../../utils/fileTypes";
 
 /**
- * PreviewModal component for displaying file previews in a lightbox
+ * PreviewModal component for displaying file previews in a full-screen lightbox
  * @param {boolean} isOpen - Whether the modal is open
  * @param {Function} onClose - Callback to close the modal
+ * @param {string} title - Document title
  * @param {string} fileName - Name of the file being previewed
  * @param {Blob} fileBlob - The file blob to preview
  */
-const PreviewModal = ({ isOpen, onClose, fileName, fileBlob }) => {
+const PreviewModal = ({ isOpen, onClose, title, fileName, fileBlob }) => {
   const [previewUrl, setPreviewUrl] = useState(null);
   const [previewType, setPreviewType] = useState(null);
 
@@ -50,8 +51,8 @@ const PreviewModal = ({ isOpen, onClose, fileName, fileBlob }) => {
   const renderPreviewContent = () => {
     if (!previewUrl) {
       return (
-        <Center minH="400px">
-          <Spinner size="xl" color="blue.500" />
+        <Center h="100%">
+          <Spinner size="xl" color="white" thickness="4px" />
         </Center>
       );
     }
@@ -63,15 +64,15 @@ const PreviewModal = ({ isOpen, onClose, fileName, fileBlob }) => {
             display="flex"
             justifyContent="center"
             alignItems="center"
-            minH="400px"
-            maxH="80vh"
-            overflow="auto"
+            h="100%"
+            w="100%"
+            p={4}
           >
             <Image
               src={previewUrl}
               alt={fileName}
               maxW="100%"
-              maxH="80vh"
+              maxH="100%"
               objectFit="contain"
             />
           </Box>
@@ -83,13 +84,15 @@ const PreviewModal = ({ isOpen, onClose, fileName, fileBlob }) => {
             display="flex"
             justifyContent="center"
             alignItems="center"
-            minH="400px"
+            h="100%"
+            w="100%"
+            p={4}
           >
             <video
               controls
               style={{
                 maxWidth: "100%",
-                maxHeight: "80vh",
+                maxHeight: "100%",
               }}
             >
               <source src={previewUrl} />
@@ -100,7 +103,7 @@ const PreviewModal = ({ isOpen, onClose, fileName, fileBlob }) => {
 
       case "pdf":
         return (
-          <Box minH="80vh" h="80vh">
+          <Box h="100%" w="100%" p={4}>
             <iframe
               src={previewUrl}
               style={{
@@ -115,8 +118,8 @@ const PreviewModal = ({ isOpen, onClose, fileName, fileBlob }) => {
 
       default:
         return (
-          <Center minH="400px">
-            <Text color="gray.500">
+          <Center h="100%">
+            <Text color="white" fontSize="lg">
               Preview not available for this file type
             </Text>
           </Center>
@@ -125,12 +128,85 @@ const PreviewModal = ({ isOpen, onClose, fileName, fileBlob }) => {
   };
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} size="6xl" isCentered>
-      <ModalOverlay bg="blackAlpha.800" />
-      <ModalContent maxW="90vw" maxH="90vh">
-        <ModalHeader>{fileName || "File Preview"}</ModalHeader>
-        <ModalCloseButton />
-        <ModalBody pb={6}>{renderPreviewContent()}</ModalBody>
+    <Modal 
+      isOpen={isOpen} 
+      onClose={onClose} 
+      size="full"
+      motionPreset="fadeIn"
+    >
+      <ModalOverlay 
+        bg="rgba(0, 0, 0, 0.92)" 
+        backdropFilter="blur(4px)"
+      />
+      <ModalContent
+        bg="transparent"
+        boxShadow="none"
+        m={0}
+        maxW="100vw"
+        maxH="100vh"
+        h="100vh"
+        w="100vw"
+        overflow="hidden"
+      >
+        {/* Header with title, filename, and close button */}
+        <Box
+          position="absolute"
+          top={0}
+          left={0}
+          right={0}
+          zIndex={2}
+          p={6}
+        >
+          <VStack align="flex-start" spacing={1}>
+            <Text 
+              color="white" 
+              fontSize="xl" 
+              fontWeight="semibold"
+              textShadow="0 2px 4px rgba(0,0,0,0.5)"
+            >
+              {title || "File Preview"}
+            </Text>
+            <Text 
+              color="whiteAlpha.800" 
+              fontSize="sm"
+              textShadow="0 1px 2px rgba(0,0,0,0.5)"
+            >
+              {fileName}
+            </Text>
+          </VStack>
+          
+          <IconButton
+            icon={<FiX size={24} />}
+            onClick={onClose}
+            position="absolute"
+            top={6}
+            right={6}
+            aria-label="Close preview"
+            variant="ghost"
+            color="white"
+            size="lg"
+            _hover={{
+              bg: "whiteAlpha.200",
+            }}
+            _active={{
+              bg: "whiteAlpha.300",
+            }}
+          />
+        </Box>
+
+        {/* Preview content area */}
+        <Box
+          flex={1}
+          display="flex"
+          alignItems="center"
+          justifyContent="center"
+          position="relative"
+          pt="80px"
+          pb="40px"
+          px={4}
+        >
+          {renderPreviewContent()}
+        </Box>
       </ModalContent>
     </Modal>
   );

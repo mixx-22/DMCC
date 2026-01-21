@@ -185,6 +185,7 @@ export const PreviewButton = ({
         <PreviewModal
           isOpen={isOpen}
           onClose={handleModalClose}
+          title={document?.title}
           fileName={getFileName()}
           fileBlob={fileBlob}
         />
@@ -216,6 +217,7 @@ export const PreviewButton = ({
       <PreviewModal
         isOpen={isOpen}
         onClose={handleModalClose}
+        title={document?.title}
         fileName={getFileName()}
         fileBlob={fileBlob}
       />
