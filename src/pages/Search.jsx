@@ -21,7 +21,7 @@ import {
   Grid,
   GridItem,
 } from "@chakra-ui/react";
-import { FiGrid, FiList, FiSearch } from "react-icons/fi";
+import { FiGrid, FiList } from "react-icons/fi";
 import PageHeader from "../components/PageHeader";
 import UserAsyncSelect from "../components/UserAsyncSelect";
 import { GridView } from "../components/Document/GridView";
@@ -57,7 +57,7 @@ const Search = () => {
   const [filteredDocuments, setFilteredDocuments] = useState([]);
   const [selectedDocument, setSelectedDocument] = useState(null);
 
-  // Load owners from query params on mount
+  // Load owners from query params when URL changes
   useEffect(() => {
     const ownersParam = searchParams.get("owners");
     if (ownersParam) {
@@ -67,10 +67,10 @@ const Search = () => {
       } catch (e) {
         console.error("Failed to parse owners from query params:", e);
       }
+    } else {
+      setOwners([]);
     }
-    // Only run on mount
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [searchParams]);
 
   // Persist view mode
   useEffect(() => {
@@ -194,11 +194,6 @@ const Search = () => {
     }
   };
 
-  const handleSearch = () => {
-    // Trigger re-filter by updating a dummy state or just let useEffect handle it
-    // The useEffect dependencies will trigger the filter
-  };
-
   return (
     <Box>
       <PageHeader>
@@ -230,23 +225,11 @@ const Search = () => {
                 <GridItem colSpan={{ base: 1, md: 2 }}>
                   <FormControl>
                     <FormLabel>Keyword</FormLabel>
-                    <HStack>
-                      <Input
-                        value={keyword}
-                        onChange={(e) => setKeyword(e.target.value)}
-                        placeholder="Search by title or description..."
-                        onKeyDown={(e) => {
-                          if (e.key === "Enter") handleSearch();
-                        }}
-                      />
-                      <Button
-                        leftIcon={<FiSearch />}
-                        colorScheme="brandPrimary"
-                        onClick={handleSearch}
-                      >
-                        Search
-                      </Button>
-                    </HStack>
+                    <Input
+                      value={keyword}
+                      onChange={(e) => setKeyword(e.target.value)}
+                      placeholder="Search by title or description..."
+                    />
                   </FormControl>
                 </GridItem>
 
