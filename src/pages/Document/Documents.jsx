@@ -163,12 +163,10 @@ const Documents = () => {
     const timeDiff = now - lastClickTime;
 
     if (lastClickId === doc.id && timeDiff < 300) {
-      if (doc.type === "folder") {
+      if (doc.type === "folder" || doc.type === "auditSchedule") {
         const folderTitle = doc?.title || "Untitled";
         navigateToFolder(doc.id, folderTitle);
         navigate(`/documents/folders/${doc.id}`);
-      } else if (doc.type === "auditSchedule") {
-        navigate(`/documents/audit-schedule/${doc.id}`);
       } else if (doc.type === "file") {
         navigate(`/document/${doc.id}`);
       }
