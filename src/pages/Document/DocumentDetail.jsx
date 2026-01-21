@@ -30,9 +30,7 @@ import {
   EditablePreview,
 } from "@chakra-ui/react";
 import {
-  FiEdit,
   FiTrash2,
-  FiDownload,
   FiMove,
   FiShare2,
   FiFile,
@@ -53,6 +51,7 @@ import PageFooter from "../../components/PageFooter";
 import DeleteDocumentModal from "../../components/Document/modals/DeleteDocumentModal";
 import MoveDocumentModal from "../../components/Document/modals/MoveDocumentModal";
 import PrivacySettingsModal from "../../components/Document/modals/PrivacySettingsModal";
+import DownloadButton from "../../components/Document/DownloadButton";
 import Timestamp from "../../components/Timestamp";
 import Breadcrumbs from "../../components/Document/Breadcrumbs";
 import { useDocuments } from "../../context/_useContext";
@@ -147,16 +146,6 @@ const DocumentDetail = () => {
     const sizes = ["Bytes", "KB", "MB", "GB"];
     const i = Math.floor(Math.log(bytes) / Math.log(k));
     return Math.round((bytes / Math.pow(k, i)) * 100) / 100 + " " + sizes[i];
-  };
-
-  const handleDownload = () => {
-    if (document?.type === "file" && document?.metadata?.key) {
-      const link = window.document.createElement("a");
-      link.href = document.metadata.key;
-      link.download =
-        document?.metadata?.filename || document?.title || "download";
-      link.click();
-    }
   };
 
   const isDocumentValid = () => {
@@ -750,15 +739,13 @@ const DocumentDetail = () => {
         <HStack spacing={3} justify="flex-end" w="full">
           {document?.type === "file" && document?.metadata?.key && (
             <Tooltip label="Download this file">
-              <Button
-                leftIcon={<FiDownload />}
-                size="md"
-                colorScheme="blue"
-                onClick={handleDownload}
-                isDisabled={!isValid}
-              >
-                Download
-              </Button>
+              <Box>
+                <DownloadButton
+                  document={document}
+                  size="md"
+                  isDisabled={!isValid}
+                />
+              </Box>
             </Tooltip>
           )}
           <Tooltip label="Preview document">

@@ -158,6 +158,65 @@ export const apiService = {
       key: data.key,
     };
   },
+
+  /**
+   * Download a document from the server
+   * @param {string} fileName - The name of the file to download
+   * @param {string} key - The unique key/identifier for the file
+   * @returns {Promise<Blob>} - The file blob for download
+   */
+  async downloadDocument(fileName, key) {
+    if (!USE_API) {
+      // Mock mode: create a simple text file blob
+      const mockContent = `Mock file: ${fileName}\nKey: ${key}\nDownloaded at: ${new Date().toISOString()}`;
+      return new Blob([mockContent], { type: 'text/plain' });
+    }
+
+    // Get token from cookie
+    const token = cookieService.getToken();
+
+    const headers = {
+      "Content-Type": "application/json",
+    };
+
+    if (token) {
+      headers.Authorization = `Bearer ${token}`;
+    }
+
+    const response = await fetch(createApiUrl("/documents/download"), {
+      method: "POST",
+      headers,
+      credentials: "include",
+      body: JSON.stringify({ fileName, key }),
+    });
+
+    if (!response.ok) {
+      if (response.status === 401) {
+        cookieService.removeToken();
+        window.location.href = "/login";
+      }
+      throw new Error(`Download failed with status ${response.status}`);
+    }
+
+    // Check content type to determine if it's a blob or JSON
+    const contentType = response.headers.get("content-type");
+    
+    if (contentType && contentType.includes("application/json")) {
+      // Response is JSON, might contain a URL
+      const data = await response.json();
+      if (data.url) {
+        const fileResponse = await fetch(data.url);
+        if (!fileResponse.ok) {
+          throw new Error(`Failed to download file from URL: HTTP ${fileResponse.status}`);
+        }
+        return await fileResponse.blob();
+      }
+      throw new Error("Invalid response format: expected file or URL");
+    }
+    
+    // Response is the file itself
+    return await response.blob();
+  },
 };
 
 export default apiService;
