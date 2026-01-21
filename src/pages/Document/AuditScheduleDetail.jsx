@@ -17,15 +17,12 @@ import {
   Center,
   Badge,
   Container,
-  IconButton,
-  useDisclosure,
   Accordion,
   AccordionItem,
   AccordionButton,
   AccordionPanel,
   AccordionIcon,
   SimpleGrid,
-  Tooltip,
   Alert,
   AlertIcon,
   AlertTitle,
@@ -37,7 +34,6 @@ import {
   FiFile,
   FiAlertCircle,
   FiCheckCircle,
-  FiPlus,
   FiTrash2,
   FiSave,
 } from "react-icons/fi";
@@ -60,7 +56,6 @@ const AuditScheduleDetail = () => {
   const [auditSchedule, setAuditSchedule] = useState(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [selectedTeamId, setSelectedTeamId] = useState(null);
   const [teamData, setTeamData] = useState({});
 
   const fetchedRef = useRef(false);
@@ -171,43 +166,6 @@ const AuditScheduleDetail = () => {
         description: error.message || "Could not remove team from audit schedule",
         duration: 3000,
       });
-    }
-  };
-
-  // Handle updating team-specific data
-  const handleUpdateTeamData = async (teamId, field, value) => {
-    try {
-      const updatedOrganization = { ...(auditSchedule.metadata.organization || {}) };
-      
-      if (!updatedOrganization[teamId]) {
-        throw new Error("Team not found in organization");
-      }
-
-      updatedOrganization[teamId] = {
-        ...updatedOrganization[teamId],
-        [field]: value,
-      };
-
-      const updatedMetadata = {
-        ...auditSchedule.metadata,
-        organization: updatedOrganization,
-      };
-
-      await updateDocument(id, { metadata: updatedMetadata });
-
-      setAuditSchedule({
-        ...auditSchedule,
-        metadata: updatedMetadata,
-      });
-
-      return true;
-    } catch (error) {
-      console.error(`Failed to update team ${field}:`, error);
-      toast.error(`Failed to Update ${field}`, {
-        description: error.message || `Could not update ${field}`,
-        duration: 3000,
-      });
-      return false;
     }
   };
 

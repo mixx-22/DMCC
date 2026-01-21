@@ -30,7 +30,6 @@ import {
   Center,
 } from "@chakra-ui/react";
 import {
-  FiFile,
   FiFolder,
   FiPlus,
   FiX,
