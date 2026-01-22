@@ -228,7 +228,7 @@ const FormTemplateBuilder = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { id } = useParams();
-  const { createDocument, updateDocument, getDocument } = useDocuments();
+  const { createDocument, updateDocument, fetchDocumentById } = useDocuments();
   const { parentId, path } = location.state || {};
 
   const [formData, setFormData] = useState({
@@ -255,7 +255,7 @@ const FormTemplateBuilder = () => {
     const loadFormTemplate = async () => {
       if (id) {
         try {
-          const document = await getDocument(id);
+          const document = await fetchDocumentById(id);
           if (document && document.type === "formTemplate") {
             setFormData({
               title: document.title || "",
@@ -273,7 +273,7 @@ const FormTemplateBuilder = () => {
       }
     };
     loadFormTemplate();
-  }, [id, getDocument]);
+  }, [id, fetchDocumentById]);
 
   const sensors = useSensors(
     useSensor(PointerSensor),
