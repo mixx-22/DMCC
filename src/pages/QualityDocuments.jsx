@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { Box, Spinner, Center, Stack, Heading } from "@chakra-ui/react";
 import { toast } from "sonner";
 import PageHeader from "../components/PageHeader";
@@ -16,10 +16,27 @@ const QualityDocuments = () => {
   const [loading, setLoading] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalCount, setTotalCount] = useState(0);
+  
+  // Track if a fetch is in progress to prevent duplicate requests
+  const fetchingRef = useRef(false);
+  const abortControllerRef = useRef(null);
 
-  // Fetch quality documents
-  const fetchQualityDocuments = async (page = 1) => {
+  // Fetch quality documents with abort controller for cleanup
+  const fetchQualityDocuments = useCallback(async (page = 1) => {
+    // Prevent duplicate requests
+    if (fetchingRef.current) {
+      return;
+    }
+
+    // Cancel any pending request
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+    }
+
+    fetchingRef.current = true;
+    abortControllerRef.current = new AbortController();
     setLoading(true);
+
     try {
       const params = {
         page,
@@ -29,6 +46,7 @@ const QualityDocuments = () => {
       const response = await apiService.request("/documents/quality", {
         method: "GET",
         params,
+        signal: abortControllerRef.current.signal,
       });
 
       if (response.success) {
@@ -40,6 +58,10 @@ const QualityDocuments = () => {
         );
       }
     } catch (error) {
+      // Don't show error if request was aborted
+      if (error.name === "AbortError") {
+        return;
+      }
       console.error("Failed to fetch quality documents:", error);
       toast.error("Error", {
         description: "Failed to load quality documents",
@@ -49,12 +71,20 @@ const QualityDocuments = () => {
       setTotalCount(0);
     } finally {
       setLoading(false);
+      fetchingRef.current = false;
     }
-  };
+  }, []);
 
   useEffect(() => {
     fetchQualityDocuments(currentPage);
-  }, [currentPage]);
+
+    // Cleanup function to abort request on unmount
+    return () => {
+      if (abortControllerRef.current) {
+        abortControllerRef.current.abort();
+      }
+    };
+  }, [currentPage, fetchQualityDocuments]);
 
   const handleDocumentClick = (doc) => {
     // The ListView component already handles navigation on row click
