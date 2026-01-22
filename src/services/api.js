@@ -217,6 +217,83 @@ export const apiService = {
     // Response is the file itself
     return await response.blob();
   },
+
+  /**
+   * Preview a document from the server
+   * @param {string} id - The document ID
+   * @param {string} fileName - (Optional) The name of the file for mock mode only
+   * @returns {Promise<Blob>} - The file blob for preview
+   */
+  async previewDocument(id, fileName = '') {
+    if (!USE_API) {
+      // Mock mode: create a mock file blob based on file extension
+      const extension = fileName.split('.').pop().toLowerCase();
+      let mimeType = 'application/octet-stream';
+      let mockContent = `Mock preview: ${fileName}\nID: ${id}`;
+      
+      if (['jpg', 'jpeg', 'png', 'gif', 'webp'].includes(extension)) {
+        mimeType = `image/${extension === 'jpg' ? 'jpeg' : extension}`;
+        // Create a simple 1x1 colored pixel as mock image
+        const canvas = document.createElement('canvas');
+        canvas.width = 1;
+        canvas.height = 1;
+        const ctx = canvas.getContext('2d');
+        ctx.fillStyle = '#3182CE';
+        ctx.fillRect(0, 0, 1, 1);
+        return new Promise((resolve) => {
+          canvas.toBlob((blob) => resolve(blob), mimeType);
+        });
+      } else if (['mp4', 'webm', 'ogg'].includes(extension)) {
+        mimeType = `video/${extension}`;
+      } else if (extension === 'pdf') {
+        mimeType = 'application/pdf';
+      }
+      
+      return new Blob([mockContent], { type: mimeType });
+    }
+
+    // Get token from cookie
+    const token = cookieService.getToken();
+
+    const headers = {};
+
+    if (token) {
+      headers.Authorization = `Bearer ${token}`;
+    }
+
+    const response = await fetch(createApiUrl(`/documents/preview/${id}`), {
+      method: "GET",
+      headers,
+      credentials: "include",
+    });
+
+    if (!response.ok) {
+      if (response.status === 401) {
+        cookieService.removeToken();
+        window.location.href = "/login";
+      }
+      throw new Error(`Preview failed with status ${response.status}`);
+    }
+
+    // Check content type to determine if it's a blob or JSON
+    const contentType = response.headers.get("content-type");
+    
+    if (contentType && contentType.includes("application/json")) {
+      // Response is JSON, might contain a URL
+      const data = await response.json();
+      if (data.url) {
+        const fileResponse = await fetch(data.url);
+        if (!fileResponse.ok) {
+          throw new Error(`Failed to preview file from URL: HTTP ${fileResponse.status}`);
+        }
+        return await fileResponse.blob();
+      }
+      throw new Error("Invalid response format: expected file or URL");
+    }
+    
+    // Response is the file itself
+    return await response.blob();
+  },
 };
 
 export default apiService;

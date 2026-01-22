@@ -15,6 +15,7 @@ import {
   IconButton,
   Tag,
   TagLabel,
+  Link,
 } from "@chakra-ui/react";
 import { AsyncSelect } from "chakra-react-select";
 import { FiEye, FiX } from "react-icons/fi";
@@ -182,27 +183,34 @@ const UserAsyncSelect = ({
               </Thead>
               <Tbody>
                 {value.map((user) => {
+                  const userId = getUserId(user);
                   const fullName = `${user.firstName || ""} ${
                     user.lastName || ""
                   }`.trim();
                   return (
                     <Tr key={getUserId(user)}>
                       <Td>
-                        <HStack spacing={3}>
-                          <Avatar
-                            size="sm"
-                            name={fullName}
-                            src={user.profilePicture}
-                          />
-                          <VStack align="start" spacing={0}>
-                            <Text fontSize="sm" fontWeight="medium">
-                              {fullName}
-                            </Text>
-                            <Text fontSize="xs" color="gray.500">
-                              {user.email}
-                            </Text>
-                          </VStack>
-                        </HStack>
+                        <Link
+                          as={RouterLink}
+                          to={`/users/${userId}`}
+                          _hover={{ textDecoration: "none" }}
+                        >
+                          <HStack spacing={3} _hover={{ opacity: 0.8 }}>
+                            <Avatar
+                              size="sm"
+                              name={fullName}
+                              src={user.profilePicture}
+                            />
+                            <VStack align="start" spacing={0}>
+                              <Text fontSize="sm" fontWeight="medium">
+                                {fullName}
+                              </Text>
+                              <Text fontSize="xs" color="gray.500">
+                                {user.email}
+                              </Text>
+                            </VStack>
+                          </HStack>
+                        </Link>
                       </Td>
                       <Td>
                         <Text fontSize="sm" color="gray.600">
@@ -217,26 +225,35 @@ const UserAsyncSelect = ({
           ) : (
             <HStack spacing={2} wrap="wrap">
               {value.map((user) => {
+                const userId = getUserId(user);
                 const fullName = `${user.firstName || ""} ${
                   user.lastName || ""
                 }`.trim();
                 return (
-                  <Tag
-                    key={getUserId(user)}
-                    size="md"
-                    borderRadius="full"
-                    variant="solid"
-                    colorScheme="brandPrimary"
+                  <Link
+                    key={userId}
+                    as={RouterLink}
+                    to={`/users/${userId}`}
+                    _hover={{ textDecoration: "none" }}
                   >
-                    <Avatar
-                      size="xs"
-                      name={fullName}
-                      ml={-1}
-                      mr={2}
-                      src={user.profilePicture}
-                    />
-                    <TagLabel>{fullName}</TagLabel>
-                  </Tag>
+                    <Tag
+                      size="md"
+                      borderRadius="full"
+                      variant="solid"
+                      colorScheme="brandPrimary"
+                      cursor="pointer"
+                      _hover={{ opacity: 0.8 }}
+                    >
+                      <Avatar
+                        size="xs"
+                        name={fullName}
+                        ml={-1}
+                        mr={2}
+                        src={user.profilePicture}
+                      />
+                      <TagLabel>{fullName}</TagLabel>
+                    </Tag>
+                  </Link>
                 );
               })}
             </HStack>
@@ -258,26 +275,35 @@ const UserAsyncSelect = ({
           {displayMode === "badges" && value.length > 0 && (
             <HStack spacing={2} wrap="wrap" mb={2}>
               {value.map((user) => {
+                const userId = getUserId(user);
                 const fullName = `${user.firstName || ""} ${
                   user.lastName || ""
                 }`.trim();
                 return (
-                  <Tag
-                    key={getUserId(user)}
-                    size="md"
-                    borderRadius="full"
-                    variant="solid"
-                    colorScheme="blue"
+                  <Link
+                    key={userId}
+                    as={RouterLink}
+                    to={`/users/${userId}`}
+                    _hover={{ textDecoration: "none" }}
                   >
-                    <Avatar
-                      size="xs"
-                      name={fullName}
-                      ml={-1}
-                      mr={2}
-                      src={user.profilePicture}
-                    />
-                    <TagLabel>{fullName}</TagLabel>
-                  </Tag>
+                    <Tag
+                      size="md"
+                      borderRadius="full"
+                      variant="solid"
+                      colorScheme="blue"
+                      cursor="pointer"
+                      _hover={{ opacity: 0.8 }}
+                    >
+                      <Avatar
+                        size="xs"
+                        name={fullName}
+                        ml={-1}
+                        mr={2}
+                        src={user.profilePicture}
+                      />
+                      <TagLabel>{fullName}</TagLabel>
+                    </Tag>
+                  </Link>
                 );
               })}
             </HStack>

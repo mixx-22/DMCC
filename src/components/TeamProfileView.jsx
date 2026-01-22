@@ -15,9 +15,11 @@ import {
   Tbody,
   Tr,
   Td,
+  Link,
 } from "@chakra-ui/react";
 import { FiUsers } from "react-icons/fi";
 import Timestamp from "./Timestamp";
+import { Link as RouterLink } from "react-router-dom";
 
 const TeamProfileView = ({ team, isValidDate }) => {
   const borderColor = useColorModeValue("white", "gray.700");
@@ -84,31 +86,54 @@ const TeamProfileView = ({ team, isValidDate }) => {
                 >
                   <Tbody>
                     {team.leaders.map((leader, leaderIndex) => {
+                      const leaderId = leader.id || leader._id || leader.userId;
                       const fullName = `${leader.firstName || ""} ${
                         leader.lastName || ""
                       }`.trim();
                       return (
                         <Tr
-                          key={`leader-${leaderIndex}-${
-                            leader._id || leader.id || leader.userId
-                          }`}
+                          key={`leader-${leaderIndex}-${leaderId}`}
                         >
                           <Td>
-                            <HStack spacing={3}>
-                              <Avatar
-                                size="sm"
-                                name={fullName}
-                                src={leader.profilePicture}
-                              />
-                              <VStack align="start" spacing={0}>
-                                <Text fontSize="sm" fontWeight="medium">
-                                  {fullName || "Leader"}
-                                </Text>
-                                <Text fontSize="xs" color="gray.500">
-                                  {leader.employeeId || "-"}
-                                </Text>
-                              </VStack>
-                            </HStack>
+                            {leaderId ? (
+                              <Link
+                                as={RouterLink}
+                                to={`/users/${leaderId}`}
+                                _hover={{ textDecoration: "none" }}
+                              >
+                                <HStack spacing={3} _hover={{ opacity: 0.8 }}>
+                                  <Avatar
+                                    size="sm"
+                                    name={fullName}
+                                    src={leader.profilePicture}
+                                  />
+                                  <VStack align="start" spacing={0}>
+                                    <Text fontSize="sm" fontWeight="medium">
+                                      {fullName || "Leader"}
+                                    </Text>
+                                    <Text fontSize="xs" color="gray.500">
+                                      {leader.employeeId || "-"}
+                                    </Text>
+                                  </VStack>
+                                </HStack>
+                              </Link>
+                            ) : (
+                              <HStack spacing={3}>
+                                <Avatar
+                                  size="sm"
+                                  name={fullName}
+                                  src={leader.profilePicture}
+                                />
+                                <VStack align="start" spacing={0}>
+                                  <Text fontSize="sm" fontWeight="medium">
+                                    {fullName || "Leader"}
+                                  </Text>
+                                  <Text fontSize="xs" color="gray.500">
+                                    {leader.employeeId || "-"}
+                                  </Text>
+                                </VStack>
+                              </HStack>
+                            )}
                           </Td>
                           <Td></Td>
                         </Tr>
@@ -161,31 +186,54 @@ const TeamProfileView = ({ team, isValidDate }) => {
                 <Table variant="simple" size="sm" border="none">
                   <Tbody>
                     {team.members.map((member, memberIndex) => {
+                      const memberId = member.id || member._id || member.userId;
                       const fullName = `${member.firstName || ""} ${
                         member.lastName || ""
                       }`.trim();
                       return (
                         <Tr
-                          key={`member-${memberIndex}-${
-                            member._id || member.id || member.userId
-                          }`}
+                          key={`member-${memberIndex}-${memberId}`}
                         >
                           <Td>
-                            <HStack spacing={3}>
-                              <Avatar
-                                size="sm"
-                                name={fullName}
-                                src={member.profilePicture}
-                              />
-                              <VStack align="start" spacing={0}>
-                                <Text fontSize="sm" fontWeight="medium">
-                                  {fullName || "Member"}
-                                </Text>
-                                <Text fontSize="xs" color="gray.500">
-                                  {member.employeeId || "-"}
-                                </Text>
-                              </VStack>
-                            </HStack>
+                            {memberId ? (
+                              <Link
+                                as={RouterLink}
+                                to={`/users/${memberId}`}
+                                _hover={{ textDecoration: "none" }}
+                              >
+                                <HStack spacing={3} _hover={{ opacity: 0.8 }}>
+                                  <Avatar
+                                    size="sm"
+                                    name={fullName}
+                                    src={member.profilePicture}
+                                  />
+                                  <VStack align="start" spacing={0}>
+                                    <Text fontSize="sm" fontWeight="medium">
+                                      {fullName || "Member"}
+                                    </Text>
+                                    <Text fontSize="xs" color="gray.500">
+                                      {member.employeeId || "-"}
+                                    </Text>
+                                  </VStack>
+                                </HStack>
+                              </Link>
+                            ) : (
+                              <HStack spacing={3}>
+                                <Avatar
+                                  size="sm"
+                                  name={fullName}
+                                  src={member.profilePicture}
+                                />
+                                <VStack align="start" spacing={0}>
+                                  <Text fontSize="sm" fontWeight="medium">
+                                    {fullName || "Member"}
+                                  </Text>
+                                  <Text fontSize="xs" color="gray.500">
+                                    {member.employeeId || "-"}
+                                  </Text>
+                                </VStack>
+                              </HStack>
+                            )}
                           </Td>
                           <Td></Td>
                         </Tr>
