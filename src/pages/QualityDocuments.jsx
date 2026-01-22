@@ -1,5 +1,5 @@
-import { useState, useEffect, useCallback, useRef } from "react";
-import { Box, Spinner, Center, Stack, Heading, VStack, Text } from "@chakra-ui/react";
+import { useState, useEffect } from "react";
+import { Box, Spinner, Center, Stack, Heading, Text } from "@chakra-ui/react";
 import { toast } from "sonner";
 import PageHeader from "../components/PageHeader";
 import DocumentDrawer from "../components/Document/DocumentDrawer";
@@ -15,29 +15,10 @@ const QualityDocuments = () => {
   const [loading, setLoading] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalCount, setTotalCount] = useState(0);
-  
-  // Track if a fetch is in progress to prevent duplicate requests
-  const fetchingRef = useRef(false);
-  const abortControllerRef = useRef(null);
 
-  // Fetch quality documents with abort controller for cleanup
-  const fetchQualityDocuments = useCallback(async (page = 1) => {
-    // Prevent duplicate requests
-    if (fetchingRef.current) {
-      return;
-    }
-
-    // Set fetching flag before creating abort controller
-    fetchingRef.current = true;
-
-    // Cancel any pending request before starting a new one
-    if (abortControllerRef.current) {
-      abortControllerRef.current.abort();
-    }
-
-    abortControllerRef.current = new AbortController();
+  // Fetch quality documents
+  const fetchQualityDocuments = async (page = 1) => {
     setLoading(true);
-
     try {
       const params = {
         page,
@@ -47,22 +28,17 @@ const QualityDocuments = () => {
       const response = await apiService.request("/documents/quality", {
         method: "GET",
         params,
-        signal: abortControllerRef.current.signal,
       });
 
       if (response.success) {
-        setDocuments(response.data?.documents || []);
-        setTotalCount(response.data?.total || 0);
+        setDocuments(response.data || []);
+        setTotalCount(response.meta?.total || 0);
       } else {
         throw new Error(
           response.message || "Failed to fetch quality documents",
         );
       }
     } catch (error) {
-      // Don't show error if request was aborted
-      if (error.name === "AbortError") {
-        return;
-      }
       console.error("Failed to fetch quality documents:", error);
       toast.error("Error", {
         description: "Failed to load quality documents",
@@ -72,23 +48,12 @@ const QualityDocuments = () => {
       setTotalCount(0);
     } finally {
       setLoading(false);
-      fetchingRef.current = false;
     }
-  }, []);
+  };
 
-  // Fetch documents when page changes
   useEffect(() => {
     fetchQualityDocuments(currentPage);
-  }, [currentPage, fetchQualityDocuments]);
-
-  // Cleanup on unmount only
-  useEffect(() => {
-    return () => {
-      if (abortControllerRef.current) {
-        abortControllerRef.current.abort();
-      }
-    };
-  }, []);
+  }, [currentPage]);
 
   const handleDocumentClick = (doc) => {
     // The ListView component already handles navigation on row click
@@ -114,14 +79,9 @@ const QualityDocuments = () => {
           </Center>
         ) : documents.length === 0 ? (
           <Center py={12}>
-            <VStack spacing={4}>
-              <Text fontSize="lg" color="gray.500">
-                No Quality Documents Found
-              </Text>
-              <Text fontSize="sm" color="gray.400">
-                Quality documents will appear here once they are available
-              </Text>
-            </VStack>
+            <Text color="gray.500" fontSize="lg">
+              No Quality Documents
+            </Text>
           </Center>
         ) : (
           <>
