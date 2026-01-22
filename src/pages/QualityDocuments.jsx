@@ -1,15 +1,7 @@
 import { useState, useEffect } from "react";
-import {
-  Box,
-  Flex,
-  Spinner,
-  Center,
-  Stack,
-  Text,
-} from "@chakra-ui/react";
+import { Box, Spinner, Center, Stack, Heading } from "@chakra-ui/react";
 import { toast } from "sonner";
 import PageHeader from "../components/PageHeader";
-import SearchInput from "../components/SearchInput";
 import DocumentDrawer from "../components/Document/DocumentDrawer";
 import { ListView } from "../components/Document/ListView";
 import { EmptyState } from "../components/Document/EmptyState";
@@ -43,7 +35,9 @@ const QualityDocuments = () => {
         setDocuments(response.data?.documents || []);
         setTotalCount(response.data?.total || 0);
       } else {
-        throw new Error(response.message || "Failed to fetch quality documents");
+        throw new Error(
+          response.message || "Failed to fetch quality documents",
+        );
       }
     } catch (error) {
       console.error("Failed to fetch quality documents:", error);
@@ -76,12 +70,7 @@ const QualityDocuments = () => {
   return (
     <Box>
       <PageHeader>
-        <Flex justify="space-between" align="center" w="full" gap={4}>
-          <Text fontSize="2xl" fontWeight="bold">
-            Quality Documents
-          </Text>
-          <SearchInput placeholder="Search quality documents..." />
-        </Flex>
+        <Heading variant="pageTitle">Quality Documents</Heading>
       </PageHeader>
 
       <Stack spacing={{ base: 4, lg: 6 }}>
