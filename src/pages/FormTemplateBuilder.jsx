@@ -27,6 +27,8 @@ import {
   NumberInputField,
   Checkbox,
   Stack,
+  Spinner,
+  Center,
 } from "@chakra-ui/react";
 import { Select as ChakraSelect } from "chakra-react-select";
 import { SingleDatepicker } from "chakra-dayzed-datepicker";
@@ -249,14 +251,20 @@ const FormTemplateBuilder = () => {
   const [currentOption, setCurrentOption] = useState("");
   const [isEditMode, setIsEditMode] = useState(false);
   const [documentId, setDocumentId] = useState(null);
+  const [loadingForm, setLoadingForm] = useState(false);
 
   // Load existing form template if editing
   useEffect(() => {
     const loadFormTemplate = async () => {
       if (id) {
+        setLoadingForm(true);
         try {
+          console.log("Loading form template with id:", id);
           const document = await fetchDocumentById(id);
+          console.log("Fetched document:", document);
+          
           if (document && document.type === "formTemplate") {
+            console.log("Setting form data and questions:", document.metadata?.questions);
             setFormData({
               title: document.title || "",
               description: document.description || "",
@@ -264,11 +272,19 @@ const FormTemplateBuilder = () => {
             setQuestions(document.metadata?.questions || []);
             setIsEditMode(true);
             setDocumentId(id);
+          } else {
+            console.log("Document is not a formTemplate or doesn't exist");
+            toast.error("Invalid Form Template", {
+              description: "This document is not a form template or does not exist.",
+            });
           }
         } catch (error) {
+          console.error("Error loading form template:", error);
           toast.error("Failed to load form template", {
             description: error.message,
           });
+        } finally {
+          setLoadingForm(false);
         }
       }
     };
@@ -458,6 +474,32 @@ const FormTemplateBuilder = () => {
   };
 
   const needsOptions = requiresOptions(currentQuestion.type);
+
+  if (loadingForm) {
+    return (
+      <Box>
+        <PageHeader>
+          <HStack spacing={4}>
+            <IconButton
+              icon={<FiArrowLeft />}
+              onClick={() => navigate("/documents")}
+              variant="ghost"
+              aria-label="Back to documents"
+            />
+            <Heading variant="pageTitle">Loading Form Template...</Heading>
+          </HStack>
+        </PageHeader>
+        <Center h="400px">
+          <VStack spacing={4}>
+            <Spinner size="xl" color="blue.500" thickness="4px" />
+            <Text fontSize="lg" color="gray.600">
+              Loading form template...
+            </Text>
+          </VStack>
+        </Center>
+      </Box>
+    );
+  }
 
   return (
     <Box>
