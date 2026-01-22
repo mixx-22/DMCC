@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Button, IconButton, Tooltip, useDisclosure } from "@chakra-ui/react";
 import { FiEye } from "react-icons/fi";
 import { toast } from "sonner";
@@ -33,8 +33,17 @@ export const PreviewButton = ({
   onPreviewError,
 }) => {
   const [isPreviewing, setIsPreviewing] = useState(false);
-  const [fileBlob, setFileBlob] = useState(null);
+  const [cachedBlob, setCachedBlob] = useState(null);
   const { isOpen, onOpen, onClose } = useDisclosure();
+  const documentIdRef = useRef(null);
+
+  // Clear cache when document changes
+  useEffect(() => {
+    if (document?.id !== documentIdRef.current) {
+      setCachedBlob(null);
+      documentIdRef.current = document?.id;
+    }
+  }, [document?.id]);
 
   /**
    * Helper to get filename from document metadata
@@ -119,6 +128,13 @@ export const PreviewButton = ({
       return;
     }
 
+    // If we have a cached blob, use it directly
+    if (cachedBlob) {
+      onOpen();
+      onPreviewComplete?.();
+      return;
+    }
+
     setIsPreviewing(true);
     onPreviewStart?.();
 
@@ -130,8 +146,8 @@ export const PreviewButton = ({
       // Call API to preview document (fileName only used in mock mode)
       const blob = await apiService.previewDocument(id, fileName);
 
-      // Set the blob and open the modal
-      setFileBlob(blob);
+      // Cache the blob and open the modal
+      setCachedBlob(blob);
       onOpen();
 
       onPreviewComplete?.();
@@ -152,7 +168,7 @@ export const PreviewButton = ({
    */
   const handleModalClose = () => {
     onClose();
-    setFileBlob(null);
+    // Note: We keep the cached blob for subsequent previews
   };
 
   // Determine if button should be disabled
@@ -187,7 +203,7 @@ export const PreviewButton = ({
           onClose={handleModalClose}
           title={document?.title}
           fileName={getFileName()}
-          fileBlob={fileBlob}
+          fileBlob={cachedBlob}
         />
       </>
     );
@@ -219,7 +235,7 @@ export const PreviewButton = ({
         onClose={handleModalClose}
         title={document?.title}
         fileName={getFileName()}
-        fileBlob={fileBlob}
+        fileBlob={cachedBlob}
       />
     </>
   );
