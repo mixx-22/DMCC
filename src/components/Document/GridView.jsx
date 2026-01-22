@@ -14,7 +14,7 @@ import {
   Button,
   Flex,
 } from "@chakra-ui/react";
-import { FiMoreVertical, FiChevronDown, FiChevronRight } from "react-icons/fi";
+import { FiMoreVertical, FiChevronDown, FiChevronUp } from "react-icons/fi";
 import { useState } from "react";
 import { getDocumentIcon, isDocumentValid } from "./DocumentIcon";
 import { DocumentHoverPopover } from "./DocumentHoverPopover";
@@ -24,12 +24,8 @@ export const GridView = ({ documents, selectedDocument, onDocumentClick }) => {
   const [isFoldersOpen, setIsFoldersOpen] = useState(true);
 
   // Separate folders from other document types
-  const folders = documents.filter(
-    (doc) => doc?.type === "folder" || doc?.type === "auditSchedule",
-  );
-  const otherDocuments = documents.filter(
-    (doc) => doc?.type !== "folder" && doc?.type !== "auditSchedule",
-  );
+  const folders = documents.filter((doc) => doc?.type === "folder");
+  const otherDocuments = documents.filter((doc) => doc?.type !== "folder");
 
   const renderFolderCard = (doc, docIndex) => {
     const docId = doc?.id || doc?._id;
@@ -43,7 +39,7 @@ export const GridView = ({ documents, selectedDocument, onDocumentClick }) => {
     return (
       <Link key={`folder-${docIndex}-${doc.type}-${docId}`} {...linkProps}>
         <Box
-          p={2}
+          py={4}
           sx={{ ".moreOptions": { opacity: 0 } }}
           _hover={{ ".moreOptions": { opacity: 1 } }}
           opacity={isValid ? 1 : 0.6}
@@ -67,17 +63,27 @@ export const GridView = ({ documents, selectedDocument, onDocumentClick }) => {
           />
           <DocumentHoverPopover document={doc}>
             <Center>
-              <AuptilyzeFolder />
+              <AuptilyzeFolder
+                boxSize={{ base: 14, md: 16 }}
+                position="relative"
+                filter="drop-shadow(0 2px 2px rgba(0, 0, 0, .15))"
+                _hover={{
+                  top: "-2px",
+                  filter: "drop-shadow(0 4px 2px rgba(0, 0, 0, .15))",
+                }}
+              />
             </Center>
           </DocumentHoverPopover>
           <Text
+            mt={1}
             textAlign="center"
             fontSize="sm"
+            lineHeight={1.2}
             fontWeight="semibold"
-            isTruncated
             maxW="full"
             title={doc?.title || "Untitled"}
             color={isValid ? "inherit" : "red.500"}
+            noOfLines={2}
           >
             {doc?.title || "Untitled"}
           </Text>
@@ -130,16 +136,7 @@ export const GridView = ({ documents, selectedDocument, onDocumentClick }) => {
             <VStack align="start" spacing={2} h="full">
               <HStack justify="space-between" w="full">
                 <DocumentHoverPopover document={doc}>
-                  <Center>
-                    <AuptilyzeFolder
-                      position="relative"
-                      filter="drop-shadow(0 2px 2px rgba(0, 0, 0, .15))"
-                      _hover={{
-                        top: "-2px",
-                        filter: "drop-shadow(0 4px 2px rgba(0, 0, 0, .15))",
-                      }}
-                    />
-                  </Center>
+                  {getDocumentIcon(doc)}
                 </DocumentHoverPopover>
               </HStack>
               <Text
@@ -171,9 +168,9 @@ export const GridView = ({ documents, selectedDocument, onDocumentClick }) => {
         <Box>
           <Flex align="center" mb={3}>
             <Button
-              leftIcon={isFoldersOpen ? <FiChevronDown /> : <FiChevronRight />}
+              rightIcon={isFoldersOpen ? <FiChevronDown /> : <FiChevronUp />}
               onClick={() => setIsFoldersOpen(!isFoldersOpen)}
-              variant="ghost"
+              variant="link"
               size="sm"
               fontWeight="semibold"
               color="gray.600"
@@ -183,8 +180,8 @@ export const GridView = ({ documents, selectedDocument, onDocumentClick }) => {
           </Flex>
           <Collapse in={isFoldersOpen} animateOpacity>
             <SimpleGrid
-              gap={4}
-              columns={[2, 2, 3, 4, 6]}
+              gap={0}
+              columns={[3, 3, 4, 6, 8]}
               sx={{ ">*": { h: "full" } }}
             >
               {folders.map((doc, docIndex) => renderFolderCard(doc, docIndex))}
@@ -203,7 +200,7 @@ export const GridView = ({ documents, selectedDocument, onDocumentClick }) => {
           )}
           <SimpleGrid
             gap={4}
-            columns={[2, 2, 3, 4, 6]}
+            columns={[2, 2, 3, 4]}
             sx={{ ">*": { h: "full" } }}
           >
             {otherDocuments.map((doc, docIndex) =>
