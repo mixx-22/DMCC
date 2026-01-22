@@ -251,7 +251,7 @@ const DocumentDetail = () => {
       <PageHeader>
         <Breadcrumbs data={document} />
       </PageHeader>
-      <Box flex="1" bg="gray.50" p={{ base: 4, md: 8 }}>
+      <Box flex="1" p={{ base: 4, md: 8 }}>
         <Container maxW="container.xl">
           {/* Bento Grid Layout */}
           <SimpleGrid

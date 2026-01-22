@@ -1,7 +1,7 @@
 import { Icon, useToken } from "@chakra-ui/react";
 import { Folder } from "../icons/Folder";
 
-const AuptilyzeFolder = (props) => {
+const AuptilyzeFolder = ({ sx = {}, ...props }) => {
   const [base, inner, front, baseDark, innerDark, frontDark] = useToken(
     "colors",
     [
@@ -17,6 +17,7 @@ const AuptilyzeFolder = (props) => {
     <Icon
       as={Folder}
       boxSize={16}
+      transition="all 0.3s cubic-bezier(0.4, 0, 0.2, 1)"
       sx={{
         "--folder-base": base,
         "--folder-inner": inner,
@@ -26,6 +27,7 @@ const AuptilyzeFolder = (props) => {
           "--folder-inner": innerDark,
           "--folder-front": frontDark,
         },
+        ...sx,
       }}
       {...props}
     />

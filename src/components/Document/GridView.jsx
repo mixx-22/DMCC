@@ -64,7 +64,14 @@ export const GridView = ({ documents, selectedDocument, onDocumentClick }) => {
                 />
                 <DocumentHoverPopover document={doc}>
                   <Center>
-                    <AuptilyzeFolder />
+                    <AuptilyzeFolder
+                      position="relative"
+                      filter="drop-shadow(0 2px 2px rgba(0, 0, 0, .15))"
+                      _hover={{
+                        top: "-2px",
+                        filter: "drop-shadow(0 4px 2px rgba(0, 0, 0, .15))",
+                      }}
+                    />
                   </Center>
                 </DocumentHoverPopover>
                 <Text
