@@ -9,7 +9,6 @@ import {
 } from "@chakra-ui/react";
 import { toast } from "sonner";
 import PageHeader from "../components/PageHeader";
-import PageFooter from "../components/PageFooter";
 import SearchInput from "../components/SearchInput";
 import DocumentDrawer from "../components/Document/DocumentDrawer";
 import { ListView } from "../components/Document/ListView";
@@ -84,8 +83,6 @@ const QualityDocuments = () => {
           <SearchInput placeholder="Search quality documents..." />
         </Flex>
       </PageHeader>
-
-      <PageFooter />
 
       <Stack spacing={{ base: 4, lg: 6 }}>
         {loading ? (
