@@ -28,10 +28,6 @@ import {
   FiTrash2,
   FiMove,
   FiShare2,
-  FiFile,
-  FiFolder,
-  FiCalendar,
-  FiAlertCircle,
   FiMoreVertical,
 } from "react-icons/fi";
 import Timestamp from "../Timestamp";
@@ -43,11 +39,9 @@ import { useDocuments } from "../../context/_useContext";
 import { toast } from "sonner";
 import { useEffect, useRef, useState } from "react";
 import { Link as RouterLink } from "react-router-dom";
+import { getDocumentIcon } from "./DocumentIcon";
 
 const DocumentDrawer = ({ document, isOpen, onClose }) => {
-  const errorColor = useColorModeValue("error.600", "error.400");
-  const infoColor = useColorModeValue("info.600", "info.400");
-  const schedColor = useColorModeValue("purple.600", "purple.400");
   const { updateDocument } = useDocuments();
   const [titleCache, setTitleCache] = useState("");
   const [descriptionCache, setDescriptionCache] = useState("");
@@ -78,39 +72,6 @@ const DocumentDrawer = ({ document, isOpen, onClose }) => {
   } = useDisclosure();
 
   if (!document) return null;
-
-  const getDocumentIcon = () => {
-    if (!document || typeof document !== "object") {
-      return <FiAlertCircle size={48} color={errorColor} />;
-    }
-
-    switch (document?.type) {
-      case "folder":
-        return <FiFolder size={48} color={infoColor} />;
-      case "auditSchedule":
-        return <FiCalendar size={48} color={schedColor} />;
-      case "file":
-        // Check if file has valid metadata
-        if (!document?.metadata?.filename) {
-          return (
-            <FiAlertCircle
-              size={48}
-              color={errorColor}
-              title="Broken file - missing metadata"
-            />
-          );
-        }
-        return <FiFile size={48} color="#718096" />;
-      default:
-        return (
-          <FiAlertCircle
-            size={48}
-            color={errorColor}
-            title="Unknown document type"
-          />
-        );
-    }
-  };
 
   const formatFileSize = (bytes) => {
     if (!bytes || bytes === 0) return "0 Bytes";
@@ -194,7 +155,7 @@ const DocumentDrawer = ({ document, isOpen, onClose }) => {
           <DrawerBody>
             <VStack align="stretch" spacing={4}>
               <VStack align="center" py={4}>
-                {getDocumentIcon()}
+                {getDocumentIcon(document, 48)}
                 <Editable
                   key={`drawer-title-${document?.id || document?._id}`}
                   defaultValue={document?.title || "Untitled"}

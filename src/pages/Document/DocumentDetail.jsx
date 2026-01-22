@@ -34,10 +34,6 @@ import {
   FiTrash2,
   FiMove,
   FiShare2,
-  FiFile,
-  FiFolder,
-  FiCalendar,
-  FiAlertCircle,
   FiEdit,
   FiMoreVertical,
   FiCheckCircle,
@@ -58,6 +54,7 @@ import Timestamp from "../../components/Timestamp";
 import Breadcrumbs from "../../components/Document/Breadcrumbs";
 import { useDocuments } from "../../context/_useContext";
 import { toast } from "sonner";
+import { getDocumentIcon } from "../../components/Document/DocumentIcon";
 
 const DocumentDetail = () => {
   const { id } = useParams();
@@ -121,26 +118,6 @@ const DocumentDetail = () => {
       }
     };
   }, [id, fetchDocumentById, navigate]);
-
-  const getDocumentIcon = (size = 48) => {
-    if (!document || typeof document !== "object") {
-      return <Icon as={FiAlertCircle} boxSize={size} color="red.500" />;
-    }
-
-    switch (document?.type) {
-      case "folder":
-        return <Icon as={FiFolder} boxSize={size} color="blue.500" />;
-      case "auditSchedule":
-        return <Icon as={FiCalendar} boxSize={size} color="purple.500" />;
-      case "file":
-        if (!document?.metadata?.filename) {
-          return <Icon as={FiAlertCircle} boxSize={size} color="red.500" />;
-        }
-        return <Icon as={FiFile} boxSize={size} color="gray.500" />;
-      default:
-        return <Icon as={FiAlertCircle} boxSize={size} color="red.500" />;
-    }
-  };
 
   const formatFileSize = (bytes) => {
     if (!bytes || bytes === 0) return "0 Bytes";
@@ -274,7 +251,7 @@ const DocumentDetail = () => {
       <PageHeader>
         <Breadcrumbs data={document} />
       </PageHeader>
-      <Box flex="1" bg="gray.50" p={{ base: 4, md: 8 }}>
+      <Box flex="1" p={{ base: 4, md: 8 }}>
         <Container maxW="container.xl">
           {/* Bento Grid Layout */}
           <SimpleGrid
@@ -290,7 +267,7 @@ const DocumentDetail = () => {
               <CardBody>
                 <Flex justify="space-between" align="start" mb={4}>
                   <HStack spacing={4} flex="1" align="start">
-                    {getDocumentIcon(56)}
+                    {getDocumentIcon(document, 56)}
                     <VStack align="start" spacing={2} flex="1">
                       <Editable
                         key={`title-${document?.id || document?._id}`}

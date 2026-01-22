@@ -198,12 +198,15 @@ export const DocumentsProvider = ({ children }) => {
     // API mode: Two-step process for files, JSON for others
     try {
       let response;
-      
+
       if (documentData.type === "file") {
         // Step 1: Upload file to get metadata (filename, size, key)
         if (documentData.metadata?.file) {
-          const uploadResult = await uploadFileToServer(documentData.metadata.file, apiService);
-          
+          const uploadResult = await uploadFileToServer(
+            documentData.metadata.file,
+            apiService,
+          );
+
           // Step 2: Create document with file metadata
           newDocument.metadata = {
             filename: uploadResult.filename,
@@ -214,7 +217,7 @@ export const DocumentsProvider = ({ children }) => {
         } else {
           throw new Error("File is required for document type 'file'");
         }
-        
+
         // Send JSON request with file metadata
         response = await apiService.request(DOCUMENTS_ENDPOINT, {
           method: "POST",
@@ -227,19 +230,21 @@ export const DocumentsProvider = ({ children }) => {
           body: JSON.stringify(newDocument),
         });
       }
-      
+
       if (response.success) {
         const createdDoc = response.data || response.document || response;
-        
+
         // Optimize: Add new document to existing array instead of re-fetching
         // Only add if it belongs to the current folder
         if ((createdDoc.parentId || null) === currentFolderId) {
-          setDocuments(prevDocs => [...prevDocs, createdDoc]);
+          setDocuments((prevDocs) => [...prevDocs, createdDoc]);
         }
-        
+
         return createdDoc;
       } else {
-        throw new Error(response.message || "Unknown error occurred while creating document");
+        throw new Error(
+          response.message || "Unknown error occurred while creating document",
+        );
       }
     } catch (err) {
       console.error("Failed to create document:", err);
@@ -275,24 +280,31 @@ export const DocumentsProvider = ({ children }) => {
       });
 
       // Optimize: Update document in existing array instead of re-fetching
-      const updatedDoc = response.data || response.document || { ...updates, id, updatedAt: new Date().toISOString() };
-      
+      const updatedDoc = response.data ||
+        response.document || {
+          ...updates,
+          id,
+          updatedAt: new Date().toISOString(),
+        };
+
       // Check if document is being moved to a different folder
-      const isMoving = 'parentId' in updates;
+      const isMoving = "parentId" in updates;
       const newParentId = updates.parentId;
-      
+
       if (isMoving && newParentId !== currentFolderId) {
         // Document moved out of current folder - remove from list
-        setDocuments(prevDocs => 
-          prevDocs.filter(doc => (doc.id !== id && doc._id !== id))
+        setDocuments((prevDocs) =>
+          prevDocs.filter((doc) => doc.id !== id && doc._id !== id),
         );
       } else {
         // Document updated in current folder - update in list
-        setDocuments(prevDocs => 
-          prevDocs.map(doc => doc.id === id || doc._id === id ? { ...doc, ...updatedDoc } : doc)
+        setDocuments((prevDocs) =>
+          prevDocs.map((doc) =>
+            doc.id === id || doc._id === id ? { ...doc, ...updatedDoc } : doc,
+          ),
         );
       }
-      
+
       return updatedDoc;
     } catch (err) {
       console.error("Failed to update document:", err);
@@ -307,13 +319,15 @@ export const DocumentsProvider = ({ children }) => {
       const saved = localStorage.getItem("documents");
       const docs = saved ? JSON.parse(saved) : [];
       // Also delete all children if it's a folder
-      const doc = docs.find((d) => d.id === id);
+      const doc = docs.find((d) => d._id === id);
       let idsToDelete = [id];
       if (doc && doc.type === "folder") {
-        const childIds = docs.filter((d) => d.parentId === id).map((d) => d.id);
+        const childIds = docs
+          .filter((d) => d.parentId === id)
+          .map((d) => d._id);
         idsToDelete = [...idsToDelete, ...childIds];
       }
-      const updated = docs.filter((doc) => !idsToDelete.includes(doc.id));
+      const updated = docs.filter((doc) => !idsToDelete.includes(doc._id));
       localStorage.setItem("documents", JSON.stringify(updated));
       setDocuments(updated);
       return;
@@ -326,7 +340,9 @@ export const DocumentsProvider = ({ children }) => {
       });
 
       // Optimize: Remove document from existing array instead of re-fetching
-      setDocuments(prevDocs => prevDocs.filter(doc => doc.id !== id && doc._id !== id));
+      setDocuments((prevDocs) =>
+        prevDocs.filter((doc) => doc.id !== id && doc._id !== id),
+      );
     } catch (err) {
       console.error("Failed to delete document:", err);
       throw new Error(err.message || "Failed to delete document");

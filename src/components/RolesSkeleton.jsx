@@ -1,44 +1,27 @@
-import {
-  Table,
-  Thead,
-  Tbody,
-  Tr,
-  Th,
-  Td,
-  Skeleton,
-  VStack,
-} from "@chakra-ui/react";
+import TableSkeleton from "./common/TableSkeleton";
 
 const RolesSkeleton = ({ rows = 5 }) => {
-  return (
-    <Table>
-      <Thead>
-        <Tr>
-          <Th>Role Title</Th>
-          <Th>Summary</Th>
-          <Th>Last Updated</Th>
-        </Tr>
-      </Thead>
-      <Tbody>
-        {Array.from({ length: rows }).map((_, index) => (
-          <Tr key={index}>
-            <Td>
-              <VStack align="start" spacing={2}>
-                <Skeleton height="20px" width="120px" />
-                <Skeleton height="16px" width="250px" />
-              </VStack>
-            </Td>
-            <Td>
-              <Skeleton height="16px" width="300px" />
-            </Td>
-            <Td>
-              <Skeleton height="16px" width="100px" />
-            </Td>
-          </Tr>
-        ))}
-      </Tbody>
-    </Table>
-  );
+  const columns = [
+    {
+      header: "Role Title",
+      type: "stacked",
+      width: "120px",
+    },
+    {
+      header: "Summary",
+      type: "text",
+      width: "300px",
+      height: "16px",
+    },
+    {
+      header: "Last Updated",
+      type: "text",
+      width: "100px",
+      height: "16px",
+    },
+  ];
+
+  return <TableSkeleton columns={columns} rows={rows} />;
 };
 
 export default RolesSkeleton;
