@@ -1,10 +1,9 @@
 import { useState, useEffect, useCallback, useRef } from "react";
-import { Box, Spinner, Center, Stack, Heading } from "@chakra-ui/react";
+import { Box, Spinner, Center, Stack, Heading, VStack, Text } from "@chakra-ui/react";
 import { toast } from "sonner";
 import PageHeader from "../components/PageHeader";
 import DocumentDrawer from "../components/Document/DocumentDrawer";
 import { ListView } from "../components/Document/ListView";
-import { EmptyState } from "../components/Document/EmptyState";
 import Pagination from "../components/Pagination";
 import apiService from "../services/api";
 
@@ -23,17 +22,19 @@ const QualityDocuments = () => {
 
   // Fetch quality documents with abort controller for cleanup
   const fetchQualityDocuments = useCallback(async (page = 1) => {
-    // Cancel any pending request before starting a new one
-    if (abortControllerRef.current) {
-      abortControllerRef.current.abort();
-    }
-
     // Prevent duplicate requests
     if (fetchingRef.current) {
       return;
     }
 
+    // Set fetching flag before creating abort controller
     fetchingRef.current = true;
+
+    // Cancel any pending request before starting a new one
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+    }
+
     abortControllerRef.current = new AbortController();
     setLoading(true);
 
@@ -112,11 +113,16 @@ const QualityDocuments = () => {
             <Spinner size="xl" color="blue.500" />
           </Center>
         ) : documents.length === 0 ? (
-          <EmptyState
-            currentFolderId={null}
-            onUploadClick={() => {}}
-            onCreateFolderClick={() => {}}
-          />
+          <Center py={12}>
+            <VStack spacing={4}>
+              <Text fontSize="lg" color="gray.500">
+                No Quality Documents Found
+              </Text>
+              <Text fontSize="sm" color="gray.400">
+                Quality documents will appear here once they are available
+              </Text>
+            </VStack>
+          </Center>
         ) : (
           <>
             <ListView
