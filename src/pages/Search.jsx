@@ -368,6 +368,7 @@ const Search = () => {
                         { value: "auditSchedule", label: "Audit Schedule" },
                         { value: "formTemplate", label: "Form Template" },
                         { value: "formResponse", label: "Form Response" },
+                        { value: "qualityDocument", label: "Quality Document" },
                       ]}
                       placeholder="All types"
                       isClearable

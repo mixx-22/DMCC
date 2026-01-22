@@ -34,6 +34,7 @@ import { useApp } from "./context/_useContext";
 import { UserProfileProvider } from "./context/UserProfileContext";
 import { DocumentsProvider } from "./context/DocumentsContext";
 import FormTemplateBuilder from "./pages/FormTemplateBuilder";
+import QualityDocuments from "./pages/QualityDocuments";
 
 const ProtectedRoute = ({ children }) => {
   const { currentUser } = useApp();
@@ -103,6 +104,14 @@ function App() {
                       element={
                         <DocumentsProvider>
                           <Documents />
+                        </DocumentsProvider>
+                      }
+                    />
+                    <Route
+                      path="/quality-documents"
+                      element={
+                        <DocumentsProvider>
+                          <QualityDocuments />
                         </DocumentsProvider>
                       }
                     />
