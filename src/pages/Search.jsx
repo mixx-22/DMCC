@@ -27,6 +27,7 @@ import PageHeader from "../components/PageHeader";
 import UserAsyncSelect from "../components/UserAsyncSelect";
 import { GridView } from "../components/Document/GridView";
 import { ListView } from "../components/Document/ListView";
+import DocumentDrawer from "../components/Document/DocumentDrawer";
 import apiService from "../services/api";
 
 const DOCUMENTS_ENDPOINT = "/documents";
@@ -76,6 +77,10 @@ const Search = () => {
   const [selectedDocument, setSelectedDocument] = useState(null);
   const [loading, setLoading] = useState(false);
   const [hasSearched, setHasSearched] = useState(false);
+
+  // Double-click detection for navigation (same as Documents page)
+  const [lastClickTime, setLastClickTime] = useState(0);
+  const [lastClickId, setLastClickId] = useState(null);
 
   // Debounce timer ref
   const debounceTimerRef = useRef(null);
@@ -289,11 +294,25 @@ const Search = () => {
     setViewMode((prev) => (prev === "grid" ? "list" : "grid"));
   };
 
+  // Handle document click with double-click detection (same as Documents page)
   const handleDocumentClick = (doc) => {
-    if (doc.type === "folder" || doc.type === "auditSchedule") {
-      navigate(`/documents/folders/${doc.id}`);
-    } else if (doc.type === "file") {
-      navigate(`/document/${doc.id}`);
+    const now = Date.now();
+    const timeDiff = now - lastClickTime;
+
+    if (lastClickId === doc.id && timeDiff < 300) {
+      // Double click - navigate to document/folder
+      if (doc.type === "folder" || doc.type === "auditSchedule") {
+        navigate(`/documents/folders/${doc.id}`);
+      } else if (doc.type === "file") {
+        navigate(`/document/${doc.id}`);
+      }
+      setLastClickTime(0);
+      setLastClickId(null);
+    } else {
+      // Single click - show in drawer
+      setSelectedDocument(doc);
+      setLastClickTime(now);
+      setLastClickId(doc.id);
     }
   };
 
@@ -471,10 +490,15 @@ const Search = () => {
             documents={searchResults}
             selectedDocument={selectedDocument}
             onDocumentClick={handleDocumentClick}
-            onMoreOptions={setSelectedDocument}
           />
         )}
       </Stack>
+      
+      <DocumentDrawer
+        document={selectedDocument}
+        isOpen={!!selectedDocument}
+        onClose={() => setSelectedDocument(null)}
+      />
     </Box>
   );
 };
