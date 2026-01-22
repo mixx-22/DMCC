@@ -43,7 +43,6 @@ import {
   FiClock,
   FiXCircle,
   FiUpload,
-  FiEye,
   FiLock,
   FiUnlock,
 } from "react-icons/fi";
@@ -53,6 +52,7 @@ import DeleteDocumentModal from "../../components/Document/modals/DeleteDocument
 import MoveDocumentModal from "../../components/Document/modals/MoveDocumentModal";
 import PrivacySettingsModal from "../../components/Document/modals/PrivacySettingsModal";
 import DownloadButton from "../../components/Document/DownloadButton";
+import PreviewButton from "../../components/Document/PreviewButton";
 import Timestamp from "../../components/Timestamp";
 import Breadcrumbs from "../../components/Document/Breadcrumbs";
 import { useDocuments } from "../../context/_useContext";
@@ -770,26 +770,25 @@ const DocumentDetail = () => {
       <PageFooter>
         <HStack spacing={3} justify="flex-end" w="full">
           {document?.type === "file" && document?.metadata?.key && (
-            <Tooltip label="Download this file">
+            <>
+              <Tooltip label="Download this file">
+                <Box>
+                  <DownloadButton
+                    document={document}
+                    size="md"
+                    isDisabled={!isValid}
+                  />
+                </Box>
+              </Tooltip>
               <Box>
-                <DownloadButton
-                  document={document}
+                <PreviewButton
+                  document={{ ...document, id }}
                   size="md"
                   isDisabled={!isValid}
                 />
               </Box>
-            </Tooltip>
+            </>
           )}
-          <Tooltip label="Preview document">
-            <Button
-              leftIcon={<FiEye />}
-              size="md"
-              colorScheme="gray"
-              variant="outline"
-            >
-              Preview
-            </Button>
-          </Tooltip>
           <Tooltip label="Share with others">
             <Button
               leftIcon={<FiShare2 />}
