@@ -1,34 +1,106 @@
-import { FiFolder, FiFile, FiCalendar, FiAlertCircle, FiFileText } from "react-icons/fi";
+import { 
+  FiFolder, 
+  FiFile, 
+  FiCalendar, 
+  FiAlertCircle, 
+  FiFileText,
+  FiImage,
+  FiVideo,
+  FiMusic,
+  FiCode,
+  FiArchive
+} from "react-icons/fi";
+import { getFileExtension } from "../../utils/fileTypes";
 
-export const getDocumentIcon = (doc) => {
+/**
+ * Get file-type-specific icon and color based on file extension
+ * @param {string} filename - The filename with extension
+ * @returns {Object} - Object with icon component and color
+ */
+export const getFileIconByExtension = (filename) => {
+  const extension = getFileExtension(filename);
+  
+  // Images
+  if (['jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp', 'svg', 'ico'].includes(extension)) {
+    return { icon: FiImage, color: "#D69E2E" }; // Yellow/Gold for images
+  }
+  
+  // Videos
+  if (['mp4', 'webm', 'ogg', 'mov', 'avi', 'mkv', 'flv', 'wmv'].includes(extension)) {
+    return { icon: FiVideo, color: "#805AD5" }; // Purple for videos
+  }
+  
+  // Audio
+  if (['mp3', 'wav', 'ogg', 'aac', 'flac', 'wma', 'm4a'].includes(extension)) {
+    return { icon: FiMusic, color: "#38A169" }; // Green for audio
+  }
+  
+  // Documents/Text
+  if (['pdf', 'doc', 'docx', 'txt', 'rtf', 'odt'].includes(extension)) {
+    return { icon: FiFileText, color: "#E53E3E" }; // Red for documents
+  }
+  
+  // Spreadsheets
+  if (['xls', 'xlsx', 'csv', 'ods'].includes(extension)) {
+    return { icon: FiFileText, color: "#38A169" }; // Green for spreadsheets
+  }
+  
+  // Presentations
+  if (['ppt', 'pptx', 'odp'].includes(extension)) {
+    return { icon: FiFileText, color: "#DD6B20" }; // Orange for presentations
+  }
+  
+  // Code files
+  if (['js', 'jsx', 'ts', 'tsx', 'py', 'java', 'c', 'cpp', 'cs', 'php', 'rb', 'go', 'rs', 'swift', 'kt', 'html', 'css', 'scss', 'json', 'xml', 'yml', 'yaml', 'sh', 'sql'].includes(extension)) {
+    return { icon: FiCode, color: "#3182CE" }; // Blue for code
+  }
+  
+  // Archives
+  if (['zip', 'rar', '7z', 'tar', 'gz', 'bz2', 'xz'].includes(extension)) {
+    return { icon: FiArchive, color: "#718096" }; // Gray for archives
+  }
+  
+  // Default file icon
+  return { icon: FiFile, color: "#718096" }; // Gray for unknown types
+};
+
+/**
+ * Get document icon based on document type and file extension
+ * @param {Object} doc - The document object
+ * @param {number} size - Icon size (default: 24)
+ * @returns {JSX.Element} - Icon component
+ */
+export const getDocumentIcon = (doc, size = 24) => {
   if (!doc || typeof doc !== "object") {
-    return <FiAlertCircle size={24} color="#E53E3E" />;
+    return <FiAlertCircle size={size} color="#E53E3E" />;
   }
 
   const type = doc?.type;
 
   switch (type) {
     case "folder":
-      return <FiFolder size={24} color="#3182CE" />;
+      return <FiFolder size={size} color="#3182CE" />;
     case "auditSchedule":
-      return <FiCalendar size={24} color="#805AD5" />;
+      return <FiCalendar size={size} color="#805AD5" />;
     case "formTemplate":
-      return <FiFileText size={24} color="#38A169" />;
+      return <FiFileText size={size} color="#38A169" />;
     case "file":
       if (!doc?.metadata?.filename) {
         return (
           <FiAlertCircle
-            size={24}
+            size={size}
             color="#E53E3E"
             title="Broken file - missing metadata"
           />
         );
       }
-      return <FiFile size={24} color="#718096" />;
+      // Get file-specific icon based on extension
+      const { icon: IconComponent, color } = getFileIconByExtension(doc.metadata.filename);
+      return <IconComponent size={size} color={color} title={doc.metadata.filename} />;
     default:
       return (
         <FiAlertCircle
-          size={24}
+          size={size}
           color="#E53E3E"
           title="Unknown document type"
         />
