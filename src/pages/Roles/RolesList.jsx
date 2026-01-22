@@ -16,7 +16,7 @@ import {
   InputLeftElement,
 } from "@chakra-ui/react";
 import { FiSearch } from "react-icons/fi";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { useSearchParams } from "react-router-dom";
 import { motion } from "framer-motion";
 import { useEffect } from "react";
 import { useRoles } from "../../context/_useContext";
@@ -39,7 +39,6 @@ const RolesList = () => {
     setPage,
     setSearch,
   } = useRoles();
-  const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
 
   // Initialize from URL on mount

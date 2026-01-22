@@ -159,7 +159,6 @@ export function createCRUDProvider({
         fetched.current = false;
         fetchData(page, state.search);
       },
-      // eslint-disable-next-line react-hooks/exhaustive-deps
       [fetchData, state.search]
     );
 
@@ -189,7 +188,6 @@ export function createCRUDProvider({
           }, 500);
         }
       },
-      // eslint-disable-next-line react-hooks/exhaustive-deps
       [fetchData, state.lastPage]
     );
 

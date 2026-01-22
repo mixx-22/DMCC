@@ -11,7 +11,6 @@ import {
   Text,
   IconButton,
   Avatar,
-  Box,
   Link,
 } from "@chakra-ui/react";
 import { FiMoreVertical } from "react-icons/fi";
