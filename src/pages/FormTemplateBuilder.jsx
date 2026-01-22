@@ -259,12 +259,18 @@ const FormTemplateBuilder = () => {
       if (id) {
         setLoadingForm(true);
         try {
-          console.log("Loading form template with id:", id);
+          if (import.meta.env.DEV) {
+            console.log("Loading form template with id:", id);
+          }
           const document = await fetchDocumentById(id);
-          console.log("Fetched document:", document);
+          if (import.meta.env.DEV) {
+            console.log("Fetched document:", document);
+          }
           
           if (document && document.type === "formTemplate") {
-            console.log("Setting form data and questions:", document.metadata?.questions);
+            if (import.meta.env.DEV) {
+              console.log("Setting form data and questions:", document.metadata?.questions);
+            }
             setFormData({
               title: document.title || "",
               description: document.description || "",
@@ -273,13 +279,17 @@ const FormTemplateBuilder = () => {
             setIsEditMode(true);
             setDocumentId(id);
           } else {
-            console.log("Document is not a formTemplate or doesn't exist");
+            if (import.meta.env.DEV) {
+              console.log("Document is not a formTemplate or doesn't exist");
+            }
             toast.error("Invalid Form Template", {
               description: "This document is not a form template or does not exist.",
             });
           }
         } catch (error) {
-          console.error("Error loading form template:", error);
+          if (import.meta.env.DEV) {
+            console.error("Error loading form template:", error);
+          }
           toast.error("Failed to load form template", {
             description: error.message,
           });
@@ -486,7 +496,7 @@ const FormTemplateBuilder = () => {
               variant="ghost"
               aria-label="Back to documents"
             />
-            <Heading variant="pageTitle">Loading Form Template...</Heading>
+            <Heading variant="pageTitle">Edit Form Template</Heading>
           </HStack>
         </PageHeader>
         <Center h="400px">
