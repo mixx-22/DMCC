@@ -703,13 +703,14 @@ const DocumentDetail = () => {
                 <CardBody>
                   <Flex justify="space-between" align="center" mb={4}>
                     <Text fontWeight="semibold">
-                      Form Questions ({document?.metadata?.questions?.length || 0})
+                      Form Questions (
+                      {document?.metadata?.questions?.length || 0})
                     </Text>
                     <Button
                       size="sm"
                       colorScheme="blue"
                       leftIcon={<FiEdit />}
-                      onClick={() => navigate(`/edit-form/${document.id}`)}
+                      onClick={() => navigate(`/edit-form/${document._id}`)}
                     >
                       Edit Form
                     </Button>
