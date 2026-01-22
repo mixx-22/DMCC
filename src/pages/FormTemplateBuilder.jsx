@@ -273,6 +273,8 @@ const FormTemplateBuilder = () => {
       }
     };
     loadFormTemplate();
+    // fetchDocumentById is intentionally excluded from dependencies
+    // as it's not memoized in DocumentsContext and would cause infinite re-renders
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]);
 
