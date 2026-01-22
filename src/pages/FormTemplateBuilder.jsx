@@ -30,7 +30,14 @@ import {
 } from "@chakra-ui/react";
 import { Select as ChakraSelect } from "chakra-react-select";
 import { SingleDatepicker } from "chakra-dayzed-datepicker";
-import { FiPlus, FiTrash2, FiSave, FiMenu, FiArrowLeft, FiEdit2 } from "react-icons/fi";
+import {
+  FiPlus,
+  FiTrash2,
+  FiSave,
+  FiMenu,
+  FiArrowLeft,
+  FiEdit2,
+} from "react-icons/fi";
 import { toast } from "sonner";
 import { useDocuments } from "../context/_useContext";
 import {
@@ -339,8 +346,10 @@ const FormTemplateBuilder = () => {
         // Update existing question
         setQuestions((prev) =>
           prev.map((q) =>
-            q.id === editingQuestionId ? { ...question, id: editingQuestionId } : q
-          )
+            q.id === editingQuestionId
+              ? { ...question, id: editingQuestionId }
+              : q,
+          ),
         );
         toast.success("Question updated");
         setEditingQuestionId(null);
@@ -435,10 +444,12 @@ const FormTemplateBuilder = () => {
       navigate("/documents");
     } catch (error) {
       toast.error(
-        isEditMode ? "Failed to Update Form Template" : "Failed to Create Form Template",
+        isEditMode
+          ? "Failed to Update Form Template"
+          : "Failed to Create Form Template",
         {
           description: `${error?.message || error || "Unknown error"}. Try again later or contact your System Administrator.`,
-        }
+        },
       );
     }
   };
@@ -466,7 +477,6 @@ const FormTemplateBuilder = () => {
             leftIcon={<FiSave />}
             colorScheme="brandPrimary"
             onClick={handleSave}
-            size="lg"
           >
             Save Form Template
           </Button>
