@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Box, Spinner, Center, Stack, Heading, Text } from "@chakra-ui/react";
 import { toast } from "sonner";
 import PageHeader from "../components/PageHeader";
@@ -17,7 +17,7 @@ const QualityDocuments = () => {
   const [totalCount, setTotalCount] = useState(0);
 
   // Fetch quality documents
-  const fetchQualityDocuments = async (page = 1) => {
+  const fetchQualityDocuments = useCallback(async (page = 1) => {
     setLoading(true);
     try {
       const params = {
@@ -49,11 +49,11 @@ const QualityDocuments = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
     fetchQualityDocuments(currentPage);
-  }, [currentPage]);
+  }, [currentPage, fetchQualityDocuments]);
 
   const handleDocumentClick = (doc) => {
     // The ListView component already handles navigation on row click
