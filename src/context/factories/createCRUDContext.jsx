@@ -148,6 +148,8 @@ export function createCRUDProvider({
           dispatch({ type: "SET_LOADING", value: false });
         }
       },
+      // state.page and state.search are intentionally omitted as they're provided as function parameters
+      // to avoid unnecessary re-renders. The function always uses the values passed to it.
       // eslint-disable-next-line react-hooks/exhaustive-deps
       [state.limit, endpoint]
     );

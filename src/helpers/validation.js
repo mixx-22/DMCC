@@ -97,11 +97,13 @@ export const validateLoginInput = (input) => {
 
 /**
  * Check if a value is empty (null, undefined, empty string, empty array, empty object)
+ * Note: Boolean false and number 0 are NOT considered empty
+ * 
  * @param {*} value - Value to check
  * @returns {boolean} - True if empty
  */
 export const isEmpty = (value) => {
-  if (value == null) return true;
+  if (value === null || value === undefined) return true;
   if (typeof value === 'string') return value.trim().length === 0;
   if (Array.isArray(value)) return value.length === 0;
   if (typeof value === 'object') return Object.keys(value).length === 0;

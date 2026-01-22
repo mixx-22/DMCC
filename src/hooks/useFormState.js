@@ -1,6 +1,12 @@
 import { useState, useCallback } from "react";
 
 /**
+ * Form and edit mode management hooks
+ * 
+ * This module provides hooks for managing form state and edit mode toggles.
+ */
+
+/**
  * Custom hook for managing edit mode state
  * Useful for pages/components that toggle between view and edit modes
  * 

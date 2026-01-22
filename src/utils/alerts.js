@@ -225,6 +225,7 @@ export async function showInputDialog(
       if (!value) {
         return "This field is required";
       }
+      return null; // Explicitly return null for valid inputs
     },
     ...options,
   });

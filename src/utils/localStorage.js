@@ -77,7 +77,12 @@ export function clear() {
  * @returns {boolean} - True if key exists, false otherwise
  */
 export function hasItem(key) {
-  return localStorage.getItem(key) !== null;
+  try {
+    return localStorage.getItem(key) !== null;
+  } catch (error) {
+    console.error(`Error checking localStorage key "${key}":`, error);
+    return false;
+  }
 }
 
 /**
@@ -98,14 +103,18 @@ export function getItems(keys) {
  * Set multiple items in localStorage
  * 
  * @param {Object} items - Object with key-value pairs to store
- * @returns {boolean} - True if all successful, false otherwise
+ * @returns {boolean} - True if all successful, false if any fail
  */
 export function setItems(items) {
+  let allSuccessful = true;
   try {
     Object.entries(items).forEach(([key, value]) => {
-      setItem(key, value);
+      const success = setItem(key, value);
+      if (!success) {
+        allSuccessful = false;
+      }
     });
-    return true;
+    return allSuccessful;
   } catch (error) {
     console.error("Error setting multiple localStorage items:", error);
     return false;
