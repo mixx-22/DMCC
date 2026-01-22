@@ -12,7 +12,8 @@ const Layout = ({ children }) => {
     return (
       (["users", "teams"].includes(pathSegments[0]) &&
         pathSegments.length === 2) ||
-      (["settings"].includes(pathSegments[0]) && pathSegments.length === 1)
+      (["settings", "create-form"].includes(pathSegments[0]) &&
+        pathSegments.length === 1)
     );
   }, [location.pathname]);
   const contentBg = useColorModeValue("gray.50", "gray.900");

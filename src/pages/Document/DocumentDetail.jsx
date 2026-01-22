@@ -38,6 +38,7 @@ import {
   FiFolder,
   FiCalendar,
   FiAlertCircle,
+  FiEdit,
   FiMoreVertical,
   FiCheckCircle,
   FiClock,
@@ -161,7 +162,7 @@ const DocumentDetail = () => {
   // Handle inline title update on blur
   const handleTitleBlur = async (newTitle) => {
     const trimmedTitle = newTitle.trim();
-    
+
     // If title is empty, revert and notify
     if (!trimmedTitle) {
       toast.error("Validation Error", {
@@ -169,7 +170,7 @@ const DocumentDetail = () => {
         duration: 3000,
       });
       // Force re-render to show original value
-      setDocument(prev => ({ ...prev }));
+      setDocument((prev) => ({ ...prev }));
       return;
     }
 
@@ -180,7 +181,7 @@ const DocumentDetail = () => {
 
     try {
       await updateDocument(id, { title: trimmedTitle });
-      setDocument(prev => ({ ...prev, title: trimmedTitle }));
+      setDocument((prev) => ({ ...prev, title: trimmedTitle }));
       toast.success("Title Updated", {
         description: "Document title has been updated",
         duration: 2000,
@@ -191,7 +192,7 @@ const DocumentDetail = () => {
         duration: 3000,
       });
       // Revert on error
-      setDocument(prev => ({ ...prev }));
+      setDocument((prev) => ({ ...prev }));
     }
   };
 
@@ -205,7 +206,7 @@ const DocumentDetail = () => {
 
     try {
       await updateDocument(id, { description: newDescription });
-      setDocument(prev => ({ ...prev, description: newDescription }));
+      setDocument((prev) => ({ ...prev, description: newDescription }));
       toast.success("Description Updated", {
         description: "Document description has been updated",
         duration: 2000,
@@ -216,7 +217,7 @@ const DocumentDetail = () => {
         duration: 3000,
       });
       // Revert on error
-      setDocument(prev => ({ ...prev }));
+      setDocument((prev) => ({ ...prev }));
     }
   };
 
@@ -253,7 +254,11 @@ const DocumentDetail = () => {
               <Text fontSize="xl" color="gray.600">
                 Document not found
               </Text>
-              <Button colorScheme="blue" onClick={() => navigate("/documents")} mt={4}>
+              <Button
+                colorScheme="blue"
+                onClick={() => navigate("/documents")}
+                mt={4}
+              >
                 Back to Documents
               </Button>
             </VStack>
@@ -278,7 +283,10 @@ const DocumentDetail = () => {
             autoRows="minmax(120px, auto)"
           >
             {/* Main Document Info - Spans 8 columns, 2 rows */}
-            <Card gridColumn={{ base: "1", lg: "1 / 9" }} gridRow={{ base: "auto", lg: "1 / 3" }}>
+            <Card
+              gridColumn={{ base: "1", lg: "1 / 9" }}
+              gridRow={{ base: "auto", lg: "1 / 3" }}
+            >
               <CardBody>
                 <Flex justify="space-between" align="start" mb={4}>
                   <HStack spacing={4} flex="1" align="start">
@@ -314,27 +322,38 @@ const DocumentDetail = () => {
                           rows={1}
                           onFocus={(e) => {
                             // Auto-resize on focus
-                            e.target.style.height = 'auto';
+                            e.target.style.height = "auto";
                             e.target.style.height = `${e.target.scrollHeight}px`;
                           }}
                           onInput={(e) => {
                             // Continue resizing as user types
-                            e.target.style.height = 'auto';
+                            e.target.style.height = "auto";
                             e.target.style.height = `${e.target.scrollHeight}px`;
                           }}
                         />
                       </Editable>
                       <HStack spacing={2}>
-                        <Badge colorScheme={document?.type === "folder" ? "blue" : document?.type === "auditSchedule" ? "purple" : "gray"}>
+                        <Badge
+                          colorScheme={
+                            document?.type === "folder"
+                              ? "blue"
+                              : document?.type === "auditSchedule"
+                                ? "purple"
+                                : document?.type === "formTemplate"
+                                  ? "green"
+                                  : "gray"
+                          }
+                        >
                           {document?.type === "auditSchedule"
                             ? "Audit Schedule"
-                            : document?.type
-                              ? document.type.charAt(0).toUpperCase() + document.type.slice(1)
-                              : "Unknown"}
+                            : document?.type === "formTemplate"
+                              ? "Form Template"
+                              : document?.type
+                                ? document.type.charAt(0).toUpperCase() +
+                                  document.type.slice(1)
+                                : "Unknown"}
                         </Badge>
-                        {!isValid && (
-                          <Badge colorScheme="red">Broken</Badge>
-                        )}
+                        {!isValid && <Badge colorScheme="red">Broken</Badge>}
                       </HStack>
                     </VStack>
                   </HStack>
@@ -350,7 +369,11 @@ const DocumentDetail = () => {
                         Move
                       </MenuItem>
                       <Divider />
-                      <MenuItem icon={<FiTrash2 />} color="red.500" onClick={onDeleteOpen}>
+                      <MenuItem
+                        icon={<FiTrash2 />}
+                        color="red.500"
+                        onClick={onDeleteOpen}
+                      >
                         Delete
                       </MenuItem>
                     </MenuList>
@@ -358,7 +381,7 @@ const DocumentDetail = () => {
                 </Flex>
 
                 <Divider mb={4} />
-                
+
                 <Editable
                   key={`description-${document?.id || document?._id}`}
                   defaultValue={document?.description || ""}
@@ -388,19 +411,19 @@ const DocumentDetail = () => {
                     resize="vertical"
                     onFocus={(e) => {
                       // Auto-resize on focus
-                      e.target.style.height = 'auto';
+                      e.target.style.height = "auto";
                       e.target.style.height = `${e.target.scrollHeight}px`;
                     }}
                     onInput={(e) => {
                       // Continue resizing as user types
-                      e.target.style.height = 'auto';
+                      e.target.style.height = "auto";
                       e.target.style.height = `${e.target.scrollHeight}px`;
                     }}
                   />
                 </Editable>
 
                 <Divider mb={4} />
-                
+
                 <SimpleGrid columns={{ base: 1, md: 2 }} spacing={4}>
                   <Box>
                     <Text fontSize="sm" color="gray.600" fontWeight="medium">
@@ -416,14 +439,16 @@ const DocumentDetail = () => {
                           <Avatar
                             size="sm"
                             name={
-                              document?.owner?.firstName && document?.owner?.lastName
+                              document?.owner?.firstName &&
+                              document?.owner?.lastName
                                 ? `${document.owner.firstName} ${document.owner.lastName}`
                                 : "Unknown"
                             }
                           />
                           <VStack align="start" spacing={0}>
                             <Text fontSize="sm" fontWeight="medium">
-                              {document?.owner?.firstName && document?.owner?.lastName
+                              {document?.owner?.firstName &&
+                              document?.owner?.lastName
                                 ? `${document.owner.firstName} ${document.owner.lastName}`
                                 : "Unknown"}
                             </Text>
@@ -440,14 +465,16 @@ const DocumentDetail = () => {
                         <Avatar
                           size="sm"
                           name={
-                            document?.owner?.firstName && document?.owner?.lastName
+                            document?.owner?.firstName &&
+                            document?.owner?.lastName
                               ? `${document.owner.firstName} ${document.owner.lastName}`
                               : "Unknown"
                           }
                         />
                         <VStack align="start" spacing={0}>
                           <Text fontSize="sm" fontWeight="medium">
-                            {document?.owner?.firstName && document?.owner?.lastName
+                            {document?.owner?.firstName &&
+                            document?.owner?.lastName
                               ? `${document.owner.firstName} ${document.owner.lastName}`
                               : "Unknown"}
                           </Text>
@@ -498,7 +525,10 @@ const DocumentDetail = () => {
             </Card>
 
             {/* Version Control & Approval Status Combined - Spans 4 columns, 2 rows */}
-            <Card gridColumn={{ base: "1", lg: "9 / 13" }} gridRow={{ base: "auto", lg: "1 / 3" }}>
+            <Card
+              gridColumn={{ base: "1", lg: "9 / 13" }}
+              gridRow={{ base: "auto", lg: "1 / 3" }}
+            >
               <CardBody>
                 <Text fontWeight="semibold" mb={4}>
                   Version Control
@@ -635,7 +665,9 @@ const DocumentDetail = () => {
                         document?.metadata?.allowInheritance ? "green" : "gray"
                       }
                     >
-                      {document?.metadata?.allowInheritance ? "Enabled" : "Disabled"}
+                      {document?.metadata?.allowInheritance
+                        ? "Enabled"
+                        : "Disabled"}
                     </Badge>
                   </HStack>
                 </CardBody>
@@ -667,7 +699,10 @@ const DocumentDetail = () => {
                         <Text fontSize="sm" mt={1}>
                           {document.metadata.type
                             .split("-")
-                            .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+                            .map(
+                              (word) =>
+                                word.charAt(0).toUpperCase() + word.slice(1),
+                            )
                             .join(" ")}
                         </Text>
                       </Box>
@@ -687,13 +722,79 @@ const DocumentDetail = () => {
               </Card>
             )}
 
+            {document?.type === "formTemplate" && (
+              <Card gridColumn={{ base: "1", lg: "1 / 13" }}>
+                <CardBody>
+                  <Flex justify="space-between" align="center" mb={4}>
+                    <Text fontWeight="semibold">
+                      Form Questions (
+                      {document?.metadata?.questions?.length || 0})
+                    </Text>
+                    <Button
+                      size="sm"
+                      colorScheme="blue"
+                      leftIcon={<FiEdit />}
+                      onClick={() => navigate(`/edit-form/${document._id}`)}
+                    >
+                      Edit Form
+                    </Button>
+                  </Flex>
+                  {document?.metadata?.questions &&
+                  document.metadata.questions.length > 0 ? (
+                    <VStack align="stretch" spacing={4}>
+                      {document.metadata.questions.map((question, index) => (
+                        <Box
+                          key={question.id}
+                          p={4}
+                          borderWidth={1}
+                          borderRadius="md"
+                          borderColor="gray.200"
+                          bg="gray.50"
+                        >
+                          <HStack justify="space-between" align="start" mb={2}>
+                            <Text fontWeight="medium" flex={1}>
+                              {index + 1}. {question.label}
+                            </Text>
+                            {question.required && (
+                              <Badge colorScheme="red" size="sm">
+                                Required
+                              </Badge>
+                            )}
+                          </HStack>
+                          <Text fontSize="sm" color="gray.600" mb={1}>
+                            Type: <strong>{question.type}</strong>
+                          </Text>
+                          {question.options && question.options.length > 0 && (
+                            <Box mt={2}>
+                              <Text fontSize="sm" color="gray.600" mb={1}>
+                                Options:
+                              </Text>
+                              <VStack align="start" spacing={1} pl={4}>
+                                {question.options.map((option, optIndex) => (
+                                  <Text key={optIndex} fontSize="sm">
+                                    • {option}
+                                  </Text>
+                                ))}
+                              </VStack>
+                            </Box>
+                          )}
+                        </Box>
+                      ))}
+                    </VStack>
+                  ) : (
+                    <Text fontSize="sm" color="gray.500">
+                      No questions have been added to this form template yet.
+                    </Text>
+                  )}
+                </CardBody>
+              </Card>
+            )}
+
             {/* Privacy & Permissions */}
             <Card gridColumn={{ base: "1", lg: "1 / 13" }}>
               <CardBody>
                 <Flex justify="space-between" align="center" mb={4}>
-                  <Text fontWeight="semibold">
-                    Privacy & Permissions
-                  </Text>
+                  <Text fontWeight="semibold">Privacy & Permissions</Text>
                   <Button
                     leftIcon={<FiShare2 />}
                     size="sm"
@@ -765,7 +866,7 @@ const DocumentDetail = () => {
           </SimpleGrid>
         </Container>
       </Box>
-      
+
       {/* Quick Actions in PageFooter */}
       <PageFooter>
         <HStack spacing={3} justify="flex-end" w="full">

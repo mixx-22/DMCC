@@ -33,6 +33,7 @@ import Settings from "./pages/Settings";
 import { useApp } from "./context/_useContext";
 import { UserProfileProvider } from "./context/UserProfileContext";
 import { DocumentsProvider } from "./context/DocumentsContext";
+import FormTemplateBuilder from "./pages/FormTemplateBuilder";
 
 const ProtectedRoute = ({ children }) => {
   const { currentUser } = useApp();
@@ -110,6 +111,22 @@ function App() {
                       element={
                         <DocumentsProvider>
                           <Search />
+                        </DocumentsProvider>
+                      }
+                    />
+                    <Route
+                      path="/create-form"
+                      element={
+                        <DocumentsProvider>
+                          <FormTemplateBuilder />
+                        </DocumentsProvider>
+                      }
+                    />
+                    <Route
+                      path="/edit-form/:id"
+                      element={
+                        <DocumentsProvider>
+                          <FormTemplateBuilder />
                         </DocumentsProvider>
                       }
                     />

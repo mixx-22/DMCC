@@ -1,0 +1,815 @@
+import { useState, useEffect } from "react";
+import { useNavigate, useLocation, useParams } from "react-router-dom";
+import {
+  Box,
+  Button,
+  Card,
+  CardBody,
+  FormControl,
+  FormLabel,
+  Input,
+  Textarea,
+  VStack,
+  HStack,
+  Select,
+  Switch,
+  Text,
+  IconButton,
+  Divider,
+  Tag,
+  TagLabel,
+  TagCloseButton,
+  Wrap,
+  WrapItem,
+  Heading,
+  Flex,
+  NumberInput,
+  NumberInputField,
+  Checkbox,
+  Stack,
+  Spinner,
+  Center,
+} from "@chakra-ui/react";
+import { Select as ChakraSelect } from "chakra-react-select";
+import { SingleDatepicker } from "chakra-dayzed-datepicker";
+import {
+  FiPlus,
+  FiTrash2,
+  FiSave,
+  FiMenu,
+  FiArrowLeft,
+  FiEdit2,
+} from "react-icons/fi";
+import { toast } from "sonner";
+import { useDocuments } from "../context/_useContext";
+import {
+  createQuestion,
+  INPUT_TYPES,
+  requiresOptions,
+  validateFormTemplate,
+} from "../utils/formTemplateEngine";
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+} from "@dnd-kit/core";
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  useSortable,
+  verticalListSortingStrategy,
+} from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
+import PageHeader from "../components/PageHeader";
+import PageFooter from "../components/PageFooter";
+
+// Sortable Question Component
+const SortableQuestion = ({ question, index, onRemove, onEdit }) => {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: question.id });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.5 : 1,
+  };
+
+  // Render the actual input field based on type
+  const renderInputField = () => {
+    const commonProps = {
+      isReadOnly: true,
+      placeholder: question.label || "Question label...",
+      size: "md",
+      cursor: "not-allowed",
+    };
+
+    switch (question.type) {
+      case INPUT_TYPES.TEXT:
+        return <Input {...commonProps} />;
+      case INPUT_TYPES.NUMBER:
+        return (
+          <NumberInput {...commonProps}>
+            <NumberInputField {...commonProps} />
+          </NumberInput>
+        );
+      case INPUT_TYPES.CURRENCY:
+        return (
+          <NumberInput {...commonProps}>
+            <NumberInputField {...commonProps} placeholder="$0.00" />
+          </NumberInput>
+        );
+      case INPUT_TYPES.TEXTAREA:
+        return <Textarea {...commonProps} rows={3} />;
+      case INPUT_TYPES.DATE:
+        return (
+          <SingleDatepicker
+            name="date-input"
+            date={new Date()}
+            disabled
+            configs={{
+              dateFormat: "MM/dd/yyyy",
+            }}
+          />
+        );
+      case INPUT_TYPES.SELECT:
+      case INPUT_TYPES.DROPDOWN:
+        return (
+          <ChakraSelect
+            isReadOnly
+            isDisabled
+            placeholder="Select option..."
+            options={
+              question.options?.map((opt) => ({
+                value: opt,
+                label: opt,
+              })) || []
+            }
+          />
+        );
+      case INPUT_TYPES.CHECKBOXES:
+        return (
+          <VStack align="start" spacing={2}>
+            {question.options?.map((option, idx) => (
+              <Checkbox key={idx} isDisabled>
+                {option}
+              </Checkbox>
+            ))}
+            {(!question.options || question.options.length === 0) && (
+              <Text fontSize="sm" color="gray.500">
+                No options defined
+              </Text>
+            )}
+          </VStack>
+        );
+      default:
+        return <Input {...commonProps} />;
+    }
+  };
+
+  return (
+    <Box ref={setNodeRef} style={style}>
+      <Card
+        mb={4}
+        borderWidth={2}
+        borderColor={isDragging ? "blue.400" : "gray.200"}
+        bg="white"
+        _hover={{ borderColor: "blue.300" }}
+        variant="filled"
+      >
+        <CardBody>
+          <Flex gap={3} align="start">
+            <IconButton
+              icon={<FiMenu />}
+              size="sm"
+              variant="ghost"
+              cursor="grab"
+              _active={{ cursor: "grabbing" }}
+              aria-label="Drag to reorder"
+              {...attributes}
+              {...listeners}
+            />
+            <VStack flex={1} align="stretch" spacing={3}>
+              <Flex justify="space-between" align="start">
+                <HStack>
+                  <Text fontWeight="medium" fontSize="sm" color="gray.600">
+                    Question {index + 1}
+                  </Text>
+                  {question.required && (
+                    <Tag size="sm" colorScheme="red" variant="subtle">
+                      Required
+                    </Tag>
+                  )}
+                  <Tag size="sm" colorScheme="blue" variant="subtle">
+                    {question.type}
+                  </Tag>
+                </HStack>
+                <HStack spacing={1}>
+                  <IconButton
+                    icon={<FiEdit2 />}
+                    onClick={() => onEdit(question)}
+                    size="sm"
+                    colorScheme="blue"
+                    variant="ghost"
+                    aria-label="Edit question"
+                  />
+                  <IconButton
+                    icon={<FiTrash2 />}
+                    onClick={() => onRemove(question.id)}
+                    size="sm"
+                    colorScheme="red"
+                    variant="ghost"
+                    aria-label="Remove question"
+                  />
+                </HStack>
+              </Flex>
+              <FormControl>
+                <FormLabel fontSize="sm" fontWeight="medium">
+                  {question.label || "Untitled Question"}
+                </FormLabel>
+                {renderInputField()}
+              </FormControl>
+            </VStack>
+          </Flex>
+        </CardBody>
+      </Card>
+    </Box>
+  );
+};
+
+const FormTemplateBuilder = () => {
+  const navigate = useNavigate();
+  const location = useLocation();
+  const { id } = useParams();
+  const { createDocument, updateDocument, fetchDocumentById } = useDocuments();
+  const { parentId, path } = location.state || {};
+
+  const [formData, setFormData] = useState({
+    title: "",
+    description: "",
+  });
+
+  const [questions, setQuestions] = useState([]);
+  const [editingQuestionId, setEditingQuestionId] = useState(null);
+
+  const [currentQuestion, setCurrentQuestion] = useState({
+    label: "",
+    type: INPUT_TYPES.TEXT,
+    required: false,
+    options: [],
+  });
+
+  const [currentOption, setCurrentOption] = useState("");
+  const [isEditMode, setIsEditMode] = useState(false);
+  const [documentId, setDocumentId] = useState(null);
+  const [loadingForm, setLoadingForm] = useState(false);
+  const [originalDocument, setOriginalDocument] = useState(null);
+
+  // Load existing form template if editing
+  useEffect(() => {
+    const loadFormTemplate = async () => {
+      if (id) {
+        setLoadingForm(true);
+        try {
+          if (import.meta.env.DEV) {
+            console.log("Loading form template with id:", id);
+          }
+          const document = await fetchDocumentById(id);
+          if (import.meta.env.DEV) {
+            console.log("Fetched document:", document);
+          }
+          
+          if (document && document.type === "formTemplate") {
+            if (import.meta.env.DEV) {
+              console.log("Setting form data and questions:", document.metadata?.questions);
+            }
+            setFormData({
+              title: document.title || "",
+              description: document.description || "",
+            });
+            setQuestions(document.metadata?.questions || []);
+            setIsEditMode(true);
+            setDocumentId(id);
+            setOriginalDocument(document); // Store the original document
+          } else {
+            if (import.meta.env.DEV) {
+              console.log("Document is not a formTemplate or doesn't exist");
+            }
+            toast.error("Invalid Form Template", {
+              description: "This document is not a form template or does not exist.",
+            });
+          }
+        } catch (error) {
+          if (import.meta.env.DEV) {
+            console.error("Error loading form template:", error);
+          }
+          toast.error("Failed to load form template", {
+            description: error.message,
+          });
+        } finally {
+          setLoadingForm(false);
+        }
+      }
+    };
+    loadFormTemplate();
+    // fetchDocumentById is intentionally excluded from dependencies
+    // as it's not memoized in DocumentsContext and would cause infinite re-renders
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [id]);
+
+  const sensors = useSensors(
+    useSensor(PointerSensor),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    }),
+  );
+
+  const handleDragEnd = (event) => {
+    const { active, over } = event;
+
+    if (active.id !== over?.id) {
+      setQuestions((items) => {
+        const oldIndex = items.findIndex((item) => item.id === active.id);
+        const newIndex = items.findIndex((item) => item.id === over.id);
+        return arrayMove(items, oldIndex, newIndex);
+      });
+    }
+  };
+
+  const resetCurrentQuestion = () => {
+    setCurrentQuestion({
+      label: "",
+      type: INPUT_TYPES.TEXT,
+      required: false,
+      options: [],
+    });
+    setCurrentOption("");
+  };
+
+  const handleAddOption = () => {
+    if (!currentOption.trim()) {
+      toast.error("Option cannot be empty");
+      return;
+    }
+
+    if (currentQuestion.options.includes(currentOption.trim())) {
+      toast.error("This option already exists");
+      return;
+    }
+
+    setCurrentQuestion((prev) => ({
+      ...prev,
+      options: [...prev.options, currentOption.trim()],
+    }));
+    setCurrentOption("");
+  };
+
+  const handleRemoveOption = (indexToRemove) => {
+    setCurrentQuestion((prev) => ({
+      ...prev,
+      options: prev.options.filter((_, index) => index !== indexToRemove),
+    }));
+  };
+
+  const handleAddQuestion = () => {
+    // Allow adding questions even without label - removed validation
+    try {
+      const question = createQuestion({
+        label: currentQuestion.label || "Untitled Question",
+        type: currentQuestion.type,
+        required: currentQuestion.required,
+        options:
+          currentQuestion.options.length > 0
+            ? currentQuestion.options
+            : undefined,
+      });
+
+      if (editingQuestionId) {
+        // Update existing question
+        setQuestions((prev) =>
+          prev.map((q) =>
+            q.id === editingQuestionId
+              ? { ...question, id: editingQuestionId }
+              : q,
+          ),
+        );
+        toast.success("Question updated");
+        setEditingQuestionId(null);
+      } else {
+        // Add new question to bottom
+        setQuestions((prev) => [...prev, question]);
+        toast.success("Question added");
+      }
+
+      resetCurrentQuestion();
+    } catch (error) {
+      toast.error("Failed to add question", {
+        description: error.message,
+      });
+    }
+  };
+
+  const handleEditQuestion = (question) => {
+    setCurrentQuestion({
+      label: question.label,
+      type: question.type,
+      required: question.required,
+      options: question.options || [],
+    });
+    setEditingQuestionId(question.id);
+    // Scroll to add question section
+    window.scrollTo({ top: document.body.scrollHeight, behavior: "smooth" });
+  };
+
+  const handleRemoveQuestion = (questionId) => {
+    setQuestions((prev) => prev.filter((q) => q.id !== questionId));
+    if (editingQuestionId === questionId) {
+      resetCurrentQuestion();
+      setEditingQuestionId(null);
+    }
+    toast.success("Question removed");
+  };
+
+  const handleSave = async () => {
+    if (!formData.title.trim()) {
+      toast.error("Validation Error", {
+        description: "Please enter a title for the form template",
+      });
+      return;
+    }
+
+    if (questions.length === 0) {
+      toast.error("Validation Error", {
+        description: "Please add at least one question to the form",
+      });
+      return;
+    }
+
+    // Validate the form template
+    const validation = validateFormTemplate(questions);
+    if (!validation.isValid) {
+      toast.error("Form Template Validation Failed", {
+        description: validation.errors.join("; "),
+      });
+      return;
+    }
+
+    try {
+      const formTemplateData = {
+        title: formData.title,
+        description: formData.description,
+        type: "formTemplate",
+        status: 1, // Auto-approved
+        metadata: {
+          questions,
+        },
+      };
+
+      if (isEditMode && documentId) {
+        if (!originalDocument) {
+          // Fallback if original document wasn't loaded properly
+          if (import.meta.env.DEV) {
+            console.warn("Original document not available, using minimal update data");
+          }
+          await updateDocument(documentId, formTemplateData);
+        } else {
+          // Update existing form template - preserve all original document fields
+          const updateData = {
+            ...originalDocument, // Preserve all original fields
+            title: formData.title,
+            description: formData.description,
+            metadata: {
+              ...originalDocument.metadata, // Preserve any existing metadata fields
+              questions, // Update questions
+            },
+          };
+          
+          await updateDocument(documentId, updateData);
+        }
+        toast.success("Form Template Updated", {
+          description: `"${formData.title}" has been updated successfully`,
+        });
+      } else {
+        // Create new form template
+        await createDocument({
+          ...formTemplateData,
+          parentId,
+          path,
+        });
+        toast.success("Form Template Created", {
+          description: `"${formData.title}" has been created successfully`,
+        });
+      }
+
+      navigate("/documents");
+    } catch (error) {
+      toast.error(
+        isEditMode
+          ? "Failed to Update Form Template"
+          : "Failed to Create Form Template",
+        {
+          description: `${error?.message || error || "Unknown error"}. Try again later or contact your System Administrator.`,
+        },
+      );
+    }
+  };
+
+  const needsOptions = requiresOptions(currentQuestion.type);
+
+  if (loadingForm) {
+    return (
+      <Box>
+        <PageHeader>
+          <HStack spacing={4}>
+            <IconButton
+              icon={<FiArrowLeft />}
+              onClick={() => navigate("/documents")}
+              variant="ghost"
+              aria-label="Back to documents"
+            />
+            <Heading variant="pageTitle">Edit Form Template</Heading>
+          </HStack>
+        </PageHeader>
+        <Center h="400px">
+          <VStack spacing={4}>
+            <Spinner size="xl" color="blue.500" thickness="4px" />
+            <Text fontSize="lg" color="gray.600">
+              Loading form template...
+            </Text>
+          </VStack>
+        </Center>
+      </Box>
+    );
+  }
+
+  return (
+    <Box>
+      <PageHeader>
+        <HStack spacing={4}>
+          <IconButton
+            icon={<FiArrowLeft />}
+            onClick={() => navigate("/documents")}
+            variant="ghost"
+            aria-label="Back to documents"
+          />
+          <Heading variant="pageTitle">
+            {isEditMode ? "Edit Form Template" : "Create Form Template"}
+          </Heading>{" "}
+        </HStack>
+      </PageHeader>
+      <PageFooter>
+        <Flex gap={4} justifyContent="flex-end">
+          <Button
+            leftIcon={<FiSave />}
+            colorScheme="brandPrimary"
+            onClick={handleSave}
+          >
+            Save Form Template
+          </Button>
+        </Flex>
+      </PageFooter>
+
+      <Box p={{ base: 4, md: 8 }} maxW="900px" mx="auto">
+        <VStack spacing={6} align="stretch">
+          {/* Form Information */}
+          <Card>
+            <CardBody>
+              <VStack spacing={4} align="stretch">
+                <Heading size="md">Form Information</Heading>
+                <Stack spacing={4}>
+                  <FormControl isRequired flex={1}>
+                    <FormLabel>Form Title</FormLabel>
+                    <Input
+                      value={formData.title}
+                      onChange={(e) =>
+                        setFormData((prev) => ({
+                          ...prev,
+                          title: e.target.value,
+                        }))
+                      }
+                      placeholder="Enter form template title"
+                      size="lg"
+                    />
+                  </FormControl>
+
+                  <FormControl flex={1}>
+                    <FormLabel>Description</FormLabel>
+                    <Input
+                      value={formData.description}
+                      onChange={(e) =>
+                        setFormData((prev) => ({
+                          ...prev,
+                          description: e.target.value,
+                        }))
+                      }
+                      placeholder="Optional description"
+                      size="lg"
+                    />
+                  </FormControl>
+                </Stack>
+              </VStack>
+            </CardBody>
+          </Card>
+
+          {/* Form Preview with Questions */}
+          <Card>
+            <CardBody>
+              <VStack spacing={4} align="stretch">
+                <Flex justify="space-between" align="center">
+                  <Heading size="md">Form Preview</Heading>
+                  <Text fontSize="sm" color="gray.600" fontWeight="medium">
+                    {questions.length} question
+                    {questions.length !== 1 ? "s" : ""}
+                  </Text>
+                </Flex>
+                <Divider />
+
+                {/* Questions List */}
+                {questions.length === 0 ? (
+                  <Box
+                    p={8}
+                    textAlign="center"
+                    borderWidth={2}
+                    borderStyle="dashed"
+                    borderColor="gray.300"
+                    borderRadius="md"
+                  >
+                    <Text color="gray.500" mb={2}>
+                      No questions yet. Add your first question below.
+                    </Text>
+                  </Box>
+                ) : (
+                  <DndContext
+                    sensors={sensors}
+                    collisionDetection={closestCenter}
+                    onDragEnd={handleDragEnd}
+                  >
+                    <SortableContext
+                      items={questions.map((q) => q.id)}
+                      strategy={verticalListSortingStrategy}
+                    >
+                      <VStack spacing={3} align="stretch">
+                        {questions.map((question, index) => (
+                          <SortableQuestion
+                            key={question.id}
+                            question={question}
+                            index={index}
+                            onRemove={handleRemoveQuestion}
+                            onEdit={handleEditQuestion}
+                          />
+                        ))}
+                      </VStack>
+                    </SortableContext>
+                  </DndContext>
+                )}
+
+                <Divider />
+
+                {/* Add New Question - Inline at bottom */}
+                <Box
+                  p={4}
+                  borderWidth={2}
+                  borderStyle="dashed"
+                  borderColor="blue.300"
+                  borderRadius="md"
+                  bg="blue.50"
+                >
+                  <VStack spacing={4} align="stretch">
+                    <Flex justify="space-between" align="center">
+                      <Heading size="sm" color="blue.700">
+                        Add New Question
+                      </Heading>
+                      <HStack>
+                        <FormControl display="flex" alignItems="center">
+                          <FormLabel mb="0" fontSize="sm" mr={2}>
+                            Required
+                          </FormLabel>
+                          <Switch
+                            size="sm"
+                            isChecked={currentQuestion.required}
+                            onChange={(e) =>
+                              setCurrentQuestion((prev) => ({
+                                ...prev,
+                                required: e.target.checked,
+                              }))
+                            }
+                            colorScheme="blue"
+                          />
+                        </FormControl>
+                      </HStack>
+                    </Flex>
+
+                    <Flex gap={3} direction={{ base: "column", md: "row" }}>
+                      <FormControl flex={2}>
+                        <Input
+                          value={currentQuestion.label}
+                          onChange={(e) =>
+                            setCurrentQuestion((prev) => ({
+                              ...prev,
+                              label: e.target.value,
+                            }))
+                          }
+                          placeholder="Question label (optional)"
+                          size="md"
+                          bg="white"
+                        />
+                      </FormControl>
+
+                      <FormControl flex={1}>
+                        <Select
+                          value={currentQuestion.type}
+                          onChange={(e) =>
+                            setCurrentQuestion((prev) => ({
+                              ...prev,
+                              type: e.target.value,
+                              options: [],
+                            }))
+                          }
+                          size="md"
+                          bg="white"
+                        >
+                          <option value={INPUT_TYPES.TEXT}>Text</option>
+                          <option value={INPUT_TYPES.NUMBER}>Number</option>
+                          <option value={INPUT_TYPES.CURRENCY}>Currency</option>
+                          <option value={INPUT_TYPES.TEXTAREA}>
+                            Text Area
+                          </option>
+                          <option value={INPUT_TYPES.DATE}>Date</option>
+                          <option value={INPUT_TYPES.SELECT}>Select</option>
+                          <option value={INPUT_TYPES.DROPDOWN}>Dropdown</option>
+                          <option value={INPUT_TYPES.CHECKBOXES}>
+                            Checkboxes
+                          </option>
+                        </Select>
+                      </FormControl>
+                    </Flex>
+
+                    {needsOptions && (
+                      <FormControl>
+                        <HStack>
+                          <Input
+                            value={currentOption}
+                            onChange={(e) => setCurrentOption(e.target.value)}
+                            placeholder="Enter an option"
+                            size="sm"
+                            bg="white"
+                            onKeyPress={(e) => {
+                              if (e.key === "Enter") {
+                                e.preventDefault();
+                                handleAddOption();
+                              }
+                            }}
+                          />
+                          <IconButton
+                            icon={<FiPlus />}
+                            onClick={handleAddOption}
+                            colorScheme="blue"
+                            size="sm"
+                            aria-label="Add option"
+                          />
+                        </HStack>
+
+                        {currentQuestion.options.length > 0 && (
+                          <Wrap mt={2}>
+                            {currentQuestion.options.map((option, index) => (
+                              <WrapItem key={index}>
+                                <Tag
+                                  size="sm"
+                                  colorScheme="blue"
+                                  variant="solid"
+                                >
+                                  <TagLabel>{option}</TagLabel>
+                                  <TagCloseButton
+                                    onClick={() => handleRemoveOption(index)}
+                                  />
+                                </Tag>
+                              </WrapItem>
+                            ))}
+                          </Wrap>
+                        )}
+                      </FormControl>
+                    )}
+
+                    <Button
+                      leftIcon={editingQuestionId ? <FiEdit2 /> : <FiPlus />}
+                      onClick={handleAddQuestion}
+                      colorScheme={editingQuestionId ? "orange" : "blue"}
+                      size="md"
+                      w="full"
+                    >
+                      {editingQuestionId ? "Update Question" : "Add Question"}
+                    </Button>
+                    {editingQuestionId && (
+                      <Button
+                        onClick={() => {
+                          resetCurrentQuestion();
+                          setEditingQuestionId(null);
+                        }}
+                        variant="ghost"
+                        size="sm"
+                        w="full"
+                      >
+                        Cancel Edit
+                      </Button>
+                    )}
+                  </VStack>
+                </Box>
+              </VStack>
+            </CardBody>
+          </Card>
+        </VStack>
+      </Box>
+    </Box>
+  );
+};
+
+export default FormTemplateBuilder;
