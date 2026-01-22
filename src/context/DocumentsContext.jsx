@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import apiService from "../services/api";
 import { DocumentsContext } from "./_contexts";
 import { useUser } from "./_useContext";
@@ -45,7 +45,7 @@ export const DocumentsProvider = ({ children }) => {
   }, [viewMode]);
 
   // Fetch documents from API
-  const fetchDocuments = async (folderId = null) => {
+  const fetchDocuments = useCallback(async (folderId = null) => {
     // Prevent duplicate requests
     if (fetchingRef.current && lastFetchedFolderIdRef.current === folderId) {
       return;
@@ -85,7 +85,7 @@ export const DocumentsProvider = ({ children }) => {
       setLoading(false);
       fetchingRef.current = false;
     }
-  };
+  }, []);
 
   // Fetch single document by ID
   const fetchDocumentById = async (documentId) => {
@@ -117,10 +117,8 @@ export const DocumentsProvider = ({ children }) => {
     }
   };
 
-  // Load documents on mount and when folder changes
-  useEffect(() => {
-    fetchDocuments(currentFolderId);
-  }, [currentFolderId]);
+  // Note: fetchDocuments is no longer called automatically here.
+  // Pages that need documents (like /documents) should call fetchDocuments explicitly.
 
   // Generate unique ID
   const generateId = () => {

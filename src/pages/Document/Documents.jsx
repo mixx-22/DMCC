@@ -44,6 +44,7 @@ const Documents = () => {
     setSelectedDocument,
     loading,
     createDocument,
+    fetchDocuments,
   } = useDocuments();
 
   const [lastClickTime, setLastClickTime] = useState(0);
@@ -51,6 +52,11 @@ const Documents = () => {
   const isFolderView = location.pathname.includes("/folders/");
   const fetchedRef = useRef(false);
   const currentIdRef = useRef(null);
+
+  // Fetch documents when currentFolderId changes (on /documents page)
+  useEffect(() => {
+    fetchDocuments(currentFolderId);
+  }, [currentFolderId, fetchDocuments]);
 
   useEffect(() => {
     if (currentIdRef.current !== id) {
