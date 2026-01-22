@@ -1,16 +1,18 @@
-import { 
-  IoFolder, 
-  IoDocument, 
-  IoCalendar, 
-  IoAlertCircle, 
+import {
+  IoFolder,
+  IoDocument,
+  IoCalendar,
+  IoAlertCircle,
   IoDocumentText,
   IoImage,
   IoVideocam,
   IoMusicalNotes,
   IoCode,
-  IoArchive
+  IoArchive,
 } from "react-icons/io5";
 import { getFileExtension } from "../../utils/fileTypes";
+import { Folder } from "../../icons/Folder";
+import AuptilyzeFolder from "../AuptilyzeFolder";
 
 /**
  * Get file-type-specific icon and color based on file extension
@@ -19,47 +21,82 @@ import { getFileExtension } from "../../utils/fileTypes";
  */
 export const getFileIconByExtension = (filename) => {
   const extension = getFileExtension(filename);
-  
+
   // Images
-  if (['jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp', 'svg', 'ico'].includes(extension)) {
+  if (
+    ["jpg", "jpeg", "png", "gif", "bmp", "webp", "svg", "ico"].includes(
+      extension,
+    )
+  ) {
     return { icon: IoImage, color: "#D69E2E" }; // Yellow/Gold for images
   }
-  
+
   // Videos
-  if (['mp4', 'webm', 'ogg', 'mov', 'avi', 'mkv', 'flv', 'wmv'].includes(extension)) {
+  if (
+    ["mp4", "webm", "ogg", "mov", "avi", "mkv", "flv", "wmv"].includes(
+      extension,
+    )
+  ) {
     return { icon: IoVideocam, color: "#805AD5" }; // Purple for videos
   }
-  
+
   // Audio
-  if (['mp3', 'wav', 'ogg', 'aac', 'flac', 'wma', 'm4a'].includes(extension)) {
+  if (["mp3", "wav", "ogg", "aac", "flac", "wma", "m4a"].includes(extension)) {
     return { icon: IoMusicalNotes, color: "#38A169" }; // Green for audio
   }
-  
+
   // Documents/Text
-  if (['pdf', 'doc', 'docx', 'txt', 'rtf', 'odt'].includes(extension)) {
+  if (["pdf", "doc", "docx", "txt", "rtf", "odt"].includes(extension)) {
     return { icon: IoDocumentText, color: "#E53E3E" }; // Red for documents
   }
-  
+
   // Spreadsheets
-  if (['xls', 'xlsx', 'csv', 'ods'].includes(extension)) {
+  if (["xls", "xlsx", "csv", "ods"].includes(extension)) {
     return { icon: IoDocumentText, color: "#38A169" }; // Green for spreadsheets
   }
-  
+
   // Presentations
-  if (['ppt', 'pptx', 'odp'].includes(extension)) {
+  if (["ppt", "pptx", "odp"].includes(extension)) {
     return { icon: IoDocumentText, color: "#DD6B20" }; // Orange for presentations
   }
-  
+
   // Code files
-  if (['js', 'jsx', 'ts', 'tsx', 'py', 'java', 'c', 'cpp', 'cs', 'php', 'rb', 'go', 'rs', 'swift', 'kt', 'html', 'css', 'scss', 'json', 'xml', 'yml', 'yaml', 'sh', 'sql'].includes(extension)) {
+  if (
+    [
+      "js",
+      "jsx",
+      "ts",
+      "tsx",
+      "py",
+      "java",
+      "c",
+      "cpp",
+      "cs",
+      "php",
+      "rb",
+      "go",
+      "rs",
+      "swift",
+      "kt",
+      "html",
+      "css",
+      "scss",
+      "json",
+      "xml",
+      "yml",
+      "yaml",
+      "sh",
+      "sql",
+    ].includes(extension)
+  ) {
     return { icon: IoCode, color: "#3182CE" }; // Blue for code
   }
-  
+
   // Archives
-  if (['zip', 'rar', '7z', 'tar', 'gz', 'bz2', 'xz'].includes(extension)) {
+  if (["zip", "rar", "7z", "tar", "gz", "bz2", "xz"].includes(extension)) {
     return { icon: IoArchive, color: "#718096" }; // Gray for archives
   }
-  
+
   // Default file icon
   return { icon: IoDocument, color: "#718096" }; // Gray for unknown types
 };
@@ -79,7 +116,7 @@ export const getDocumentIcon = (doc, size = 24) => {
 
   switch (type) {
     case "folder":
-      return <IoFolder size={size} color="#3182CE" />;
+      return <AuptilyzeFolder boxSize={`${size}px`} />;
     case "auditSchedule":
       return <IoCalendar size={size} color="#805AD5" />;
     case "formTemplate":
@@ -95,8 +132,16 @@ export const getDocumentIcon = (doc, size = 24) => {
         );
       }
       // Get file-specific icon based on extension
-      const { icon: IconComponent, color } = getFileIconByExtension(doc.metadata.filename);
-      return <IconComponent size={size} color={color} title={doc.metadata.filename} />;
+      const { icon: IconComponent, color } = getFileIconByExtension(
+        doc.metadata.filename,
+      );
+      return (
+        <IconComponent
+          size={size}
+          color={color}
+          title={doc.metadata.filename}
+        />
+      );
     default:
       return (
         <IoAlertCircle
