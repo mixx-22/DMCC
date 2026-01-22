@@ -33,6 +33,7 @@ import Settings from "./pages/Settings";
 import { useApp } from "./context/_useContext";
 import { UserProfileProvider } from "./context/UserProfileContext";
 import { DocumentsProvider } from "./context/DocumentsContext";
+import QualityDocuments from "./pages/QualityDocuments";
 
 const ProtectedRoute = ({ children }) => {
   const { currentUser } = useApp();
@@ -102,6 +103,14 @@ function App() {
                       element={
                         <DocumentsProvider>
                           <Documents />
+                        </DocumentsProvider>
+                      }
+                    />
+                    <Route
+                      path="/quality-documents"
+                      element={
+                        <DocumentsProvider>
+                          <QualityDocuments />
                         </DocumentsProvider>
                       }
                     />

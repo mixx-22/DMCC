@@ -1,0 +1,144 @@
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import {
+  Box,
+  Flex,
+  Spinner,
+  Center,
+  Stack,
+  Text,
+} from "@chakra-ui/react";
+import { toast } from "sonner";
+import PageHeader from "../components/PageHeader";
+import PageFooter from "../components/PageFooter";
+import SearchInput from "../components/SearchInput";
+import DocumentDrawer from "../components/Document/DocumentDrawer";
+import { ListView } from "../components/Document/ListView";
+import { EmptyState } from "../components/Document/EmptyState";
+import Pagination from "../components/Pagination";
+import apiService from "../services/api";
+
+const ITEMS_PER_PAGE = 10;
+
+const QualityDocuments = () => {
+  const navigate = useNavigate();
+  const [documents, setDocuments] = useState([]);
+  const [selectedDocument, setSelectedDocument] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalCount, setTotalCount] = useState(0);
+  const [searchQuery, setSearchQuery] = useState("");
+
+  // Fetch quality documents
+  const fetchQualityDocuments = async (page = 1, search = "") => {
+    setLoading(true);
+    try {
+      const params = {
+        page,
+        limit: ITEMS_PER_PAGE,
+      };
+      
+      if (search) {
+        params.search = search;
+      }
+
+      const response = await apiService.request("/documents/quality", {
+        method: "GET",
+        params,
+      });
+
+      if (response.success) {
+        setDocuments(response.data?.documents || []);
+        setTotalCount(response.data?.total || 0);
+      } else {
+        throw new Error(response.message || "Failed to fetch quality documents");
+      }
+    } catch (error) {
+      console.error("Failed to fetch quality documents:", error);
+      toast.error("Error", {
+        description: "Failed to load quality documents",
+        duration: 3000,
+      });
+      setDocuments([]);
+      setTotalCount(0);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchQualityDocuments(currentPage, searchQuery);
+  }, [currentPage, searchQuery]);
+
+  const handleDocumentClick = (doc) => {
+    // The ListView component already handles navigation on row click
+    // and calls this function for the "More Options" button click
+    // So we just set the selected document to open the drawer
+    setSelectedDocument(doc);
+  };
+
+  const handleSearch = (query) => {
+    setSearchQuery(query);
+    setCurrentPage(1); // Reset to first page on new search
+  };
+
+  const handlePageChange = (page) => {
+    setCurrentPage(page);
+  };
+
+  return (
+    <Box>
+      <PageHeader>
+        <Flex justify="space-between" align="center" w="full" gap={4}>
+          <Text fontSize="2xl" fontWeight="bold">
+            Quality Documents
+          </Text>
+          <SearchInput 
+            placeholder="Search quality documents..." 
+            onSearch={handleSearch}
+          />
+        </Flex>
+      </PageHeader>
+
+      <PageFooter />
+
+      <Stack spacing={{ base: 4, lg: 6 }}>
+        {loading ? (
+          <Center py={12}>
+            <Spinner size="xl" color="blue.500" />
+          </Center>
+        ) : documents.length === 0 ? (
+          <EmptyState
+            currentFolderId={null}
+            onUploadClick={() => {}}
+            onCreateFolderClick={() => {}}
+          />
+        ) : (
+          <>
+            <ListView
+              documents={documents}
+              selectedDocument={selectedDocument}
+              onDocumentClick={handleDocumentClick}
+            />
+            {totalCount > ITEMS_PER_PAGE && (
+              <Pagination
+                currentPage={currentPage}
+                totalItems={totalCount}
+                itemsPerPage={ITEMS_PER_PAGE}
+                onPageChange={handlePageChange}
+              />
+            )}
+          </>
+        )}
+      </Stack>
+
+      <DocumentDrawer
+        document={selectedDocument}
+        isOpen={!!selectedDocument}
+        onClose={() => setSelectedDocument(null)}
+      />
+    </Box>
+  );
+};
+
+export default QualityDocuments;

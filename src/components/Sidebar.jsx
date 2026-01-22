@@ -188,6 +188,7 @@ const Sidebar = () => {
         icon: FiFileText,
         children: [
           { path: "/documents", label: "All Documents" },
+          { path: "/quality-documents", label: "Quality Documents" },
           // { path: "/documents?status=pending", label: "Pending Approval" },
         ],
       },
