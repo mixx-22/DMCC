@@ -31,7 +31,7 @@ const DeleteDocumentModal = ({
     documents.some((doc) => doc.parentId === document.id);
 
   const handleDelete = () => {
-    deleteDocument(document.id);
+    deleteDocument(document._id);
 
     toast.success("Document Deleted", {
       description: `"${document.title}" has been deleted`,
