@@ -1,15 +1,15 @@
 import { 
-  FiFolder, 
-  FiFile, 
-  FiCalendar, 
-  FiAlertCircle, 
-  FiFileText,
-  FiImage,
-  FiVideo,
-  FiMusic,
-  FiCode,
-  FiArchive
-} from "react-icons/fi";
+  IoFolder, 
+  IoDocument, 
+  IoCalendar, 
+  IoAlertCircle, 
+  IoDocumentText,
+  IoImage,
+  IoVideocam,
+  IoMusicalNotes,
+  IoCode,
+  IoArchive
+} from "react-icons/io5";
 import { getFileExtension } from "../../utils/fileTypes";
 
 /**
@@ -22,46 +22,46 @@ export const getFileIconByExtension = (filename) => {
   
   // Images
   if (['jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp', 'svg', 'ico'].includes(extension)) {
-    return { icon: FiImage, color: "#D69E2E" }; // Yellow/Gold for images
+    return { icon: IoImage, color: "#D69E2E" }; // Yellow/Gold for images
   }
   
   // Videos
   if (['mp4', 'webm', 'ogg', 'mov', 'avi', 'mkv', 'flv', 'wmv'].includes(extension)) {
-    return { icon: FiVideo, color: "#805AD5" }; // Purple for videos
+    return { icon: IoVideocam, color: "#805AD5" }; // Purple for videos
   }
   
   // Audio
   if (['mp3', 'wav', 'ogg', 'aac', 'flac', 'wma', 'm4a'].includes(extension)) {
-    return { icon: FiMusic, color: "#38A169" }; // Green for audio
+    return { icon: IoMusicalNotes, color: "#38A169" }; // Green for audio
   }
   
   // Documents/Text
   if (['pdf', 'doc', 'docx', 'txt', 'rtf', 'odt'].includes(extension)) {
-    return { icon: FiFileText, color: "#E53E3E" }; // Red for documents
+    return { icon: IoDocumentText, color: "#E53E3E" }; // Red for documents
   }
   
   // Spreadsheets
   if (['xls', 'xlsx', 'csv', 'ods'].includes(extension)) {
-    return { icon: FiFileText, color: "#38A169" }; // Green for spreadsheets
+    return { icon: IoDocumentText, color: "#38A169" }; // Green for spreadsheets
   }
   
   // Presentations
   if (['ppt', 'pptx', 'odp'].includes(extension)) {
-    return { icon: FiFileText, color: "#DD6B20" }; // Orange for presentations
+    return { icon: IoDocumentText, color: "#DD6B20" }; // Orange for presentations
   }
   
   // Code files
   if (['js', 'jsx', 'ts', 'tsx', 'py', 'java', 'c', 'cpp', 'cs', 'php', 'rb', 'go', 'rs', 'swift', 'kt', 'html', 'css', 'scss', 'json', 'xml', 'yml', 'yaml', 'sh', 'sql'].includes(extension)) {
-    return { icon: FiCode, color: "#3182CE" }; // Blue for code
+    return { icon: IoCode, color: "#3182CE" }; // Blue for code
   }
   
   // Archives
   if (['zip', 'rar', '7z', 'tar', 'gz', 'bz2', 'xz'].includes(extension)) {
-    return { icon: FiArchive, color: "#718096" }; // Gray for archives
+    return { icon: IoArchive, color: "#718096" }; // Gray for archives
   }
   
   // Default file icon
-  return { icon: FiFile, color: "#718096" }; // Gray for unknown types
+  return { icon: IoDocument, color: "#718096" }; // Gray for unknown types
 };
 
 /**
@@ -72,22 +72,22 @@ export const getFileIconByExtension = (filename) => {
  */
 export const getDocumentIcon = (doc, size = 24) => {
   if (!doc || typeof doc !== "object") {
-    return <FiAlertCircle size={size} color="#E53E3E" />;
+    return <IoAlertCircle size={size} color="#E53E3E" />;
   }
 
   const type = doc?.type;
 
   switch (type) {
     case "folder":
-      return <FiFolder size={size} color="#3182CE" />;
+      return <IoFolder size={size} color="#3182CE" />;
     case "auditSchedule":
-      return <FiCalendar size={size} color="#805AD5" />;
+      return <IoCalendar size={size} color="#805AD5" />;
     case "formTemplate":
-      return <FiFileText size={size} color="#38A169" />;
+      return <IoDocumentText size={size} color="#38A169" />;
     case "file":
       if (!doc?.metadata?.filename) {
         return (
-          <FiAlertCircle
+          <IoAlertCircle
             size={size}
             color="#E53E3E"
             title="Broken file - missing metadata"
@@ -99,7 +99,7 @@ export const getDocumentIcon = (doc, size = 24) => {
       return <IconComponent size={size} color={color} title={doc.metadata.filename} />;
     default:
       return (
-        <FiAlertCircle
+        <IoAlertCircle
           size={size}
           color="#E53E3E"
           title="Unknown document type"
