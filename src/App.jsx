@@ -105,7 +105,14 @@ function App() {
                         </DocumentsProvider>
                       }
                     />
-                    <Route path="/search" element={<Search />} />
+                    <Route
+                      path="/search"
+                      element={
+                        <DocumentsProvider>
+                          <Search />
+                        </DocumentsProvider>
+                      }
+                    />
                     <Route path="/archive" element={<Archive />} />
                     <Route
                       path="/certifications"
