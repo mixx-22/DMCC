@@ -23,14 +23,14 @@ const QualityDocuments = () => {
 
   // Fetch quality documents with abort controller for cleanup
   const fetchQualityDocuments = useCallback(async (page = 1) => {
+    // Cancel any pending request before starting a new one
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+    }
+
     // Prevent duplicate requests
     if (fetchingRef.current) {
       return;
-    }
-
-    // Cancel any pending request
-    if (abortControllerRef.current) {
-      abortControllerRef.current.abort();
     }
 
     fetchingRef.current = true;
@@ -75,16 +75,19 @@ const QualityDocuments = () => {
     }
   }, []);
 
+  // Fetch documents when page changes
   useEffect(() => {
     fetchQualityDocuments(currentPage);
+  }, [currentPage, fetchQualityDocuments]);
 
-    // Cleanup function to abort request on unmount
+  // Cleanup on unmount only
+  useEffect(() => {
     return () => {
       if (abortControllerRef.current) {
         abortControllerRef.current.abort();
       }
     };
-  }, [currentPage, fetchQualityDocuments]);
+  }, []);
 
   const handleDocumentClick = (doc) => {
     // The ListView component already handles navigation on row click
