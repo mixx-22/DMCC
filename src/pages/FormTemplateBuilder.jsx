@@ -252,6 +252,7 @@ const FormTemplateBuilder = () => {
   const [isEditMode, setIsEditMode] = useState(false);
   const [documentId, setDocumentId] = useState(null);
   const [loadingForm, setLoadingForm] = useState(false);
+  const [originalDocument, setOriginalDocument] = useState(null);
 
   // Load existing form template if editing
   useEffect(() => {
@@ -278,6 +279,7 @@ const FormTemplateBuilder = () => {
             setQuestions(document.metadata?.questions || []);
             setIsEditMode(true);
             setDocumentId(id);
+            setOriginalDocument(document); // Store the original document
           } else {
             if (import.meta.env.DEV) {
               console.log("Document is not a formTemplate or doesn't exist");
@@ -452,9 +454,20 @@ const FormTemplateBuilder = () => {
         },
       };
 
-      if (isEditMode && documentId) {
-        // Update existing form template
-        await updateDocument(documentId, formTemplateData);
+      if (isEditMode && documentId && originalDocument) {
+        // Update existing form template - preserve all original document fields
+        const updateData = {
+          ...originalDocument, // Preserve all original fields
+          title: formData.title,
+          description: formData.description,
+          metadata: {
+            ...originalDocument.metadata, // Preserve any existing metadata fields
+            questions, // Update questions
+          },
+          updatedAt: new Date().toISOString(), // Update timestamp
+        };
+        
+        await updateDocument(documentId, updateData);
         toast.success("Form Template Updated", {
           description: `"${formData.title}" has been updated successfully`,
         });
