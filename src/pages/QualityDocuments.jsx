@@ -1,5 +1,4 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
 import {
   Box,
   Flex,
@@ -21,26 +20,20 @@ import apiService from "../services/api";
 const ITEMS_PER_PAGE = 10;
 
 const QualityDocuments = () => {
-  const navigate = useNavigate();
   const [documents, setDocuments] = useState([]);
   const [selectedDocument, setSelectedDocument] = useState(null);
   const [loading, setLoading] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalCount, setTotalCount] = useState(0);
-  const [searchQuery, setSearchQuery] = useState("");
 
   // Fetch quality documents
-  const fetchQualityDocuments = async (page = 1, search = "") => {
+  const fetchQualityDocuments = async (page = 1) => {
     setLoading(true);
     try {
       const params = {
         page,
         limit: ITEMS_PER_PAGE,
       };
-      
-      if (search) {
-        params.search = search;
-      }
 
       const response = await apiService.request("/documents/quality", {
         method: "GET",
@@ -67,19 +60,14 @@ const QualityDocuments = () => {
   };
 
   useEffect(() => {
-    fetchQualityDocuments(currentPage, searchQuery);
-  }, [currentPage, searchQuery]);
+    fetchQualityDocuments(currentPage);
+  }, [currentPage]);
 
   const handleDocumentClick = (doc) => {
     // The ListView component already handles navigation on row click
     // and calls this function for the "More Options" button click
     // So we just set the selected document to open the drawer
     setSelectedDocument(doc);
-  };
-
-  const handleSearch = (query) => {
-    setSearchQuery(query);
-    setCurrentPage(1); // Reset to first page on new search
   };
 
   const handlePageChange = (page) => {
@@ -93,10 +81,7 @@ const QualityDocuments = () => {
           <Text fontSize="2xl" fontWeight="bold">
             Quality Documents
           </Text>
-          <SearchInput 
-            placeholder="Search quality documents..." 
-            onSearch={handleSearch}
-          />
+          <SearchInput placeholder="Search quality documents..." />
         </Flex>
       </PageHeader>
 
