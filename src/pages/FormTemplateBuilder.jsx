@@ -273,7 +273,8 @@ const FormTemplateBuilder = () => {
       }
     };
     loadFormTemplate();
-  }, [id, fetchDocumentById]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [id]);
 
   const sensors = useSensors(
     useSensor(PointerSensor),
