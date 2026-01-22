@@ -454,20 +454,27 @@ const FormTemplateBuilder = () => {
         },
       };
 
-      if (isEditMode && documentId && originalDocument) {
-        // Update existing form template - preserve all original document fields
-        const updateData = {
-          ...originalDocument, // Preserve all original fields
-          title: formData.title,
-          description: formData.description,
-          metadata: {
-            ...originalDocument.metadata, // Preserve any existing metadata fields
-            questions, // Update questions
-          },
-          updatedAt: new Date().toISOString(), // Update timestamp
-        };
-        
-        await updateDocument(documentId, updateData);
+      if (isEditMode && documentId) {
+        if (!originalDocument) {
+          // Fallback if original document wasn't loaded properly
+          if (import.meta.env.DEV) {
+            console.warn("Original document not available, using minimal update data");
+          }
+          await updateDocument(documentId, formTemplateData);
+        } else {
+          // Update existing form template - preserve all original document fields
+          const updateData = {
+            ...originalDocument, // Preserve all original fields
+            title: formData.title,
+            description: formData.description,
+            metadata: {
+              ...originalDocument.metadata, // Preserve any existing metadata fields
+              questions, // Update questions
+            },
+          };
+          
+          await updateDocument(documentId, updateData);
+        }
         toast.success("Form Template Updated", {
           description: `"${formData.title}" has been updated successfully`,
         });
