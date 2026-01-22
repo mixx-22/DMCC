@@ -2,7 +2,6 @@ import { useState, useEffect, useRef } from "react";
 import { useParams, useLocation, useNavigate } from "react-router-dom";
 import {
   Box,
-  Heading,
   HStack,
   IconButton,
   Flex,
@@ -19,6 +18,7 @@ import { FiGrid, FiList, FiCheckCircle, FiXCircle } from "react-icons/fi";
 import { toast } from "sonner";
 import PageHeader from "../../components/PageHeader";
 import PageFooter from "../../components/PageFooter";
+import SearchInput from "../../components/SearchInput";
 import CreateFolderModal from "../../components/Document/modals/CreateFolderModal";
 import CreateAuditScheduleModal from "../../components/Document/modals/CreateAuditScheduleModal";
 import DocumentDrawer from "../../components/Document/DocumentDrawer";
@@ -188,10 +188,8 @@ const Documents = () => {
   return (
     <Box>
       <PageHeader>
-        <Flex justify="space-between" align="center" w="full">
-          <Heading variant="pageTitle" noOfLines={1}>
-            {folder?.title ?? `Documents`}
-          </Heading>
+        <Flex justify="space-between" align="center" w="full" gap={4}>
+          <SearchInput placeholder="Search documents..." />
           <HStack>
             <IconButton
               icon={viewMode === "grid" ? <FiList /> : <FiGrid />}
