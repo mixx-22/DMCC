@@ -54,8 +54,8 @@ const NewLayout = () => {
     if (selectedTeam === "all") {
       return documents;
     }
-    // Filter by team - assuming documents have a team property
-    return documents.filter((doc) => doc.team === selectedTeam);
+    // Filter by team - documents may have team or department property
+    return documents.filter((doc) => doc.team === selectedTeam || doc.department === selectedTeam);
   }, [documents, selectedTeam]);
 
   // Calculate metrics
@@ -92,9 +92,9 @@ const NewLayout = () => {
       .slice(0, fileLimit)
       .map((doc) => ({
         id: doc.id,
-        name: doc.title || doc.name,
-        updatedAt: doc.lastModifiedAt || doc.createdAt,
-        type: doc.category || "Document",
+        name: doc.title || doc.name || "Untitled",
+        updatedAt: doc.lastModifiedAt || doc.createdAt || new Date().toISOString(),
+        type: doc.category || doc.type || "Document",
       }));
     setRecentFiles(mockFiles);
   }, [filteredDocuments, fileLimit]);
@@ -143,7 +143,7 @@ const NewLayout = () => {
         >
           <option value="all">All Teams</option>
           {userTeams.map((team) => (
-            <option key={team._id} value={team._id}>
+            <option key={team._id} value={team.name}>
               {team.name}
             </option>
           ))}
