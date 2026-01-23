@@ -40,17 +40,20 @@ import { toast } from "sonner";
 import { useEffect, useRef, useState } from "react";
 import { Link as RouterLink } from "react-router-dom";
 import { getDocumentIcon } from "./DocumentIcon";
+import FileTypeAsyncSelect from "../FileTypeAsyncSelect";
 
 const DocumentDrawer = ({ document, isOpen, onClose }) => {
   const { updateDocument } = useDocuments();
   const [titleCache, setTitleCache] = useState("");
   const [descriptionCache, setDescriptionCache] = useState("");
+  const [fileTypeCache, setFileTypeCache] = useState(null);
   const titleTextareaRef = useRef(null);
   const descriptionTextareaRef = useRef(null);
 
   useEffect(() => {
     setTitleCache(document?.title || "");
     setDescriptionCache(document?.description || "");
+    setFileTypeCache(document?.metadata?.fileType || null);
   }, [document]);
 
   const {
@@ -139,6 +142,32 @@ const DocumentDrawer = ({ document, isOpen, onClose }) => {
     } catch (error) {
       toast.error("Update Failed", {
         description: "Failed to update description",
+        duration: 3000,
+      });
+    }
+  };
+
+  const handleFileTypeChange = async (newFileType) => {
+    // Check if value actually changed
+    if (JSON.stringify(fileTypeCache) === JSON.stringify(newFileType)) {
+      return;
+    }
+
+    try {
+      await updateDocument(document.id || document._id, {
+        metadata: {
+          ...document.metadata,
+          fileType: newFileType?.id || null,
+        },
+      });
+      toast.success("File Type Updated", {
+        description: "Document file type has been updated",
+        duration: 2000,
+      });
+      setFileTypeCache(newFileType);
+    } catch (error) {
+      toast.error("Update Failed", {
+        description: "Failed to update file type",
         duration: 3000,
       });
     }
@@ -423,6 +452,14 @@ const DocumentDrawer = ({ document, isOpen, onClose }) => {
                           <Text fontSize="sm">{document.metadata.version}</Text>
                         </Box>
                       )}
+                      <Box>
+                        <FileTypeAsyncSelect
+                          value={fileTypeCache}
+                          onChange={handleFileTypeChange}
+                          label="File Type"
+                          helperText=""
+                        />
+                      </Box>
                     </VStack>
                   </Box>
                 </>

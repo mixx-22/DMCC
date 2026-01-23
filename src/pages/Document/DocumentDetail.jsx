@@ -55,6 +55,7 @@ import Breadcrumbs from "../../components/Document/Breadcrumbs";
 import { useDocuments } from "../../context/_useContext";
 import { toast } from "sonner";
 import { getDocumentIcon } from "../../components/Document/DocumentIcon";
+import FileTypeAsyncSelect from "../../components/FileTypeAsyncSelect";
 
 const DocumentDetail = () => {
   const { id } = useParams();
@@ -191,6 +192,41 @@ const DocumentDetail = () => {
     } catch (error) {
       toast.error("Update Failed", {
         description: "Failed to update description",
+        duration: 3000,
+      });
+      // Revert on error
+      setDocument((prev) => ({ ...prev }));
+    }
+  };
+
+  // Handle file type change
+  const handleFileTypeChange = async (newFileType) => {
+    // Check if value actually changed
+    if (JSON.stringify(document?.metadata?.fileType) === JSON.stringify(newFileType)) {
+      return;
+    }
+
+    try {
+      await updateDocument(id, {
+        metadata: {
+          ...document.metadata,
+          fileType: newFileType?.id || null,
+        },
+      });
+      setDocument((prev) => ({
+        ...prev,
+        metadata: {
+          ...prev.metadata,
+          fileType: newFileType,
+        },
+      }));
+      toast.success("File Type Updated", {
+        description: "Document file type has been updated",
+        duration: 2000,
+      });
+    } catch (error) {
+      toast.error("Update Failed", {
+        description: "Failed to update file type",
         duration: 3000,
       });
       // Revert on error
@@ -495,6 +531,17 @@ const DocumentDetail = () => {
                       <Text fontSize="sm" mt={2}>
                         {formatFileSize(document.metadata.size)}
                       </Text>
+                    </Box>
+                  )}
+
+                  {document?.type === "file" && (
+                    <Box>
+                      <FileTypeAsyncSelect
+                        value={document?.metadata?.fileType || null}
+                        onChange={handleFileTypeChange}
+                        label="File Type"
+                        helperText=""
+                      />
                     </Box>
                   )}
                 </SimpleGrid>
