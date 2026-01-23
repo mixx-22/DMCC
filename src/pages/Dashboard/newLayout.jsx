@@ -9,6 +9,7 @@ import {
   useBreakpointValue,
   Center,
   Link,
+  HStack,
 } from "@chakra-ui/react";
 import { Link as RouterLink } from "react-router-dom";
 import { useState, useEffect, useMemo } from "react";
@@ -17,6 +18,8 @@ import { useApp, useUser } from "../../context/_useContext";
 import { motion, AnimatePresence } from "framer-motion";
 import AuptilyzeFolder from "../../components/AuptilyzeFolder";
 import SearchInput from "../../components/SearchInput";
+import { getDocumentIcon } from "../../components/Document/DocumentIcon";
+import apiService from "../../services/api";
 
 const MotionBox = motion(Box);
 const MotionText = motion(Text);
@@ -73,37 +76,79 @@ const NewLayout = () => {
     setTotalDocuments(filteredDocuments.length);
   }, [filteredDocuments]);
 
-  // Mock fetch recent folders
+  // Fetch recent folders from API
   useEffect(() => {
-    // In a real app, this would be an API call:
-    // GET /recent-documents?type=folder&page=1&limit=${folderLimit}
-    const mockFolders = [
-      { id: 1, name: "Engineering Documents", updatedAt: new Date() },
-      { id: 2, name: "HR Policies", updatedAt: new Date() },
-      { id: 3, name: "Marketing Materials", updatedAt: new Date() },
-      { id: 4, name: "Finance Reports", updatedAt: new Date() },
-      { id: 5, name: "Operations", updatedAt: new Date() },
-      { id: 6, name: "Sales Proposals", updatedAt: new Date() },
-      { id: 7, name: "Product Specs", updatedAt: new Date() },
-      { id: 8, name: "Customer Support", updatedAt: new Date() },
-    ].slice(0, folderLimit);
-    setRecentFolders(mockFolders);
+    const fetchRecentFolders = async () => {
+      if (!folderLimit) return;
+      
+      try {
+        // GET /recent-documents?type=folder&page=1&limit=n
+        const response = await apiService.request("/recent-documents", {
+          method: "GET",
+          params: {
+            type: "folder",
+            page: 1,
+            limit: folderLimit,
+          },
+        });
+        
+        const folders = response.data || response.documents || response || [];
+        setRecentFolders(Array.isArray(folders) ? folders : []);
+      } catch (error) {
+        console.error("Failed to fetch recent folders:", error);
+        // Fallback to mock data on error
+        const mockFolders = [
+          { id: 1, _id: "1", title: "Engineering Documents", type: "folder", updatedAt: new Date().toISOString() },
+          { id: 2, _id: "2", title: "HR Policies", type: "folder", updatedAt: new Date().toISOString() },
+          { id: 3, _id: "3", title: "Marketing Materials", type: "folder", updatedAt: new Date().toISOString() },
+          { id: 4, _id: "4", title: "Finance Reports", type: "folder", updatedAt: new Date().toISOString() },
+          { id: 5, _id: "5", title: "Operations", type: "folder", updatedAt: new Date().toISOString() },
+          { id: 6, _id: "6", title: "Sales Proposals", type: "folder", updatedAt: new Date().toISOString() },
+          { id: 7, _id: "7", title: "Product Specs", type: "folder", updatedAt: new Date().toISOString() },
+          { id: 8, _id: "8", title: "Customer Support", type: "folder", updatedAt: new Date().toISOString() },
+        ].slice(0, folderLimit);
+        setRecentFolders(mockFolders);
+      }
+    };
+
+    fetchRecentFolders();
   }, [folderLimit]);
 
-  // Mock fetch recent files
+  // Fetch recent files from API
   useEffect(() => {
-    // In a real app, this would be an API call:
-    // GET /recent-documents?type=file&page=1&limit=${fileLimit}
-    const mockFiles = filteredDocuments
-      .slice(0, fileLimit)
-      .map((doc) => ({
-        id: doc.id,
-        name: doc.title || doc.name || "Untitled",
-        updatedAt: doc.lastModifiedAt || doc.createdAt || new Date().toISOString(),
-        type: doc.category || doc.type || "Document",
-      }));
-    setRecentFiles(mockFiles);
-  }, [filteredDocuments, fileLimit]);
+    const fetchRecentFiles = async () => {
+      if (!fileLimit) return;
+      
+      try {
+        // GET /recent-documents?type=file&page=1&limit=n
+        const response = await apiService.request("/recent-documents", {
+          method: "GET",
+          params: {
+            type: "file",
+            page: 1,
+            limit: fileLimit,
+          },
+        });
+        
+        const files = response.data || response.documents || response || [];
+        setRecentFiles(Array.isArray(files) ? files : []);
+      } catch (error) {
+        console.error("Failed to fetch recent files:", error);
+        // Fallback to filtered documents on error
+        const mockFiles = filteredDocuments
+          .slice(0, fileLimit)
+          .map((doc) => ({
+            ...doc,
+            id: doc.id || doc._id,
+            title: doc.title || doc.name || "Untitled",
+            type: doc.type || "file",
+          }));
+        setRecentFiles(mockFiles);
+      }
+    };
+
+    fetchRecentFiles();
+  }, [fileLimit, filteredDocuments]);
 
   // Get user teams from the current user object
   const userTeams = useMemo(() => {
@@ -127,7 +172,7 @@ const NewLayout = () => {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
         >
-          {greeting}, {currentUser?.name || "User"}
+          {greeting}, {currentUser?.firstName || currentUser?.name || "User"}
         </MotionText>
         <Text fontSize={{ base: "md", md: "lg" }} color="gray.500" fontWeight="300">
           {currentDate}
@@ -246,58 +291,53 @@ const NewLayout = () => {
         <SimpleGrid columns={{ base: 2, sm: 3, lg: 4 }} spacing={4}>
           {recentFolders.map((folder, index) => {
             // Guard clause for folder.id
-            if (!folder?.id) return null;
+            const folderId = folder?.id || folder?._id;
+            if (!folderId) return null;
             
             return (
               <MotionBox
-                key={folder.id}
+                key={folderId}
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.3, delay: index * 0.05 }}
               >
                 <Link
                   as={RouterLink}
-                  to={`/documents/folders/${folder.id}`}
+                  to={`/documents/folders/${folderId}`}
                   style={{ textDecoration: "none" }}
                 >
-                <Card
-                  borderRadius="xl"
-                  overflow="hidden"
+                <Box
+                  py={4}
                   cursor="pointer"
-                  _hover={{
-                    transform: "translateY(-2px)",
-                    boxShadow: "md",
-                    bg: "blue.50",
-                  }}
+                  position="relative"
+                  borderRadius="xl"
                   transition="all 0.2s"
-                  bg="white"
-                  border="1px"
-                  borderColor="gray.200"
+                  _hover={{
+                    bg: "gray.50",
+                  }}
                 >
-                  <CardBody p={4}>
-                    <VStack align="start" spacing={1}>
-                      <Center w="full">
-                        <AuptilyzeFolder
-                          boxSize={{ base: 14, md: 16 }}
-                          filter="drop-shadow(0 2px 2px rgba(0, 0, 0, .15))"
-                          _hover={{
-                            filter: "drop-shadow(0 4px 2px rgba(0, 0, 0, .15))",
-                          }}
-                        />
-                      </Center>
-                      <Text
-                        fontSize="sm"
-                        fontWeight="500"
-                        color="gray.800"
-                        noOfLines={1}
-                        w="full"
-                        textAlign="center"
-                      >
-                        {folder.name}
-                      </Text>
-                    </VStack>
-                  </CardBody>
-                </Card>
+                  <VStack align="start" spacing={1}>
+                    <Center w="full">
+                      <AuptilyzeFolder
+                        boxSize={{ base: 14, md: 16 }}
+                        filter="drop-shadow(0 2px 2px rgba(0, 0, 0, .15))"
+                        _hover={{
+                          filter: "drop-shadow(0 4px 2px rgba(0, 0, 0, .15))",
+                        }}
+                      />
+                    </Center>
+                    <Text
+                      fontSize="sm"
+                      fontWeight="500"
+                      color="gray.800"
+                      noOfLines={1}
+                      w="full"
+                      textAlign="center"
+                    >
+                      {folder.title || folder.name || "Untitled"}
+                    </Text>
+                  </VStack>
+                </Box>
               </Link>
             </MotionBox>
           );
@@ -311,52 +351,55 @@ const NewLayout = () => {
           Recent Documents
         </Text>
         <SimpleGrid columns={{ base: 2, sm: 3, lg: 4 }} spacing={4}>
-          {recentFiles.map((file, index) => (
-            <MotionBox
-              key={file.id}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.3, delay: index * 0.05 }}
-            >
-              <Card
-                borderRadius="xl"
-                overflow="hidden"
-                cursor="pointer"
-                _hover={{
-                  transform: "translateY(-2px)",
-                  boxShadow: "md",
-                  bg: "purple.50",
-                }}
-                transition="all 0.2s"
-                bg="white"
-                border="1px"
-                borderColor="gray.200"
+          {recentFiles.map((file, index) => {
+            const fileId = file?.id || file?._id;
+            if (!fileId) return null;
+
+            return (
+              <MotionBox
+                key={fileId}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.3, delay: index * 0.05 }}
               >
-                <CardBody p={4}>
-                  <VStack align="start" spacing={1}>
-                    <Box
-                      fontSize="3xl"
-                      color="purple.500"
-                      mb={1}
-                    >
-                      📄
-                    </Box>
-                    <Text
-                      fontSize="sm"
-                      fontWeight="500"
-                      color="gray.800"
-                      noOfLines={1}
-                    >
-                      {file.name}
-                    </Text>
-                    <Text fontSize="xs" color="gray.500" noOfLines={1}>
-                      {file.type}
-                    </Text>
-                  </VStack>
-                </CardBody>
-              </Card>
-            </MotionBox>
-          ))}
+                <Link
+                  as={RouterLink}
+                  to={`/document/${fileId}`}
+                  style={{ textDecoration: "none" }}
+                >
+                  <Card
+                    borderRadius="xl"
+                    cursor="pointer"
+                    _hover={{
+                      transform: "translateY(-2px)",
+                      boxShadow: "md",
+                    }}
+                    transition="all 0.2s"
+                    bg="white"
+                    border="1px"
+                    borderColor="gray.200"
+                  >
+                    <CardBody p={4}>
+                      <VStack align="start" spacing={2}>
+                        <HStack justify="space-between" w="full">
+                          {getDocumentIcon(file)}
+                        </HStack>
+                        <Text
+                          fontSize="sm"
+                          fontWeight="500"
+                          color="gray.800"
+                          noOfLines={2}
+                          w="full"
+                        >
+                          {file.title || file.name || "Untitled"}
+                        </Text>
+                      </VStack>
+                    </CardBody>
+                  </Card>
+                </Link>
+              </MotionBox>
+            );
+          })}
         </SimpleGrid>
       </Box>
     </Box>
