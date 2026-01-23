@@ -10,6 +10,8 @@ const UserProfileContext = createContext();
 const TeamsContext = createContext();
 const TeamProfileContext = createContext();
 const DocumentsContext = createContext();
+const FileTypesContext = createContext();
+const FileTypeContext = createContext();
 
 export {
   AppContext,
@@ -22,4 +24,6 @@ export {
   TeamsContext,
   TeamProfileContext,
   DocumentsContext,
+  FileTypesContext,
+  FileTypeContext,
 };
