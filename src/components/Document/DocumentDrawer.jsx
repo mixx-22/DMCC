@@ -148,10 +148,19 @@ const DocumentDrawer = ({ document, isOpen, onClose }) => {
   };
 
   const handleFileTypeChange = async (newFileType) => {
+    // Store original value for rollback
+    const originalFileType = fileTypeCache;
+    
     // Check if value actually changed
-    if (JSON.stringify(fileTypeCache) === JSON.stringify(newFileType)) {
+    const isSame = (originalFileType?.id === newFileType?.id) || 
+                   (!originalFileType && !newFileType);
+    
+    if (isSame) {
       return;
     }
+
+    // Optimistically update UI
+    setFileTypeCache(newFileType);
 
     try {
       await updateDocument(document.id || document._id, {
@@ -164,8 +173,9 @@ const DocumentDrawer = ({ document, isOpen, onClose }) => {
         description: "Document file type has been updated",
         duration: 2000,
       });
-      setFileTypeCache(newFileType);
     } catch (error) {
+      // Revert to original value on error
+      setFileTypeCache(originalFileType);
       toast.error("Update Failed", {
         description: "Failed to update file type",
         duration: 3000,

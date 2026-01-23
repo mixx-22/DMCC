@@ -201,10 +201,25 @@ const DocumentDetail = () => {
 
   // Handle file type change
   const handleFileTypeChange = async (newFileType) => {
+    // Store original value for rollback
+    const originalFileType = document?.metadata?.fileType;
+    
     // Check if value actually changed
-    if (JSON.stringify(document?.metadata?.fileType) === JSON.stringify(newFileType)) {
+    const isSame = (originalFileType?.id === newFileType?.id) || 
+                   (!originalFileType && !newFileType);
+    
+    if (isSame) {
       return;
     }
+
+    // Optimistically update UI
+    setDocument((prev) => ({
+      ...prev,
+      metadata: {
+        ...prev.metadata,
+        fileType: newFileType,
+      },
+    }));
 
     try {
       await updateDocument(id, {
@@ -213,24 +228,23 @@ const DocumentDetail = () => {
           fileType: newFileType?.id || null,
         },
       });
-      setDocument((prev) => ({
-        ...prev,
-        metadata: {
-          ...prev.metadata,
-          fileType: newFileType,
-        },
-      }));
       toast.success("File Type Updated", {
         description: "Document file type has been updated",
         duration: 2000,
       });
     } catch (error) {
+      // Revert to original value on error
+      setDocument((prev) => ({
+        ...prev,
+        metadata: {
+          ...prev.metadata,
+          fileType: originalFileType,
+        },
+      }));
       toast.error("Update Failed", {
         description: "Failed to update file type",
         duration: 3000,
       });
-      // Revert on error
-      setDocument((prev) => ({ ...prev }));
     }
   };
 
