@@ -7,17 +7,23 @@ import {
   CardBody,
   Select,
   useBreakpointValue,
+  Center,
+  Link,
 } from "@chakra-ui/react";
+import { Link as RouterLink } from "react-router-dom";
 import { useState, useEffect, useMemo } from "react";
 import { format } from "date-fns";
-import { useApp } from "../../context/_useContext";
+import { useApp, useUser } from "../../context/_useContext";
 import { motion, AnimatePresence } from "framer-motion";
+import AuptilyzeFolder from "../../components/AuptilyzeFolder";
+import SearchInput from "../../components/SearchInput";
 
 const MotionBox = motion(Box);
 const MotionText = motion(Text);
 
 const NewLayout = () => {
-  const { currentUser, documents } = useApp();
+  const { documents } = useApp();
+  const { user: currentUser } = useUser();
   const [selectedTeam, setSelectedTeam] = useState("all");
   const [greeting, setGreeting] = useState("");
   const [pendingApprovals, setPendingApprovals] = useState(0);
@@ -99,20 +105,18 @@ const NewLayout = () => {
     setRecentFiles(mockFiles);
   }, [filteredDocuments, fileLimit]);
 
-  // Mock user teams for now
+  // Get user teams from the current user object
   const userTeams = useMemo(() => {
-    // Mock teams data
-    return [
-      { _id: "team-1", name: "Engineering Team" },
-      { _id: "team-2", name: "Design Team" },
-      { _id: "team-3", name: "Marketing Team" },
-    ];
-  }, []);
+    if (!currentUser?.teams || !Array.isArray(currentUser.teams)) {
+      return [];
+    }
+    return currentUser.teams;
+  }, [currentUser]);
 
   return (
     <Box px={{ base: 4, md: 8 }} py={6}>
       {/* Greeting Section */}
-      <VStack align="start" spacing={1} mb={8}>
+      <VStack align="start" spacing={1} mb={6}>
         <MotionText
           fontSize={{ base: "2xl", md: "3xl", lg: "4xl" }}
           fontWeight="300"
@@ -127,6 +131,11 @@ const NewLayout = () => {
           {currentDate}
         </Text>
       </VStack>
+
+      {/* Search Bar */}
+      <Box mb={6}>
+        <SearchInput placeholder="Search documents..." />
+      </Box>
 
       {/* Team Filter */}
       <Box mb={6} maxW="300px">
@@ -240,40 +249,50 @@ const NewLayout = () => {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.3, delay: index * 0.05 }}
             >
-              <Card
-                borderRadius="xl"
-                overflow="hidden"
-                cursor="pointer"
-                _hover={{
-                  transform: "translateY(-2px)",
-                  boxShadow: "md",
-                  bg: "blue.50",
-                }}
-                transition="all 0.2s"
-                bg="white"
-                border="1px"
-                borderColor="gray.200"
+              <Link
+                as={RouterLink}
+                to={`/documents/folders/${folder.id}`}
+                style={{ textDecoration: "none" }}
               >
-                <CardBody p={4}>
-                  <VStack align="start" spacing={1}>
-                    <Box
-                      fontSize="3xl"
-                      color="blue.500"
-                      mb={1}
-                    >
-                      📁
-                    </Box>
-                    <Text
-                      fontSize="sm"
-                      fontWeight="500"
-                      color="gray.800"
-                      noOfLines={1}
-                    >
-                      {folder.name}
-                    </Text>
-                  </VStack>
-                </CardBody>
-              </Card>
+                <Card
+                  borderRadius="xl"
+                  overflow="hidden"
+                  cursor="pointer"
+                  _hover={{
+                    transform: "translateY(-2px)",
+                    boxShadow: "md",
+                    bg: "blue.50",
+                  }}
+                  transition="all 0.2s"
+                  bg="white"
+                  border="1px"
+                  borderColor="gray.200"
+                >
+                  <CardBody p={4}>
+                    <VStack align="start" spacing={1}>
+                      <Center w="full">
+                        <AuptilyzeFolder
+                          boxSize={{ base: 14, md: 16 }}
+                          filter="drop-shadow(0 2px 2px rgba(0, 0, 0, .15))"
+                          _hover={{
+                            filter: "drop-shadow(0 4px 2px rgba(0, 0, 0, .15))",
+                          }}
+                        />
+                      </Center>
+                      <Text
+                        fontSize="sm"
+                        fontWeight="500"
+                        color="gray.800"
+                        noOfLines={1}
+                        w="full"
+                        textAlign="center"
+                      >
+                        {folder.name}
+                      </Text>
+                    </VStack>
+                  </CardBody>
+                </Card>
+              </Link>
             </MotionBox>
           ))}
         </SimpleGrid>
