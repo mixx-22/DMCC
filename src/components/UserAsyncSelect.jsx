@@ -19,7 +19,7 @@ import {
 } from "@chakra-ui/react";
 import { AsyncSelect } from "chakra-react-select";
 import { FiEye, FiX } from "react-icons/fi";
-import { useCallback } from "react";
+import { useCallback, useRef, useEffect } from "react";
 import apiService from "../services/api";
 import { Link as RouterLink } from "react-router-dom";
 
@@ -73,17 +73,32 @@ const UserAsyncSelect = ({
   displayMode = "badges",
   readonly = false,
   tableProps = {},
+  debounceTimeout = 300,
   ...props
 }) => {
+  const debounceTimerRef = useRef(null);
+
+  useEffect(() => {
+    return () => {
+      if (debounceTimerRef.current) {
+        clearTimeout(debounceTimerRef.current);
+      }
+    };
+  }, []);
+
   const loadOptions = useCallback(
     async (inputValue) => {
       if (inputValue.length < 2) {
         return [];
       }
 
-      if (!USE_API) {
-        return new Promise((resolve) => {
-          setTimeout(() => {
+      return new Promise((resolve) => {
+        if (debounceTimerRef.current) {
+          clearTimeout(debounceTimerRef.current);
+        }
+
+        debounceTimerRef.current = setTimeout(async () => {
+          if (!USE_API) {
             const filtered = MOCK_USERS.filter((user) => {
               const fullName = `${user.firstName} ${user.lastName}`.toLowerCase();
               const email = user.email.toLowerCase();
@@ -99,31 +114,34 @@ const UserAsyncSelect = ({
                 user: user,
               }))
             );
-          }, 300);
-        });
-      }
+            return;
+          }
 
-      try {
-        const data = await apiService.request(USERS_ENDPOINT, {
-          method: "GET",
-          params: {
-            keyword: inputValue,
-            limit,
-          },
-        });
+          try {
+            const data = await apiService.request(USERS_ENDPOINT, {
+              method: "GET",
+              params: {
+                keyword: inputValue,
+                limit,
+              },
+            });
 
-        const users = data.data || data.users || [];
-        return users.map((user) => ({
-          value: getUserId(user),
-          label: `${user.firstName} ${user.lastName}`,
-          user: user,
-        }));
-      } catch (error) {
-        console.error("Failed to fetch users:", error);
-        return [];
-      }
+            const users = data.data || data.users || [];
+            resolve(
+              users.map((user) => ({
+                value: getUserId(user),
+                label: `${user.firstName} ${user.lastName}`,
+                user: user,
+              }))
+            );
+          } catch (error) {
+            console.error("Failed to fetch users:", error);
+            resolve([]);
+          }
+        }, debounceTimeout);
+      });
     },
-    [limit],
+    [limit, debounceTimeout],
   );
 
   const handleChange = (selectedOptions) => {
