@@ -13,6 +13,7 @@ import {
   Collapse,
   Button,
   Flex,
+  useColorModeValue,
 } from "@chakra-ui/react";
 import { FiMoreVertical, FiChevronDown, FiChevronUp } from "react-icons/fi";
 import { useState } from "react";
@@ -22,6 +23,7 @@ import AuptilyzeFolder from "../AuptilyzeFolder";
 
 export const GridView = ({ documents, selectedDocument, onDocumentClick }) => {
   const [isFoldersOpen, setIsFoldersOpen] = useState(true);
+  const folderBg = useColorModeValue("blackAlpha.50", "whiteAlpha.50");
 
   // Separate folders from other document types
   const folders = documents.filter((doc) => doc?.type === "folder");
@@ -40,11 +42,14 @@ export const GridView = ({ documents, selectedDocument, onDocumentClick }) => {
       <Link key={`folder-${docIndex}-${doc.type}-${docId}`} {...linkProps}>
         <Box
           py={4}
-          sx={{ ".moreOptions": { opacity: 0 } }}
-          _hover={{ ".moreOptions": { opacity: 1 } }}
-          opacity={isValid ? 1 : 0.6}
+          h="full"
           cursor="pointer"
           position="relative"
+          sx={{ ".moreOptions": { opacity: 0 } }}
+          _hover={{ bg: folderBg, ".moreOptions": { opacity: 1 } }}
+          transition="all 0.3s cubic-bezier(0.4, 0, 0.2, 1)"
+          opacity={isValid ? 1 : 0.6}
+          borderRadius="md"
         >
           <IconButton
             position="absolute"
@@ -55,6 +60,7 @@ export const GridView = ({ documents, selectedDocument, onDocumentClick }) => {
             size="sm"
             variant="ghost"
             aria-label="More options"
+            _hover={{ bg: folderBg }}
             onClick={(e) => {
               e.stopPropagation();
               e.preventDefault();
