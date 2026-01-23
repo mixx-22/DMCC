@@ -107,7 +107,9 @@ const NewLayout = () => {
 
   // Get user teams from the current user object
   const userTeams = useMemo(() => {
+    // Check if user has teams property and it's an array
     if (!currentUser?.teams || !Array.isArray(currentUser.teams)) {
+      // Fallback to empty array if no teams
       return [];
     }
     return currentUser.teams;
@@ -242,18 +244,22 @@ const NewLayout = () => {
           Recent Folders
         </Text>
         <SimpleGrid columns={{ base: 2, sm: 3, lg: 4 }} spacing={4}>
-          {recentFolders.map((folder, index) => (
-            <MotionBox
-              key={folder.id}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.3, delay: index * 0.05 }}
-            >
-              <Link
-                as={RouterLink}
-                to={`/documents/folders/${folder.id}`}
-                style={{ textDecoration: "none" }}
+          {recentFolders.map((folder, index) => {
+            // Guard clause for folder.id
+            if (!folder?.id) return null;
+            
+            return (
+              <MotionBox
+                key={folder.id}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.3, delay: index * 0.05 }}
               >
+                <Link
+                  as={RouterLink}
+                  to={`/documents/folders/${folder.id}`}
+                  style={{ textDecoration: "none" }}
+                >
                 <Card
                   borderRadius="xl"
                   overflow="hidden"
@@ -294,7 +300,8 @@ const NewLayout = () => {
                 </Card>
               </Link>
             </MotionBox>
-          ))}
+          );
+          })}
         </SimpleGrid>
       </Box>
 
