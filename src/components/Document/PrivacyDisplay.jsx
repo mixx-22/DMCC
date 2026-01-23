@@ -76,7 +76,7 @@ const PrivacyDisplay = ({ document, onManageAccess, size = "md" }) => {
               {users.map((user) => {
                 const fullName = user.firstName && user.lastName
                   ? `${user.firstName} ${user.lastName}`
-                  : user.email || "Unknown User";
+                  : user.email || user.username || "Unknown User";
                 
                 return (
                   <Tooltip key={user.id || user._id} label={fullName}>
