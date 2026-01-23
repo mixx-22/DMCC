@@ -16,12 +16,14 @@ import {
 } from "@chakra-ui/react";
 import { toast } from "sonner";
 import { useDocuments } from "../../../context/_useContext";
+import FileTypeAsyncSelect from "../../FileTypeAsyncSelect";
 
 const EditDocumentModal = ({ isOpen, onClose, document }) => {
   const { updateDocument } = useDocuments();
   const [formData, setFormData] = useState({
     title: "",
     description: "",
+    fileType: null,
   });
 
   useEffect(() => {
@@ -29,6 +31,8 @@ const EditDocumentModal = ({ isOpen, onClose, document }) => {
       setFormData({
         title: document.title || "",
         description: document.description || "",
+        // When loaded, fileType is {id, name}
+        fileType: document.metadata?.fileType || null,
       });
     }
   }, [document]);
@@ -44,10 +48,21 @@ const EditDocumentModal = ({ isOpen, onClose, document }) => {
       return;
     }
 
-    updateDocument(document.id, {
+    // Only update file type for documents with type="file"
+    const updates = {
       title: formData.title,
       description: formData.description,
-    });
+    };
+
+    if (document.type === "file") {
+      updates.metadata = {
+        ...document.metadata,
+        // Save fileType as just the id when saving
+        fileType: formData.fileType?.id || null,
+      };
+    }
+
+    updateDocument(document.id, updates);
 
     toast.success("Document Updated", {
       description: "Document has been updated successfully",
@@ -97,6 +112,16 @@ const EditDocumentModal = ({ isOpen, onClose, document }) => {
                   name="editDescription"
                 />
               </FormControl>
+
+              {document.type === "file" && (
+                <FileTypeAsyncSelect
+                  value={formData.fileType}
+                  onChange={(fileType) =>
+                    setFormData((prev) => ({ ...prev, fileType }))
+                  }
+                  helperText="Type at least 2 characters to search for file types"
+                />
+              )}
             </VStack>
           </ModalBody>
           <ModalFooter>
