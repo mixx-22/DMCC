@@ -47,13 +47,16 @@ const PrivacySettingsModal = ({ isOpen, onClose, document }) => {
   if (!document) return null;
 
   const handleSave = () => {
+    // Preserve existing document data while updating privacy settings
     updateDocument(document.id, {
       privacy: {
+        ...document.privacy,
         users: privacySettings.users,
         teams: privacySettings.teams,
         roles: privacySettings.roles,
       },
       permissionOverrides: {
+        ...document.permissionOverrides,
         readOnly: privacySettings.readOnly,
         restricted: privacySettings.restricted,
       },
