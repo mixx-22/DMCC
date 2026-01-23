@@ -92,7 +92,7 @@ const NewLayout = () => {
           },
         });
         
-        const folders = response.data || response.documents || response || [];
+        const folders = response.data || response.documents || [];
         setRecentFolders(Array.isArray(folders) ? folders : []);
       } catch (error) {
         console.error("Failed to fetch recent folders:", error);
@@ -130,7 +130,7 @@ const NewLayout = () => {
           },
         });
         
-        const files = response.data || response.documents || response || [];
+        const files = response.data || response.documents || [];
         setRecentFiles(Array.isArray(files) ? files : []);
       } catch (error) {
         console.error("Failed to fetch recent files:", error);
@@ -381,9 +381,7 @@ const NewLayout = () => {
                   >
                     <CardBody p={4}>
                       <VStack align="start" spacing={2}>
-                        <HStack justify="space-between" w="full">
-                          {getDocumentIcon(file)}
-                        </HStack>
+                        {getDocumentIcon(file)}
                         <Text
                           fontSize="sm"
                           fontWeight="500"
