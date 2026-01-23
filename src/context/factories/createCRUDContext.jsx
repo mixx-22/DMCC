@@ -113,7 +113,7 @@ export function createCRUDProvider({
 
             dispatch({
               type: SET_ACTION,
-              [resourceKey]: { data: paginatedData },
+              [resourceKey]: paginatedData,
               total: filteredData.length,
             });
             dispatch({ type: "SET_LOADING", value: false });
