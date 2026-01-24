@@ -222,7 +222,6 @@ const Layout = () => {
       // Fallback to empty array if no teams
       return [];
     }
-    console.log(currentUser.team);
     return currentUser.team;
   }, [currentUser]);
 
@@ -265,109 +264,110 @@ const Layout = () => {
         exit={{ opacity: 0 }}
         transition={{ duration: 0.3, ease: "easeInOut" }}
       >
-      <Stack
-        spacing={4}
-        flexDir={"column"}
-        alignItems="center"
-        justifyContent="center"
-      >
-        {/* Greeting Section */}
-        <Center flexDir="column">
-          <Text
-            textAlign="center"
-            fontSize={{ base: "2xl", md: "3xl" }}
-            fontWeight="300"
-            color={greetingColor}
-          >
-            {greeting}, {currentUser?.firstName || currentUser?.name || "User"}
-          </Text>
-          <Text
-            textAlign="center"
-            fontSize={{ base: "md", md: "lg" }}
-            fontWeight="300"
-            color={dateColor}
-          >
-            {currentDate}
-          </Text>
-        </Center>
+        <Stack
+          spacing={4}
+          flexDir={"column"}
+          alignItems="center"
+          justifyContent="center"
+        >
+          {/* Greeting Section */}
+          <Center flexDir="column">
+            <Text
+              textAlign="center"
+              fontSize={{ base: "2xl", md: "3xl" }}
+              fontWeight="300"
+              color={greetingColor}
+            >
+              {greeting},{" "}
+              {currentUser?.firstName || currentUser?.name || "User"}
+            </Text>
+            <Text
+              textAlign="center"
+              fontSize={{ base: "md", md: "lg" }}
+              fontWeight="300"
+              color={dateColor}
+            >
+              {currentDate}
+            </Text>
+          </Center>
 
-        {/* Team Filter and Metrics in Button Group Style */}
-        <Box>
-          <ButtonGroup isAttached variant="teamStats" size="sm">
-            <Menu>
-              <MenuButton
-                as={Button}
-                rightIcon={<ChevronDownIcon />}
-                borderRightRadius={0}
-              >
-                {selectedTeamName}
-              </MenuButton>
-              <MenuList>
-                <MenuItem onClick={() => updateStatsByTeam("all")}>
-                  All Teams
-                </MenuItem>
-                {userTeams.map((team) => (
-                  <MenuItem
-                    key={team.teamId}
-                    onClick={() => updateStatsByTeam(team.teamId)}
-                  >
-                    {team.name}
+          {/* Team Filter and Metrics in Button Group Style */}
+          <Box>
+            <ButtonGroup isAttached variant="teamStats" size="sm">
+              <Menu>
+                <MenuButton
+                  as={Button}
+                  rightIcon={<ChevronDownIcon />}
+                  borderRightRadius={0}
+                >
+                  {selectedTeamName}
+                </MenuButton>
+                <MenuList>
+                  <MenuItem onClick={() => updateStatsByTeam("all")}>
+                    All Teams
                   </MenuItem>
-                ))}
-              </MenuList>
-            </Menu>
-            <Button as={RouterLink} to="/documents" borderRadius={0}>
-              {totalDocuments} Total
-            </Button>
-            <Button as={RouterLink} to="/approvals" borderLeftRadius={0}>
-              {pendingApprovals} Pending
-            </Button>
-          </ButtonGroup>
-        </Box>
+                  {userTeams.map((team) => (
+                    <MenuItem
+                      key={team.teamId}
+                      onClick={() => updateStatsByTeam(team.teamId)}
+                    >
+                      {team.name}
+                    </MenuItem>
+                  ))}
+                </MenuList>
+              </Menu>
+              <Button as={RouterLink} to="/documents" borderRadius={0}>
+                {totalDocuments} Total
+              </Button>
+              <Button as={RouterLink} to="/approvals" borderLeftRadius={0}>
+                {pendingApprovals} Pending
+              </Button>
+            </ButtonGroup>
+          </Box>
 
-        {/* Search Bar */}
-        <Box w="full" maxW="md">
-          <SearchInput placeholder="Search documents..." />
-        </Box>
-      </Stack>
+          {/* Search Bar */}
+          <Box w="full" maxW="md">
+            <SearchInput placeholder="Search documents..." />
+          </Box>
+        </Stack>
 
-      {/* Recent Folders */}
-      <Box mb={10}>
-        <Text fontSize="xl" fontWeight="500" mb={4} color={headingColor}>
-          Recent Folders
-        </Text>
-        <GridView foldersOnly documents={recentFolders} />
-      </Box>
-
-      {/* Recent Documents */}
-      <Box>
-        <HStack alignItems="center" mb={4}>
-          <Text fontSize="xl" fontWeight="500" color={headingColor}>
-            Recent Documents
+        {/* Recent Folders */}
+        <Box mb={10}>
+          <Text fontSize="xl" fontWeight="500" mb={4} color={headingColor}>
+            Recent Folders
           </Text>
-          <Spacer />
-          <IconButton
-            icon={viewMode === "grid" ? <FiList /> : <FiGrid />}
-            onClick={toggleViewMode}
-            aria-label="Toggle view"
-            variant="ghost"
-          />
-        </HStack>
-        {viewMode === "grid" ? (
-          <GridView
-            filesOnly
-            documents={recentFiles}
-            sourcePage={{ path: "/", label: "Dashboard" }}
-          />
-        ) : (
-          <ListView
-            filesOnly
-            documents={recentFiles}
-            sourcePage={{ path: "/", label: "Dashboard" }}
-          />
-        )}
-      </Box>
-    </MotionBox>
+          <GridView foldersOnly documents={recentFolders} />
+        </Box>
+
+        {/* Recent Documents */}
+        <Box>
+          <HStack alignItems="center" mb={4}>
+            <Text fontSize="xl" fontWeight="500" color={headingColor}>
+              Recent Documents
+            </Text>
+            <Spacer />
+            <IconButton
+              icon={viewMode === "grid" ? <FiList /> : <FiGrid />}
+              onClick={toggleViewMode}
+              aria-label="Toggle view"
+              variant="ghost"
+            />
+          </HStack>
+          {viewMode === "grid" ? (
+            <GridView
+              filesOnly
+              documents={recentFiles}
+              sourcePage={{ path: "/", label: "Dashboard" }}
+            />
+          ) : (
+            <ListView
+              filesOnly
+              documents={recentFiles}
+              sourcePage={{ path: "/", label: "Dashboard" }}
+            />
+          )}
+        </Box>
+      </MotionBox>
     </>
   );
 };

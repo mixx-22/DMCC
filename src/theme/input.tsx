@@ -8,7 +8,6 @@ const { definePartsStyle, defineMultiStyleConfig } =
 const search = definePartsStyle((props) => {
   const { value = "", className = "" } = props;
   const classNames = className?.split(" ");
-  console.log(classNames);
   const isHeader = classNames?.includes("header");
   const hasValue = value?.length > 0;
   return {
