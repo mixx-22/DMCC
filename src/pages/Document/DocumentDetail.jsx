@@ -115,12 +115,12 @@ const DocumentDetail = () => {
     }
 
     return () => {
-      if (currentIdRef.current !== id) {
-        fetchedRef.current = false;
-      }
       // Cleanup debounce timer on unmount or id change
       if (fileTypeDebounceRef.current) {
         clearTimeout(fileTypeDebounceRef.current);
+      }
+      if (currentIdRef.current !== id) {
+        fetchedRef.current = false;
       }
     };
   }, [id, fetchDocumentById, navigate]);

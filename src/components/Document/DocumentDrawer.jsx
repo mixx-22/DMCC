@@ -55,14 +55,16 @@ const DocumentDrawer = ({ document, isOpen, onClose }) => {
     setTitleCache(document?.title || "");
     setDescriptionCache(document?.description || "");
     setFileTypeCache(document?.metadata?.fileType || null);
+  }, [document]);
 
-    // Cleanup debounce timer on unmount or document change
+  // Cleanup debounce timer on unmount
+  useEffect(() => {
     return () => {
       if (fileTypeDebounceRef.current) {
         clearTimeout(fileTypeDebounceRef.current);
       }
     };
-  }, [document]);
+  }, []);
 
   const {
     isOpen: isDeleteOpen,
