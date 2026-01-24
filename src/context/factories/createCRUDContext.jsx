@@ -210,7 +210,7 @@ export function createCRUDProvider({
     }, [fetchData, state.page, state.search]);
 
     const addItemOptimistically = useCallback((item) => {
-      dispatch({ type: "ADD_ITEM", item });
+      dispatch({ type: "ADD_ITEM", item: item });
     }, []);
 
     const value = {

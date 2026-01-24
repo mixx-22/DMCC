@@ -109,10 +109,11 @@ const FileTypeModal = ({ isOpen, onClose, fileType }) => {
         // Create new file type
         if (!USE_API) {
           // Mock create
+          const timestamp = Date.now();
           const newFileType = {
             ...formData,
-            id: `file-type-${Date.now()}`,
-            _id: `file-type-${Date.now()}`,
+            id: `file-type-${timestamp}`,
+            _id: `file-type-${timestamp}`,
             createdAt: new Date().toISOString(),
             updatedAt: new Date().toISOString(),
           };
