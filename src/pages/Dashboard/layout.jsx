@@ -254,6 +254,7 @@ const Layout = () => {
   return (
     <>
       <PageHeader>
+        {/* Empty Box needed to enable header visibility - PageHeader checks for children to show/hide header */}
         <Box />
       </PageHeader>
       <MotionBox
