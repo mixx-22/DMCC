@@ -338,7 +338,7 @@ const Layout = () => {
         </Stack>
 
         {/* Recent Folders */}
-        <Box mb={10}>
+        <Box mb={4}>
           <Text fontSize="xl" fontWeight="500" mb={4} color={headingColor}>
             Recent Folders
           </Text>
