@@ -1,13 +1,8 @@
 import {
   Box,
   Text,
-  VStack,
-  SimpleGrid,
-  Card,
-  CardBody,
   useBreakpointValue,
   Center,
-  Link,
   useColorModeValue,
   Stack,
   ButtonGroup,
@@ -22,11 +17,11 @@ import { useState, useEffect, useMemo, useRef } from "react";
 import { format } from "date-fns";
 import { useApp, useUser } from "../../context/_useContext";
 import { motion } from "framer-motion";
-import AuptilyzeFolder from "../../components/AuptilyzeFolder";
 import SearchInput from "../../components/SearchInput";
-import { getDocumentIcon } from "../../components/Document/DocumentIcon";
 import apiService from "../../services/api";
 import { ChevronDownIcon } from "@chakra-ui/icons";
+import { GridView } from "../../components/Document/GridView";
+import { ListView } from "../../components/Document/ListView";
 
 const MotionBox = motion(Box);
 
@@ -329,55 +324,8 @@ const Layout = () => {
         <Text fontSize="xl" fontWeight="500" mb={4} color="gray.700">
           Recent Folders
         </Text>
-        <SimpleGrid columns={{ base: 2, sm: 3, lg: 4 }} spacing={4}>
-          {recentFolders.map((folder) => {
-            // Guard clause for folder.id
-            const folderId = folder?.id || folder?._id;
-            if (!folderId) return null;
-
-            return (
-              <Link
-                key={folderId}
-                as={RouterLink}
-                to={`/documents/folders/${folderId}`}
-                style={{ textDecoration: "none" }}
-              >
-                <Box
-                  py={4}
-                  cursor="pointer"
-                  position="relative"
-                  borderRadius="xl"
-                  transition="all 0.2s"
-                  _hover={{
-                    bg: "gray.50",
-                  }}
-                >
-                  <VStack align="start" spacing={1}>
-                    <Center w="full">
-                      <AuptilyzeFolder
-                        boxSize={{ base: 14, md: 16 }}
-                        filter="drop-shadow(0 2px 2px rgba(0, 0, 0, .15))"
-                        _hover={{
-                          filter: "drop-shadow(0 4px 2px rgba(0, 0, 0, .15))",
-                        }}
-                      />
-                    </Center>
-                    <Text
-                      fontSize="sm"
-                      fontWeight="500"
-                      color="gray.800"
-                      noOfLines={1}
-                      w="full"
-                      textAlign="center"
-                    >
-                      {folder.title || folder.name || "Untitled"}
-                    </Text>
-                  </VStack>
-                </Box>
-              </Link>
-            );
-          })}
-        </SimpleGrid>
+        <GridView folderOnly documents={recentFolders} />
+        <ListView folderOnly documents={recentFolders} />
       </Box>
 
       {/* Recent Documents */}
@@ -385,49 +333,8 @@ const Layout = () => {
         <Text fontSize="xl" fontWeight="500" mb={4} color="gray.700">
           Recent Documents
         </Text>
-        <SimpleGrid columns={{ base: 2, sm: 3, lg: 4 }} spacing={4}>
-          {recentFiles.map((file) => {
-            const fileId = file?.id || file?._id;
-            if (!fileId) return null;
-
-            return (
-              <Link
-                key={fileId}
-                as={RouterLink}
-                to={`/document/${fileId}`}
-                style={{ textDecoration: "none" }}
-              >
-                <Card
-                  borderRadius="xl"
-                  cursor="pointer"
-                  _hover={{
-                    transform: "translateY(-2px)",
-                    boxShadow: "md",
-                  }}
-                  transition="all 0.2s"
-                  bg="white"
-                  border="1px"
-                  borderColor="gray.200"
-                >
-                  <CardBody p={4}>
-                    <VStack align="start" spacing={2}>
-                      {getDocumentIcon(file)}
-                      <Text
-                        fontSize="sm"
-                        fontWeight="500"
-                        color="gray.800"
-                        noOfLines={2}
-                        w="full"
-                      >
-                        {file.title || file.name || "Untitled"}
-                      </Text>
-                    </VStack>
-                  </CardBody>
-                </Card>
-              </Link>
-            );
-          })}
-        </SimpleGrid>
+        <GridView filesOnly documents={recentFiles} />
+        <ListView filesOnly documents={recentFiles} />
       </Box>
     </MotionBox>
   );
