@@ -1,553 +1,342 @@
 import {
   Box,
-  Grid,
-  Heading,
   Text,
-  VStack,
-  HStack,
-  Badge,
-  Icon,
-  Card,
-  CardBody,
-  CardHeader,
+  useBreakpointValue,
+  Center,
+  useColorModeValue,
+  Stack,
+  ButtonGroup,
+  Menu,
+  MenuButton,
   Button,
+  MenuList,
+  MenuItem,
 } from "@chakra-ui/react";
-import {
-  FiFileText,
-  FiShield,
-  FiClock,
-  FiActivity,
-  FiPrinter,
-} from "react-icons/fi";
-import { useNavigate } from "react-router-dom";
-import { formatDistanceToNow, differenceInCalendarDays } from "date-fns";
-import { useRef, useMemo } from "react";
-import {
-  PieChart,
-  Pie,
-  Cell,
-  ResponsiveContainer,
-  Legend,
-  Tooltip,
-} from "recharts";
-import { useApp } from "../../context/_useContext";
+import { Link as RouterLink } from "react-router-dom";
+import { useState, useEffect, useMemo, useRef } from "react";
+import { format } from "date-fns";
+import { useApp, useUser } from "../../context/_useContext";
+import { motion } from "framer-motion";
+import SearchInput from "../../components/SearchInput";
+import apiService from "../../services/api";
+import { ChevronDownIcon } from "@chakra-ui/icons";
+import { GridView } from "../../components/Document/GridView";
+import { ListView } from "../../components/Document/ListView";
+
+const MotionBox = motion(Box);
 
 const Layout = () => {
-  const {
-    recentDocuments,
-    starredDocuments,
-    documents,
-    certifications,
-    activityLogs,
-    currentUser,
-  } = useApp();
-  const navigate = useNavigate();
-  const activityLogsRef = useRef(null);
+  const { documents } = useApp();
+  const { user: currentUser } = useUser();
+  const [selectedTeam, setSelectedTeam] = useState("all");
+  const [greeting, setGreeting] = useState("");
+  const [pendingApprovals, setPendingApprovals] = useState(0);
+  const [totalDocuments, setTotalDocuments] = useState(0);
+  const [recentFolders, setRecentFolders] = useState([]);
+  const [recentFiles, setRecentFiles] = useState([]);
 
-  const canViewDocument = (doc) => {
-    if (currentUser?.userType === "Admin") {
-      return true;
-    }
-    return doc.department === currentUser?.department;
-  };
+  // Refs to prevent multiple fetches
+  const foldersLoadedRef = useRef(false);
+  const filesLoadedRef = useRef(false);
 
-  const canViewCertification = (cert) => {
-    if (currentUser?.userType === "Admin") {
-      return true;
-    }
-    return !cert.department || cert.department === currentUser?.department;
-  };
+  // Responsive limits for items
+  const folderLimit = useBreakpointValue({ base: 4, sm: 6, lg: 8 });
+  const fileLimit = useBreakpointValue({ base: 4, sm: 6, lg: 8 });
 
-  const visibleDocuments = documents.filter(canViewDocument);
-  const visibleCertifications = certifications.filter(canViewCertification);
-  const starredDocs = visibleDocuments.filter((doc) =>
-    [...new Set(starredDocuments)].includes(doc.id),
-  );
-  const pendingApprovals = visibleDocuments.filter(
-    (doc) => doc.status === "pending",
-  );
+  const greetingColor = useColorModeValue("gray.500", "gray.500");
+  const dateColor = useColorModeValue("gray.400", "gray.500");
 
-  const filteredRecentDocuments = recentDocuments
-    .filter((recentDoc) => {
-      if (recentDoc.type !== "documents") return true;
-      const doc = documents.find((d) => d.id === recentDoc.id);
-      return doc ? canViewDocument(doc) : false;
-    })
-    .filter(
-      (doc, index, self) => self.findIndex((d) => d.id === doc.id) === index,
+  // Generate time-based greeting
+  useEffect(() => {
+    const hour = new Date().getHours();
+    const greetings = [
+      { range: [0, 5], text: "Good night" },
+      { range: [5, 12], text: "Good morning" },
+      { range: [12, 17], text: "Good afternoon" },
+      { range: [17, 22], text: "Good evening" },
+      { range: [22, 24], text: "Good night" },
+    ];
+
+    const currentGreeting = greetings.find(
+      (g) => hour >= g.range[0] && hour < g.range[1],
     );
+    setGreeting(currentGreeting?.text || "Hello");
+  }, []);
 
-  const visibleActivityLogs =
-    currentUser?.userType === "Admin"
-      ? activityLogs
-      : activityLogs.filter((log) => {
-          if (log.type === "document") {
-            const doc = documents.find((d) => d.id === log.itemId);
-            return doc ? canViewDocument(doc) : false;
-          }
-          if (log.type === "certification") {
-            const cert = certifications.find((c) => c.id === log.itemId);
-            return cert ? canViewCertification(cert) : false;
-          }
-          return true;
+  // Get current date formatted
+  const currentDate = format(new Date(), "EEEE, MMMM d");
+
+  // Filter documents by team
+  const filteredDocuments = useMemo(() => {
+    if (selectedTeam === "all") {
+      return documents;
+    }
+    // Filter by team - documents may have team or department property
+    return documents.filter(
+      (doc) => doc.team === selectedTeam || doc.department === selectedTeam,
+    );
+  }, [documents, selectedTeam]);
+
+  // Calculate metrics
+  useEffect(() => {
+    const pending = filteredDocuments.filter(
+      (doc) => doc.status === "pending",
+    ).length;
+    setPendingApprovals(pending);
+    setTotalDocuments(filteredDocuments.length);
+  }, [filteredDocuments]);
+
+  // Fetch recent folders from API - only once
+  useEffect(() => {
+    const fetchRecentFolders = async () => {
+      if (!folderLimit || foldersLoadedRef.current) return;
+      foldersLoadedRef.current = true;
+
+      try {
+        // GET /recent-documents?type=folder&page=1&limit=n
+        const response = await apiService.request("/recent-documents", {
+          method: "GET",
+          params: {
+            type: "folder",
+            page: 1,
+            limit: folderLimit,
+          },
         });
 
-  const uniqueVisibleActivityLogs = visibleActivityLogs.filter(
-    (log, index, self) => self.findIndex((l) => l.id === log.id) === index,
-  );
+        const folders = response.data || response.documents || [];
+        setRecentFolders(Array.isArray(folders) ? folders : []);
+      } catch (error) {
+        console.error("Failed to fetch recent folders:", error);
+        // Fallback to mock data on error
+        const mockFolders = [
+          {
+            id: 1,
+            _id: "1",
+            title: "Engineering Documents",
+            type: "folder",
+            updatedAt: new Date().toISOString(),
+          },
+          {
+            id: 2,
+            _id: "2",
+            title: "HR Policies",
+            type: "folder",
+            updatedAt: new Date().toISOString(),
+          },
+          {
+            id: 3,
+            _id: "3",
+            title: "Marketing Materials",
+            type: "folder",
+            updatedAt: new Date().toISOString(),
+          },
+          {
+            id: 4,
+            _id: "4",
+            title: "Finance Reports",
+            type: "folder",
+            updatedAt: new Date().toISOString(),
+          },
+          {
+            id: 5,
+            _id: "5",
+            title: "Operations",
+            type: "folder",
+            updatedAt: new Date().toISOString(),
+          },
+          {
+            id: 6,
+            _id: "6",
+            title: "Sales Proposals",
+            type: "folder",
+            updatedAt: new Date().toISOString(),
+          },
+          {
+            id: 7,
+            _id: "7",
+            title: "Product Specs",
+            type: "folder",
+            updatedAt: new Date().toISOString(),
+          },
+          {
+            id: 8,
+            _id: "8",
+            title: "Customer Support",
+            type: "folder",
+            updatedAt: new Date().toISOString(),
+          },
+        ].slice(0, folderLimit);
+        setRecentFolders(mockFolders);
+      }
+    };
 
-  const handlePrintActivityLogs = () => {
-    const printWindow = window.open("", "_blank");
-    const printContent = `
-      <!DOCTYPE html>
-      <html>
-        <head>
-          <title>Activity Logs - ${new Date().toLocaleDateString()}</title>
-          <style>
-            body { font-family: Arial, sans-serif; padding: 20px; }
-            h1 { color: #333; }
-            table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-            th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
-            th { background-color: #f2f2f2; font-weight: bold; }
-            tr:nth-child(even) { background-color: #f9f9f9; }
-          </style>
-        </head>
-        <body>
-          <h1>Activity Logs</h1>
-          <p><strong>Generated:</strong> ${new Date().toLocaleString()}</p>
-          <p><strong>User:</strong> ${currentUser?.name || "N/A"}</p>
-          <p><strong>Department:</strong> ${
-            currentUser?.department || "N/A"
-          }</p>
-          <table>
-            <thead>
-              <tr>
-                <th>Action</th>
-                <th>Type</th>
-                <th>Item Name</th>
-                <th>Timestamp</th>
-              </tr>
-            </thead>
-            <tbody>
-              ${uniqueVisibleActivityLogs
-                .map(
-                  (log) => `
-                <tr>
-                  <td>${log.action}</td>
-                  <td>${log.type}</td>
-                  <td>${log.itemName}</td>
-                  <td>${new Date(log.timestamp).toLocaleString()}</td>
-                </tr>
-              `,
-                )
-                .join("")}
-            </tbody>
-          </table>
-        </body>
-      </html>
-    `;
-    printWindow.document.write(printContent);
-    printWindow.document.close();
-    printWindow.print();
+    fetchRecentFolders();
+  }, [folderLimit]);
+
+  // Fetch recent files from API - only once
+  useEffect(() => {
+    const fetchRecentFiles = async () => {
+      if (!fileLimit || filesLoadedRef.current) return;
+      filesLoadedRef.current = true;
+
+      try {
+        // GET /recent-documents?type=file&page=1&limit=n
+        const response = await apiService.request("/recent-documents", {
+          method: "GET",
+          params: {
+            type: "file",
+            page: 1,
+            limit: fileLimit,
+          },
+        });
+
+        const files = response.data || response.documents || [];
+        setRecentFiles(Array.isArray(files) ? files : []);
+      } catch (error) {
+        console.error("Failed to fetch recent files:", error);
+        // Fallback to filtered documents on error
+        const mockFiles = filteredDocuments.slice(0, fileLimit).map((doc) => ({
+          ...doc,
+          id: doc.id || doc._id,
+          title: doc.title || doc.name || "Untitled",
+          type: doc.type || "file",
+        }));
+        setRecentFiles(mockFiles);
+      }
+    };
+
+    fetchRecentFiles();
+  }, [fileLimit, filteredDocuments]);
+
+  // Get user teams from the current user object
+  const userTeams = useMemo(() => {
+    // Check if user has teams property and it's an array
+    if (!currentUser?.team || !Array.isArray(currentUser.team)) {
+      // Fallback to empty array if no teams
+      return [];
+    }
+    console.log(currentUser.team);
+    return currentUser.team;
+  }, [currentUser]);
+
+  const updateStatsByTeam = async (teamId) => {
+    setSelectedTeam(teamId);
+
+    try {
+      const res = await apiService.request(`/team-stats/${teamId}`, {
+        method: "POST",
+      });
+      const data = await res.json();
+      setTotalDocuments(data.totalDocuments);
+      setPendingApprovals(data.pendingApprovals);
+    } catch (err) {
+      console.error(err);
+      setTotalDocuments(0);
+      setPendingApprovals(0);
+    }
   };
 
-  const certificateAgeData = useMemo(() => {
-    const now = new Date();
-    let greenCount = 0;
-    let redCount = 0;
-
-    visibleCertifications.forEach((cert) => {
-      if (cert.createdAt) {
-        const ageInDays = differenceInCalendarDays(
-          now,
-          new Date(cert.createdAt),
-        );
-        if (ageInDays <= 300) {
-          greenCount++;
-        } else {
-          redCount++;
-        }
-      }
-    });
-
-    return [
-      { name: "≤ 300 days", value: greenCount, color: "#48BB78" },
-      { name: "> 300 days", value: redCount, color: "#F56565" },
-    ];
-  }, [visibleCertifications]);
-
-  const remainingDaysData = useMemo(() => {
-    const now = new Date();
-    let greenCount = 0;
-    let redCount = 0;
-
-    visibleCertifications.forEach((cert) => {
-      if (cert.expirationDate) {
-        const daysRemaining = differenceInCalendarDays(
-          new Date(cert.expirationDate),
-          now,
-        );
-        if (daysRemaining <= 300) {
-          greenCount++;
-        } else {
-          redCount++;
-        }
-      }
-    });
-
-    return [
-      { name: "≤ 300 days", value: greenCount, color: "#48BB78" },
-      { name: "> 300 days", value: redCount, color: "#F56565" },
-    ];
-  }, [visibleCertifications]);
+  const selectedTeamName = useMemo(
+    () =>
+      selectedTeam === "all"
+        ? "All Teams"
+        : userTeams.find((t) => t.teamId === selectedTeam)?.name,
+    [selectedTeam, userTeams],
+  );
 
   return (
-    <>
-      <Grid
-        templateColumns="repeat(auto-fit, minmax(250px, 1fr))"
-        gap={6}
-        mb={8}
+    <MotionBox
+      px={{ base: 4, md: 8 }}
+      py={6}
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      transition={{ duration: 0.3, ease: "easeInOut" }}
+    >
+      <Stack
+        spacing={4}
+        flexDir={"column"}
+        alignItems="center"
+        justifyContent="center"
       >
-        <Card>
-          <CardBody>
-            <HStack justify="space-between">
-              <VStack align="start" spacing={1}>
-                <Text fontSize="sm" color="gray.600">
-                  Total Documents
-                </Text>
-                <Text fontSize="3xl" fontWeight="bold">
-                  {visibleDocuments.length}
-                </Text>
-              </VStack>
-              <Icon as={FiFileText} boxSize={10} color="blue.500" />
-            </HStack>
-          </CardBody>
-        </Card>
+        {/* Greeting Section */}
+        <Center flexDir="column">
+          <Text
+            textAlign="center"
+            fontSize={{ base: "2xl", md: "3xl" }}
+            fontWeight="300"
+            color={greetingColor}
+          >
+            {greeting}, {currentUser?.firstName || currentUser?.name || "User"}
+          </Text>
+          <Text
+            textAlign="center"
+            fontSize={{ base: "md", md: "lg" }}
+            fontWeight="300"
+            color={dateColor}
+          >
+            {currentDate}
+          </Text>
+        </Center>
 
-        <Card>
-          <CardBody>
-            <HStack justify="space-between">
-              <VStack align="start" spacing={1}>
-                <Text fontSize="sm" color="gray.600">
-                  Certifications
-                </Text>
-                <Text fontSize="3xl" fontWeight="bold">
-                  {visibleCertifications.length}
-                </Text>
-              </VStack>
-              <Icon as={FiShield} boxSize={10} color="green.500" />
-            </HStack>
-          </CardBody>
-        </Card>
-
-        <Card>
-          <CardBody>
-            <HStack justify="space-between">
-              <VStack align="start" spacing={1}>
-                <Text fontSize="sm" color="gray.600">
-                  Pending Approvals
-                </Text>
-                <Text fontSize="3xl" fontWeight="bold">
-                  {pendingApprovals.length}
-                </Text>
-              </VStack>
-              <Icon as={FiClock} boxSize={10} color="orange.500" />
-            </HStack>
-          </CardBody>
-        </Card>
-      </Grid>
-
-      <Grid
-        templateColumns="repeat(auto-fit, minmax(400px, 1fr))"
-        gap={6}
-        mb={8}
-      >
-        <Card>
-          <CardHeader>
-            <Heading size="md">Certificate Age</Heading>
-            <Text fontSize="sm" color="gray.600" mt={1}>
-              Age of certificates from creation date
-            </Text>
-          </CardHeader>
-          <CardBody>
-            {visibleCertifications.length === 0 ? (
-              <Text color="gray.500" textAlign="center" py={8}>
-                No certifications available
-              </Text>
-            ) : (
-              <VStack spacing={4}>
-                <ResponsiveContainer width="100%" height={300}>
-                  <PieChart>
-                    <Pie
-                      data={certificateAgeData}
-                      cx="50%"
-                      cy="50%"
-                      labelLine={false}
-                      label={({ name, value, percent }) =>
-                        value > 0
-                          ? `${name}: ${value} (${(percent * 100).toFixed(0)}%)`
-                          : ""
-                      }
-                      outerRadius={100}
-                      fill="#8884d8"
-                      dataKey="value"
-                    >
-                      {certificateAgeData.map((entry) => (
-                        <Cell
-                          key={`age-${entry.name}-${entry.value}`}
-                          fill={entry.color}
-                        />
-                      ))}
-                    </Pie>
-                    <Tooltip />
-                    <Legend
-                      verticalAlign="bottom"
-                      height={36}
-                      formatter={(value, entry) => (
-                        <span style={{ color: entry.color }}>
-                          {value}: {entry.payload.value}
-                        </span>
-                      )}
-                    />
-                  </PieChart>
-                </ResponsiveContainer>
-                <HStack spacing={4} justify="center" mt={2}>
-                  <HStack>
-                    <Box w={4} h={4} bg="green.500" borderRadius="sm" />
-                    <Text fontSize="sm">
-                      ≤ 300 days: {certificateAgeData[0].value}
-                    </Text>
-                  </HStack>
-                  <HStack>
-                    <Box w={4} h={4} bg="red.500" borderRadius="sm" />
-                    <Text fontSize="sm">
-                      300 days: {certificateAgeData[1].value}
-                    </Text>
-                  </HStack>
-                </HStack>
-              </VStack>
-            )}
-          </CardBody>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <Heading size="md">Remaining Days</Heading>
-            <Text fontSize="sm" color="gray.600" mt={1}>
-              Days remaining until expiration (1 year from renewal)
-            </Text>
-          </CardHeader>
-          <CardBody>
-            {visibleCertifications.filter((cert) => cert.expirationDate)
-              .length === 0 ? (
-              <Text color="gray.500" textAlign="center" py={8}>
-                No certifications with expiration dates
-              </Text>
-            ) : (
-              <VStack spacing={4}>
-                <ResponsiveContainer width="100%" height={300}>
-                  <PieChart>
-                    <Pie
-                      data={remainingDaysData}
-                      cx="50%"
-                      cy="50%"
-                      labelLine={false}
-                      label={({ name, value, percent }) =>
-                        value > 0
-                          ? `${name}: ${value} (${(percent * 100).toFixed(0)}%)`
-                          : ""
-                      }
-                      outerRadius={100}
-                      fill="#8884d8"
-                      dataKey="value"
-                    >
-                      {remainingDaysData.map((entry) => (
-                        <Cell
-                          key={`remaining-${entry.name}-${entry.value}`}
-                          fill={entry.color}
-                        />
-                      ))}
-                    </Pie>
-                    <Tooltip />
-                    <Legend
-                      verticalAlign="bottom"
-                      height={36}
-                      formatter={(value, entry) => (
-                        <span style={{ color: entry.color }}>
-                          {value}: {entry.payload.value}
-                        </span>
-                      )}
-                    />
-                  </PieChart>
-                </ResponsiveContainer>
-                <HStack spacing={4} justify="center" mt={2}>
-                  <HStack>
-                    <Box w={4} h={4} bg="green.500" borderRadius="sm" />
-                    <Text fontSize="sm">
-                      ≤ 300 days: {remainingDaysData[0].value}
-                    </Text>
-                  </HStack>
-                  <HStack>
-                    <Box w={4} h={4} bg="red.500" borderRadius="sm" />
-                    <Text fontSize="sm">
-                      300 days: {remainingDaysData[1].value}
-                    </Text>
-                  </HStack>
-                </HStack>
-              </VStack>
-            )}
-          </CardBody>
-        </Card>
-      </Grid>
-
-      <Grid templateColumns="repeat(auto-fit, minmax(400px, 1fr))" gap={6}>
-        <Card>
-          <CardHeader>
-            <Heading size="md">Recent Documents</Heading>
-          </CardHeader>
-          <CardBody>
-            <VStack align="stretch" spacing={3}>
-              {filteredRecentDocuments.length === 0 ? (
-                <Text color="gray.500">No recent documents</Text>
-              ) : (
-                filteredRecentDocuments.slice(0, 5).map((doc) => (
-                  <Box
-                    key={`recent-${doc.id}`}
-                    p={3}
-                    border="1px"
-                    borderColor="gray.200"
-                    borderRadius="md"
-                    cursor="pointer"
-                    _hover={{ bg: "gray.50" }}
-                    onClick={() => navigate(`/${doc.type}/${doc.id}`)}
+        {/* Team Filter and Metrics in Button Group Style */}
+        <Box>
+          <ButtonGroup isAttached variant="teamStats" size="sm">
+            <Menu>
+              <MenuButton
+                as={Button}
+                rightIcon={<ChevronDownIcon />}
+                borderRightRadius={0}
+              >
+                {selectedTeamName}
+              </MenuButton>
+              <MenuList>
+                <MenuItem onClick={() => updateStatsByTeam("all")}>
+                  All Teams
+                </MenuItem>
+                {userTeams.map((team) => (
+                  <MenuItem
+                    key={team.teamId}
+                    onClick={() => updateStatsByTeam(team.teamId)}
                   >
-                    <HStack justify="space-between">
-                      <VStack align="start" spacing={0}>
-                        <Text fontWeight="semibold">{doc.name}</Text>
-                        <Text fontSize="sm" color="gray.500">
-                          {formatDistanceToNow(new Date(doc.openedAt), {
-                            addSuffix: true,
-                          })}
-                        </Text>
-                      </VStack>
-                      <Badge
-                        colorScheme={
-                          doc.type === "documents" ? "blue" : "green"
-                        }
-                      >
-                        {doc.type}
-                      </Badge>
-                    </HStack>
-                  </Box>
-                ))
-              )}
-            </VStack>
-          </CardBody>
-        </Card>
+                    {team.name}
+                  </MenuItem>
+                ))}
+              </MenuList>
+            </Menu>
+            <Button as={RouterLink} to="/documents" borderRadius={0}>
+              {totalDocuments} Total
+            </Button>
+            <Button as={RouterLink} to="/approvals" borderLeftRadius={0}>
+              {pendingApprovals} Pending
+            </Button>
+          </ButtonGroup>
+        </Box>
 
-        <Card>
-          <CardHeader>
-            <Heading size="md">Starred Documents</Heading>
-          </CardHeader>
-          <CardBody>
-            <VStack align="stretch" spacing={3}>
-              {starredDocs.length === 0 ? (
-                <Text color="gray.500">No starred documents</Text>
-              ) : (
-                starredDocs.slice(0, 5).map((doc) => (
-                  <Box
-                    key={`starred-${doc.id}`}
-                    p={3}
-                    border="1px"
-                    borderColor="gray.200"
-                    borderRadius="md"
-                    cursor="pointer"
-                    _hover={{ bg: "gray.50" }}
-                    onClick={() => navigate(`/documents/${doc.id}`)}
-                  >
-                    <HStack justify="space-between">
-                      <VStack align="start" spacing={0}>
-                        <Text fontWeight="semibold">{doc.title}</Text>
-                        <Text fontSize="sm" color="gray.500">
-                          {doc.category || "Uncategorized"}
-                        </Text>
-                      </VStack>
-                      <Badge
-                        colorScheme={
-                          doc.status === "approved"
-                            ? "green"
-                            : doc.status === "pending"
-                              ? "yellow"
-                              : "red"
-                        }
-                      >
-                        {doc.status}
-                      </Badge>
-                    </HStack>
-                  </Box>
-                ))
-              )}
-            </VStack>
-          </CardBody>
-        </Card>
+        {/* Search Bar */}
+        <Box w="full" maxW="md">
+          <SearchInput placeholder="Search documents..." />
+        </Box>
+      </Stack>
 
-        {currentUser?.userType === "Admin" && (
-          <Card gridColumn="span 2" ref={activityLogsRef}>
-            <CardHeader>
-              <HStack justify="space-between">
-                <Heading size="md">Activity Logs</Heading>
-                <Button
-                  leftIcon={<FiPrinter />}
-                  size="sm"
-                  colorScheme="brandPrimary"
-                  variant="outline"
-                  onClick={handlePrintActivityLogs}
-                >
-                  Print
-                </Button>
-              </HStack>
-            </CardHeader>
-            <CardBody>
-              <VStack align="stretch" spacing={2}>
-                {uniqueVisibleActivityLogs.length === 0 ? (
-                  <Text color="gray.500">No activity logs</Text>
-                ) : (
-                  uniqueVisibleActivityLogs.slice(0, 10).map((log) => (
-                    <Box
-                      key={`activity-${log.id}`}
-                      p={3}
-                      border="1px"
-                      borderColor="gray.200"
-                      borderRadius="md"
-                    >
-                      <HStack justify="space-between">
-                        <HStack>
-                          <Icon as={FiActivity} />
-                          <Text>
-                            <Text as="span" fontWeight="semibold">
-                              {log.action}
-                            </Text>{" "}
-                            <Text as="span" color="gray.600">
-                              {log.type}
-                            </Text>{" "}
-                            <Text as="span">{log.itemName}</Text>
-                          </Text>
-                        </HStack>
-                        <Text fontSize="sm" color="gray.500">
-                          {formatDistanceToNow(new Date(log.timestamp), {
-                            addSuffix: true,
-                          })}
-                        </Text>
-                      </HStack>
-                    </Box>
-                  ))
-                )}
-              </VStack>
-            </CardBody>
-          </Card>
-        )}
-      </Grid>
-    </>
+      {/* Recent Folders */}
+      <Box mb={10}>
+        <Text fontSize="xl" fontWeight="500" mb={4} color="gray.700">
+          Recent Folders
+        </Text>
+        <GridView folderOnly documents={recentFolders} />
+        <ListView folderOnly documents={recentFolders} />
+      </Box>
+
+      {/* Recent Documents */}
+      <Box>
+        <Text fontSize="xl" fontWeight="500" mb={4} color="gray.700">
+          Recent Documents
+        </Text>
+        <GridView filesOnly documents={recentFiles} />
+        <ListView filesOnly documents={recentFiles} />
+      </Box>
+    </MotionBox>
   );
 };
 

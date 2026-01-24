@@ -210,7 +210,9 @@ const Documents = () => {
     <Box>
       <PageHeader>
         <Flex justify="space-between" align="center" w="full" gap={4}>
-          <SearchInput placeholder="Search documents..." />
+          <Box w="full" maxW="xl">
+            <SearchInput placeholder="Search documents..." header />
+          </Box>
           <HStack>
             <IconButton
               icon={viewMode === "grid" ? <FiList /> : <FiGrid />}

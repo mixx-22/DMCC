@@ -9,7 +9,12 @@ import {
 } from "@chakra-ui/react";
 import { FiSearch } from "react-icons/fi";
 
-const SearchInput = ({ placeholder = "Search...", defaultValue = "" }) => {
+const SearchInput = ({
+  header = false,
+  placeholder = "Search...",
+  defaultValue = "",
+  ...props
+}) => {
   const navigate = useNavigate();
   const [keyword, setKeyword] = useState(defaultValue);
 
@@ -26,17 +31,18 @@ const SearchInput = ({ placeholder = "Search...", defaultValue = "" }) => {
   };
 
   return (
-    <InputGroup maxW={{ base: "full", md: "400px" }}>
+    <InputGroup w="full" {...props}>
       <Input
         value={keyword}
+        className={header ? "header" : ""}
         onChange={(e) => setKeyword(e.target.value)}
         onKeyDown={handleKeyDown}
         placeholder={placeholder}
-        bg="white"
-        _dark={{ bg: "gray.800" }}
+        variant="search"
       />
       <InputRightElement>
         <IconButton
+          isRound
           icon={<FiSearch />}
           onClick={handleSearch}
           aria-label="Search"
@@ -49,6 +55,7 @@ const SearchInput = ({ placeholder = "Search...", defaultValue = "" }) => {
 };
 
 SearchInput.propTypes = {
+  header: PropTypes.bool,
   placeholder: PropTypes.string,
   defaultValue: PropTypes.string,
 };
