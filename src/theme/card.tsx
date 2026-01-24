@@ -8,7 +8,7 @@ const baseStyle = defineStyle((props) => {
   return {
     container: {
       // Set the avatar border color to match card background
-      [$avatarBg.variable]: mode("white", "gray.700")(props),
+      [$avatarBg.variable]: mode("white", "gray.800")(props),
     },
   };
 });
@@ -22,7 +22,7 @@ const document = defineStyle((props) => {
       overflow: "hidden",
       transition: "all 0.2s",
       // Set avatar border color to match card background
-      [$avatarBg.variable]: mode("white", "gray.700")(props),
+      [$avatarBg.variable]: mode("white", "gray.800")(props),
       _hover: {
         boxShadow: "md",
         bg: mode("white", "gray.800")(props),
