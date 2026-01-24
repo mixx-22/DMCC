@@ -1,6 +1,6 @@
 import { FormControl, FormLabel, Text } from "@chakra-ui/react";
 import { AsyncSelect } from "chakra-react-select";
-import { useCallback } from "react";
+import { useCallback, useRef, useEffect } from "react";
 import apiService from "../services/api";
 
 const ROLES_ENDPOINT = import.meta.env.VITE_API_PACKAGE_ROLES;
@@ -14,15 +14,29 @@ const MOCK_ROLES = [
   { _id: "5", id: "5", title: "Analyst" },
 ];
 
-const RoleAsyncSelect = ({ value = [], onChange, isInvalid, ...props }) => {
+const RoleAsyncSelect = ({ value = [], onChange, isInvalid, debounceTimeout = 300, ...props }) => {
+  const debounceTimerRef = useRef(null);
+
+  useEffect(() => {
+    return () => {
+      if (debounceTimerRef.current) {
+        clearTimeout(debounceTimerRef.current);
+      }
+    };
+  }, []);
+
   const loadOptions = useCallback(async (inputValue) => {
     if (inputValue.length < 2) {
       return [];
     }
 
-    if (!USE_API) {
-      return new Promise((resolve) => {
-        setTimeout(() => {
+    return new Promise((resolve) => {
+      if (debounceTimerRef.current) {
+        clearTimeout(debounceTimerRef.current);
+      }
+
+      debounceTimerRef.current = setTimeout(async () => {
+        if (!USE_API) {
           const filtered = MOCK_ROLES.filter((role) =>
             role.title.toLowerCase().includes(inputValue.toLowerCase())
           );
@@ -32,29 +46,32 @@ const RoleAsyncSelect = ({ value = [], onChange, isInvalid, ...props }) => {
               label: role.title,
             }))
           );
-        }, 300);
-      });
-    }
+          return;
+        }
 
-    try {
-      const data = await apiService.request(ROLES_ENDPOINT, {
-        method: "GET",
-        params: {
-          keyword: inputValue,
-          limit: 20,
-        },
-      });
+        try {
+          const data = await apiService.request(ROLES_ENDPOINT, {
+            method: "GET",
+            params: {
+              keyword: inputValue,
+              limit: 20,
+            },
+          });
 
-      const roles = data.data || data.roles || [];
-      return roles.map((role) => ({
-        value: role.id || role._id,
-        label: role.title,
-      }));
-    } catch (error) {
-      console.error("Failed to fetch roles:", error);
-      return [];
-    }
-  }, []);
+          const roles = data.data || data.roles || [];
+          resolve(
+            roles.map((role) => ({
+              value: role.id || role._id,
+              label: role.title,
+            }))
+          );
+        } catch (error) {
+          console.error("Failed to fetch roles:", error);
+          resolve([]);
+        }
+      }, debounceTimeout);
+    });
+  }, [debounceTimeout]);
 
   const handleChange = (selectedOptions) => {
     const roles = (selectedOptions || []).map((option) => ({
