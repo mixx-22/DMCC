@@ -1,5 +1,17 @@
-import { defineStyle, defineStyleConfig } from "@chakra-ui/react";
+import { defineStyle, defineStyleConfig, cssVar } from "@chakra-ui/react";
 import { mode } from "@chakra-ui/theme-tools";
+
+// Define the avatar border color CSS variable
+const $avatarBg = cssVar("avatar-border-color");
+
+const baseStyle = defineStyle((props) => {
+  return {
+    container: {
+      // Set the avatar border color to match card background
+      [$avatarBg.variable]: mode("white", "gray.800")(props),
+    },
+  };
+});
 
 const document = defineStyle((props) => {
   return {
@@ -9,6 +21,8 @@ const document = defineStyle((props) => {
       borderRadius: "md",
       overflow: "hidden",
       transition: "all 0.2s",
+      // Set avatar border color to match card background
+      [$avatarBg.variable]: mode("white", "gray.800")(props),
       _hover: {
         boxShadow: "md",
         bg: mode("white", "gray.800")(props),
@@ -30,6 +44,8 @@ const documentSelected = defineStyle((props) => {
       bg: mode("brandPrimary.50", "brandPrimary.900")(props),
       overflow: "hidden",
       transition: "all 0.2s",
+      // Set avatar border color to match selected card background
+      [$avatarBg.variable]: mode("brandPrimary.50", "brandPrimary.900")(props),
       _hover: {
         shadow: "md",
         transform: "translateY(-2px)",
@@ -42,6 +58,7 @@ const documentSelected = defineStyle((props) => {
 });
 
 export const cardTheme = defineStyleConfig({
+  baseStyle,
   variants: {
     document,
     documentSelected,
