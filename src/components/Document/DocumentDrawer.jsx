@@ -28,6 +28,8 @@ import DeleteDocumentModal from "./modals/DeleteDocumentModal";
 import MoveDocumentModal from "./modals/MoveDocumentModal";
 import PrivacySettingsModal from "./modals/PrivacySettingsModal";
 import PrivacyDisplay from "./PrivacyDisplay";
+import ManageFileTypeModal from "./modals/ManageFileTypeModal";
+import ManageDocumentMetadataModal from "./modals/ManageDocumentMetadataModal";
 import DownloadButton from "./DownloadButton";
 import { useDocuments } from "../../context/_useContext";
 import { toast } from "sonner";
@@ -63,6 +65,18 @@ const DocumentDrawer = ({ document, isOpen, onClose }) => {
     isOpen: isPrivacyOpen,
     onOpen: onPrivacyOpen,
     onClose: onPrivacyClose,
+  } = useDisclosure();
+
+  const {
+    isOpen: isFileTypeOpen,
+    onOpen: onFileTypeOpen,
+    onClose: onFileTypeClose,
+  } = useDisclosure();
+
+  const {
+    isOpen: isMetadataOpen,
+    onOpen: onMetadataOpen,
+    onClose: onMetadataClose,
   } = useDisclosure();
 
   if (!document) return null;
@@ -417,6 +431,118 @@ const DocumentDrawer = ({ document, isOpen, onClose }) => {
                           <Text fontSize="sm">{document.metadata.version}</Text>
                         </Box>
                       )}
+                      <Box>
+                        <Text fontSize="sm" color="gray.600" mb={2}>
+                          File Type
+                        </Text>
+                        {document?.metadata?.fileType ? (
+                          <HStack spacing={2}>
+                            <Badge
+                              colorScheme="purple"
+                              fontSize="sm"
+                              px={3}
+                              py={1}
+                              borderRadius="md"
+                            >
+                              {document.metadata.fileType.name}
+                            </Badge>
+                            <Button
+                              size="xs"
+                              variant="ghost"
+                              colorScheme="blue"
+                              onClick={onFileTypeOpen}
+                            >
+                              Change
+                            </Button>
+                          </HStack>
+                        ) : (
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            colorScheme="blue"
+                            onClick={onFileTypeOpen}
+                          >
+                            Assign File Type
+                          </Button>
+                        )}
+                      </Box>
+
+                      {/* Document Metadata */}
+                      <Box>
+                        <Text fontSize="sm" color="gray.600" mb={2}>
+                          Document Metadata
+                        </Text>
+                        {document?.metadata?.documentNumber ||
+                        document?.metadata?.issuedDate ||
+                        document?.metadata?.effectivityDate ? (
+                          <VStack align="stretch" spacing={2}>
+                            {document.metadata.documentNumber && (
+                              <HStack spacing={2}>
+                                <Text
+                                  fontSize="xs"
+                                  color="gray.500"
+                                  minW="100px"
+                                >
+                                  Doc Number:
+                                </Text>
+                                <Text fontSize="sm" fontWeight="medium">
+                                  {document.metadata.documentNumber}
+                                </Text>
+                              </HStack>
+                            )}
+                            {document.metadata.issuedDate && (
+                              <HStack spacing={2}>
+                                <Text
+                                  fontSize="xs"
+                                  color="gray.500"
+                                  minW="100px"
+                                >
+                                  Issued Date:
+                                </Text>
+                                <Text fontSize="sm">
+                                  {new Date(
+                                    document.metadata.issuedDate,
+                                  ).toLocaleDateString()}
+                                </Text>
+                              </HStack>
+                            )}
+                            {document.metadata.effectivityDate && (
+                              <HStack spacing={2}>
+                                <Text
+                                  fontSize="xs"
+                                  color="gray.500"
+                                  minW="100px"
+                                >
+                                  Effectivity:
+                                </Text>
+                                <Text fontSize="sm">
+                                  {new Date(
+                                    document.metadata.effectivityDate,
+                                  ).toLocaleDateString()}
+                                </Text>
+                              </HStack>
+                            )}
+                            <Button
+                              size="xs"
+                              variant="ghost"
+                              colorScheme="blue"
+                              onClick={onMetadataOpen}
+                              alignSelf="flex-start"
+                            >
+                              Change
+                            </Button>
+                          </VStack>
+                        ) : (
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            colorScheme="blue"
+                            onClick={onMetadataOpen}
+                          >
+                            Add Metadata
+                          </Button>
+                        )}
+                      </Box>
                     </VStack>
                   </Box>
                 </>
@@ -618,6 +744,16 @@ const DocumentDrawer = ({ document, isOpen, onClose }) => {
       <PrivacySettingsModal
         isOpen={isPrivacyOpen}
         onClose={onPrivacyClose}
+        document={document}
+      />
+      <ManageFileTypeModal
+        isOpen={isFileTypeOpen}
+        onClose={onFileTypeClose}
+        document={document}
+      />
+      <ManageDocumentMetadataModal
+        isOpen={isMetadataOpen}
+        onClose={onMetadataClose}
         document={document}
       />
     </>

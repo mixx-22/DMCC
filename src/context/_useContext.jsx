@@ -10,6 +10,8 @@ import {
   UserProfileContext,
   RoleContext,
   DocumentsContext,
+  FileTypesContext,
+  FileTypeContext,
 } from "./_contexts";
 
 export const useApp = () => {
@@ -84,6 +86,22 @@ export const useDocuments = () => {
   const context = useContext(DocumentsContext);
   if (!context) {
     throw new Error("useDocuments must be used within DocumentsProvider");
+  }
+  return context;
+};
+
+export const useFileTypes = () => {
+  const context = useContext(FileTypesContext);
+  if (!context) {
+    throw new Error("useFileTypes must be used within FileTypesProvider");
+  }
+  return context;
+};
+
+export const useFileType = () => {
+  const context = useContext(FileTypeContext);
+  if (!context) {
+    throw new Error("useFileType must be used within FileTypeProvider");
   }
   return context;
 };
