@@ -21,15 +21,9 @@ import {
   MenuList,
   MenuItem,
   Flex,
-  useColorModeValue,
   Link,
 } from "@chakra-ui/react";
-import {
-  FiTrash2,
-  FiMove,
-  FiShare2,
-  FiMoreVertical,
-} from "react-icons/fi";
+import { FiTrash2, FiMove, FiShare2, FiMoreVertical } from "react-icons/fi";
 import Timestamp from "../Timestamp";
 import DeleteDocumentModal from "./modals/DeleteDocumentModal";
 import MoveDocumentModal from "./modals/MoveDocumentModal";
@@ -464,9 +458,6 @@ const DocumentDrawer = ({ document, isOpen, onClose }) => {
                             Assign File Type
                           </Button>
                         )}
-                        <Text fontSize="xs" color="gray.500" mt={1}>
-                          Classify this document by selecting its type
-                        </Text>
                       </Box>
                     </VStack>
                   </Box>
@@ -567,20 +558,32 @@ const DocumentDrawer = ({ document, isOpen, onClose }) => {
                     <Text fontWeight="semibold" mb={2}>
                       Form Questions
                     </Text>
-                    {document?.metadata?.questions && document.metadata.questions.length > 0 ? (
+                    {document?.metadata?.questions &&
+                    document.metadata.questions.length > 0 ? (
                       <VStack align="stretch" spacing={2}>
                         <Text fontSize="sm" color="gray.600">
-                          {document.metadata.questions.length} question{document.metadata.questions.length !== 1 ? 's' : ''} defined
+                          {document.metadata.questions.length} question
+                          {document.metadata.questions.length !== 1
+                            ? "s"
+                            : ""}{" "}
+                          defined
                         </Text>
                         <VStack align="stretch" spacing={1}>
-                          {document.metadata.questions.slice(0, 3).map((question, index) => (
-                            <Text key={question.id} fontSize="sm">
-                              {index + 1}. {question.label} ({question.type})
-                            </Text>
-                          ))}
+                          {document.metadata.questions
+                            .slice(0, 3)
+                            .map((question, index) => (
+                              <Text key={question.id} fontSize="sm">
+                                {index + 1}. {question.label} ({question.type})
+                              </Text>
+                            ))}
                           {document.metadata.questions.length > 3 && (
-                            <Text fontSize="sm" color="gray.500" fontStyle="italic">
-                              ... and {document.metadata.questions.length - 3} more
+                            <Text
+                              fontSize="sm"
+                              color="gray.500"
+                              fontStyle="italic"
+                            >
+                              ... and {document.metadata.questions.length - 3}{" "}
+                              more
                             </Text>
                           )}
                         </VStack>

@@ -525,7 +525,7 @@ const DocumentDetail = () => {
                           <Button
                             size="xs"
                             variant="ghost"
-                            colorScheme="blue"
+                            colorScheme="brandPrimary"
                             onClick={onFileTypeOpen}
                           >
                             Change
@@ -535,15 +535,12 @@ const DocumentDetail = () => {
                         <Button
                           size="sm"
                           variant="outline"
-                          colorScheme="blue"
+                          colorScheme="brandPrimary"
                           onClick={onFileTypeOpen}
                         >
                           Assign File Type
                         </Button>
                       )}
-                      <Text fontSize="xs" color="gray.500" mt={1}>
-                        Classify this document by selecting its type
-                      </Text>
                     </Box>
                   )}
                 </SimpleGrid>
