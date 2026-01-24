@@ -4,11 +4,11 @@ import {
   Text,
   Button,
   AvatarGroup,
-  Avatar,
   Tooltip,
   Icon,
 } from "@chakra-ui/react";
 import { FiGlobe, FiSettings } from "react-icons/fi";
+import TooltipAvatar from "../TooltipAvatar";
 
 /**
  * PrivacyDisplay Component
@@ -78,9 +78,11 @@ const PrivacyDisplay = ({ document, onManageAccess, size = "md" }) => {
                 if (typeof user === 'string') {
                   // If it's just an ID, we can't display much info
                   return (
-                    <Tooltip key={user} label="User">
-                      <Avatar name="?" />
-                    </Tooltip>
+                    <TooltipAvatar
+                      key={user}
+                      name="?"
+                      label="User"
+                    />
                   );
                 }
                 
@@ -89,12 +91,13 @@ const PrivacyDisplay = ({ document, onManageAccess, size = "md" }) => {
                   : user.email || user.username || "Unknown User";
                 
                 return (
-                  <Tooltip key={user.id || user._id} label={fullName}>
-                    <Avatar
-                      name={fullName}
-                      src={user.profilePicture}
-                    />
-                  </Tooltip>
+                  <TooltipAvatar
+                    key={user.id || user._id}
+                    id={user.id || user._id}
+                    name={fullName}
+                    image={user.profilePicture}
+                    urlPrefix="/users/"
+                  />
                 );
               })}
               
@@ -104,19 +107,23 @@ const PrivacyDisplay = ({ document, onManageAccess, size = "md" }) => {
                 if (typeof team === 'string') {
                   // If it's just an ID, we can't display much info
                   return (
-                    <Tooltip key={team} label="Team">
-                      <Avatar name="?" bg="blue.500" />
-                    </Tooltip>
+                    <TooltipAvatar
+                      key={team}
+                      name="?"
+                      label="Team"
+                      bg="blue.500"
+                    />
                   );
                 }
                 
                 return (
-                  <Tooltip key={team.id || team._id} label={team.name}>
-                    <Avatar
-                      name={team.name}
-                      bg="blue.500"
-                    />
-                  </Tooltip>
+                  <TooltipAvatar
+                    key={team.id || team._id}
+                    id={team.id || team._id}
+                    name={team.name}
+                    urlPrefix="/teams/"
+                    bg="blue.500"
+                  />
                 );
               })}
             </AvatarGroup>

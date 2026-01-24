@@ -1,5 +1,5 @@
 import { Avatar, Tooltip } from "@chakra-ui/react";
-import { Link as ReactRouterLink } from "react-router";
+import { Link as ReactRouterLink } from "react-router-dom";
 import PropTypes from "prop-types";
 import { getImageSrc } from "../utils/helpers";
 
