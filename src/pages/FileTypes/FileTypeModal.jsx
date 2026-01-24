@@ -20,12 +20,14 @@ import {
 import { useState, useEffect } from "react";
 import apiService from "../../services/api";
 import Swal from "sweetalert2";
+import { useFileTypes } from "../../context/_useContext";
 
 const FILE_TYPES_ENDPOINT = "/file-types";
 const USE_API = import.meta.env.VITE_USE_API !== "false";
 
 const FileTypeModal = ({ isOpen, onClose, fileType }) => {
   const toast = useToast();
+  const { addItemOptimistically } = useFileTypes();
   const [formData, setFormData] = useState({
     name: "",
     isQualityDocument: false,
@@ -107,6 +109,17 @@ const FileTypeModal = ({ isOpen, onClose, fileType }) => {
         // Create new file type
         if (!USE_API) {
           // Mock create
+          const newFileType = {
+            ...formData,
+            id: `file-type-${Date.now()}`,
+            _id: `file-type-${Date.now()}`,
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+          };
+          
+          // Add to end of current list optimistically
+          addItemOptimistically(newFileType);
+          
           setTimeout(() => {
             toast({
               title: "File type created successfully",
@@ -119,9 +132,18 @@ const FileTypeModal = ({ isOpen, onClose, fileType }) => {
           return;
         }
 
-        await apiService.request(FILE_TYPES_ENDPOINT, {
+        const response = await apiService.request(FILE_TYPES_ENDPOINT, {
           method: "POST",
           body: JSON.stringify(formData),
+        });
+
+        const newFileType = response.fileType || response.data || response;
+        
+        // Add to end of current list optimistically
+        addItemOptimistically({
+          ...newFileType,
+          createdAt: newFileType.createdAt || new Date().toISOString(),
+          updatedAt: newFileType.updatedAt || new Date().toISOString(),
         });
 
         toast({
