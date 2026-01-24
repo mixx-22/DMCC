@@ -6,7 +6,7 @@ const USE_API = import.meta.env.VITE_USE_API !== "false";
 
 /**
  * Factory function to create a CRUD context provider with pagination and search
- * 
+ *
  * @param {Object} config - Configuration object
  * @param {Object} config.Context - The React context to use
  * @param {string} config.resourceName - Name of the resource (e.g., 'users', 'teams', 'roles')
@@ -15,7 +15,7 @@ const USE_API = import.meta.env.VITE_USE_API !== "false";
  * @param {Array} config.mockData - Mock data for local development
  * @param {Function} config.filterMockData - Function to filter mock data based on search term
  * @param {Object} config.additionalState - Additional state properties
- * 
+ *
  * @returns {Function} - Provider component
  */
 export function createCRUDProvider({
@@ -37,7 +37,9 @@ export function createCRUDProvider({
           ...state,
           [resourceKey]: payload[resourceKey],
           total: payload.total !== undefined ? payload.total : state.total,
-          ...(payload.documentCount !== undefined && { documentCount: payload.documentCount }),
+          ...(payload.documentCount !== undefined && {
+            documentCount: payload.documentCount,
+          }),
           ...(payload.page !== undefined && { page: payload.page }),
         };
       case "SET_LOADING":
@@ -139,11 +141,14 @@ export function createCRUDProvider({
 
           dispatch({
             type: SET_ACTION,
-            [resourceKey]: data,
+            [resourceKey]: data?.[resourceKey] || data.data,
             total: data.meta?.total || data.total || 0,
           });
         } catch (err) {
-          dispatch({ type: "SET_ERROR", value: err.message || "Unknown error" });
+          dispatch({
+            type: "SET_ERROR",
+            value: err.message || "Unknown error",
+          });
         } finally {
           dispatch({ type: "SET_LOADING", value: false });
         }
@@ -151,7 +156,7 @@ export function createCRUDProvider({
       // state.page and state.search are intentionally omitted as they're provided as function parameters
       // to avoid unnecessary re-renders. The function always uses the values passed to it.
       // eslint-disable-next-line react-hooks/exhaustive-deps
-      [state.limit, endpoint]
+      [state.limit, endpoint],
     );
 
     const setPage = useCallback(
@@ -161,7 +166,7 @@ export function createCRUDProvider({
         fetched.current = false;
         fetchData(page, state.search);
       },
-      [fetchData, state.search]
+      [fetchData, state.search],
     );
 
     const setSearch = useCallback(
@@ -190,7 +195,7 @@ export function createCRUDProvider({
           }, 500);
         }
       },
-      [fetchData, state.lastPage]
+      [fetchData, state.lastPage],
     );
 
     const refetch = useCallback(() => {
@@ -201,7 +206,8 @@ export function createCRUDProvider({
     const value = {
       ...state,
       dispatch,
-      [`fetch${resourceName.charAt(0).toUpperCase() + resourceName.slice(1)}`]: fetchData,
+      [`fetch${resourceName.charAt(0).toUpperCase() + resourceName.slice(1)}`]:
+        fetchData,
       setPage,
       setSearch,
       refetch,

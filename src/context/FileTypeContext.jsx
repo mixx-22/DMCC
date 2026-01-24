@@ -79,9 +79,12 @@ export const FileTypeProvider = ({ children }) => {
     }
 
     try {
-      const data = await apiService.request(`${FILE_TYPES_ENDPOINT}/${fileTypeId}`, {
-        method: "GET",
-      });
+      const data = await apiService.request(
+        `${FILE_TYPES_ENDPOINT}/${fileTypeId}`,
+        {
+          method: "GET",
+        },
+      );
 
       dispatch({
         type: "SET_FILE_TYPE",
