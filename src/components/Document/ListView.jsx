@@ -27,6 +27,8 @@ export const ListView = ({
   documents,
   selectedDocument,
   onDocumentClick,
+  foldersOnly,
+  filesOnly,
 }) => {
   const navigate = useNavigate();
   const [isFoldersOpen, setIsFoldersOpen] = useState(true);
@@ -34,6 +36,13 @@ export const ListView = ({
   // Separate folders from other document types
   const folders = documents.filter((doc) => doc?.type === "folder" || doc?.type === "auditSchedule");
   const otherDocuments = documents.filter((doc) => doc?.type !== "folder" && doc?.type !== "auditSchedule");
+
+  // Filter based on foldersOnly or filesOnly props
+  const displayDocuments = foldersOnly 
+    ? folders 
+    : filesOnly 
+      ? otherDocuments 
+      : null; // null means show both with labels
 
   const renderTableRow = (doc) => {
     const docId = doc?.id || doc?._id;
@@ -175,47 +184,9 @@ export const ListView = ({
 
   return (
     <VStack align="stretch" spacing={6}>
-      {/* Folders Section - Collapsible */}
-      {folders.length > 0 && (
+      {/* Single section mode - for foldersOnly or filesOnly */}
+      {displayDocuments !== null ? (
         <Box>
-          <Flex align="center" mb={3}>
-            <Button
-              leftIcon={isFoldersOpen ? <FiChevronDown /> : <FiChevronRight />}
-              onClick={() => setIsFoldersOpen(!isFoldersOpen)}
-              variant="ghost"
-              size="sm"
-              fontWeight="semibold"
-              color="gray.600"
-            >
-              Folders ({folders.length})
-            </Button>
-          </Flex>
-          <Collapse in={isFoldersOpen} animateOpacity>
-            <Table variant="simple">
-              <Thead>
-                <Tr>
-                  <Th w="full">Name</Th>
-                  <Th>Owner</Th>
-                  <Th>Date Modified</Th>
-                  <Th></Th>
-                </Tr>
-              </Thead>
-              <Tbody>
-                {folders.map((doc) => renderTableRow(doc))}
-              </Tbody>
-            </Table>
-          </Collapse>
-        </Box>
-      )}
-
-      {/* Other Documents Section */}
-      {otherDocuments.length > 0 && (
-        <Box>
-          {folders.length > 0 && (
-            <Text fontSize="sm" fontWeight="semibold" color="gray.600" mb={3}>
-              Documents ({otherDocuments.length})
-            </Text>
-          )}
           <Table variant="simple">
             <Thead>
               <Tr>
@@ -226,10 +197,69 @@ export const ListView = ({
               </Tr>
             </Thead>
             <Tbody>
-              {otherDocuments.map((doc) => renderTableRow(doc))}
+              {displayDocuments.map((doc) => renderTableRow(doc))}
             </Tbody>
           </Table>
         </Box>
+      ) : (
+        <>
+          {/* Folders Section - Collapsible */}
+          {folders.length > 0 && (
+            <Box>
+              <Flex align="center" mb={3}>
+                <Button
+                  leftIcon={isFoldersOpen ? <FiChevronDown /> : <FiChevronRight />}
+                  onClick={() => setIsFoldersOpen(!isFoldersOpen)}
+                  variant="ghost"
+                  size="sm"
+                  fontWeight="semibold"
+                  color="gray.600"
+                >
+                  Folders ({folders.length})
+                </Button>
+              </Flex>
+              <Collapse in={isFoldersOpen} animateOpacity>
+                <Table variant="simple">
+                  <Thead>
+                    <Tr>
+                      <Th w="full">Name</Th>
+                      <Th>Owner</Th>
+                      <Th>Date Modified</Th>
+                      <Th></Th>
+                    </Tr>
+                  </Thead>
+                  <Tbody>
+                    {folders.map((doc) => renderTableRow(doc))}
+                  </Tbody>
+                </Table>
+              </Collapse>
+            </Box>
+          )}
+
+          {/* Other Documents Section */}
+          {otherDocuments.length > 0 && (
+            <Box>
+              {folders.length > 0 && (
+                <Text fontSize="sm" fontWeight="semibold" color="gray.600" mb={3}>
+                  Documents ({otherDocuments.length})
+                </Text>
+              )}
+              <Table variant="simple">
+                <Thead>
+                  <Tr>
+                    <Th w="full">Name</Th>
+                    <Th>Owner</Th>
+                    <Th>Date Modified</Th>
+                    <Th></Th>
+                  </Tr>
+                </Thead>
+                <Tbody>
+                  {otherDocuments.map((doc) => renderTableRow(doc))}
+                </Tbody>
+              </Table>
+            </Box>
+          )}
+        </>
       )}
     </VStack>
   );

@@ -339,9 +339,9 @@ const Layout = () => {
           Recent Folders
         </Text>
         {viewMode === "grid" ? (
-          <GridView folderOnly documents={recentFolders} />
+          <GridView foldersOnly documents={recentFolders} />
         ) : (
-          <ListView folderOnly documents={recentFolders} />
+          <ListView foldersOnly documents={recentFolders} />
         )}
       </Box>
 
