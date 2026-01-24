@@ -21,13 +21,20 @@ import { getDocumentIcon, isDocumentValid } from "./DocumentIcon";
 import { DocumentHoverPopover } from "./DocumentHoverPopover";
 import AuptilyzeFolder from "../AuptilyzeFolder";
 
-export const GridView = ({ documents, selectedDocument, onDocumentClick }) => {
+export const GridView = ({ documents, selectedDocument, onDocumentClick, foldersOnly, filesOnly }) => {
   const [isFoldersOpen, setIsFoldersOpen] = useState(true);
   const folderBg = useColorModeValue("blackAlpha.50", "whiteAlpha.50");
 
   // Separate folders from other document types
   const folders = documents.filter((doc) => doc?.type === "folder");
   const otherDocuments = documents.filter((doc) => doc?.type !== "folder");
+
+  // Filter based on foldersOnly or filesOnly props
+  const displayDocuments = foldersOnly 
+    ? folders 
+    : filesOnly 
+      ? otherDocuments 
+      : null; // null means show both with labels
 
   const renderFolderCard = (doc, docIndex) => {
     const docId = doc?.id || doc?._id;
@@ -169,51 +176,76 @@ export const GridView = ({ documents, selectedDocument, onDocumentClick }) => {
 
   return (
     <VStack align="stretch" spacing={6}>
-      {/* Folders Section - Collapsible */}
-      {folders.length > 0 && (
+      {/* Single section mode - for foldersOnly or filesOnly */}
+      {displayDocuments !== null ? (
         <Box>
-          <Flex align="center" mb={3}>
-            <Button
-              rightIcon={isFoldersOpen ? <FiChevronDown /> : <FiChevronUp />}
-              onClick={() => setIsFoldersOpen(!isFoldersOpen)}
-              variant="link"
-              size="sm"
-              fontWeight="semibold"
-              color="gray.600"
-            >
-              Folders ({folders.length})
-            </Button>
-          </Flex>
-          <Collapse in={isFoldersOpen} animateOpacity>
+          {foldersOnly ? (
             <SimpleGrid
               gap={0}
               columns={[3, 3, 4, 6, 8]}
               sx={{ ">*": { h: "full" } }}
             >
-              {folders.map((doc, docIndex) => renderFolderCard(doc, docIndex))}
+              {displayDocuments.map((doc, docIndex) => renderFolderCard(doc, docIndex))}
             </SimpleGrid>
-          </Collapse>
-        </Box>
-      )}
-
-      {/* Other Documents Section */}
-      {otherDocuments.length > 0 && (
-        <Box>
-          {folders.length > 0 && (
-            <Text fontSize="sm" fontWeight="semibold" color="gray.600" mb={3}>
-              Documents ({otherDocuments.length})
-            </Text>
+          ) : (
+            <SimpleGrid
+              gap={4}
+              columns={[2, 2, 3, 4]}
+              sx={{ ">*": { h: "full" } }}
+            >
+              {displayDocuments.map((doc, docIndex) => renderDocumentCard(doc, docIndex))}
+            </SimpleGrid>
           )}
-          <SimpleGrid
-            gap={4}
-            columns={[2, 2, 3, 4]}
-            sx={{ ">*": { h: "full" } }}
-          >
-            {otherDocuments.map((doc, docIndex) =>
-              renderDocumentCard(doc, docIndex),
-            )}
-          </SimpleGrid>
         </Box>
+      ) : (
+        <>
+          {/* Folders Section - Collapsible */}
+          {folders.length > 0 && (
+            <Box>
+              <Flex align="center" mb={3}>
+                <Button
+                  rightIcon={isFoldersOpen ? <FiChevronDown /> : <FiChevronUp />}
+                  onClick={() => setIsFoldersOpen(!isFoldersOpen)}
+                  variant="link"
+                  size="sm"
+                  fontWeight="semibold"
+                  color="gray.600"
+                >
+                  Folders ({folders.length})
+                </Button>
+              </Flex>
+              <Collapse in={isFoldersOpen} animateOpacity>
+                <SimpleGrid
+                  gap={0}
+                  columns={[3, 3, 4, 6, 8]}
+                  sx={{ ">*": { h: "full" } }}
+                >
+                  {folders.map((doc, docIndex) => renderFolderCard(doc, docIndex))}
+                </SimpleGrid>
+              </Collapse>
+            </Box>
+          )}
+
+          {/* Other Documents Section */}
+          {otherDocuments.length > 0 && (
+            <Box>
+              {folders.length > 0 && (
+                <Text fontSize="sm" fontWeight="semibold" color="gray.600" mb={3}>
+                  Documents ({otherDocuments.length})
+                </Text>
+              )}
+              <SimpleGrid
+                gap={4}
+                columns={[2, 2, 3, 4]}
+                sx={{ ">*": { h: "full" } }}
+              >
+                {otherDocuments.map((doc, docIndex) =>
+                  renderDocumentCard(doc, docIndex),
+                )}
+              </SimpleGrid>
+            </Box>
+          )}
+        </>
       )}
     </VStack>
   );
