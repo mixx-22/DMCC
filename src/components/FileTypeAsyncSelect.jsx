@@ -1,6 +1,6 @@
 import { FormControl, FormLabel, Text } from "@chakra-ui/react";
 import { AsyncSelect } from "chakra-react-select";
-import { useCallback } from "react";
+import { useCallback, useRef } from "react";
 import apiService from "../services/api";
 
 const FILE_TYPES_ENDPOINT = "/file-types";
@@ -15,45 +15,55 @@ const MOCK_FILE_TYPES = [
 ];
 
 const FileTypeAsyncSelect = ({ value, onChange, isInvalid, label = "File Type", helperText, ...props }) => {
-  const loadOptions = useCallback(async (inputValue) => {
+  const debounceTimer = useRef(null);
+
+  const loadOptions = useCallback((inputValue, callback) => {
     if (inputValue.length < 2) {
-      return [];
+      callback([]);
+      return;
     }
 
-    if (!USE_API) {
-      return new Promise((resolve) => {
-        setTimeout(() => {
-          const filtered = MOCK_FILE_TYPES.filter((fileType) =>
-            fileType.name.toLowerCase().includes(inputValue.toLowerCase())
-          );
-          resolve(
-            filtered.map((fileType) => ({
-              value: fileType.id || fileType._id,
-              label: fileType.name,
-            }))
-          );
-        }, 300);
-      });
+    // Clear existing timeout
+    if (debounceTimer.current) {
+      clearTimeout(debounceTimer.current);
     }
 
-    try {
-      const data = await apiService.request(FILE_TYPES_ENDPOINT, {
-        method: "GET",
-        params: {
-          keyword: inputValue,
-          limit: 20,
-        },
-      });
+    // Debounce the API call
+    debounceTimer.current = setTimeout(async () => {
+      if (!USE_API) {
+        const filtered = MOCK_FILE_TYPES.filter((fileType) =>
+          fileType.name.toLowerCase().includes(inputValue.toLowerCase())
+        );
+        callback(
+          filtered.map((fileType) => ({
+            value: fileType.id || fileType._id,
+            label: fileType.name,
+          }))
+        );
+        return;
+      }
 
-      const fileTypes = data.data || data.fileTypes || [];
-      return fileTypes.map((fileType) => ({
-        value: fileType.id || fileType._id,
-        label: fileType.name,
-      }));
-    } catch (error) {
-      console.error("Failed to fetch file types:", error);
-      return [];
-    }
+      try {
+        const data = await apiService.request(FILE_TYPES_ENDPOINT, {
+          method: "GET",
+          params: {
+            keyword: inputValue,
+            limit: 20,
+          },
+        });
+
+        const fileTypes = data.data || data.fileTypes || [];
+        callback(
+          fileTypes.map((fileType) => ({
+            value: fileType.id || fileType._id,
+            label: fileType.name,
+          }))
+        );
+      } catch (error) {
+        console.error("Failed to fetch file types:", error);
+        callback([]);
+      }
+    }, 500);
   }, []);
 
   const handleChange = (selectedOption) => {
