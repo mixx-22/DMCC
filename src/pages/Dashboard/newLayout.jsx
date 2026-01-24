@@ -10,9 +10,10 @@ import {
   Center,
   Link,
   HStack,
+  Flex,
 } from "@chakra-ui/react";
 import { Link as RouterLink } from "react-router-dom";
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import { format } from "date-fns";
 import { useApp, useUser } from "../../context/_useContext";
 import { motion, AnimatePresence } from "framer-motion";
@@ -33,6 +34,10 @@ const NewLayout = () => {
   const [totalDocuments, setTotalDocuments] = useState(0);
   const [recentFolders, setRecentFolders] = useState([]);
   const [recentFiles, setRecentFiles] = useState([]);
+  
+  // Refs to prevent multiple fetches
+  const foldersLoadedRef = useRef(false);
+  const filesLoadedRef = useRef(false);
 
   // Responsive limits for items
   const folderLimit = useBreakpointValue({ base: 4, sm: 6, lg: 8 });
@@ -76,10 +81,11 @@ const NewLayout = () => {
     setTotalDocuments(filteredDocuments.length);
   }, [filteredDocuments]);
 
-  // Fetch recent folders from API
+  // Fetch recent folders from API - only once
   useEffect(() => {
     const fetchRecentFolders = async () => {
-      if (!folderLimit) return;
+      if (!folderLimit || foldersLoadedRef.current) return;
+      foldersLoadedRef.current = true;
       
       try {
         // GET /recent-documents?type=folder&page=1&limit=n
@@ -114,10 +120,11 @@ const NewLayout = () => {
     fetchRecentFolders();
   }, [folderLimit]);
 
-  // Fetch recent files from API
+  // Fetch recent files from API - only once
   useEffect(() => {
     const fetchRecentFiles = async () => {
-      if (!fileLimit) return;
+      if (!fileLimit || filesLoadedRef.current) return;
+      filesLoadedRef.current = true;
       
       try {
         // GET /recent-documents?type=file&page=1&limit=n
@@ -184,104 +191,120 @@ const NewLayout = () => {
         <SearchInput placeholder="Search documents..." />
       </Box>
 
-      {/* Team Filter */}
-      <Box mb={6} maxW="300px">
-        <Select
-          value={selectedTeam}
-          onChange={(e) => setSelectedTeam(e.target.value)}
-          size="lg"
-          variant="filled"
-          bg="gray.50"
-          borderRadius="lg"
-          fontWeight="400"
-          _hover={{ bg: "gray.100" }}
-          _focus={{ bg: "white", borderColor: "blue.400" }}
-        >
-          <option value="all">All Teams</option>
-          {userTeams.map((team) => (
-            <option key={team._id} value={team.name}>
-              {team.name}
-            </option>
-          ))}
-        </Select>
-      </Box>
-
-      {/* Metrics Cards */}
-      <SimpleGrid columns={{ base: 1, md: 2 }} spacing={6} mb={10}>
-        <MotionBox
-          initial={{ opacity: 0, scale: 0.9 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.4, delay: 0.1 }}
-        >
-          <Card
-            bgGradient="linear(to-br, blue.500, blue.600)"
-            color="white"
-            borderRadius="2xl"
-            overflow="hidden"
-            boxShadow="lg"
-            _hover={{ transform: "translateY(-4px)", boxShadow: "xl" }}
-            transition="all 0.3s"
+      {/* Team Filter and Metrics in Button Group Style */}
+      <Flex
+        direction={{ base: "column", md: "row" }}
+        gap={4}
+        mb={10}
+        align={{ base: "stretch", md: "center" }}
+        bg="white"
+        p={4}
+        borderRadius="2xl"
+        boxShadow="sm"
+        border="1px"
+        borderColor="gray.200"
+      >
+        {/* Team Dropdown */}
+        <Box flex={{ base: "1", md: "0 0 250px" }}>
+          <Select
+            value={selectedTeam}
+            onChange={(e) => setSelectedTeam(e.target.value)}
+            size="lg"
+            variant="filled"
+            bg="gray.50"
+            borderRadius="lg"
+            fontWeight="500"
+            _hover={{ bg: "gray.100" }}
+            _focus={{ bg: "white", borderColor: "blue.400" }}
           >
-            <CardBody p={8}>
-              <VStack align="start" spacing={2}>
-                <Text fontSize="sm" fontWeight="500" opacity={0.9}>
-                  Pending Approvals
-                </Text>
-                <AnimatePresence mode="wait">
-                  <MotionText
-                    key={pendingApprovals}
-                    fontSize={{ base: "4xl", md: "5xl" }}
-                    fontWeight="200"
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -20 }}
-                    transition={{ duration: 0.3 }}
-                  >
-                    {pendingApprovals}
-                  </MotionText>
-                </AnimatePresence>
-              </VStack>
-            </CardBody>
-          </Card>
-        </MotionBox>
+            <option value="all">All Teams</option>
+            {userTeams.map((team) => (
+              <option key={team._id} value={team.name}>
+                {team.name}
+              </option>
+            ))}
+          </Select>
+        </Box>
 
-        <MotionBox
-          initial={{ opacity: 0, scale: 0.9 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.4, delay: 0.2 }}
-        >
-          <Card
-            bgGradient="linear(to-br, purple.500, purple.600)"
-            color="white"
-            borderRadius="2xl"
-            overflow="hidden"
-            boxShadow="lg"
-            _hover={{ transform: "translateY(-4px)", boxShadow: "xl" }}
-            transition="all 0.3s"
+        {/* Metrics Cards in Horizontal Layout */}
+        <Flex flex="1" gap={4} direction={{ base: "column", sm: "row" }}>
+          <MotionBox
+            flex="1"
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.4, delay: 0.1 }}
           >
-            <CardBody p={8}>
-              <VStack align="start" spacing={2}>
-                <Text fontSize="sm" fontWeight="500" opacity={0.9}>
-                  Total Documents
-                </Text>
-                <AnimatePresence mode="wait">
-                  <MotionText
-                    key={totalDocuments}
-                    fontSize={{ base: "4xl", md: "5xl" }}
-                    fontWeight="200"
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -20 }}
-                    transition={{ duration: 0.3 }}
-                  >
-                    {totalDocuments}
-                  </MotionText>
-                </AnimatePresence>
-              </VStack>
-            </CardBody>
-          </Card>
-        </MotionBox>
-      </SimpleGrid>
+            <Card
+              bgGradient="linear(to-br, blue.500, blue.600)"
+              color="white"
+              borderRadius="xl"
+              overflow="hidden"
+              h="full"
+              _hover={{ transform: "translateY(-2px)", boxShadow: "md" }}
+              transition="all 0.3s"
+            >
+              <CardBody p={6}>
+                <VStack align="start" spacing={1}>
+                  <Text fontSize="xs" fontWeight="500" opacity={0.9} textTransform="uppercase">
+                    Pending Approvals
+                  </Text>
+                  <AnimatePresence mode="wait">
+                    <MotionText
+                      key={pendingApprovals}
+                      fontSize={{ base: "3xl", md: "4xl" }}
+                      fontWeight="700"
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -10 }}
+                      transition={{ duration: 0.3 }}
+                    >
+                      {pendingApprovals}
+                    </MotionText>
+                  </AnimatePresence>
+                </VStack>
+              </CardBody>
+            </Card>
+          </MotionBox>
+
+          <MotionBox
+            flex="1"
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.4, delay: 0.2 }}
+          >
+            <Card
+              bgGradient="linear(to-br, purple.500, purple.600)"
+              color="white"
+              borderRadius="xl"
+              overflow="hidden"
+              h="full"
+              _hover={{ transform: "translateY(-2px)", boxShadow: "md" }}
+              transition="all 0.3s"
+            >
+              <CardBody p={6}>
+                <VStack align="start" spacing={1}>
+                  <Text fontSize="xs" fontWeight="500" opacity={0.9} textTransform="uppercase">
+                    Total Documents
+                  </Text>
+                  <AnimatePresence mode="wait">
+                    <MotionText
+                      key={totalDocuments}
+                      fontSize={{ base: "3xl", md: "4xl" }}
+                      fontWeight="700"
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -10 }}
+                      transition={{ duration: 0.3 }}
+                    >
+                      {totalDocuments}
+                    </MotionText>
+                  </AnimatePresence>
+                </VStack>
+              </CardBody>
+            </Card>
+          </MotionBox>
+        </Flex>
+      </Flex>
 
       {/* Recent Folders */}
       <Box mb={10}>
