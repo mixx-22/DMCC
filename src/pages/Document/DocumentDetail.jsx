@@ -49,6 +49,7 @@ import DeleteDocumentModal from "../../components/Document/modals/DeleteDocument
 import MoveDocumentModal from "../../components/Document/modals/MoveDocumentModal";
 import PrivacySettingsModal from "../../components/Document/modals/PrivacySettingsModal";
 import ManageFileTypeModal from "../../components/Document/modals/ManageFileTypeModal";
+import ManageDocumentMetadataModal from "../../components/Document/modals/ManageDocumentMetadataModal";
 import DownloadButton from "../../components/Document/DownloadButton";
 import PreviewButton from "../../components/Document/PreviewButton";
 import Timestamp from "../../components/Timestamp";
@@ -90,6 +91,12 @@ const DocumentDetail = () => {
     isOpen: isFileTypeOpen,
     onOpen: onFileTypeOpen,
     onClose: onFileTypeClose,
+  } = useDisclosure();
+
+  const {
+    isOpen: isMetadataOpen,
+    onOpen: onMetadataOpen,
+    onClose: onMetadataClose,
   } = useDisclosure();
 
   // Fetch document using useRef to prevent duplicates
@@ -507,41 +514,119 @@ const DocumentDetail = () => {
                   )}
 
                   {document?.type === "file" && (
-                    <Box>
-                      <Text fontSize="sm" fontWeight="semibold" mb={2}>
-                        File Type
-                      </Text>
-                      {document?.metadata?.fileType ? (
-                        <HStack spacing={2}>
-                          <Badge
-                            colorScheme="purple"
-                            fontSize="sm"
-                            px={3}
-                            py={1}
-                            borderRadius="md"
-                          >
-                            {document.metadata.fileType.name}
-                          </Badge>
+                    <>
+                      <Box>
+                        <Text fontSize="sm" fontWeight="semibold" mb={2}>
+                          File Type
+                        </Text>
+                        {document?.metadata?.fileType ? (
+                          <HStack spacing={2}>
+                            <Badge
+                              colorScheme="purple"
+                              fontSize="sm"
+                              px={3}
+                              py={1}
+                              borderRadius="md"
+                            >
+                              {document.metadata.fileType.name}
+                            </Badge>
+                            <Button
+                              size="xs"
+                              variant="ghost"
+                              colorScheme="brandPrimary"
+                              onClick={onFileTypeOpen}
+                            >
+                              Change
+                            </Button>
+                          </HStack>
+                        ) : (
                           <Button
-                            size="xs"
-                            variant="ghost"
+                            size="sm"
+                            variant="outline"
                             colorScheme="brandPrimary"
                             onClick={onFileTypeOpen}
                           >
-                            Change
+                            Assign File Type
                           </Button>
-                        </HStack>
-                      ) : (
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          colorScheme="brandPrimary"
-                          onClick={onFileTypeOpen}
-                        >
-                          Assign File Type
-                        </Button>
-                      )}
-                    </Box>
+                        )}
+                      </Box>
+
+                      <Box>
+                        <Text fontSize="sm" fontWeight="semibold" mb={2}>
+                          Document Metadata
+                        </Text>
+                        {document?.metadata?.documentNumber ||
+                        document?.metadata?.issuedDate ||
+                        document?.metadata?.effectivityDate ? (
+                          <VStack align="stretch" spacing={2}>
+                            {document.metadata.documentNumber && (
+                              <HStack spacing={2}>
+                                <Text
+                                  fontSize="xs"
+                                  color="gray.500"
+                                  minW="100px"
+                                >
+                                  Doc Number:
+                                </Text>
+                                <Text fontSize="sm" fontWeight="medium">
+                                  {document.metadata.documentNumber}
+                                </Text>
+                              </HStack>
+                            )}
+                            {document.metadata.issuedDate && (
+                              <HStack spacing={2}>
+                                <Text
+                                  fontSize="xs"
+                                  color="gray.500"
+                                  minW="100px"
+                                >
+                                  Issued Date:
+                                </Text>
+                                <Text fontSize="sm">
+                                  {new Date(
+                                    document.metadata.issuedDate
+                                  ).toLocaleDateString()}
+                                </Text>
+                              </HStack>
+                            )}
+                            {document.metadata.effectivityDate && (
+                              <HStack spacing={2}>
+                                <Text
+                                  fontSize="xs"
+                                  color="gray.500"
+                                  minW="100px"
+                                >
+                                  Effectivity:
+                                </Text>
+                                <Text fontSize="sm">
+                                  {new Date(
+                                    document.metadata.effectivityDate
+                                  ).toLocaleDateString()}
+                                </Text>
+                              </HStack>
+                            )}
+                            <Button
+                              size="xs"
+                              variant="ghost"
+                              colorScheme="brandPrimary"
+                              onClick={onMetadataOpen}
+                              alignSelf="flex-start"
+                            >
+                              Change
+                            </Button>
+                          </VStack>
+                        ) : (
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            colorScheme="brandPrimary"
+                            onClick={onMetadataOpen}
+                          >
+                            Add Metadata
+                          </Button>
+                        )}
+                      </Box>
+                    </>
                   )}
                 </SimpleGrid>
               </CardBody>
@@ -947,6 +1032,11 @@ const DocumentDetail = () => {
       <ManageFileTypeModal
         isOpen={isFileTypeOpen}
         onClose={onFileTypeClose}
+        document={{ ...document, id }}
+      />
+      <ManageDocumentMetadataModal
+        isOpen={isMetadataOpen}
+        onClose={onMetadataClose}
         document={{ ...document, id }}
       />
     </>
