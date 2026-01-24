@@ -29,19 +29,24 @@ export const ListView = ({
   onDocumentClick,
   foldersOnly,
   filesOnly,
+  sourcePage = null,
 }) => {
   const navigate = useNavigate();
   const [isFoldersOpen, setIsFoldersOpen] = useState(true);
 
   // Separate folders from other document types
-  const folders = documents.filter((doc) => doc?.type === "folder" || doc?.type === "auditSchedule");
-  const otherDocuments = documents.filter((doc) => doc?.type !== "folder" && doc?.type !== "auditSchedule");
+  const folders = documents.filter(
+    (doc) => doc?.type === "folder" || doc?.type === "auditSchedule",
+  );
+  const otherDocuments = documents.filter(
+    (doc) => doc?.type !== "folder" && doc?.type !== "auditSchedule",
+  );
 
   // Filter based on foldersOnly or filesOnly props
-  const displayDocuments = foldersOnly 
-    ? folders 
-    : filesOnly 
-      ? otherDocuments 
+  const displayDocuments = foldersOnly
+    ? folders
+    : filesOnly
+      ? otherDocuments
       : null; // null means show both with labels
 
   const renderTableRow = (doc) => {
@@ -53,7 +58,15 @@ export const ListView = ({
 
     const navigateTo = isFolderType
       ? `/documents/folders/${docId}`
-      : `/documents/${docId}`;
+      : `/document/${docId}`;
+
+    const handleNavigate = () => {
+      if (sourcePage && !isFolderType) {
+        navigate(navigateTo, { state: { from: sourcePage } });
+      } else {
+        navigate(navigateTo);
+      }
+    };
 
     return (
       <Tr
@@ -62,7 +75,7 @@ export const ListView = ({
         _hover={{ bg: "gray.50" }}
         bg={isSelected ? "blue.50" : "transparent"}
         opacity={isValid ? 1 : 0.6}
-        onClick={() => navigate(navigateTo)}
+        onClick={handleNavigate}
       >
         <Td w="full">
           <HStack>
@@ -196,9 +209,7 @@ export const ListView = ({
                 <Th></Th>
               </Tr>
             </Thead>
-            <Tbody>
-              {displayDocuments.map((doc) => renderTableRow(doc))}
-            </Tbody>
+            <Tbody>{displayDocuments.map((doc) => renderTableRow(doc))}</Tbody>
           </Table>
         </Box>
       ) : (
@@ -208,7 +219,9 @@ export const ListView = ({
             <Box>
               <Flex align="center" mb={3}>
                 <Button
-                  leftIcon={isFoldersOpen ? <FiChevronDown /> : <FiChevronRight />}
+                  leftIcon={
+                    isFoldersOpen ? <FiChevronDown /> : <FiChevronRight />
+                  }
                   onClick={() => setIsFoldersOpen(!isFoldersOpen)}
                   variant="ghost"
                   size="sm"
@@ -228,9 +241,7 @@ export const ListView = ({
                       <Th></Th>
                     </Tr>
                   </Thead>
-                  <Tbody>
-                    {folders.map((doc) => renderTableRow(doc))}
-                  </Tbody>
+                  <Tbody>{folders.map((doc) => renderTableRow(doc))}</Tbody>
                 </Table>
               </Collapse>
             </Box>
@@ -240,7 +251,12 @@ export const ListView = ({
           {otherDocuments.length > 0 && (
             <Box>
               {folders.length > 0 && (
-                <Text fontSize="sm" fontWeight="semibold" color="gray.600" mb={3}>
+                <Text
+                  fontSize="sm"
+                  fontWeight="semibold"
+                  color="gray.600"
+                  mb={3}
+                >
                   Documents ({otherDocuments.length})
                 </Text>
               )}

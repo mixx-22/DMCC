@@ -23,7 +23,7 @@ import apiService from "../../services/api";
 const BREADCRUMBS_ENDPOINT = "/documents";
 
 const Breadcrumbs = memo(
-  ({ data = {}, onLastCrumbClick = null, activeLastCrumb = false }) => {
+  ({ data = {}, onLastCrumbClick = null, activeLastCrumb = false, from = null }) => {
     const [crumbs, setCrumbs] = useState([]);
     const separatorColor = useColorModeValue("gray.400", "gray.300");
     const ellipsisColor = useColorModeValue("gray.600", "gray.500");
@@ -72,7 +72,12 @@ const Breadcrumbs = memo(
 
         if (isMobile) {
           if (parent) {
-            setCrumbs([{ id: "previous" }, thisCrumb]);
+            // Don't add "previous" crumb if we have a "from" source, as the from back button takes precedence
+            if (!(from?.path && from?.label)) {
+              setCrumbs([{ id: "previous" }, thisCrumb]);
+              return;
+            }
+            setCrumbs([thisCrumb]);
             return;
           }
           setCrumbs([rootCrumb, thisCrumb]);
@@ -91,7 +96,7 @@ const Breadcrumbs = memo(
           thisCrumb,
         ]);
       },
-      [isMobile],
+      [isMobile, from],
     );
 
     useEffect(() => {
@@ -142,8 +147,38 @@ const Breadcrumbs = memo(
     };
 
     const renderBreadcrumbs = () => {
+      // If we have a 'from' source, show a back button first
+      const breadcrumbItems = [];
+      
+      if (from?.path && from?.label) {
+        breadcrumbItems.push(
+          <BreadcrumbItem
+            h={6}
+            mr={2}
+            key="back-button"
+            sx={{ ">span": { display: "none !important" } }}
+          >
+            <IconButton
+              isRound
+              size="sm"
+              cursor="pointer"
+              icon={<Icon as={FiArrowLeft} boxSize={6} />}
+              colorScheme="brandPrimary"
+              color={separatorColor}
+              _hover={{ color: hoverColor }}
+              variant="ghost"
+              p={1}
+              as={RouterLink}
+              to={from.path}
+              title={`Back to ${from.label}`}
+            />
+          </BreadcrumbItem>
+        );
+      }
+
       if (crumbs.length <= 5) {
-        return crumbs.map((crumb, index) => renderBreadcrumbItem(crumb, index));
+        breadcrumbItems.push(...crumbs.map((crumb, index) => renderBreadcrumbItem(crumb, index)));
+        return breadcrumbItems;
       }
 
       const ellipsisIndex = crumbs.findIndex((c) => c.id === "ellipsis");
@@ -152,7 +187,8 @@ const Breadcrumbs = memo(
       const middleCrumbs = crumbs.slice(startIndex, endIndex);
 
       if (middleCrumbs.length < 2) {
-        return crumbs.map((crumb, index) => renderBreadcrumbItem(crumb, index));
+        breadcrumbItems.push(...crumbs.map((crumb, index) => renderBreadcrumbItem(crumb, index)));
+        return breadcrumbItems;
       }
 
       const visibleCrumbs = [
@@ -162,7 +198,7 @@ const Breadcrumbs = memo(
         crumbs[endIndex],
       ];
 
-      return visibleCrumbs.map((crumb, index) => {
+      breadcrumbItems.push(...visibleCrumbs.map((crumb, index) => {
         if (crumb.id === "dropdown") {
           return (
             <BreadcrumbItem h={6} key="dropdown-menu">
@@ -199,7 +235,9 @@ const Breadcrumbs = memo(
           );
         }
         return renderBreadcrumbItem(crumb, index);
-      });
+      }));
+      
+      return breadcrumbItems;
     };
 
     const renderBreadcrumbItem = (crumb, index) => {

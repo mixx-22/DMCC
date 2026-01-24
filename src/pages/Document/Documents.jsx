@@ -184,7 +184,7 @@ const Documents = () => {
     }
   };
 
-  const handleDocumentClick = (doc) => {
+      const handleDocumentClick = (doc) => {
     const now = Date.now();
     const timeDiff = now - lastClickTime;
 
@@ -194,7 +194,11 @@ const Documents = () => {
         navigateToFolder(doc.id, folderTitle);
         navigate(`/documents/folders/${doc.id}`);
       } else if (doc.type === "file" || doc.type === "formTemplate") {
-        navigate(`/document/${doc.id}`);
+        const sourcePage = {
+          path: isFolderView ? `/documents/folders/${currentFolderId}` : "/documents",
+          label: isFolderView ? folder?.title || "Folder" : "All Documents"
+        };
+        navigate(`/document/${doc.id}`, { state: { from: sourcePage } });
       }
       setLastClickTime(0);
       setLastClickId(null);
@@ -259,6 +263,10 @@ const Documents = () => {
             documents={documents}
             selectedDocument={selectedDocument}
             onDocumentClick={handleDocumentClick}
+            sourcePage={{
+              path: isFolderView ? `/documents/folders/${currentFolderId}` : "/documents",
+              label: isFolderView ? folder?.title || "Folder" : "All Documents"
+            }}
           />
         ) : (
           <ListView
@@ -266,6 +274,10 @@ const Documents = () => {
             selectedDocument={selectedDocument}
             onDocumentClick={handleDocumentClick}
             onMoreOptions={setSelectedDocument}
+            sourcePage={{
+              path: isFolderView ? `/documents/folders/${currentFolderId}` : "/documents",
+              label: isFolderView ? folder?.title || "Folder" : "All Documents"
+            }}
           />
         )}
       </Stack>

@@ -21,7 +21,14 @@ import { getDocumentIcon, isDocumentValid } from "./DocumentIcon";
 import { DocumentHoverPopover } from "./DocumentHoverPopover";
 import AuptilyzeFolder from "../AuptilyzeFolder";
 
-export const GridView = ({ documents, selectedDocument, onDocumentClick, foldersOnly, filesOnly }) => {
+export const GridView = ({
+  documents,
+  selectedDocument,
+  onDocumentClick,
+  foldersOnly,
+  filesOnly,
+  sourcePage = null,
+}) => {
   const [isFoldersOpen, setIsFoldersOpen] = useState(true);
   const folderBg = useColorModeValue("blackAlpha.50", "whiteAlpha.50");
 
@@ -30,10 +37,10 @@ export const GridView = ({ documents, selectedDocument, onDocumentClick, folders
   const otherDocuments = documents.filter((doc) => doc?.type !== "folder");
 
   // Filter based on foldersOnly or filesOnly props
-  const displayDocuments = foldersOnly 
-    ? folders 
-    : filesOnly 
-      ? otherDocuments 
+  const displayDocuments = foldersOnly
+    ? folders
+    : filesOnly
+      ? otherDocuments
       : null; // null means show both with labels
 
   const renderFolderCard = (doc, docIndex) => {
@@ -117,6 +124,7 @@ export const GridView = ({ documents, selectedDocument, onDocumentClick, folders
       as: RouterLink,
       to: isFolderType ? `/documents/folders/${docId}` : `/document/${docId}`,
       style: { textDecoration: "none" },
+      ...(sourcePage && !isFolderType ? { state: { from: sourcePage } } : {}),
     };
     const isValid = isDocumentValid(doc);
     const isSelected = selectedDocument?.id === docId;
@@ -185,7 +193,9 @@ export const GridView = ({ documents, selectedDocument, onDocumentClick, folders
               columns={[3, 3, 4, 6, 8]}
               sx={{ ">*": { h: "full" } }}
             >
-              {displayDocuments.map((doc, docIndex) => renderFolderCard(doc, docIndex))}
+              {displayDocuments.map((doc, docIndex) =>
+                renderFolderCard(doc, docIndex),
+              )}
             </SimpleGrid>
           ) : (
             <SimpleGrid
@@ -193,7 +203,9 @@ export const GridView = ({ documents, selectedDocument, onDocumentClick, folders
               columns={[2, 2, 3, 4]}
               sx={{ ">*": { h: "full" } }}
             >
-              {displayDocuments.map((doc, docIndex) => renderDocumentCard(doc, docIndex))}
+              {displayDocuments.map((doc, docIndex) =>
+                renderDocumentCard(doc, docIndex),
+              )}
             </SimpleGrid>
           )}
         </Box>
@@ -204,7 +216,9 @@ export const GridView = ({ documents, selectedDocument, onDocumentClick, folders
             <Box>
               <Flex align="center" mb={3}>
                 <Button
-                  rightIcon={isFoldersOpen ? <FiChevronDown /> : <FiChevronUp />}
+                  rightIcon={
+                    isFoldersOpen ? <FiChevronDown /> : <FiChevronUp />
+                  }
                   onClick={() => setIsFoldersOpen(!isFoldersOpen)}
                   variant="link"
                   size="sm"
@@ -220,7 +234,9 @@ export const GridView = ({ documents, selectedDocument, onDocumentClick, folders
                   columns={[3, 3, 4, 6, 8]}
                   sx={{ ">*": { h: "full" } }}
                 >
-                  {folders.map((doc, docIndex) => renderFolderCard(doc, docIndex))}
+                  {folders.map((doc, docIndex) =>
+                    renderFolderCard(doc, docIndex),
+                  )}
                 </SimpleGrid>
               </Collapse>
             </Box>
@@ -230,7 +246,12 @@ export const GridView = ({ documents, selectedDocument, onDocumentClick, folders
           {otherDocuments.length > 0 && (
             <Box>
               {folders.length > 0 && (
-                <Text fontSize="sm" fontWeight="semibold" color="gray.600" mb={3}>
+                <Text
+                  fontSize="sm"
+                  fontWeight="semibold"
+                  color="gray.600"
+                  mb={3}
+                >
                   Documents ({otherDocuments.length})
                 </Text>
               )}

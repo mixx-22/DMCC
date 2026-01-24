@@ -347,9 +347,17 @@ const Layout = () => {
           />
         </HStack>
         {viewMode === "grid" ? (
-          <GridView filesOnly documents={recentFiles} />
+          <GridView
+            filesOnly
+            documents={recentFiles}
+            sourcePage={{ path: "/", label: "Dashboard" }}
+          />
         ) : (
-          <ListView filesOnly documents={recentFiles} />
+          <ListView
+            filesOnly
+            documents={recentFiles}
+            sourcePage={{ path: "/", label: "Dashboard" }}
+          />
         )}
       </Box>
     </MotionBox>

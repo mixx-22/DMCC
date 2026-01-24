@@ -291,7 +291,7 @@ const Search = () => {
       if (doc.type === "folder" || doc.type === "auditSchedule") {
         navigate(`/documents/folders/${doc.id}`);
       } else if (doc.type === "file") {
-        navigate(`/document/${doc.id}`);
+        navigate(`/document/${doc.id}`, { state: { from: { path: "/search", label: "Search Results" } } });
       }
       setLastClickTime(0);
       setLastClickId(null);

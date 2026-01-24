@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { useParams, useNavigate, Link as RouterLink } from "react-router-dom";
+import { useParams, useNavigate, useLocation, Link as RouterLink } from "react-router-dom";
 import {
   Box,
   VStack,
@@ -59,6 +59,7 @@ import { getDocumentIcon } from "../../components/Document/DocumentIcon";
 const DocumentDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+  const location = useLocation();
   const { fetchDocumentById, updateDocument, loading } = useDocuments();
 
   const [document, setDocument] = useState(null);
@@ -249,7 +250,7 @@ const DocumentDetail = () => {
   return (
     <>
       <PageHeader>
-        <Breadcrumbs data={document} />
+        <Breadcrumbs data={document} from={location.state?.from} />
       </PageHeader>
       <Box flex="1" p={{ base: 4, md: 8 }}>
         <Container maxW="container.xl">
