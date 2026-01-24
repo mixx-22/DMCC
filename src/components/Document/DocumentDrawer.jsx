@@ -491,7 +491,7 @@ const DocumentDrawer = ({ document, isOpen, onClose }) => {
                           value={fileTypeCache}
                           onChange={handleFileTypeChange}
                           label="File Type"
-                          helperText=""
+                          helperText="Classify this document by selecting its type"
                         />
                       </Box>
                     </VStack>

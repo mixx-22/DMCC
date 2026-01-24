@@ -579,7 +579,7 @@ const DocumentDetail = () => {
                         value={document?.metadata?.fileType || null}
                         onChange={handleFileTypeChange}
                         label="File Type"
-                        helperText=""
+                        helperText="Classify this document by selecting its type"
                       />
                     </Box>
                   )}
