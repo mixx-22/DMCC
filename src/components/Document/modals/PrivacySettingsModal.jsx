@@ -47,8 +47,8 @@ const PrivacySettingsModal = ({ isOpen, onClose, document }) => {
   if (!document) return null;
 
   const handleSave = () => {
-    // Preserve existing document data while updating privacy settings
-    updateDocument(document.id, {
+    const newData = {
+      ...document,
       privacy: {
         ...document.privacy,
         users: privacySettings.users,
@@ -60,7 +60,9 @@ const PrivacySettingsModal = ({ isOpen, onClose, document }) => {
         readOnly: privacySettings.readOnly,
         restricted: privacySettings.restricted,
       },
-    });
+    };
+
+    updateDocument(document.id, newData);
 
     toast.success("Privacy Settings Updated", {
       description: "Privacy settings have been updated successfully",
