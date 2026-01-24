@@ -27,6 +27,7 @@ export const ListView = ({
   documents,
   selectedDocument,
   onDocumentClick,
+  sourcePage = null,
 }) => {
   const navigate = useNavigate();
   const [isFoldersOpen, setIsFoldersOpen] = useState(true);
@@ -46,6 +47,14 @@ export const ListView = ({
       ? `/documents/folders/${docId}`
       : `/documents/${docId}`;
 
+    const handleNavigate = () => {
+      if (sourcePage && !isFolderType) {
+        navigate(navigateTo, { state: { from: sourcePage } });
+      } else {
+        navigate(navigateTo);
+      }
+    };
+
     return (
       <Tr
         key={doc?.id || Math.random()}
@@ -53,7 +62,7 @@ export const ListView = ({
         _hover={{ bg: "gray.50" }}
         bg={isSelected ? "blue.50" : "transparent"}
         opacity={isValid ? 1 : 0.6}
-        onClick={() => navigate(navigateTo)}
+        onClick={handleNavigate}
       >
         <Td w="full">
           <HStack>

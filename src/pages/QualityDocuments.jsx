@@ -89,6 +89,7 @@ const QualityDocuments = () => {
               documents={documents}
               selectedDocument={selectedDocument}
               onDocumentClick={handleDocumentClick}
+              sourcePage={{ path: "/quality-documents", label: "Quality Documents" }}
             />
             {totalCount > ITEMS_PER_PAGE && (
               <Pagination

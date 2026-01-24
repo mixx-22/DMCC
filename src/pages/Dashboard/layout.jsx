@@ -333,8 +333,8 @@ const Layout = () => {
         <Text fontSize="xl" fontWeight="500" mb={4} color="gray.700">
           Recent Documents
         </Text>
-        <GridView filesOnly documents={recentFiles} />
-        <ListView filesOnly documents={recentFiles} />
+        <GridView filesOnly documents={recentFiles} sourcePage={{ path: "/", label: "Dashboard" }} />
+        <ListView filesOnly documents={recentFiles} sourcePage={{ path: "/", label: "Dashboard" }} />
       </Box>
     </MotionBox>
   );

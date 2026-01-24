@@ -108,7 +108,7 @@ const Approvals = () => {
                   key={`approval-${doc.id}`}
                   cursor="pointer"
                   _hover={{ bg: "gray.50" }}
-                  onClick={() => navigate(`/documents/${doc.id}`)}
+                  onClick={() => navigate(`/documents/${doc.id}`, { state: { from: { path: "/approvals", label: "Approvals" } } })}
                 >
                   <Td fontWeight="semibold">{doc.title}</Td>
                   <Td>{doc.category || "Uncategorized"}</Td>

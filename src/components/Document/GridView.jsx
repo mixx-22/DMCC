@@ -21,7 +21,7 @@ import { getDocumentIcon, isDocumentValid } from "./DocumentIcon";
 import { DocumentHoverPopover } from "./DocumentHoverPopover";
 import AuptilyzeFolder from "../AuptilyzeFolder";
 
-export const GridView = ({ documents, selectedDocument, onDocumentClick }) => {
+export const GridView = ({ documents, selectedDocument, onDocumentClick, sourcePage = null }) => {
   const [isFoldersOpen, setIsFoldersOpen] = useState(true);
   const folderBg = useColorModeValue("blackAlpha.50", "whiteAlpha.50");
 
@@ -110,6 +110,7 @@ export const GridView = ({ documents, selectedDocument, onDocumentClick }) => {
       as: RouterLink,
       to: isFolderType ? `/documents/folders/${docId}` : `/document/${docId}`,
       style: { textDecoration: "none" },
+      ...(sourcePage && !isFolderType ? { state: { from: sourcePage } } : {}),
     };
     const isValid = isDocumentValid(doc);
     const isSelected = selectedDocument?.id === docId;
