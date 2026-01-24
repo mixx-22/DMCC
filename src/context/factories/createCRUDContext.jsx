@@ -45,8 +45,17 @@ export function createCRUDProvider({
       case "ADD_ITEM":
         return {
           ...state,
-          [resourceKey]: [...state[resourceKey], payload.item],
+          [resourceKey]: [payload.item, ...state[resourceKey]],
           total: state.total + 1,
+        };
+      case "UPDATE_ITEM":
+        return {
+          ...state,
+          [resourceKey]: state[resourceKey].map((item) =>
+            (item.id || item._id) === payload.itemId
+              ? { ...item, ...payload.updates }
+              : item
+          ),
         };
       case "SET_LOADING":
         return {
@@ -213,6 +222,10 @@ export function createCRUDProvider({
       dispatch({ type: "ADD_ITEM", item: item });
     }, []);
 
+    const updateItemOptimistically = useCallback((itemId, updates) => {
+      dispatch({ type: "UPDATE_ITEM", itemId: itemId, updates: updates });
+    }, []);
+
     const value = {
       ...state,
       dispatch,
@@ -222,6 +235,7 @@ export function createCRUDProvider({
       setSearch,
       refetch,
       addItemOptimistically,
+      updateItemOptimistically,
     };
 
     return <Context.Provider value={value}>{children}</Context.Provider>;

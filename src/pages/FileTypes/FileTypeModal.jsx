@@ -27,7 +27,7 @@ const USE_API = import.meta.env.VITE_USE_API !== "false";
 
 const FileTypeModal = ({ isOpen, onClose, fileType }) => {
   const toast = useToast();
-  const { addItemOptimistically } = useFileTypes();
+  const { addItemOptimistically, updateItemOptimistically } = useFileTypes();
   const [formData, setFormData] = useState({
     name: "",
     isQualityDocument: false,
@@ -81,6 +81,12 @@ const FileTypeModal = ({ isOpen, onClose, fileType }) => {
         // Update existing file type
         const fileTypeId = fileType._id || fileType.id;
         
+        // Update the row optimistically
+        updateItemOptimistically(fileTypeId, {
+          ...formData,
+          updatedAt: new Date().toISOString(),
+        });
+        
         if (!USE_API) {
           // Mock update
           setTimeout(() => {
@@ -118,7 +124,7 @@ const FileTypeModal = ({ isOpen, onClose, fileType }) => {
             updatedAt: new Date().toISOString(),
           };
           
-          // Add to end of current list optimistically
+          // Add to top of current list optimistically
           addItemOptimistically(newFileType);
           
           setTimeout(() => {
@@ -140,7 +146,7 @@ const FileTypeModal = ({ isOpen, onClose, fileType }) => {
 
         const newFileType = response.fileType || response.data || response;
         
-        // Add to end of current list optimistically
+        // Add to top of current list optimistically
         addItemOptimistically({
           ...newFileType,
           createdAt: newFileType.createdAt || new Date().toISOString(),
