@@ -53,8 +53,12 @@ const Layout = () => {
   const dateColor = useColorModeValue("gray.400", "gray.400");
   const headingColor = useColorModeValue("gray.700", "gray.200");
 
+  const fetched = useRef();
+
   // Generate time-based greeting
   useEffect(() => {
+    if (fetched.current) return;
+    fetched.current = true;
     const hour = new Date().getHours();
     const greetings = [
       { range: [0, 5], text: "Good night" },
@@ -68,6 +72,7 @@ const Layout = () => {
       (g) => hour >= g.range[0] && hour < g.range[1],
     );
     setGreeting(currentGreeting?.text || "Hello");
+    updateStatsByTeam("all");
   }, []);
 
   // Get current date formatted
@@ -232,7 +237,8 @@ const Layout = () => {
       const res = await apiService.request(`/team-stats/${teamId}`, {
         method: "GET",
       });
-      const data = await res.json();
+      const { success, data } = res;
+      if (!success) throw "Failed to Load Team Stats";
       setTotalDocuments(data?.total || 0);
       setPendingApprovals(data?.pending || 0);
     } catch (err) {
