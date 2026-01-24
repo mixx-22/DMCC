@@ -211,7 +211,7 @@ const ProfileViewMode = ({ user, roleObjects, teamObjects, isValidDate }) => {
                             key={t.id || t._id}
                             label={`${user.firstName} is a ${t.teamLeader ? "team leader for" : "member of"} ${t.name}`}
                           >
-                            <Badge colorScheme="blue">
+                            <Badge colorScheme="brandPrimary">
                               {t.teamLeader && (
                                 <Icon
                                   as={FaCrown}

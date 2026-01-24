@@ -131,7 +131,7 @@ const PrivacyDisplay = ({
       <Box mt={2}>
         <Button
           size={buttonSize ?? size}
-          colorScheme="blue"
+          colorScheme="brandPrimary"
           variant="outline"
           onClick={onManageAccess}
         >

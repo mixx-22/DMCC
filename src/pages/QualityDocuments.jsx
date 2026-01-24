@@ -75,7 +75,7 @@ const QualityDocuments = () => {
       <Stack spacing={{ base: 4, lg: 6 }}>
         {loading ? (
           <Center py={12}>
-            <Spinner size="xl" color="blue.500" />
+            <Spinner size="xl" color="brandPrimary.500" />
           </Center>
         ) : documents.length === 0 ? (
           <Center py={12}>

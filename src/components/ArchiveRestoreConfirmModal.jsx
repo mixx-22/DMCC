@@ -35,7 +35,7 @@ const ArchiveRestoreConfirmModal = ({ isOpen, onClose, documentTitle, onConfirm,
               Document:
             </Text>
 
-            <Text fontWeight="semibold" color="blue.600" fontSize="lg">
+            <Text fontWeight="semibold" color="brandPrimary.600" fontSize="lg">
               {documentTitle}
             </Text>
 

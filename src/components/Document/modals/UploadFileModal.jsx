@@ -182,7 +182,7 @@ const UploadFileModal = ({ isOpen, onClose, parentId, path }) => {
                   >
                     <Box display="flex" alignItems="center" justifyContent="space-between">
                       <Box display="flex" alignItems="center" flex="1">
-                        <Icon as={FiFile} w={5} h={5} color="blue.500" mr={3} />
+                        <Icon as={FiFile} w={5} h={5} color="brandPrimary.500" mr={3} />
                         <Box flex="1">
                           <Text fontSize="sm" fontWeight="medium" noOfLines={1}>
                             {formData.file.name}

@@ -195,7 +195,7 @@ const SortableQuestion = ({ question, index, onRemove, onEdit }) => {
                       Required
                     </Tag>
                   )}
-                  <Tag size="sm" colorScheme="blue" variant="subtle">
+                  <Tag size="sm" colorScheme="brandPrimary" variant="subtle">
                     {question.type}
                   </Tag>
                 </HStack>
@@ -204,7 +204,7 @@ const SortableQuestion = ({ question, index, onRemove, onEdit }) => {
                     icon={<FiEdit2 />}
                     onClick={() => onEdit(question)}
                     size="sm"
-                    colorScheme="blue"
+                    colorScheme="brandPrimary"
                     variant="ghost"
                     aria-label="Edit question"
                   />
@@ -531,7 +531,7 @@ const FormTemplateBuilder = () => {
         </PageHeader>
         <Center h="400px">
           <VStack spacing={4}>
-            <Spinner size="xl" color="blue.500" thickness="4px" />
+            <Spinner size="xl" color="brandPrimary.500" thickness="4px" />
             <Text fontSize="lg" color="gray.600">
               Loading form template...
             </Text>
@@ -669,13 +669,13 @@ const FormTemplateBuilder = () => {
                   p={4}
                   borderWidth={2}
                   borderStyle="dashed"
-                  borderColor="blue.300"
+                  borderColor="brandPrimary.300"
                   borderRadius="md"
                   bg={infoBg}
                 >
                   <VStack spacing={4} align="stretch">
                     <Flex justify="space-between" align="center">
-                      <Heading size="sm" color="blue.700">
+                      <Heading size="sm" color="brandPrimary.700">
                         Add New Question
                       </Heading>
                       <HStack>
@@ -692,7 +692,7 @@ const FormTemplateBuilder = () => {
                                 required: e.target.checked,
                               }))
                             }
-                            colorScheme="blue"
+                            colorScheme="brandPrimary"
                           />
                         </FormControl>
                       </HStack>
@@ -762,7 +762,7 @@ const FormTemplateBuilder = () => {
                           <IconButton
                             icon={<FiPlus />}
                             onClick={handleAddOption}
-                            colorScheme="blue"
+                            colorScheme="brandPrimary"
                             size="sm"
                             aria-label="Add option"
                           />
@@ -774,7 +774,7 @@ const FormTemplateBuilder = () => {
                               <WrapItem key={index}>
                                 <Tag
                                   size="sm"
-                                  colorScheme="blue"
+                                  colorScheme="brandPrimary"
                                   variant="solid"
                                 >
                                   <TagLabel>{option}</TagLabel>

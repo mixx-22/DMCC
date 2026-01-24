@@ -308,7 +308,7 @@ const UserAsyncSelect = ({
                       size="md"
                       borderRadius="full"
                       variant="solid"
-                      colorScheme="blue"
+                      colorScheme="brandPrimary"
                       cursor="pointer"
                       _hover={{ opacity: 0.8 }}
                     >
@@ -342,7 +342,7 @@ const UserAsyncSelect = ({
             cacheOptions
             defaultOptions={false}
             loadingMessage={() => "Loading users..."}
-            colorScheme="blue"
+            colorScheme="brandPrimary"
             useBasicStyles
           />
         </Box>

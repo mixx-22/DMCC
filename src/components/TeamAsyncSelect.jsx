@@ -118,7 +118,7 @@ const TeamAsyncSelect = ({
   const formatOptionLabel = ({ team }) => {
     return (
       <HStack>
-        <Avatar size="sm" name={team.name} bg="blue.500" />
+        <Avatar size="sm" name={team.name} bg="brandPrimary.500" />
         <VStack align="start" spacing={0}>
           <Text fontSize="sm" fontWeight="medium">
             {team.name}
@@ -155,7 +155,7 @@ const TeamAsyncSelect = ({
                             <Avatar
                               size="sm"
                               name={team.name}
-                              bg="blue.500"
+                              bg="brandPrimary.500"
                             />
                             <VStack align="start" spacing={0}>
                               <Text fontSize="sm" fontWeight="medium">
@@ -288,7 +288,7 @@ const TeamAsyncSelect = ({
                       <Avatar
                         size="sm"
                         name={team.name}
-                        bg="blue.500"
+                        bg="brandPrimary.500"
                       />
                       <VStack align="start" spacing={0}>
                         <Text fontSize="sm" fontWeight="medium">

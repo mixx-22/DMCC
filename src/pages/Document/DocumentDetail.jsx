@@ -213,7 +213,7 @@ const DocumentDetail = () => {
         <Box flex="1" p={8}>
           <Center h="400px">
             <VStack>
-              <Spinner size="xl" color="blue.500" />
+              <Spinner size="xl" color="brandPrimary.500" />
               <Text mt={4} color="gray.600">
                 Loading document...
               </Text>
@@ -238,7 +238,7 @@ const DocumentDetail = () => {
                 Document not found
               </Text>
               <Button
-                colorScheme="blue"
+                colorScheme="brandPrimary"
                 onClick={() => navigate("/documents")}
                 mt={4}
               >
@@ -732,7 +732,7 @@ const DocumentDetail = () => {
                     </Text>
                     <Button
                       size="sm"
-                      colorScheme="blue"
+                      colorScheme="brandPrimary"
                       leftIcon={<FiEdit />}
                       onClick={() => navigate(`/edit-form/${document._id}`)}
                     >

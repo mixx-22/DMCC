@@ -359,7 +359,7 @@ const Search = () => {
                       ]}
                       placeholder="All types"
                       isClearable
-                      colorScheme="blue"
+                      colorScheme="brandPrimary"
                       useBasicStyles
                     />
                   </FormControl>
@@ -375,7 +375,7 @@ const Search = () => {
                       options={DATE_RANGE_OPTIONS}
                       placeholder="All dates"
                       isClearable
-                      colorScheme="blue"
+                      colorScheme="brandPrimary"
                       useBasicStyles
                     />
                   </FormControl>
@@ -443,7 +443,7 @@ const Search = () => {
         {/* Search Results */}
         {loading ? (
           <Center py={12}>
-            <Spinner size="xl" color="blue.500" />
+            <Spinner size="xl" color="brandPrimary.500" />
           </Center>
         ) : !hasSearched ? (
           <Center py={12}>
