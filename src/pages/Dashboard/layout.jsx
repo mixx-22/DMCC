@@ -13,6 +13,7 @@ import {
   MenuItem,
   HStack,
   IconButton,
+  Spacer,
 } from "@chakra-ui/react";
 import { Link as RouterLink } from "react-router-dom";
 import { useState, useEffect, useMemo, useRef } from "react";
@@ -321,16 +322,6 @@ const Layout = () => {
         <Box w="full" maxW="md">
           <SearchInput placeholder="Search documents..." />
         </Box>
-
-        {/* View Mode Toggle */}
-        <HStack>
-          <IconButton
-            icon={viewMode === "grid" ? <FiList /> : <FiGrid />}
-            onClick={toggleViewMode}
-            aria-label="Toggle view"
-            variant="ghost"
-          />
-        </HStack>
       </Stack>
 
       {/* Recent Folders */}
@@ -338,18 +329,23 @@ const Layout = () => {
         <Text fontSize="xl" fontWeight="500" mb={4} color="gray.700">
           Recent Folders
         </Text>
-        {viewMode === "grid" ? (
-          <GridView foldersOnly documents={recentFolders} />
-        ) : (
-          <ListView foldersOnly documents={recentFolders} />
-        )}
+        <GridView foldersOnly documents={recentFolders} />
       </Box>
 
       {/* Recent Documents */}
       <Box>
-        <Text fontSize="xl" fontWeight="500" mb={4} color="gray.700">
-          Recent Documents
-        </Text>
+        <HStack alignItems="center" mb={4}>
+          <Text fontSize="xl" fontWeight="500" color="gray.700">
+            Recent Documents
+          </Text>
+          <Spacer />
+          <IconButton
+            icon={viewMode === "grid" ? <FiList /> : <FiGrid />}
+            onClick={toggleViewMode}
+            aria-label="Toggle view"
+            variant="ghost"
+          />
+        </HStack>
         {viewMode === "grid" ? (
           <GridView filesOnly documents={recentFiles} />
         ) : (
