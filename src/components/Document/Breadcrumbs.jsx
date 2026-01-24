@@ -72,7 +72,12 @@ const Breadcrumbs = memo(
 
         if (isMobile) {
           if (parent) {
-            setCrumbs([{ id: "previous" }, thisCrumb]);
+            // Don't add "previous" crumb if we have a "from" source, as the from back button takes precedence
+            if (!from?.path && !from?.label) {
+              setCrumbs([{ id: "previous" }, thisCrumb]);
+              return;
+            }
+            setCrumbs([thisCrumb]);
             return;
           }
           setCrumbs([rootCrumb, thisCrumb]);
@@ -91,7 +96,7 @@ const Breadcrumbs = memo(
           thisCrumb,
         ]);
       },
-      [isMobile],
+      [isMobile, from],
     );
 
     useEffect(() => {
