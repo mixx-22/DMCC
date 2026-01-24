@@ -27,25 +27,24 @@ import { ListView } from "../../components/Document/ListView";
 import { EmptyState } from "../../components/Document/EmptyState";
 import { ActionButton } from "../../components/Document/ActionButton";
 import Breadcrumbs from "../../components/Document/Breadcrumbs";
-import { useDocuments } from "../../context/_useContext";
+import { useDocuments, useLayout } from "../../context/_useContext";
 
 const Documents = () => {
   const { id } = useParams();
   const location = useLocation();
   const navigate = useNavigate();
   const {
-    viewMode,
     currentFolderId,
     selectedDocument,
     folder,
     documents,
     navigateToFolder,
-    toggleViewMode,
     setSelectedDocument,
     loading,
     createDocument,
     fetchDocuments,
   } = useDocuments();
+  const { viewMode, toggleViewMode } = useLayout();
 
   const [lastClickTime, setLastClickTime] = useState(0);
   const [lastClickId, setLastClickId] = useState(null);

@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useRef, useCallback } from "react";
 import apiService from "../services/api";
 import { DocumentsContext } from "./_contexts";
 import { useUser } from "./_useContext";
@@ -23,12 +23,6 @@ export const DocumentsProvider = ({ children }) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  // View preferences
-  const [viewMode, setViewMode] = useState(() => {
-    const saved = localStorage.getItem("documentsViewMode");
-    return saved || "grid"; // "grid" or "list"
-  });
-
   // Current folder navigation
   const [currentFolderId, setCurrentFolderId] = useState(null);
 
@@ -38,11 +32,6 @@ export const DocumentsProvider = ({ children }) => {
   // Refs to prevent duplicate fetch requests
   const fetchingRef = useRef(false);
   const lastFetchedFolderIdRef = useRef(null);
-
-  // Persist view mode to localStorage only
-  useEffect(() => {
-    localStorage.setItem("documentsViewMode", viewMode);
-  }, [viewMode]);
 
   // Fetch documents from API
   const fetchDocuments = useCallback(async (folderId = null) => {
@@ -360,11 +349,6 @@ export const DocumentsProvider = ({ children }) => {
     setSelectedDocument(null);
   };
 
-  // Toggle view mode
-  const toggleViewMode = () => {
-    setViewMode((prev) => (prev === "grid" ? "list" : "grid"));
-  };
-
   // Check if user can view document based on privacy settings
   const canViewDocument = (doc) => {
     if (!currentUser) return false;
@@ -408,7 +392,6 @@ export const DocumentsProvider = ({ children }) => {
   const value = {
     folder,
     documents,
-    viewMode,
     currentFolderId,
     selectedDocument,
     loading,
@@ -418,8 +401,6 @@ export const DocumentsProvider = ({ children }) => {
     deleteDocument,
     moveDocument,
     navigateToFolder,
-    toggleViewMode,
-    setViewMode,
     setSelectedDocument,
     canViewDocument,
     getVisibleDocuments,

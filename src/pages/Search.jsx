@@ -29,6 +29,7 @@ import { GridView } from "../components/Document/GridView";
 import { ListView } from "../components/Document/ListView";
 import DocumentDrawer from "../components/Document/DocumentDrawer";
 import apiService from "../services/api";
+import { useLayout } from "../context/_useContext";
 
 const DOCUMENTS_ENDPOINT = "/documents";
 const USE_API = import.meta.env.VITE_USE_API !== "false";
@@ -53,12 +54,7 @@ const getDateRangeLabel = (value) => {
 const Search = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
-
-  // View mode
-  const [viewMode, setViewMode] = useState(() => {
-    const saved = localStorage.getItem("searchViewMode");
-    return saved || "grid";
-  });
+  const { viewMode, toggleViewMode } = useLayout();
 
   // Search filters
   const [keyword, setKeyword] = useState(searchParams.get("keyword") || "");
@@ -99,11 +95,6 @@ const Search = () => {
       setOwners([]);
     }
   }, [searchParams]);
-
-  // Persist view mode
-  useEffect(() => {
-    localStorage.setItem("searchViewMode", viewMode);
-  }, [viewMode]);
 
   // Update URL when filters change (without debounce)
   useEffect(() => {
@@ -289,10 +280,6 @@ const Search = () => {
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [keyword, type, dateRange, selectedDates, owners]);
-
-  const toggleViewMode = () => {
-    setViewMode((prev) => (prev === "grid" ? "list" : "grid"));
-  };
 
   // Handle document click with double-click detection (same as Documents page)
   const handleDocumentClick = (doc) => {

@@ -11,11 +11,14 @@ import {
   Button,
   MenuList,
   MenuItem,
+  HStack,
+  IconButton,
 } from "@chakra-ui/react";
 import { Link as RouterLink } from "react-router-dom";
 import { useState, useEffect, useMemo, useRef } from "react";
 import { format } from "date-fns";
-import { useApp, useUser } from "../../context/_useContext";
+import { FiGrid, FiList } from "react-icons/fi";
+import { useApp, useUser, useLayout } from "../../context/_useContext";
 import { motion } from "framer-motion";
 import SearchInput from "../../components/SearchInput";
 import apiService from "../../services/api";
@@ -28,6 +31,7 @@ const MotionBox = motion(Box);
 const Layout = () => {
   const { documents } = useApp();
   const { user: currentUser } = useUser();
+  const { viewMode, toggleViewMode } = useLayout();
   const [selectedTeam, setSelectedTeam] = useState("all");
   const [greeting, setGreeting] = useState("");
   const [pendingApprovals, setPendingApprovals] = useState(0);
@@ -317,6 +321,16 @@ const Layout = () => {
         <Box w="full" maxW="md">
           <SearchInput placeholder="Search documents..." />
         </Box>
+
+        {/* View Mode Toggle */}
+        <HStack>
+          <IconButton
+            icon={viewMode === "grid" ? <FiList /> : <FiGrid />}
+            onClick={toggleViewMode}
+            aria-label="Toggle view"
+            variant="ghost"
+          />
+        </HStack>
       </Stack>
 
       {/* Recent Folders */}
@@ -324,8 +338,11 @@ const Layout = () => {
         <Text fontSize="xl" fontWeight="500" mb={4} color="gray.700">
           Recent Folders
         </Text>
-        <GridView folderOnly documents={recentFolders} />
-        <ListView folderOnly documents={recentFolders} />
+        {viewMode === "grid" ? (
+          <GridView folderOnly documents={recentFolders} />
+        ) : (
+          <ListView folderOnly documents={recentFolders} />
+        )}
       </Box>
 
       {/* Recent Documents */}
@@ -333,8 +350,11 @@ const Layout = () => {
         <Text fontSize="xl" fontWeight="500" mb={4} color="gray.700">
           Recent Documents
         </Text>
-        <GridView filesOnly documents={recentFiles} />
-        <ListView filesOnly documents={recentFiles} />
+        {viewMode === "grid" ? (
+          <GridView filesOnly documents={recentFiles} />
+        ) : (
+          <ListView filesOnly documents={recentFiles} />
+        )}
       </Box>
     </MotionBox>
   );
