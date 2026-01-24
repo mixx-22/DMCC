@@ -6,8 +6,10 @@ import {
   AvatarGroup,
   Tooltip,
   Icon,
+  IconButton,
+  Box,
 } from "@chakra-ui/react";
-import { FiGlobe, FiSettings } from "react-icons/fi";
+import { FiGlobe } from "react-icons/fi";
 import TooltipAvatar from "../TooltipAvatar";
 
 /**
@@ -64,16 +66,14 @@ const PrivacyDisplay = ({
       <HStack spacing={3} align="center">
         {isPublic ? (
           <Tooltip label="Public - Everyone can view">
-            <Button
-              leftIcon={<Icon as={FiGlobe} />}
-              size={size}
+            <IconButton
+              isRound
+              icon={<Icon as={FiGlobe} />}
+              size={avatarSize ?? size}
               variant="outline"
               colorScheme="green"
-              isDisabled
               cursor="default"
-            >
-              Public
-            </Button>
+            />
           </Tooltip>
         ) : (
           <>
@@ -123,10 +123,15 @@ const PrivacyDisplay = ({
             </AvatarGroup>
           </>
         )}
+      </HStack>
 
-        {/* Manage Access Button */}
+      {/* Summary Text */}
+      <Text fontSize="xs" color="blackAlpha.600">
+        {generateSummary()}
+      </Text>
+      {/* Manage Access Button */}
+      <Box>
         <Button
-          leftIcon={<Icon as={FiSettings} />}
           size={buttonSize ?? size}
           colorScheme="blue"
           variant="outline"
@@ -134,12 +139,7 @@ const PrivacyDisplay = ({
         >
           Manage Access
         </Button>
-      </HStack>
-
-      {/* Summary Text */}
-      <Text fontSize="sm" color="gray.600">
-        {generateSummary()}
-      </Text>
+      </Box>
     </VStack>
   );
 };

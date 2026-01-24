@@ -49,9 +49,9 @@ const PrivacySettingsModal = ({ isOpen, onClose, document }) => {
   const handleSave = () => {
     // Extract only IDs from user/team/role objects for the API payload
     const extractIds = (items) => {
-      return items.map(item => {
+      return items.map((item) => {
         // If item is already a string (just an ID), return it
-        if (typeof item === 'string') return item;
+        if (typeof item === "string") return item;
         // Otherwise extract the ID from the object
         return item.id || item._id;
       });
@@ -100,6 +100,7 @@ const PrivacySettingsModal = ({ isOpen, onClose, document }) => {
 
             {/* Users */}
             <UserAsyncSelect
+              displayMode="none"
               label="Shared with Users"
               value={privacySettings.users}
               onChange={(users) =>
@@ -109,6 +110,7 @@ const PrivacySettingsModal = ({ isOpen, onClose, document }) => {
 
             {/* Teams */}
             <TeamAsyncSelect
+              displayMode="none"
               value={privacySettings.teams}
               onChange={(teams) =>
                 setPrivacySettings((prev) => ({ ...prev, teams }))

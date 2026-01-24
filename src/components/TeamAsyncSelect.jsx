@@ -52,7 +52,7 @@ const TeamAsyncSelect = ({ value = [], onChange, isInvalid, ...props }) => {
       // Mock API call with delay
       setTimeout(() => {
         const filtered = MOCK_TEAMS.filter((team) =>
-          team.name.toLowerCase().includes(keyword.toLowerCase())
+          team.name.toLowerCase().includes(keyword.toLowerCase()),
         );
         setOptions(filtered);
         setLoading(false);
@@ -98,7 +98,9 @@ const TeamAsyncSelect = ({ value = [], onChange, isInvalid, ...props }) => {
   const handleSelectTeam = (team) => {
     // Store full team object with id and name
     // Prevent duplicate selection by checking if id already exists
-    const isDuplicate = value.some((t) => t.id === team.id || t.id === team._id);
+    const isDuplicate = value.some(
+      (t) => t.id === team.id || t.id === team._id,
+    );
     if (!isDuplicate) {
       onChange([...value, { id: team.id || team._id, name: team.name }]);
     }
@@ -113,7 +115,7 @@ const TeamAsyncSelect = ({ value = [], onChange, isInvalid, ...props }) => {
 
   // Filter out already selected teams by checking IDs
   const filteredOptions = options.filter(
-    (option) => !value.some((t) => t.id === option.id || t.id === option._id)
+    (option) => !value.some((t) => t.id === option.id || t.id === option._id),
   );
 
   return (
