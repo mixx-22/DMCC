@@ -49,11 +49,19 @@ const DocumentDrawer = ({ document, isOpen, onClose }) => {
   const [fileTypeCache, setFileTypeCache] = useState(null);
   const titleTextareaRef = useRef(null);
   const descriptionTextareaRef = useRef(null);
+  const fileTypeDebounceRef = useRef(null);
 
   useEffect(() => {
     setTitleCache(document?.title || "");
     setDescriptionCache(document?.description || "");
     setFileTypeCache(document?.metadata?.fileType || null);
+
+    // Cleanup debounce timer on unmount or document change
+    return () => {
+      if (fileTypeDebounceRef.current) {
+        clearTimeout(fileTypeDebounceRef.current);
+      }
+    };
   }, [document]);
 
   const {
@@ -159,28 +167,42 @@ const DocumentDrawer = ({ document, isOpen, onClose }) => {
       return;
     }
 
+    // Prevent request if clearing file type (setting to null/empty)
+    if (!newFileType || !newFileType.id) {
+      setFileTypeCache(null);
+      return;
+    }
+
     // Optimistically update UI
     setFileTypeCache(newFileType);
 
-    try {
-      await updateDocument(document.id || document._id, {
-        metadata: {
-          ...document.metadata,
-          fileType: newFileType?.id || null,
-        },
-      });
-      toast.success("File Type Updated", {
-        description: "Document file type has been updated",
-        duration: 2000,
-      });
-    } catch (error) {
-      // Revert to original value on error
-      setFileTypeCache(originalFileType);
-      toast.error("Update Failed", {
-        description: "Failed to update file type",
-        duration: 3000,
-      });
+    // Clear any existing debounce timer
+    if (fileTypeDebounceRef.current) {
+      clearTimeout(fileTypeDebounceRef.current);
     }
+
+    // Debounce the API call
+    fileTypeDebounceRef.current = setTimeout(async () => {
+      try {
+        await updateDocument(document.id || document._id, {
+          metadata: {
+            ...document.metadata,
+            fileType: newFileType.id,
+          },
+        });
+        toast.success("File Type Updated", {
+          description: "Document file type has been updated",
+          duration: 2000,
+        });
+      } catch (error) {
+        // Revert to original value on error
+        setFileTypeCache(originalFileType);
+        toast.error("Update Failed", {
+          description: "Failed to update file type",
+          duration: 3000,
+        });
+      }
+    }, 500); // 500ms debounce delay
   };
 
   return (

@@ -67,6 +67,7 @@ const DocumentDetail = () => {
   const currentIdRef = useRef(null);
   const titleTextareaRef = useRef(null);
   const descriptionTextareaRef = useRef(null);
+  const fileTypeDebounceRef = useRef(null);
 
   const {
     isOpen: isDeleteOpen,
@@ -116,6 +117,10 @@ const DocumentDetail = () => {
     return () => {
       if (currentIdRef.current !== id) {
         fetchedRef.current = false;
+      }
+      // Cleanup debounce timer on unmount or id change
+      if (fileTypeDebounceRef.current) {
+        clearTimeout(fileTypeDebounceRef.current);
       }
     };
   }, [id, fetchDocumentById, navigate]);
@@ -212,6 +217,18 @@ const DocumentDetail = () => {
       return;
     }
 
+    // Prevent request if clearing file type (setting to null/empty)
+    if (!newFileType || !newFileType.id) {
+      setDocument((prev) => ({
+        ...prev,
+        metadata: {
+          ...prev.metadata,
+          fileType: null,
+        },
+      }));
+      return;
+    }
+
     // Optimistically update UI
     setDocument((prev) => ({
       ...prev,
@@ -221,31 +238,39 @@ const DocumentDetail = () => {
       },
     }));
 
-    try {
-      await updateDocument(id, {
-        metadata: {
-          ...document.metadata,
-          fileType: newFileType?.id || null,
-        },
-      });
-      toast.success("File Type Updated", {
-        description: "Document file type has been updated",
-        duration: 2000,
-      });
-    } catch (error) {
-      // Revert to original value on error
-      setDocument((prev) => ({
-        ...prev,
-        metadata: {
-          ...prev.metadata,
-          fileType: originalFileType,
-        },
-      }));
-      toast.error("Update Failed", {
-        description: "Failed to update file type",
-        duration: 3000,
-      });
+    // Clear any existing debounce timer
+    if (fileTypeDebounceRef.current) {
+      clearTimeout(fileTypeDebounceRef.current);
     }
+
+    // Debounce the API call
+    fileTypeDebounceRef.current = setTimeout(async () => {
+      try {
+        await updateDocument(id, {
+          metadata: {
+            ...document.metadata,
+            fileType: newFileType.id,
+          },
+        });
+        toast.success("File Type Updated", {
+          description: "Document file type has been updated",
+          duration: 2000,
+        });
+      } catch (error) {
+        // Revert to original value on error
+        setDocument((prev) => ({
+          ...prev,
+          metadata: {
+            ...prev.metadata,
+            fileType: originalFileType,
+          },
+        }));
+        toast.error("Update Failed", {
+          description: "Failed to update file type",
+          duration: 3000,
+        });
+      }
+    }, 500); // 500ms debounce delay
   };
 
   if (loading) {
