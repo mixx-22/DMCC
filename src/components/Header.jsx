@@ -31,7 +31,7 @@ import { useApp, useLayout, useUser } from "../context/_useContext";
 const Header = () => {
   const { getExpiringCertifications } = useApp();
   const { user: currentUser, logout } = useUser();
-  const { headerRef } = useLayout();
+  const { headerRef, hasHeaderContent } = useLayout();
   const navigate = useNavigate();
   const expiringCerts = getExpiringCertifications();
   const { colorMode, toggleColorMode } = useColorMode();
@@ -56,6 +56,8 @@ const Header = () => {
       navigate("/login");
     }
   };
+
+  if (!hasHeaderContent) return null;
 
   return (
     <Flex

@@ -2,8 +2,10 @@ import { Flex, Box, useColorModeValue } from "@chakra-ui/react";
 import { useLayout } from "../context/_useContext";
 
 const Footer = () => {
-  const { footerRef } = useLayout();
+  const { footerRef, hasFooterContent } = useLayout();
   const bgColor = useColorModeValue("gray.50", "gray.900");
+
+  if (!hasFooterContent) return null;
 
   return (
     <Flex
