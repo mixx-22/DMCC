@@ -10,19 +10,19 @@ const $avatarBg = cssVar("avatar-border-color");
 
 const baseStyle = definePartsStyle((props) => {
   return {
-    container: {
-      // Use CSS variable with fallback to theme colors
-      [$avatarBg.variable]: mode("white", "gray.800")(props),
-      borderColor: $avatarBg.reference,
-      borderWidth: "2px",
-    },
-    excessLabel: {
-      borderColor: $avatarBg.reference,
-      borderWidth: "2px",
-    },
     group: {
       // Set the CSS variable on the group so all children inherit it
       [$avatarBg.variable]: mode("white", "gray.800")(props),
+      // Apply border styling to avatars within the group
+      "& > span[role='img']": {
+        borderColor: $avatarBg.reference,
+        borderWidth: "2px",
+      },
+    },
+    excessLabel: {
+      // The excess label ("+3" badge) should also use the border color
+      borderColor: $avatarBg.reference,
+      borderWidth: "2px",
     },
   };
 });
@@ -30,5 +30,4 @@ const baseStyle = definePartsStyle((props) => {
 export const avatarTheme = defineMultiStyleConfig({
   baseStyle,
 });
-
 
