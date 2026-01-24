@@ -45,7 +45,7 @@ export const ListView = ({
 
     const navigateTo = isFolderType
       ? `/documents/folders/${docId}`
-      : `/documents/${docId}`;
+      : `/document/${docId}`;
 
     const handleNavigate = () => {
       if (sourcePage && !isFolderType) {
