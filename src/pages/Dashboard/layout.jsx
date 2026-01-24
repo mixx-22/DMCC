@@ -230,7 +230,7 @@ const Layout = () => {
 
     try {
       const res = await apiService.request(`/team-stats/${teamId}`, {
-        method: "POST",
+        method: "GET",
       });
       const data = await res.json();
       setTotalDocuments(data.totalDocuments);
