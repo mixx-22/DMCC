@@ -16,14 +16,13 @@ import { Link as RouterLink } from "react-router-dom";
 import { useState, useEffect, useMemo, useRef } from "react";
 import { format } from "date-fns";
 import { useApp, useUser } from "../../context/_useContext";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import AuptilyzeFolder from "../../components/AuptilyzeFolder";
 import SearchInput from "../../components/SearchInput";
 import { getDocumentIcon } from "../../components/Document/DocumentIcon";
 import apiService from "../../services/api";
 
 const MotionBox = motion(Box);
-const MotionText = motion(Text);
 
 const NewLayout = () => {
   const { documents } = useApp();
@@ -168,19 +167,23 @@ const NewLayout = () => {
   }, [currentUser]);
 
   return (
-    <Box px={{ base: 4, md: 8 }} py={6}>
+    <MotionBox
+      px={{ base: 4, md: 8 }}
+      py={6}
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      transition={{ duration: 0.3, ease: "easeInOut" }}
+    >
       {/* Greeting Section */}
       <VStack align="start" spacing={1} mb={6}>
-        <MotionText
+        <Text
           fontSize={{ base: "2xl", md: "3xl", lg: "4xl" }}
           fontWeight="300"
           color="gray.800"
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
         >
           {greeting}, {currentUser?.firstName || currentUser?.name || "User"}
-        </MotionText>
+        </Text>
         <Text fontSize={{ base: "md", md: "lg" }} color="gray.500" fontWeight="300">
           {currentDate}
         </Text>
@@ -228,12 +231,7 @@ const NewLayout = () => {
 
         {/* Metrics Cards in Horizontal Layout */}
         <Flex flex="1" gap={4} direction={{ base: "column", sm: "row" }}>
-          <MotionBox
-            flex="1"
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.4, delay: 0.1 }}
-          >
+          <Box flex="1">
             <Card
               bgGradient="linear(to-br, blue.500, blue.600)"
               color="white"
@@ -248,30 +246,18 @@ const NewLayout = () => {
                   <Text fontSize="xs" fontWeight="500" opacity={0.9} textTransform="uppercase">
                     Pending Approvals
                   </Text>
-                  <AnimatePresence mode="wait">
-                    <MotionText
-                      key={pendingApprovals}
-                      fontSize={{ base: "3xl", md: "4xl" }}
-                      fontWeight="700"
-                      initial={{ opacity: 0, y: 10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: -10 }}
-                      transition={{ duration: 0.3 }}
-                    >
-                      {pendingApprovals}
-                    </MotionText>
-                  </AnimatePresence>
+                  <Text
+                    fontSize={{ base: "3xl", md: "4xl" }}
+                    fontWeight="700"
+                  >
+                    {pendingApprovals}
+                  </Text>
                 </VStack>
               </CardBody>
             </Card>
-          </MotionBox>
+          </Box>
 
-          <MotionBox
-            flex="1"
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.4, delay: 0.2 }}
-          >
+          <Box flex="1">
             <Card
               bgGradient="linear(to-br, purple.500, purple.600)"
               color="white"
@@ -286,23 +272,16 @@ const NewLayout = () => {
                   <Text fontSize="xs" fontWeight="500" opacity={0.9} textTransform="uppercase">
                     Total Documents
                   </Text>
-                  <AnimatePresence mode="wait">
-                    <MotionText
-                      key={totalDocuments}
-                      fontSize={{ base: "3xl", md: "4xl" }}
-                      fontWeight="700"
-                      initial={{ opacity: 0, y: 10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: -10 }}
-                      transition={{ duration: 0.3 }}
-                    >
-                      {totalDocuments}
-                    </MotionText>
-                  </AnimatePresence>
+                  <Text
+                    fontSize={{ base: "3xl", md: "4xl" }}
+                    fontWeight="700"
+                  >
+                    {totalDocuments}
+                  </Text>
                 </VStack>
               </CardBody>
             </Card>
-          </MotionBox>
+          </Box>
         </Flex>
       </Flex>
 
@@ -312,23 +291,18 @@ const NewLayout = () => {
           Recent Folders
         </Text>
         <SimpleGrid columns={{ base: 2, sm: 3, lg: 4 }} spacing={4}>
-          {recentFolders.map((folder, index) => {
+          {recentFolders.map((folder) => {
             // Guard clause for folder.id
             const folderId = folder?.id || folder?._id;
             if (!folderId) return null;
             
             return (
-              <MotionBox
+              <Link
                 key={folderId}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.3, delay: index * 0.05 }}
+                as={RouterLink}
+                to={`/documents/folders/${folderId}`}
+                style={{ textDecoration: "none" }}
               >
-                <Link
-                  as={RouterLink}
-                  to={`/documents/folders/${folderId}`}
-                  style={{ textDecoration: "none" }}
-                >
                 <Box
                   py={4}
                   cursor="pointer"
@@ -362,8 +336,7 @@ const NewLayout = () => {
                   </VStack>
                 </Box>
               </Link>
-            </MotionBox>
-          );
+            );
           })}
         </SimpleGrid>
       </Box>
@@ -374,36 +347,31 @@ const NewLayout = () => {
           Recent Documents
         </Text>
         <SimpleGrid columns={{ base: 2, sm: 3, lg: 4 }} spacing={4}>
-          {recentFiles.map((file, index) => {
+          {recentFiles.map((file) => {
             const fileId = file?.id || file?._id;
             if (!fileId) return null;
 
             return (
-              <MotionBox
+              <Link
                 key={fileId}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.3, delay: index * 0.05 }}
+                as={RouterLink}
+                to={`/document/${fileId}`}
+                style={{ textDecoration: "none" }}
               >
-                <Link
-                  as={RouterLink}
-                  to={`/document/${fileId}`}
-                  style={{ textDecoration: "none" }}
+                <Card
+                  borderRadius="xl"
+                  cursor="pointer"
+                  _hover={{
+                    transform: "translateY(-2px)",
+                    boxShadow: "md",
+                  }}
+                  transition="all 0.2s"
+                  bg="white"
+                  border="1px"
+                  borderColor="gray.200"
                 >
-                  <Card
-                    borderRadius="xl"
-                    cursor="pointer"
-                    _hover={{
-                      transform: "translateY(-2px)",
-                      boxShadow: "md",
-                    }}
-                    transition="all 0.2s"
-                    bg="white"
-                    border="1px"
-                    borderColor="gray.200"
-                  >
-                    <CardBody p={4}>
-                      <VStack align="start" spacing={2}>
+                  <CardBody p={4}>
+                    <VStack align="start" spacing={2}>
                         {getDocumentIcon(file)}
                         <Text
                           fontSize="sm"
@@ -418,13 +386,12 @@ const NewLayout = () => {
                     </CardBody>
                   </Card>
                 </Link>
-              </MotionBox>
-            );
-          })}
-        </SimpleGrid>
-      </Box>
-    </Box>
-  );
-};
-
-export default NewLayout;
+              );
+            })}
+          </SimpleGrid>
+        </Box>
+      </MotionBox>
+    );
+  };
+  
+  export default NewLayout;
