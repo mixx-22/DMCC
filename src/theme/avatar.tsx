@@ -9,10 +9,12 @@ const { definePartsStyle, defineMultiStyleConfig } =
 const $avatarBg = cssVar("avatar-border-color");
 
 const baseStyle = definePartsStyle((props) => {
+  const { colors } = props.theme;
   return {
     group: {
       // Set the CSS variable on the group so all children inherit it
-      [$avatarBg.variable]: mode("white", "gray.800")(props),
+      // Use actual color values from theme instead of token strings
+      [$avatarBg.variable]: mode(colors.white, colors.gray[800])(props),
       // Apply border styling to avatars within the group
       "& > span[role='img']": {
         borderColor: $avatarBg.reference,

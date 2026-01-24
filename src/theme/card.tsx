@@ -5,15 +5,18 @@ import { mode } from "@chakra-ui/theme-tools";
 const $avatarBg = cssVar("avatar-border-color");
 
 const baseStyle = defineStyle((props) => {
+  const { colors } = props.theme;
   return {
     container: {
       // Set the avatar border color to match card background
-      [$avatarBg.variable]: mode("white", "gray.800")(props),
+      // Use actual color values from theme instead of token strings
+      [$avatarBg.variable]: mode(colors.white, colors.gray[700])(props),
     },
   };
 });
 
 const document = defineStyle((props) => {
+  const { colors } = props.theme;
   return {
     container: {
       h: "full",
@@ -22,7 +25,7 @@ const document = defineStyle((props) => {
       overflow: "hidden",
       transition: "all 0.2s",
       // Set avatar border color to match card background
-      [$avatarBg.variable]: mode("white", "gray.800")(props),
+      [$avatarBg.variable]: mode(colors.white, colors.gray[700])(props),
       _hover: {
         boxShadow: "md",
         bg: mode("white", "gray.800")(props),
@@ -37,6 +40,7 @@ const document = defineStyle((props) => {
 });
 
 const documentSelected = defineStyle((props) => {
+  const { colors } = props.theme;
   return {
     container: {
       h: "full",
@@ -45,7 +49,7 @@ const documentSelected = defineStyle((props) => {
       overflow: "hidden",
       transition: "all 0.2s",
       // Set avatar border color to match selected card background
-      [$avatarBg.variable]: mode("brandPrimary.50", "brandPrimary.900")(props),
+      [$avatarBg.variable]: mode(colors.brandPrimary[50], colors.brandPrimary[900])(props),
       _hover: {
         shadow: "md",
         transform: "translateY(-2px)",
