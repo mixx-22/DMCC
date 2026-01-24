@@ -16,6 +16,7 @@ import {
   Button,
   Flex,
   Box,
+  useColorModeValue,
 } from "@chakra-ui/react";
 import { FiMoreVertical, FiChevronDown, FiChevronRight } from "react-icons/fi";
 import { useState } from "react";
@@ -32,6 +33,9 @@ export const ListView = ({
 }) => {
   const navigate = useNavigate();
   const [isFoldersOpen, setIsFoldersOpen] = useState(true);
+  
+  const rowHoverBg = useColorModeValue("gray.50", "gray.700");
+  const selectedBg = useColorModeValue("blue.50", "blue.900");
 
   // Separate folders from other document types
   const folders = documents.filter((doc) => doc?.type === "folder" || doc?.type === "auditSchedule");
@@ -59,8 +63,8 @@ export const ListView = ({
       <Tr
         key={doc?.id || Math.random()}
         cursor="pointer"
-        _hover={{ bg: "gray.50" }}
-        bg={isSelected ? "blue.50" : "transparent"}
+        _hover={{ bg: rowHoverBg }}
+        bg={isSelected ? selectedBg : "transparent"}
         opacity={isValid ? 1 : 0.6}
         onClick={() => navigate(navigateTo)}
       >

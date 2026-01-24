@@ -24,6 +24,7 @@ import {
   AlertDialogContent,
   AlertDialogOverlay,
   Flex,
+  useColorModeValue,
 } from "@chakra-ui/react";
 import { toast } from "sonner";
 import { FiPlus, FiEdit, FiTrash2, FiSearch, FiUser } from "react-icons/fi";
@@ -36,6 +37,10 @@ import PageFooter from "../components/PageFooter";
 const Accounts = () => {
   const { accounts, deleteAccount, currentUser } = useApp();
   const navigate = useNavigate();
+
+  const tableBg = useColorModeValue("white", "gray.800");
+  const tableHeadBg = useColorModeValue("gray.50", "gray.700");
+  const emptyStateColor = useColorModeValue("gray.500", "gray.400");
 
   React.useEffect(() => {
     if (currentUser?.userType !== "Admin") {
@@ -151,9 +156,9 @@ const Accounts = () => {
       </Box>
 
       {/* Accounts Table */}
-      <Box bg="white" borderRadius="md" overflow="hidden">
+      <Box bg={tableBg} borderRadius="md" overflow="hidden">
         <Table variant="simple">
-          <Thead bg="gray.50">
+          <Thead bg={tableHeadBg}>
             <Tr>
               <Th>Profile</Th>
               <Th>Name</Th>
@@ -168,7 +173,7 @@ const Accounts = () => {
                 <Td colSpan={6} textAlign="center" py={8}>
                   <VStack>
                     <FiUser size={48} color="gray" />
-                    <Text color="gray.500">No accounts found</Text>
+                    <Text color={emptyStateColor}>No accounts found</Text>
                     <Button
                       size="sm"
                       colorScheme="brandPrimary"
