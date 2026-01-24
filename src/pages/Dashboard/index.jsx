@@ -1,10 +1,10 @@
 import { Box } from "@chakra-ui/react";
-import NewLayout from "./newLayout";
+import Layout from "./layout";
 
 export const Dashboard = () => {
   return (
     <Box>
-      <NewLayout />
+      <Layout />
     </Box>
   );
 };

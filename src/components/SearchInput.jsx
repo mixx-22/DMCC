@@ -32,11 +32,11 @@ const SearchInput = ({ placeholder = "Search...", defaultValue = "" }) => {
         onChange={(e) => setKeyword(e.target.value)}
         onKeyDown={handleKeyDown}
         placeholder={placeholder}
-        bg="white"
-        _dark={{ bg: "gray.800" }}
+        variant="search"
       />
       <InputRightElement>
         <IconButton
+          isRound
           icon={<FiSearch />}
           onClick={handleSearch}
           aria-label="Search"
