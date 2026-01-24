@@ -30,7 +30,7 @@ const MotionBox = motion(Box);
 
 const TeamsList = () => {
   const {
-    teams,
+    teams = [],
     loading,
     error,
     page,
@@ -41,7 +41,6 @@ const TeamsList = () => {
     setSearch,
   } = useTeams();
   const [searchParams, setSearchParams] = useSearchParams();
-  const teamList = Array.isArray(teams?.data) ? teams.data : [];
   const avatarBorderColor = useColorModeValue("gray.50", "gray.800");
 
   // Initialize from URL on mount
@@ -80,7 +79,7 @@ const TeamsList = () => {
   };
 
   // Loading skeleton
-  if (loading && teamList.length === 0) {
+  if (loading && teams.length === 0) {
     return (
       <Box>
         <HStack mb={4}>
@@ -126,7 +125,7 @@ const TeamsList = () => {
         <Spacer display={{ base: "none", md: "block" }} />
         <Text fontSize="sm" color="gray.600" flex={{ base: "1", md: "none" }}>
           {total > 0
-            ? `Showing ${teamList?.length} of ${total} Team${
+            ? `Showing ${teams?.length} of ${total} Team${
                 total !== 1 ? "s" : ""
               }`
             : `No Teams Available`}
@@ -157,7 +156,7 @@ const TeamsList = () => {
               </Tr>
             </Thead>
             <Tbody>
-              {teamList.length === 0 ? (
+              {teams.length === 0 ? (
                 <Tr>
                   <Td colSpan={3} textAlign="center" py={8}>
                     <Text color="gray.500">
@@ -168,7 +167,7 @@ const TeamsList = () => {
                   </Td>
                 </Tr>
               ) : (
-                teamList.map((team, teamIndex) => {
+                teams.map((team, teamIndex) => {
                   const teamId = team._id || team.id;
                   const allMembers = [
                     ...(team.leaders || []),

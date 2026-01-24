@@ -42,8 +42,6 @@ const UsersList = () => {
     setSearch,
   } = useUsers();
   const [searchParams, setSearchParams] = useSearchParams();
-  // Use users?.data or empty array if not present
-  const userList = Array.isArray(users?.data) ? users.data : [];
   const inactive = useColorModeValue("red.600", "red.300");
 
   // Initialize from URL on mount
@@ -105,7 +103,7 @@ const UsersList = () => {
         <Spacer display={{ base: "none", md: "block" }} />
         <Text fontSize="sm" color="gray.600" flex={{ base: "1", md: "none" }}>
           {total > 0
-            ? `Showing ${userList?.length} of ${total} User${
+            ? `Showing ${users?.length} of ${total} User${
                 total !== 1 ? "s" : ""
               }`
             : `No Users Available`}
@@ -138,7 +136,7 @@ const UsersList = () => {
               </Tr>
             </Thead>
             <Tbody>
-              {userList.length === 0 ? (
+              {users.length === 0 ? (
                 <Tr>
                   <Td colSpan={4} textAlign="center" py={8}>
                     <Text color="gray.500">
@@ -149,7 +147,7 @@ const UsersList = () => {
                   </Td>
                 </Tr>
               ) : (
-                userList.map((user) => {
+                users.map((user) => {
                   const fullName = `${user.firstName || ""} ${
                     user.middleName || ""
                   } ${user.lastName || ""}`.trim();
@@ -185,7 +183,11 @@ const UsersList = () => {
                           <Badge colorScheme="red">Inactive</Badge>
                         ) : user.role && user.role.length > 0 ? (
                           user.role.map((r) => (
-                            <Badge key={r.id || r._id} colorScheme="purple" mr={1}>
+                            <Badge
+                              key={r.id || r._id}
+                              colorScheme="purple"
+                              mr={1}
+                            >
                               {r?.title}
                             </Badge>
                           ))
