@@ -233,8 +233,8 @@ const Layout = () => {
         method: "GET",
       });
       const data = await res.json();
-      setTotalDocuments(data.totalDocuments);
-      setPendingApprovals(data.pendingApprovals);
+      setTotalDocuments(data?.total || 0);
+      setPendingApprovals(data?.pending || 0);
     } catch (err) {
       console.error(err);
       setTotalDocuments(0);
