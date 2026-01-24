@@ -24,6 +24,7 @@ import {
   Alert,
   AlertIcon,
   Input,
+  useColorModeValue,
 } from "@chakra-ui/react";
 import { toast } from "sonner";
 import { FiDownload, FiTrash2, FiRefreshCw } from "react-icons/fi";
@@ -41,6 +42,9 @@ const Archive = () => {
   const [selectedDocId, setSelectedDocId] = React.useState(null);
   const [isDeleting, setIsDeleting] = React.useState(false);
   const [isRestoring, setIsRestoring] = React.useState(false);
+  
+  const timestampColor = useColorModeValue("gray.500", "gray.400");
+  const headerColor = useColorModeValue("red.600", "red.400");
   const {
     isOpen: isDeleteOpen,
     onOpen: onDeleteOpen,
@@ -229,7 +233,7 @@ const Archive = () => {
                           "Unknown"}
                       </Text>
                       {doc.lastModifiedAt && (
-                        <Text fontSize="xs" color="gray.500">
+                        <Text fontSize="xs" color={timestampColor}>
                           {new Date(doc.lastModifiedAt).toLocaleString()}
                         </Text>
                       )}
@@ -306,7 +310,7 @@ const Archive = () => {
       <Modal isOpen={isDeleteAllOpen} onClose={onDeleteAllClose}>
         <ModalOverlay />
         <ModalContent>
-          <ModalHeader color="red.600">
+          <ModalHeader color={headerColor}>
             Delete All Archived Documents
           </ModalHeader>
           <ModalCloseButton />

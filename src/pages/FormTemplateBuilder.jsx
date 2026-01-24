@@ -29,6 +29,7 @@ import {
   Stack,
   Spinner,
   Center,
+  useColorModeValue,
 } from "@chakra-ui/react";
 import { Select as ChakraSelect } from "chakra-react-select";
 import { SingleDatepicker } from "chakra-dayzed-datepicker";
@@ -77,6 +78,11 @@ const SortableQuestion = ({ question, index, onRemove, onEdit }) => {
     transition,
     isDragging,
   } = useSortable({ id: question.id });
+  
+  const cardBg = useColorModeValue("white", "gray.700");
+  const cardBorderColor = useColorModeValue("gray.200", "gray.600");
+  const hoverBorderColor = useColorModeValue("blue.300", "blue.500");
+  const dragBorderColor = useColorModeValue("blue.400", "blue.400");
 
   const style = {
     transform: CSS.Transform.toString(transform),
@@ -161,9 +167,9 @@ const SortableQuestion = ({ question, index, onRemove, onEdit }) => {
       <Card
         mb={4}
         borderWidth={2}
-        borderColor={isDragging ? "blue.400" : "gray.200"}
-        bg="white"
-        _hover={{ borderColor: "blue.300" }}
+        borderColor={isDragging ? dragBorderColor : cardBorderColor}
+        bg={cardBg}
+        _hover={{ borderColor: hoverBorderColor }}
         variant="filled"
       >
         <CardBody>
@@ -232,6 +238,10 @@ const FormTemplateBuilder = () => {
   const { id } = useParams();
   const { createDocument, updateDocument, fetchDocumentById } = useDocuments();
   const { parentId, path } = location.state || {};
+  
+  // Dark mode colors
+  const cardBg = useColorModeValue("white", "gray.700");
+  const infoBg = useColorModeValue("blue.50", "blue.900");
 
   const [formData, setFormData] = useState({
     title: "",
@@ -661,7 +671,7 @@ const FormTemplateBuilder = () => {
                   borderStyle="dashed"
                   borderColor="blue.300"
                   borderRadius="md"
-                  bg="blue.50"
+                  bg={infoBg}
                 >
                   <VStack spacing={4} align="stretch">
                     <Flex justify="space-between" align="center">
@@ -700,7 +710,7 @@ const FormTemplateBuilder = () => {
                           }
                           placeholder="Question label (optional)"
                           size="md"
-                          bg="white"
+                          bg={cardBg}
                         />
                       </FormControl>
 
@@ -715,7 +725,7 @@ const FormTemplateBuilder = () => {
                             }))
                           }
                           size="md"
-                          bg="white"
+                          bg={cardBg}
                         >
                           <option value={INPUT_TYPES.TEXT}>Text</option>
                           <option value={INPUT_TYPES.NUMBER}>Number</option>
@@ -741,7 +751,7 @@ const FormTemplateBuilder = () => {
                             onChange={(e) => setCurrentOption(e.target.value)}
                             placeholder="Enter an option"
                             size="sm"
-                            bg="white"
+                            bg={cardBg}
                             onKeyPress={(e) => {
                               if (e.key === "Enter") {
                                 e.preventDefault();

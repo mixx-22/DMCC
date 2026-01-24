@@ -23,6 +23,7 @@ import {
   ModalFooter,
   ModalBody,
   ModalCloseButton,
+  useColorModeValue,
 } from "@chakra-ui/react";
 import { toast } from "sonner";
 import { FiCheck, FiX } from "react-icons/fi";
@@ -37,6 +38,9 @@ const Approvals = () => {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const [selectedDoc, setSelectedDoc] = useState(null);
   const [rejectionReason, setRejectionReason] = useState("");
+  
+  const tableBg = useColorModeValue("white", "gray.800");
+  const tableHeadBg = useColorModeValue("gray.50", "gray.700");
 
   const pendingDocuments = documents.filter((doc) => doc.status === "pending");
 
@@ -91,9 +95,9 @@ const Approvals = () => {
           </CardBody>
         </Card>
       ) : (
-        <Box bg="white" borderRadius="md" overflow="hidden">
+        <Box bg={tableBg} borderRadius="md" overflow="hidden">
           <Table variant="simple">
-            <Thead bg="gray.50">
+            <Thead bg={tableHeadBg}>
               <Tr>
                 <Th>Title</Th>
                 <Th>Category</Th>

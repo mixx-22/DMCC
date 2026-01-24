@@ -17,6 +17,7 @@ import {
   Text,
   IconButton,
   Flex,
+  useColorModeValue,
 } from "@chakra-ui/react";
 import { FiPlus, FiEdit, FiTrash2, FiEye } from "react-icons/fi";
 import { useApp } from "../context/_useContext";
@@ -37,6 +38,13 @@ const Certifications = () => {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState("");
+  
+  const tableBg = useColorModeValue("white", "gray.800");
+  const tableHeadBg = useColorModeValue("gray.50", "gray.700");
+  const warningBg = useColorModeValue("orange.50", "orange.900");
+  const warningBorder = useColorModeValue("orange.200", "orange.600");
+  const warningText = useColorModeValue("orange.800", "orange.200");
+  const emptyStateColor = useColorModeValue("gray.500", "gray.400");
   const canViewCertification = (cert) => {
     if (currentUser?.userType === "Admin") {
       return true;
@@ -108,14 +116,14 @@ const Certifications = () => {
 
       {expiringCerts.length > 0 && (
         <Box
-          bg="orange.50"
+          bg={warningBg}
           border="1px"
-          borderColor="orange.200"
+          borderColor={warningBorder}
           borderRadius="md"
           p={4}
           mb={6}
         >
-          <Text fontWeight="semibold" color="orange.800" mb={2}>
+          <Text fontWeight="semibold" color={warningText} mb={2}>
             ⚠️ {expiringCerts.length} certification(s) expiring within 2 months
           </Text>
         </Box>
@@ -132,9 +140,9 @@ const Certifications = () => {
         />
       </Box>
 
-      <Box bg="white" borderRadius="md" overflow="hidden">
+      <Box bg={tableBg} borderRadius="md" overflow="hidden">
         <Table variant="simple">
-          <Thead bg="gray.50">
+          <Thead bg={tableHeadBg}>
             <Tr>
               <Th>Name</Th>
               <Th>Type</Th>
@@ -150,7 +158,7 @@ const Certifications = () => {
               <Tr>
                 <Td colSpan={6} textAlign="center" py={8}>
                   <VStack>
-                    <Text color="gray.500">No certifications found</Text>
+                    <Text color={emptyStateColor}>No certifications found</Text>
                     <Button
                       size="sm"
                       colorScheme="brandPrimary"

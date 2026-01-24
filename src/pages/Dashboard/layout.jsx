@@ -26,6 +26,7 @@ import apiService from "../../services/api";
 import { ChevronDownIcon } from "@chakra-ui/icons";
 import { GridView } from "../../components/Document/GridView";
 import { ListView } from "../../components/Document/ListView";
+import PageHeader from "../../components/PageHeader";
 
 const MotionBox = motion(Box);
 
@@ -48,8 +49,9 @@ const Layout = () => {
   const folderLimit = useBreakpointValue({ base: 4, sm: 6, lg: 8 });
   const fileLimit = useBreakpointValue({ base: 4, sm: 6, lg: 8 });
 
-  const greetingColor = useColorModeValue("gray.500", "gray.500");
-  const dateColor = useColorModeValue("gray.400", "gray.500");
+  const greetingColor = useColorModeValue("gray.500", "gray.300");
+  const dateColor = useColorModeValue("gray.400", "gray.400");
+  const headingColor = useColorModeValue("gray.700", "gray.200");
 
   // Generate time-based greeting
   useEffect(() => {
@@ -250,14 +252,19 @@ const Layout = () => {
   );
 
   return (
-    <MotionBox
-      px={{ base: 4, md: 8 }}
-      py={6}
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-      transition={{ duration: 0.3, ease: "easeInOut" }}
-    >
+    <>
+      <PageHeader>
+        {/* Empty Box needed to enable header visibility - PageHeader checks for children to show/hide header */}
+        <Box />
+      </PageHeader>
+      <MotionBox
+        px={{ base: 4, md: 8 }}
+        py={6}
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        transition={{ duration: 0.3, ease: "easeInOut" }}
+      >
       <Stack
         spacing={4}
         flexDir={"column"}
@@ -326,7 +333,7 @@ const Layout = () => {
 
       {/* Recent Folders */}
       <Box mb={10}>
-        <Text fontSize="xl" fontWeight="500" mb={4} color="gray.700">
+        <Text fontSize="xl" fontWeight="500" mb={4} color={headingColor}>
           Recent Folders
         </Text>
         <GridView foldersOnly documents={recentFolders} />
@@ -335,7 +342,7 @@ const Layout = () => {
       {/* Recent Documents */}
       <Box>
         <HStack alignItems="center" mb={4}>
-          <Text fontSize="xl" fontWeight="500" color="gray.700">
+          <Text fontSize="xl" fontWeight="500" color={headingColor}>
             Recent Documents
           </Text>
           <Spacer />
@@ -361,6 +368,7 @@ const Layout = () => {
         )}
       </Box>
     </MotionBox>
+    </>
   );
 };
 

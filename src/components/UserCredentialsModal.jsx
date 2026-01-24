@@ -16,6 +16,7 @@ import {
   AlertIcon,
   AlertDescription,
   useClipboard,
+  useColorModeValue,
 } from "@chakra-ui/react";
 import { FiCopy, FiCheck } from "react-icons/fi";
 
@@ -34,6 +35,8 @@ const UserCredentialsModal = ({
 
   const { hasCopied: usernameCopied, onCopy: onCopyUsername } =
     useClipboard(username);
+    
+  const inputBg = useColorModeValue("gray.50", "gray.700");
 
   return (
     <Modal
@@ -67,7 +70,7 @@ const UserCredentialsModal = ({
                 <Input
                   value={email}
                   isReadOnly
-                  bg="gray.50"
+                  bg={inputBg}
                   fontFamily="mono"
                 />
                 <InputRightElement>
@@ -90,7 +93,7 @@ const UserCredentialsModal = ({
                 <Input
                   value={username}
                   isReadOnly
-                  bg="gray.50"
+                  bg={inputBg}
                   fontFamily="mono"
                 />
                 <InputRightElement>
@@ -113,7 +116,7 @@ const UserCredentialsModal = ({
                 <Input
                   value={password}
                   isReadOnly
-                  bg="gray.50"
+                  bg={inputBg}
                   fontFamily="mono"
                   type="text"
                 />

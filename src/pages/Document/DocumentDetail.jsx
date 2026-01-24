@@ -29,6 +29,7 @@ import {
   EditableTextarea,
   EditablePreview,
   Link,
+  useColorModeValue,
 } from "@chakra-ui/react";
 import {
   FiTrash2,
@@ -67,6 +68,10 @@ const DocumentDetail = () => {
   const currentIdRef = useRef(null);
   const titleTextareaRef = useRef(null);
   const descriptionTextareaRef = useRef(null);
+  
+  const contentBg = useColorModeValue("gray.50", "gray.800");
+  const cardBorderColor = useColorModeValue("gray.200", "gray.600");
+  const cardBg = useColorModeValue("gray.50", "gray.700");
 
   const {
     isOpen: isDeleteOpen,
@@ -226,7 +231,7 @@ const DocumentDetail = () => {
         <PageHeader>
           <Heading variant="pageTitle">Documents</Heading>
         </PageHeader>
-        <Box flex="1" bg="gray.50" p={8}>
+        <Box flex="1" bg={contentBg} p={8}>
           <Center h="400px">
             <VStack>
               <Text fontSize="xl" color="gray.600">
@@ -743,8 +748,8 @@ const DocumentDetail = () => {
                           p={4}
                           borderWidth={1}
                           borderRadius="md"
-                          borderColor="gray.200"
-                          bg="gray.50"
+                          borderColor={cardBorderColor}
+                          bg={cardBg}
                         >
                           <HStack justify="space-between" align="start" mb={2}>
                             <Text fontWeight="medium" flex={1}>
