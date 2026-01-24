@@ -74,6 +74,16 @@ const PrivacyDisplay = ({ document, onManageAccess, size = "md" }) => {
             <AvatarGroup size={size === "sm" ? "xs" : "sm"} max={5}>
               {/* Display Users */}
               {users.map((user) => {
+                // Handle both object format and string ID format
+                if (typeof user === 'string') {
+                  // If it's just an ID, we can't display much info
+                  return (
+                    <Tooltip key={user} label="User">
+                      <Avatar name="?" />
+                    </Tooltip>
+                  );
+                }
+                
                 const fullName = user.firstName && user.lastName
                   ? `${user.firstName} ${user.lastName}`
                   : user.email || user.username || "Unknown User";
@@ -89,14 +99,26 @@ const PrivacyDisplay = ({ document, onManageAccess, size = "md" }) => {
               })}
               
               {/* Display Teams - Teams don't have profile pictures, just show name */}
-              {teams.map((team) => (
-                <Tooltip key={team.id || team._id} label={team.name}>
-                  <Avatar
-                    name={team.name}
-                    bg="blue.500"
-                  />
-                </Tooltip>
-              ))}
+              {teams.map((team) => {
+                // Handle both object format and string ID format
+                if (typeof team === 'string') {
+                  // If it's just an ID, we can't display much info
+                  return (
+                    <Tooltip key={team} label="Team">
+                      <Avatar name="?" bg="blue.500" />
+                    </Tooltip>
+                  );
+                }
+                
+                return (
+                  <Tooltip key={team.id || team._id} label={team.name}>
+                    <Avatar
+                      name={team.name}
+                      bg="blue.500"
+                    />
+                  </Tooltip>
+                );
+              })}
             </AvatarGroup>
           </>
         )}

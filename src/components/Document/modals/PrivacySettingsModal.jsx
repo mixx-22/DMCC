@@ -47,13 +47,23 @@ const PrivacySettingsModal = ({ isOpen, onClose, document }) => {
   if (!document) return null;
 
   const handleSave = () => {
+    // Extract only IDs from user/team/role objects for the API payload
+    const extractIds = (items) => {
+      return items.map(item => {
+        // If item is already a string (just an ID), return it
+        if (typeof item === 'string') return item;
+        // Otherwise extract the ID from the object
+        return item.id || item._id;
+      });
+    };
+
     const newData = {
       ...document,
       privacy: {
         ...document.privacy,
-        users: privacySettings.users,
-        teams: privacySettings.teams,
-        roles: privacySettings.roles,
+        users: extractIds(privacySettings.users),
+        teams: extractIds(privacySettings.teams),
+        roles: extractIds(privacySettings.roles),
       },
       permissionOverrides: {
         ...document.permissionOverrides,
