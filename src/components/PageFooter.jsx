@@ -5,15 +5,18 @@ import { useLayout } from "../context/_useContext";
 
 const PageFooter = ({ children }) => {
   const { footerRef, updateFooterContent } = useLayout();
+  const hasContent = children !== null && children !== undefined;
   
   useEffect(() => {
-    if (children !== null && children !== undefined) {
-      updateFooterContent(true);
-      return () => updateFooterContent(false);
-    }
-  }, [children, updateFooterContent]);
+    updateFooterContent(hasContent);
+    return () => {
+      if (hasContent) {
+        updateFooterContent(false);
+      }
+    };
+  }, [hasContent, updateFooterContent]);
 
-  if (children === null || children === undefined) return null;
+  if (!hasContent) return null;
   return <Portal containerRef={footerRef}>{children}</Portal>;
 };
 
