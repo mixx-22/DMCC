@@ -49,7 +49,10 @@ const documentSelected = defineStyle((props) => {
       overflow: "hidden",
       transition: "all 0.2s",
       // Set avatar border color to match selected card background
-      [$avatarBg.variable]: mode(colors.brandPrimary[50], colors.brandPrimary[900])(props),
+      [$avatarBg.variable]: mode(
+        colors.brandPrimary[50],
+        colors.brandPrimary[900],
+      )(props),
       _hover: {
         shadow: "md",
         transform: "translateY(-2px)",

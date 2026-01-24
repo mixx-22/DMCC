@@ -204,7 +204,7 @@ const DocumentDetail = () => {
         <PageHeader>
           <Heading variant="pageTitle">Documents</Heading>
         </PageHeader>
-        <Box flex="1" bg="gray.50" p={8}>
+        <Box flex="1" p={8}>
           <Center h="400px">
             <VStack>
               <Spinner size="xl" color="blue.500" />
