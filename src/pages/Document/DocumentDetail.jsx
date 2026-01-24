@@ -48,6 +48,7 @@ import PageFooter from "../../components/PageFooter";
 import DeleteDocumentModal from "../../components/Document/modals/DeleteDocumentModal";
 import MoveDocumentModal from "../../components/Document/modals/MoveDocumentModal";
 import PrivacySettingsModal from "../../components/Document/modals/PrivacySettingsModal";
+import ManageFileTypeModal from "../../components/Document/modals/ManageFileTypeModal";
 import DownloadButton from "../../components/Document/DownloadButton";
 import PreviewButton from "../../components/Document/PreviewButton";
 import Timestamp from "../../components/Timestamp";
@@ -55,7 +56,6 @@ import Breadcrumbs from "../../components/Document/Breadcrumbs";
 import { useDocuments } from "../../context/_useContext";
 import { toast } from "sonner";
 import { getDocumentIcon } from "../../components/Document/DocumentIcon";
-import FileTypeAsyncSelect from "../../components/FileTypeAsyncSelect";
 
 const DocumentDetail = () => {
   const { id } = useParams();
@@ -67,7 +67,6 @@ const DocumentDetail = () => {
   const currentIdRef = useRef(null);
   const titleTextareaRef = useRef(null);
   const descriptionTextareaRef = useRef(null);
-  const fileTypeDebounceRef = useRef(null);
 
   const {
     isOpen: isDeleteOpen,
@@ -85,6 +84,12 @@ const DocumentDetail = () => {
     isOpen: isPrivacyOpen,
     onOpen: onPrivacyOpen,
     onClose: onPrivacyClose,
+  } = useDisclosure();
+
+  const {
+    isOpen: isFileTypeOpen,
+    onOpen: onFileTypeOpen,
+    onClose: onFileTypeClose,
   } = useDisclosure();
 
   // Fetch document using useRef to prevent duplicates
@@ -202,75 +207,6 @@ const DocumentDetail = () => {
       // Revert on error
       setDocument((prev) => ({ ...prev }));
     }
-  };
-
-  // Handle file type change
-  const handleFileTypeChange = async (newFileType) => {
-    // Store original value for rollback
-    const originalFileType = document?.metadata?.fileType;
-    
-    // Check if value actually changed
-    const isSame = (originalFileType?.id === newFileType?.id) || 
-                   (!originalFileType && !newFileType);
-    
-    if (isSame) {
-      return;
-    }
-
-    // Prevent request if clearing file type (setting to null/empty)
-    if (!newFileType || !newFileType.id) {
-      setDocument((prev) => ({
-        ...prev,
-        metadata: {
-          ...prev.metadata,
-          fileType: null,
-        },
-      }));
-      return;
-    }
-
-    // Optimistically update UI
-    setDocument((prev) => ({
-      ...prev,
-      metadata: {
-        ...prev.metadata,
-        fileType: newFileType,
-      },
-    }));
-
-    // Clear any existing debounce timer
-    if (fileTypeDebounceRef.current) {
-      clearTimeout(fileTypeDebounceRef.current);
-    }
-
-    // Debounce the API call
-    fileTypeDebounceRef.current = setTimeout(async () => {
-      try {
-        await updateDocument(id, {
-          metadata: {
-            ...document.metadata,
-            fileType: newFileType.id,
-          },
-        });
-        toast.success("File Type Updated", {
-          description: "Document file type has been updated",
-          duration: 2000,
-        });
-      } catch (error) {
-        // Revert to original value on error
-        setDocument((prev) => ({
-          ...prev,
-          metadata: {
-            ...prev.metadata,
-            fileType: originalFileType,
-          },
-        }));
-        toast.error("Update Failed", {
-          description: "Failed to update file type",
-          duration: 3000,
-        });
-      }
-    }, 500); // 500ms debounce delay
   };
 
   if (loading) {
@@ -575,12 +511,42 @@ const DocumentDetail = () => {
 
                   {document?.type === "file" && (
                     <Box>
-                      <FileTypeAsyncSelect
-                        value={document?.metadata?.fileType || null}
-                        onChange={handleFileTypeChange}
-                        label="File Type"
-                        helperText="Classify this document by selecting its type"
-                      />
+                      <Text fontSize="sm" fontWeight="semibold" mb={2}>
+                        File Type
+                      </Text>
+                      {document?.metadata?.fileType ? (
+                        <HStack spacing={2}>
+                          <Badge
+                            colorScheme="purple"
+                            fontSize="sm"
+                            px={3}
+                            py={1}
+                            borderRadius="md"
+                          >
+                            {document.metadata.fileType.name}
+                          </Badge>
+                          <Button
+                            size="xs"
+                            variant="ghost"
+                            colorScheme="blue"
+                            onClick={onFileTypeOpen}
+                          >
+                            Change
+                          </Button>
+                        </HStack>
+                      ) : (
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          colorScheme="blue"
+                          onClick={onFileTypeOpen}
+                        >
+                          Assign File Type
+                        </Button>
+                      )}
+                      <Text fontSize="xs" color="gray.500" mt={1}>
+                        Classify this document by selecting its type
+                      </Text>
                     </Box>
                   )}
                 </SimpleGrid>
@@ -983,6 +949,11 @@ const DocumentDetail = () => {
         onClose={onDeleteClose}
         document={{ ...document, id }}
         onDelete={() => navigate("/documents")}
+      />
+      <ManageFileTypeModal
+        isOpen={isFileTypeOpen}
+        onClose={onFileTypeClose}
+        document={{ ...document, id }}
       />
     </>
   );

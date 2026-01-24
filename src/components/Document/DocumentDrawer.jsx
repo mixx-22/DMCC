@@ -34,37 +34,25 @@ import Timestamp from "../Timestamp";
 import DeleteDocumentModal from "./modals/DeleteDocumentModal";
 import MoveDocumentModal from "./modals/MoveDocumentModal";
 import PrivacySettingsModal from "./modals/PrivacySettingsModal";
+import ManageFileTypeModal from "./modals/ManageFileTypeModal";
 import DownloadButton from "./DownloadButton";
 import { useDocuments } from "../../context/_useContext";
 import { toast } from "sonner";
 import { useEffect, useRef, useState } from "react";
 import { Link as RouterLink } from "react-router-dom";
 import { getDocumentIcon } from "./DocumentIcon";
-import FileTypeAsyncSelect from "../FileTypeAsyncSelect";
 
 const DocumentDrawer = ({ document, isOpen, onClose }) => {
   const { updateDocument } = useDocuments();
   const [titleCache, setTitleCache] = useState("");
   const [descriptionCache, setDescriptionCache] = useState("");
-  const [fileTypeCache, setFileTypeCache] = useState(null);
   const titleTextareaRef = useRef(null);
   const descriptionTextareaRef = useRef(null);
-  const fileTypeDebounceRef = useRef(null);
 
   useEffect(() => {
     setTitleCache(document?.title || "");
     setDescriptionCache(document?.description || "");
-    setFileTypeCache(document?.metadata?.fileType || null);
   }, [document]);
-
-  // Cleanup debounce timer on unmount
-  useEffect(() => {
-    return () => {
-      if (fileTypeDebounceRef.current) {
-        clearTimeout(fileTypeDebounceRef.current);
-      }
-    };
-  }, []);
 
   const {
     isOpen: isDeleteOpen,
@@ -82,6 +70,12 @@ const DocumentDrawer = ({ document, isOpen, onClose }) => {
     isOpen: isPrivacyOpen,
     onOpen: onPrivacyOpen,
     onClose: onPrivacyClose,
+  } = useDisclosure();
+
+  const {
+    isOpen: isFileTypeOpen,
+    onOpen: onFileTypeOpen,
+    onClose: onFileTypeClose,
   } = useDisclosure();
 
   if (!document) return null;
@@ -155,56 +149,6 @@ const DocumentDrawer = ({ document, isOpen, onClose }) => {
         duration: 3000,
       });
     }
-  };
-
-  const handleFileTypeChange = async (newFileType) => {
-    // Store original value for rollback
-    const originalFileType = fileTypeCache;
-    
-    // Check if value actually changed
-    const isSame = (originalFileType?.id === newFileType?.id) || 
-                   (!originalFileType && !newFileType);
-    
-    if (isSame) {
-      return;
-    }
-
-    // Prevent request if clearing file type (setting to null/empty)
-    if (!newFileType || !newFileType.id) {
-      setFileTypeCache(null);
-      return;
-    }
-
-    // Optimistically update UI
-    setFileTypeCache(newFileType);
-
-    // Clear any existing debounce timer
-    if (fileTypeDebounceRef.current) {
-      clearTimeout(fileTypeDebounceRef.current);
-    }
-
-    // Debounce the API call
-    fileTypeDebounceRef.current = setTimeout(async () => {
-      try {
-        await updateDocument(document.id || document._id, {
-          metadata: {
-            ...document.metadata,
-            fileType: newFileType.id,
-          },
-        });
-        toast.success("File Type Updated", {
-          description: "Document file type has been updated",
-          duration: 2000,
-        });
-      } catch (error) {
-        // Revert to original value on error
-        setFileTypeCache(originalFileType);
-        toast.error("Update Failed", {
-          description: "Failed to update file type",
-          duration: 3000,
-        });
-      }
-    }, 500); // 500ms debounce delay
   };
 
   return (
@@ -487,12 +431,42 @@ const DocumentDrawer = ({ document, isOpen, onClose }) => {
                         </Box>
                       )}
                       <Box>
-                        <FileTypeAsyncSelect
-                          value={fileTypeCache}
-                          onChange={handleFileTypeChange}
-                          label="File Type"
-                          helperText="Classify this document by selecting its type"
-                        />
+                        <Text fontSize="sm" color="gray.600" mb={2}>
+                          File Type
+                        </Text>
+                        {document?.metadata?.fileType ? (
+                          <HStack spacing={2}>
+                            <Badge
+                              colorScheme="purple"
+                              fontSize="sm"
+                              px={3}
+                              py={1}
+                              borderRadius="md"
+                            >
+                              {document.metadata.fileType.name}
+                            </Badge>
+                            <Button
+                              size="xs"
+                              variant="ghost"
+                              colorScheme="blue"
+                              onClick={onFileTypeOpen}
+                            >
+                              Change
+                            </Button>
+                          </HStack>
+                        ) : (
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            colorScheme="blue"
+                            onClick={onFileTypeOpen}
+                          >
+                            Assign File Type
+                          </Button>
+                        )}
+                        <Text fontSize="xs" color="gray.500" mt={1}>
+                          Classify this document by selecting its type
+                        </Text>
                       </Box>
                     </VStack>
                   </Box>
@@ -717,6 +691,11 @@ const DocumentDrawer = ({ document, isOpen, onClose }) => {
       <PrivacySettingsModal
         isOpen={isPrivacyOpen}
         onClose={onPrivacyClose}
+        document={document}
+      />
+      <ManageFileTypeModal
+        isOpen={isFileTypeOpen}
+        onClose={onFileTypeClose}
         document={document}
       />
     </>
