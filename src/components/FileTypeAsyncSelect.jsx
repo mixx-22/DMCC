@@ -92,6 +92,7 @@ const FileTypeAsyncSelect = ({ value, onChange, isInvalid, label = "File Type", 
         isClearable
         cacheOptions
         defaultOptions={false}
+        debounceTimeout={500}
         loadingMessage={() => "Loading file types..."}
         colorScheme="purple"
         useBasicStyles
