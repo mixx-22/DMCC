@@ -8,6 +8,7 @@ import styles from "./styles";
 import { headingTheme } from "./heading";
 import { tableTheme } from "./table";
 import { cardTheme } from "./card";
+import { avatarTheme } from "./avatar";
 import { inputTheme } from "./input";
 import { buttonTheme } from "./button";
 
@@ -27,6 +28,7 @@ export const theme = extendTheme({
     Heading: headingTheme,
     Table: tableTheme,
     Card: cardTheme,
+    Avatar: avatarTheme,
     Input: inputTheme,
     Button: buttonTheme,
   },

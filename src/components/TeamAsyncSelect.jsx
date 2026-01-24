@@ -2,23 +2,30 @@ import {
   Box,
   FormControl,
   FormLabel,
-  Input,
-  Tag,
-  TagLabel,
-  TagCloseButton,
   HStack,
   VStack,
   Text,
-  Spinner,
-  useOutsideClick,
+  Avatar,
+  Table,
+  Thead,
+  Tbody,
+  Tr,
+  Th,
+  Td,
+  IconButton,
+  Tag,
+  TagLabel,
+  Link,
 } from "@chakra-ui/react";
-import { useState, useRef, useCallback } from "react";
+import { AsyncSelect } from "chakra-react-select";
+import { FiEye, FiX } from "react-icons/fi";
+import { useCallback } from "react";
 import apiService from "../services/api";
+import { Link as RouterLink } from "react-router-dom";
 
 const TEAMS_ENDPOINT = import.meta.env.VITE_API_PACKAGE_TEAMS;
 const USE_API = import.meta.env.VITE_USE_API !== "false";
 
-// Mock teams for development
 const MOCK_TEAMS = [
   { _id: "1", id: "1", name: "Engineering" },
   { _id: "2", id: "2", name: "Marketing" },
@@ -27,179 +34,297 @@ const MOCK_TEAMS = [
   { _id: "5", id: "5", name: "Finance" },
 ];
 
-const TeamAsyncSelect = ({ value = [], onChange, isInvalid, ...props }) => {
-  const [inputValue, setInputValue] = useState("");
-  const [options, setOptions] = useState([]);
-  const [loading, setLoading] = useState(false);
-  const [isOpen, setIsOpen] = useState(false);
-  const containerRef = useRef();
-  const debounceTimer = useRef(null);
+const getTeamId = (team) => team.id || team._id;
 
-  useOutsideClick({
-    ref: containerRef,
-    handler: () => setIsOpen(false),
-  });
+const TeamAsyncSelect = ({
+  value = [],
+  onChange,
+  isInvalid,
+  label = "Teams",
+  placeholder = "Type at least 2 characters to search teams...",
+  limit = 10,
+  displayMode = "badges",
+  readonly = false,
+  tableProps = {},
+  ...props
+}) => {
+  const loadOptions = useCallback(
+    async (inputValue) => {
+      if (inputValue.length < 2) {
+        return [];
+      }
 
-  const fetchTeams = useCallback(async (keyword) => {
-    if (keyword.length < 2) {
-      setOptions([]);
-      return;
-    }
+      if (!USE_API) {
+        return new Promise((resolve) => {
+          setTimeout(() => {
+            const filtered = MOCK_TEAMS.filter((team) =>
+              team.name.toLowerCase().includes(inputValue.toLowerCase())
+            );
+            resolve(
+              filtered.slice(0, limit).map((team) => ({
+                value: getTeamId(team),
+                label: team.name,
+                team: team,
+              }))
+            );
+          }, 300);
+        });
+      }
 
-    setLoading(true);
+      try {
+        const data = await apiService.request(TEAMS_ENDPOINT, {
+          method: "GET",
+          params: {
+            keyword: inputValue,
+            limit,
+          },
+        });
 
-    if (!USE_API) {
-      // Mock API call with delay
-      setTimeout(() => {
-        const filtered = MOCK_TEAMS.filter((team) =>
-          team.name.toLowerCase().includes(keyword.toLowerCase())
-        );
-        setOptions(filtered);
-        setLoading(false);
-      }, 300);
-      return;
-    }
+        const teams = data.data || data.teams || [];
+        return teams.map((team) => ({
+          value: getTeamId(team),
+          label: team.name,
+          team: team,
+        }));
+      } catch (error) {
+        console.error("Failed to fetch teams:", error);
+        return [];
+      }
+    },
+    [limit],
+  );
 
-    try {
-      const data = await apiService.request(TEAMS_ENDPOINT, {
-        method: "GET",
-        params: {
-          keyword,
-          limit: 20,
-        },
-      });
-
-      const teams = data.data || data.teams || [];
-      setOptions(teams);
-    } catch (error) {
-      console.error("Failed to fetch teams:", error);
-      setOptions([]);
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
-  const handleInputChange = (e) => {
-    const newValue = e.target.value;
-    setInputValue(newValue);
-    setIsOpen(true);
-
-    // Clear existing timeout
-    if (debounceTimer.current) {
-      clearTimeout(debounceTimer.current);
-    }
-
-    // Debounce the API call
-    debounceTimer.current = setTimeout(() => {
-      fetchTeams(newValue);
-    }, 500);
-  };
-
-  const handleSelectTeam = (team) => {
-    // Store full team object with id and name
-    // Prevent duplicate selection by checking if id already exists
-    const isDuplicate = value.some((t) => t.id === team.id || t.id === team._id);
-    if (!isDuplicate) {
-      onChange([...value, { id: team.id || team._id, name: team.name }]);
-    }
-    setInputValue("");
-    setOptions([]);
-    setIsOpen(false);
+  const handleChange = (selectedOptions) => {
+    const teams = (selectedOptions || []).map((option) => ({
+      id: option.value,
+      _id: option.value,
+      name: option.team.name,
+    }));
+    onChange(teams);
   };
 
   const handleRemoveTeam = (teamToRemove) => {
-    onChange(value.filter((team) => team.id !== teamToRemove.id));
+    onChange(
+      value.filter((team) => getTeamId(team) !== getTeamId(teamToRemove)),
+    );
   };
 
-  // Filter out already selected teams by checking IDs
-  const filteredOptions = options.filter(
-    (option) => !value.some((t) => t.id === option.id || t.id === option._id)
-  );
+  const selectedValues = value.map((team) => ({
+    value: getTeamId(team),
+    label: team.name || "",
+    team: team,
+  }));
+
+  const formatOptionLabel = ({ team }) => {
+    return (
+      <HStack>
+        <Avatar size="sm" name={team.name} bg="blue.500" />
+        <VStack align="start" spacing={0}>
+          <Text fontSize="sm" fontWeight="medium">
+            {team.name}
+          </Text>
+        </VStack>
+      </HStack>
+    );
+  };
+
+  if (readonly) {
+    return (
+      <FormControl {...props}>
+        <FormLabel>{label}</FormLabel>
+        {value.length > 0 ? (
+          displayMode === "table" ? (
+            <Table variant="simple" size="sm">
+              <Thead>
+                <Tr>
+                  <Th>Name</Th>
+                </Tr>
+              </Thead>
+              <Tbody>
+                {value.map((team) => {
+                  const teamId = getTeamId(team);
+                  return (
+                    <Tr key={getTeamId(team)}>
+                      <Td>
+                        <Link
+                          as={RouterLink}
+                          to={`/teams/${teamId}`}
+                          _hover={{ textDecoration: "none" }}
+                        >
+                          <HStack spacing={3} _hover={{ opacity: 0.8 }}>
+                            <Avatar
+                              size="sm"
+                              name={team.name}
+                              bg="blue.500"
+                            />
+                            <VStack align="start" spacing={0}>
+                              <Text fontSize="sm" fontWeight="medium">
+                                {team.name}
+                              </Text>
+                            </VStack>
+                          </HStack>
+                        </Link>
+                      </Td>
+                    </Tr>
+                  );
+                })}
+              </Tbody>
+            </Table>
+          ) : (
+            <HStack spacing={2} wrap="wrap">
+              {value.map((team) => {
+                const teamId = getTeamId(team);
+                return (
+                  <Link
+                    key={teamId}
+                    as={RouterLink}
+                    to={`/teams/${teamId}`}
+                    _hover={{ textDecoration: "none" }}
+                  >
+                    <Tag
+                      size="md"
+                      borderRadius="full"
+                      variant="solid"
+                      colorScheme="green"
+                      cursor="pointer"
+                      _hover={{ opacity: 0.8 }}
+                    >
+                      <Avatar
+                        size="xs"
+                        name={team.name}
+                        ml={-1}
+                        mr={2}
+                        bg="blue.500"
+                      />
+                      <TagLabel>{team.name}</TagLabel>
+                    </Tag>
+                  </Link>
+                );
+              })}
+            </HStack>
+          )
+        ) : (
+          <Text color="gray.500" fontSize="sm">
+            No teams assigned
+          </Text>
+        )}
+      </FormControl>
+    );
+  }
 
   return (
-    <FormControl isInvalid={isInvalid} {...props}>
-      <FormLabel>Teams</FormLabel>
-      <Box ref={containerRef} position="relative">
-        <VStack align="stretch" spacing={2}>
-          {value.length > 0 && (
-            <HStack spacing={2} wrap="wrap">
-              {value.map((team) => (
-                <Tag
-                  key={team.id}
-                  size="md"
-                  borderRadius="full"
-                  variant="solid"
-                  colorScheme="green"
-                >
-                  <TagLabel>{team.name}</TagLabel>
-                  <TagCloseButton onClick={() => handleRemoveTeam(team)} />
-                </Tag>
-              ))}
+    <>
+      <FormControl isInvalid={isInvalid} {...props}>
+        <FormLabel>{label}</FormLabel>
+        <Box>
+          {displayMode === "badges" && value.length > 0 && (
+            <HStack spacing={2} wrap="wrap" mb={2}>
+              {value.map((team) => {
+                const teamId = getTeamId(team);
+                return (
+                  <Link
+                    key={teamId}
+                    as={RouterLink}
+                    to={`/teams/${teamId}`}
+                    _hover={{ textDecoration: "none" }}
+                  >
+                    <Tag
+                      size="md"
+                      borderRadius="full"
+                      variant="solid"
+                      colorScheme="green"
+                      cursor="pointer"
+                      _hover={{ opacity: 0.8 }}
+                    >
+                      <Avatar
+                        size="xs"
+                        name={team.name}
+                        ml={-1}
+                        mr={2}
+                        bg="blue.500"
+                      />
+                      <TagLabel>{team.name}</TagLabel>
+                    </Tag>
+                  </Link>
+                );
+              })}
             </HStack>
           )}
-          <Input
-            value={inputValue}
-            onChange={handleInputChange}
-            onFocus={() => {
-              if (inputValue.length >= 2) {
-                setIsOpen(true);
-              }
-            }}
-            placeholder="Type at least 2 characters to search teams..."
+          <AsyncSelect
+            isMulti
+            value={selectedValues}
+            onChange={handleChange}
+            loadOptions={loadOptions}
+            placeholder={placeholder}
+            noOptionsMessage={({ inputValue }) =>
+              inputValue.length < 2
+                ? "Type at least 2 characters to search"
+                : "No teams found"
+            }
+            formatOptionLabel={formatOptionLabel}
+            isClearable
+            cacheOptions
+            defaultOptions={false}
+            loadingMessage={() => "Loading teams..."}
+            colorScheme="green"
+            useBasicStyles
           />
-        </VStack>
-
-        {isOpen && inputValue.length >= 2 && (
-          <Box
-            position="absolute"
-            top="100%"
-            left={0}
-            right={0}
-            mt={1}
-            bg="white"
-            boxShadow="lg"
-            borderRadius="md"
-            border="1px"
-            borderColor="gray.200"
-            maxH="200px"
-            overflowY="auto"
-            zIndex={10}
-          >
-            {loading ? (
-              <Box p={4} textAlign="center">
-                <Spinner size="sm" />
-                <Text fontSize="sm" color="gray.500" mt={2}>
-                  Loading teams...
-                </Text>
-              </Box>
-            ) : filteredOptions.length > 0 ? (
-              <VStack align="stretch" spacing={0}>
-                {filteredOptions.map((option) => (
-                  <Box
-                    key={option._id || option.id}
-                    p={3}
-                    cursor="pointer"
-                    _hover={{ bg: "gray.100" }}
-                    onClick={() => handleSelectTeam(option)}
-                  >
-                    <Text fontSize="sm">{option.name}</Text>
-                  </Box>
-                ))}
-              </VStack>
-            ) : (
-              <Box p={4} textAlign="center">
-                <Text fontSize="sm" color="gray.500">
-                  No teams found
-                </Text>
-              </Box>
-            )}
-          </Box>
+        </Box>
+        {!readonly && (
+          <Text fontSize="xs" color="gray.500" mt={1}>
+            Type at least 2 characters to search for teams
+          </Text>
         )}
-      </Box>
-      <Text fontSize="xs" color="gray.500" mt={1}>
-        Type at least 2 characters to search for teams
-      </Text>
-    </FormControl>
+      </FormControl>
+      {displayMode === "table" && value.length > 0 && (
+        <Table variant="simple" size="sm" border="none" mt={6} {...tableProps}>
+          <Tbody>
+            {value.map((team) => {
+              const teamId = getTeamId(team);
+              return (
+                <Tr key={teamId}>
+                  <Td border="none">
+                    <HStack spacing={3}>
+                      <Avatar
+                        size="sm"
+                        name={team.name}
+                        bg="blue.500"
+                      />
+                      <VStack align="start" spacing={0}>
+                        <Text fontSize="sm" fontWeight="medium">
+                          {team.name}
+                        </Text>
+                      </VStack>
+                    </HStack>
+                  </Td>
+                  <Td border="none" textAlign="right">
+                    <HStack spacing={1} justifyContent="flex-end">
+                      <IconButton
+                        size="sm"
+                        variant="ghost"
+                        colorScheme="brandPrimary"
+                        icon={<FiEye />}
+                        aria-label="View team"
+                        as={RouterLink}
+                        to={`/teams/${teamId}`}
+                      />
+                      <IconButton
+                        size="sm"
+                        variant="ghost"
+                        colorScheme="error"
+                        icon={<FiX />}
+                        aria-label="Remove team"
+                        onClick={() => handleRemoveTeam(team)}
+                      />
+                    </HStack>
+                  </Td>
+                </Tr>
+              );
+            })}
+          </Tbody>
+        </Table>
+      )}
+    </>
   );
 };
 

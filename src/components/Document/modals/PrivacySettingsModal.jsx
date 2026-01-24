@@ -47,17 +47,32 @@ const PrivacySettingsModal = ({ isOpen, onClose, document }) => {
   if (!document) return null;
 
   const handleSave = () => {
-    updateDocument(document.id, {
+    // Extract only IDs from user/team/role objects for the API payload
+    const extractIds = (items) => {
+      return items.map((item) => {
+        // If item is already a string (just an ID), return it
+        if (typeof item === "string") return item;
+        // Otherwise extract the ID from the object
+        return item.id || item._id;
+      });
+    };
+
+    const newData = {
+      ...document,
       privacy: {
-        users: privacySettings.users,
-        teams: privacySettings.teams,
-        roles: privacySettings.roles,
+        ...document.privacy,
+        users: extractIds(privacySettings.users),
+        teams: extractIds(privacySettings.teams),
+        roles: extractIds(privacySettings.roles),
       },
       permissionOverrides: {
+        ...document.permissionOverrides,
         readOnly: privacySettings.readOnly,
         restricted: privacySettings.restricted,
       },
-    });
+    };
+
+    updateDocument(document.id, newData);
 
     toast.success("Privacy Settings Updated", {
       description: "Privacy settings have been updated successfully",
@@ -85,6 +100,7 @@ const PrivacySettingsModal = ({ isOpen, onClose, document }) => {
 
             {/* Users */}
             <UserAsyncSelect
+              displayMode="none"
               label="Shared with Users"
               value={privacySettings.users}
               onChange={(users) =>
@@ -94,6 +110,7 @@ const PrivacySettingsModal = ({ isOpen, onClose, document }) => {
 
             {/* Teams */}
             <TeamAsyncSelect
+              displayMode="none"
               value={privacySettings.teams}
               onChange={(teams) =>
                 setPrivacySettings((prev) => ({ ...prev, teams }))

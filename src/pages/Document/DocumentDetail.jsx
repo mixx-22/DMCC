@@ -33,7 +33,6 @@ import {
 import {
   FiTrash2,
   FiMove,
-  FiShare2,
   FiEdit,
   FiMoreVertical,
   FiCheckCircle,
@@ -52,6 +51,7 @@ import DownloadButton from "../../components/Document/DownloadButton";
 import PreviewButton from "../../components/Document/PreviewButton";
 import Timestamp from "../../components/Timestamp";
 import Breadcrumbs from "../../components/Document/Breadcrumbs";
+import PrivacyDisplay from "../../components/Document/PrivacyDisplay";
 import { useDocuments } from "../../context/_useContext";
 import { toast } from "sonner";
 import { getDocumentIcon } from "../../components/Document/DocumentIcon";
@@ -204,7 +204,7 @@ const DocumentDetail = () => {
         <PageHeader>
           <Heading variant="pageTitle">Documents</Heading>
         </PageHeader>
-        <Box flex="1" bg="gray.50" p={8}>
+        <Box flex="1" p={8}>
           <Center h="400px">
             <VStack>
               <Spinner size="xl" color="blue.500" />
@@ -463,6 +463,23 @@ const DocumentDetail = () => {
                         </VStack>
                       </HStack>
                     )}
+                  </Box>
+
+                  <Box>
+                    <Text
+                      fontSize="sm"
+                      color="gray.600"
+                      fontWeight="medium"
+                      mb={2}
+                    >
+                      Privacy Settings
+                    </Text>
+                    <PrivacyDisplay
+                      document={document}
+                      onManageAccess={onPrivacyOpen}
+                      avatarSize="sm"
+                      buttonSize="xs"
+                    />
                   </Box>
 
                   {document?.createdAt && (
@@ -770,73 +787,45 @@ const DocumentDetail = () => {
             {/* Privacy & Permissions */}
             <Card gridColumn={{ base: "1", lg: "1 / 13" }}>
               <CardBody>
-                <Flex justify="space-between" align="center" mb={4}>
-                  <Text fontWeight="semibold">Privacy & Permissions</Text>
-                  <Button
-                    leftIcon={<FiShare2 />}
-                    size="sm"
-                    colorScheme="blue"
-                    variant="outline"
-                    onClick={onPrivacyOpen}
-                  >
-                    Privacy Settings
-                  </Button>
-                </Flex>
-                <SimpleGrid columns={{ base: 1, md: 3 }} spacing={4}>
+                <Text fontWeight="semibold" mb={4}>
+                  Permission Overrides
+                </Text>
+                <SimpleGrid columns={{ base: 1, md: 2 }} spacing={4}>
                   <Box>
                     <Text fontSize="sm" color="gray.600" fontWeight="medium">
-                      Access Level
+                      Read Only
                     </Text>
                     <Badge
                       mt={2}
                       colorScheme={
-                        document?.privacy?.users?.length === 0 &&
-                        document?.privacy?.teams?.length === 0 &&
-                        document?.privacy?.roles?.length === 0
-                          ? "green"
-                          : "orange"
+                        document.permissionOverrides?.readOnly
+                          ? "orange"
+                          : "gray"
                       }
                     >
-                      {document?.privacy?.users?.length === 0 &&
-                      document?.privacy?.teams?.length === 0 &&
-                      document?.privacy?.roles?.length === 0
-                        ? "Public"
-                        : "Restricted"}
+                      {document.permissionOverrides?.readOnly
+                        ? "Read Only"
+                        : "Can Edit"}
                     </Badge>
                   </Box>
 
-                  {document?.privacy?.users?.length > 0 && (
-                    <Box>
-                      <Text fontSize="sm" color="gray.600" fontWeight="medium">
-                        Shared with Users
-                      </Text>
-                      <Text fontSize="sm" mt={2}>
-                        {document.privacy.users.length} user(s)
-                      </Text>
-                    </Box>
-                  )}
-
-                  {document?.privacy?.teams?.length > 0 && (
-                    <Box>
-                      <Text fontSize="sm" color="gray.600" fontWeight="medium">
-                        Shared with Teams
-                      </Text>
-                      <Text fontSize="sm" mt={2}>
-                        {document.privacy.teams.length} team(s)
-                      </Text>
-                    </Box>
-                  )}
-
-                  {document?.privacy?.roles?.length > 0 && (
-                    <Box>
-                      <Text fontSize="sm" color="gray.600" fontWeight="medium">
-                        Shared with Roles
-                      </Text>
-                      <Text fontSize="sm" mt={2}>
-                        {document.privacy.roles.length} role(s)
-                      </Text>
-                    </Box>
-                  )}
+                  <Box>
+                    <Text fontSize="sm" color="gray.600" fontWeight="medium">
+                      Restricted
+                    </Text>
+                    <Badge
+                      mt={2}
+                      colorScheme={
+                        document.permissionOverrides?.restricted
+                          ? "red"
+                          : "gray"
+                      }
+                    >
+                      {document.permissionOverrides?.restricted
+                        ? "Restricted"
+                        : "Open"}
+                    </Badge>
+                  </Box>
                 </SimpleGrid>
               </CardBody>
             </Card>
@@ -867,17 +856,6 @@ const DocumentDetail = () => {
               </Box>
             </>
           )}
-          <Tooltip label="Share with others">
-            <Button
-              leftIcon={<FiShare2 />}
-              size="md"
-              colorScheme="gray"
-              variant="outline"
-              onClick={onPrivacyOpen}
-            >
-              Share
-            </Button>
-          </Tooltip>
         </HStack>
       </PageFooter>
 

@@ -20,20 +20,14 @@ import {
   MenuButton,
   MenuList,
   MenuItem,
-  Flex,
-  useColorModeValue,
   Link,
 } from "@chakra-ui/react";
-import {
-  FiTrash2,
-  FiMove,
-  FiShare2,
-  FiMoreVertical,
-} from "react-icons/fi";
+import { FiTrash2, FiMove, FiMoreVertical } from "react-icons/fi";
 import Timestamp from "../Timestamp";
 import DeleteDocumentModal from "./modals/DeleteDocumentModal";
 import MoveDocumentModal from "./modals/MoveDocumentModal";
 import PrivacySettingsModal from "./modals/PrivacySettingsModal";
+import PrivacyDisplay from "./PrivacyDisplay";
 import DownloadButton from "./DownloadButton";
 import { useDocuments } from "../../context/_useContext";
 import { toast } from "sonner";
@@ -522,20 +516,32 @@ const DocumentDrawer = ({ document, isOpen, onClose }) => {
                     <Text fontWeight="semibold" mb={2}>
                       Form Questions
                     </Text>
-                    {document?.metadata?.questions && document.metadata.questions.length > 0 ? (
+                    {document?.metadata?.questions &&
+                    document.metadata.questions.length > 0 ? (
                       <VStack align="stretch" spacing={2}>
                         <Text fontSize="sm" color="gray.600">
-                          {document.metadata.questions.length} question{document.metadata.questions.length !== 1 ? 's' : ''} defined
+                          {document.metadata.questions.length} question
+                          {document.metadata.questions.length !== 1
+                            ? "s"
+                            : ""}{" "}
+                          defined
                         </Text>
                         <VStack align="stretch" spacing={1}>
-                          {document.metadata.questions.slice(0, 3).map((question, index) => (
-                            <Text key={question.id} fontSize="sm">
-                              {index + 1}. {question.label} ({question.type})
-                            </Text>
-                          ))}
+                          {document.metadata.questions
+                            .slice(0, 3)
+                            .map((question, index) => (
+                              <Text key={question.id} fontSize="sm">
+                                {index + 1}. {question.label} ({question.type})
+                              </Text>
+                            ))}
                           {document.metadata.questions.length > 3 && (
-                            <Text fontSize="sm" color="gray.500" fontStyle="italic">
-                              ... and {document.metadata.questions.length - 3} more
+                            <Text
+                              fontSize="sm"
+                              color="gray.500"
+                              fontStyle="italic"
+                            >
+                              ... and {document.metadata.questions.length - 3}{" "}
+                              more
                             </Text>
                           )}
                         </VStack>
@@ -552,79 +558,45 @@ const DocumentDrawer = ({ document, isOpen, onClose }) => {
               {/* Privacy Information */}
               <Divider />
               <Box>
-                <Flex justify="space-between" align="center" mb={2}>
-                  <Text fontWeight="semibold">Privacy</Text>
-                  <Button
-                    leftIcon={<FiShare2 />}
-                    size="xs"
-                    colorScheme="blue"
-                    variant="outline"
-                    onClick={onPrivacyOpen}
-                  >
-                    Settings
-                  </Button>
-                </Flex>
-                <VStack align="stretch" spacing={2}>
-                  <Box>
-                    <Text fontSize="sm" color="gray.600">
-                      Shared with
-                    </Text>
-                    {document.privacy.users.length === 0 &&
-                    document.privacy.teams.length === 0 &&
-                    document.privacy.roles.length === 0 ? (
-                      <Text fontSize="sm" color="gray.500">
-                        Public (Everyone can view)
-                      </Text>
-                    ) : (
-                      <VStack align="stretch" spacing={1} mt={1}>
-                        {document.privacy.users.length > 0 && (
-                          <Text fontSize="sm">
-                            {document.privacy.users.length} user(s)
-                          </Text>
-                        )}
-                        {document.privacy.teams.length > 0 && (
-                          <Text fontSize="sm">
-                            {document.privacy.teams.length} team(s)
-                          </Text>
-                        )}
-                        {document.privacy.roles.length > 0 && (
-                          <Text fontSize="sm">
-                            {document.privacy.roles.length} role(s)
-                          </Text>
-                        )}
-                      </VStack>
-                    )}
-                  </Box>
-                  <Box>
-                    <Text fontSize="sm" color="gray.600">
-                      Permissions
-                    </Text>
-                    <HStack spacing={2} mt={1}>
-                      <Badge
-                        colorScheme={
-                          document.permissionOverrides.readOnly
-                            ? "orange"
-                            : "gray"
-                        }
-                      >
-                        {document.permissionOverrides.readOnly
-                          ? "Read Only"
-                          : "Can Edit"}
-                      </Badge>
-                      <Badge
-                        colorScheme={
-                          document.permissionOverrides.restricted
-                            ? "red"
-                            : "gray"
-                        }
-                      >
-                        {document.permissionOverrides.restricted
-                          ? "Restricted"
-                          : "Open"}
-                      </Badge>
-                    </HStack>
-                  </Box>
-                </VStack>
+                <Text fontWeight="semibold" mb={2}>
+                  Privacy
+                </Text>
+                <PrivacyDisplay
+                  document={document}
+                  onManageAccess={onPrivacyOpen}
+                  avatarSize="sm"
+                  buttonSize="xs"
+                />
+
+                <Divider my={3} />
+
+                <Box>
+                  <Text fontSize="sm" color="gray.600" mb={2}>
+                    Permissions
+                  </Text>
+                  <HStack spacing={2}>
+                    <Badge
+                      colorScheme={
+                        document.permissionOverrides.readOnly
+                          ? "orange"
+                          : "gray"
+                      }
+                    >
+                      {document.permissionOverrides.readOnly
+                        ? "Read Only"
+                        : "Can Edit"}
+                    </Badge>
+                    <Badge
+                      colorScheme={
+                        document.permissionOverrides.restricted ? "red" : "gray"
+                      }
+                    >
+                      {document.permissionOverrides.restricted
+                        ? "Restricted"
+                        : "Open"}
+                    </Badge>
+                  </HStack>
+                </Box>
               </Box>
             </VStack>
           </DrawerBody>
