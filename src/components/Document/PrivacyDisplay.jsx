@@ -8,6 +8,7 @@ import {
   Icon,
   IconButton,
   Box,
+  useColorModeValue,
 } from "@chakra-ui/react";
 import { FiGlobe } from "react-icons/fi";
 import TooltipAvatar from "../TooltipAvatar";
@@ -27,6 +28,7 @@ const PrivacyDisplay = ({
   avatarSize = "md",
   buttonSize = "md",
 }) => {
+  const summaryColor = useColorModeValue("gray.500", "gray.400");
   if (!document) return null;
 
   const users = document.privacy?.users || [];
@@ -61,7 +63,7 @@ const PrivacyDisplay = ({
   };
 
   return (
-    <VStack align="stretch" spacing={2}>
+    <VStack align="stretch" spacing={0}>
       {/* Avatar Group and Public Icon */}
       <HStack spacing={3} align="center">
         {isPublic ? (
@@ -81,9 +83,7 @@ const PrivacyDisplay = ({
             <AvatarGroup size={avatarSize ?? size} max={5}>
               {/* Display Users */}
               {users.map((user) => {
-                // Handle both object format and string ID format
                 if (typeof user === "string") {
-                  // If it's just an ID, we can't display much info
                   return <TooltipAvatar key={user} name="?" label="User" />;
                 }
 
@@ -105,9 +105,7 @@ const PrivacyDisplay = ({
 
               {/* Display Teams - Teams don't have profile pictures, just show name */}
               {teams.map((team) => {
-                // Handle both object format and string ID format
                 if (typeof team === "string") {
-                  // If it's just an ID, we can't display much info
                   return <TooltipAvatar key={team} name="?" label="Team" />;
                 }
 
@@ -126,11 +124,11 @@ const PrivacyDisplay = ({
       </HStack>
 
       {/* Summary Text */}
-      <Text fontSize="xs" color="blackAlpha.600">
+      <Text fontSize="xs" color={summaryColor}>
         {generateSummary()}
       </Text>
       {/* Manage Access Button */}
-      <Box>
+      <Box mt={2}>
         <Button
           size={buttonSize ?? size}
           colorScheme="blue"
