@@ -35,12 +35,8 @@ export const ListView = ({
   const [isFoldersOpen, setIsFoldersOpen] = useState(true);
 
   // Separate folders from other document types
-  const folders = documents.filter(
-    (doc) => doc?.type === "folder" || doc?.type === "auditSchedule",
-  );
-  const otherDocuments = documents.filter(
-    (doc) => doc?.type !== "folder" && doc?.type !== "auditSchedule",
-  );
+  const folders = documents.filter((doc) => doc?.type === "folder");
+  const otherDocuments = documents.filter((doc) => doc?.type !== "folder");
 
   // Filter based on foldersOnly or filesOnly props
   const displayDocuments = foldersOnly
