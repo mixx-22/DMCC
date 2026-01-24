@@ -73,7 +73,7 @@ const Breadcrumbs = memo(
         if (isMobile) {
           if (parent) {
             // Don't add "previous" crumb if we have a "from" source, as the from back button takes precedence
-            if (!from?.path && !from?.label) {
+            if (!(from?.path && from?.label)) {
               setCrumbs([{ id: "previous" }, thisCrumb]);
               return;
             }
