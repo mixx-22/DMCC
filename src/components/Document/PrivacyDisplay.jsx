@@ -18,7 +18,13 @@ import TooltipAvatar from "../TooltipAvatar";
  * - Summary text of who is involved (including roles)
  * - Manage Access button
  */
-const PrivacyDisplay = ({ document, onManageAccess, size = "md" }) => {
+const PrivacyDisplay = ({
+  document,
+  onManageAccess,
+  size = "md",
+  avatarSize = "md",
+  buttonSize = "md",
+}) => {
   if (!document) return null;
 
   const users = document.privacy?.users || [];
@@ -26,29 +32,30 @@ const PrivacyDisplay = ({ document, onManageAccess, size = "md" }) => {
   const roles = document.privacy?.roles || [];
 
   // Check if document is public (no users, teams, or roles)
-  const isPublic = users.length === 0 && teams.length === 0 && roles.length === 0;
+  const isPublic =
+    users.length === 0 && teams.length === 0 && roles.length === 0;
 
   // Generate summary text
   const generateSummary = () => {
     const parts = [];
-    
+
     if (users.length > 0) {
-      parts.push(`${users.length} user${users.length !== 1 ? 's' : ''}`);
+      parts.push(`${users.length} user${users.length !== 1 ? "s" : ""}`);
     }
-    
+
     if (teams.length > 0) {
-      parts.push(`${teams.length} team${teams.length !== 1 ? 's' : ''}`);
+      parts.push(`${teams.length} team${teams.length !== 1 ? "s" : ""}`);
     }
-    
+
     if (roles.length > 0) {
-      parts.push(`${roles.length} role${roles.length !== 1 ? 's' : ''}`);
+      parts.push(`${roles.length} role${roles.length !== 1 ? "s" : ""}`);
     }
 
     if (parts.length === 0) {
       return "Public - Everyone can view";
     }
 
-    return `Shared with ${parts.join(', ')}`;
+    return `Shared with ${parts.join(", ")}`;
   };
 
   return (
@@ -71,25 +78,20 @@ const PrivacyDisplay = ({ document, onManageAccess, size = "md" }) => {
         ) : (
           <>
             {/* Avatar Group for Users and Teams */}
-            <AvatarGroup size={size === "sm" ? "xs" : "sm"} max={5}>
+            <AvatarGroup size={avatarSize ?? size} max={5}>
               {/* Display Users */}
               {users.map((user) => {
                 // Handle both object format and string ID format
-                if (typeof user === 'string') {
+                if (typeof user === "string") {
                   // If it's just an ID, we can't display much info
-                  return (
-                    <TooltipAvatar
-                      key={user}
-                      name="?"
-                      label="User"
-                    />
-                  );
+                  return <TooltipAvatar key={user} name="?" label="User" />;
                 }
-                
-                const fullName = user.firstName && user.lastName
-                  ? `${user.firstName} ${user.lastName}`
-                  : user.email || user.username || "Unknown User";
-                
+
+                const fullName =
+                  user.firstName && user.lastName
+                    ? `${user.firstName} ${user.lastName}`
+                    : user.email || user.username || "Unknown User";
+
                 return (
                   <TooltipAvatar
                     key={user.id || user._id}
@@ -100,40 +102,32 @@ const PrivacyDisplay = ({ document, onManageAccess, size = "md" }) => {
                   />
                 );
               })}
-              
+
               {/* Display Teams - Teams don't have profile pictures, just show name */}
               {teams.map((team) => {
                 // Handle both object format and string ID format
-                if (typeof team === 'string') {
+                if (typeof team === "string") {
                   // If it's just an ID, we can't display much info
-                  return (
-                    <TooltipAvatar
-                      key={team}
-                      name="?"
-                      label="Team"
-                      bg="blue.500"
-                    />
-                  );
+                  return <TooltipAvatar key={team} name="?" label="Team" />;
                 }
-                
+
                 return (
                   <TooltipAvatar
                     key={team.id || team._id}
                     id={team.id || team._id}
                     name={team.name}
                     urlPrefix="/teams/"
-                    bg="blue.500"
                   />
                 );
               })}
             </AvatarGroup>
           </>
         )}
-        
+
         {/* Manage Access Button */}
         <Button
           leftIcon={<Icon as={FiSettings} />}
-          size={size}
+          size={buttonSize ?? size}
           colorScheme="blue"
           variant="outline"
           onClick={onManageAccess}

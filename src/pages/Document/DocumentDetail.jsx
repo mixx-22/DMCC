@@ -466,13 +466,19 @@ const DocumentDetail = () => {
                   </Box>
 
                   <Box>
-                    <Text fontSize="sm" color="gray.600" fontWeight="medium" mb={2}>
+                    <Text
+                      fontSize="sm"
+                      color="gray.600"
+                      fontWeight="medium"
+                      mb={2}
+                    >
                       Privacy Settings
                     </Text>
                     <PrivacyDisplay
                       document={document}
                       onManageAccess={onPrivacyOpen}
-                      size="sm"
+                      avatarSize="sm"
+                      buttonSize="xs"
                     />
                   </Box>
 
@@ -781,7 +787,9 @@ const DocumentDetail = () => {
             {/* Privacy & Permissions */}
             <Card gridColumn={{ base: "1", lg: "1 / 13" }}>
               <CardBody>
-                <Text fontWeight="semibold" mb={4}>Permission Overrides</Text>
+                <Text fontWeight="semibold" mb={4}>
+                  Permission Overrides
+                </Text>
                 <SimpleGrid columns={{ base: 1, md: 2 }} spacing={4}>
                   <Box>
                     <Text fontSize="sm" color="gray.600" fontWeight="medium">
