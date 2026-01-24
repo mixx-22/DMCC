@@ -83,7 +83,6 @@ const SortableQuestion = ({ question, index, onRemove, onEdit }) => {
   const cardBorderColor = useColorModeValue("gray.200", "gray.600");
   const hoverBorderColor = useColorModeValue("blue.300", "blue.500");
   const dragBorderColor = useColorModeValue("blue.400", "blue.400");
-  const infoBg = useColorModeValue("blue.50", "blue.900");
 
   const style = {
     transform: CSS.Transform.toString(transform),
@@ -239,6 +238,10 @@ const FormTemplateBuilder = () => {
   const { id } = useParams();
   const { createDocument, updateDocument, fetchDocumentById } = useDocuments();
   const { parentId, path } = location.state || {};
+  
+  // Dark mode colors
+  const cardBg = useColorModeValue("white", "gray.700");
+  const infoBg = useColorModeValue("blue.50", "blue.900");
 
   const [formData, setFormData] = useState({
     title: "",

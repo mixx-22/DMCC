@@ -1,13 +1,15 @@
-import { VStack, Text, HStack, Button } from "@chakra-ui/react";
+import { VStack, Text, HStack, Button, useColorModeValue } from "@chakra-ui/react";
 
 export const EmptyState = ({
   currentFolderId,
   onUploadClick,
   onCreateFolderClick,
 }) => {
+  const textColor = useColorModeValue("gray.500", "gray.400");
+  
   return (
     <VStack spacing={4} py={12}>
-      <Text color="gray.500" fontSize="lg">
+      <Text color={textColor} fontSize="lg">
         {currentFolderId ? "This folder is empty" : "No Documents"}
       </Text>
       <HStack>
