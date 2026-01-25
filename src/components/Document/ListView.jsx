@@ -36,7 +36,7 @@ export const ListView = ({
   const [isFoldersOpen, setIsFoldersOpen] = useState(true);
 
   const rowHoverBg = useColorModeValue("gray.50", "gray.700");
-  const selectedBg = useColorModeValue("blue.50", "blue.900");
+  const selectedBg = useColorModeValue("info.50", "info.900");
 
   // Separate folders from other document types
   const folders = documents.filter((doc) => doc?.type === "folder");

@@ -147,16 +147,16 @@ const UploadFileModal = ({ isOpen, onClose, parentId, path }) => {
                   <Box
                     {...getRootProps()}
                     border="2px dashed"
-                    borderColor={isDragActive ? "blue.400" : "gray.300"}
+                    borderColor={isDragActive ? "info.400" : "gray.300"}
                     borderRadius="lg"
                     p={8}
                     textAlign="center"
                     cursor="pointer"
-                    bg={isDragActive ? "blue.50" : "gray.50"}
+                    bg={isDragActive ? "info.50" : "gray.50"}
                     transition="all 0.2s"
                     _hover={{
-                      borderColor: "blue.400",
-                      bg: "blue.50",
+                      borderColor: "info.400",
+                      bg: "info.50",
                     }}
                   >
                     <input {...getInputProps()} />
@@ -165,7 +165,7 @@ const UploadFileModal = ({ isOpen, onClose, parentId, path }) => {
                         as={FiUploadCloud}
                         w={12}
                         h={12}
-                        color={isDragActive ? "blue.500" : "gray.400"}
+                        color={isDragActive ? "info.500" : "gray.400"}
                         mb={3}
                       />
                     </Center>
@@ -186,9 +186,19 @@ const UploadFileModal = ({ isOpen, onClose, parentId, path }) => {
                     border="1px solid"
                     borderColor="gray.200"
                   >
-                    <Box display="flex" alignItems="center" justifyContent="space-between">
+                    <Box
+                      display="flex"
+                      alignItems="center"
+                      justifyContent="space-between"
+                    >
                       <Box display="flex" alignItems="center" flex="1">
-                        <Icon as={FiFile} w={5} h={5} color="brandPrimary.500" mr={3} />
+                        <Icon
+                          as={FiFile}
+                          w={5}
+                          h={5}
+                          color="brandPrimary.500"
+                          mr={3}
+                        />
                         <Box flex="1">
                           <Text fontSize="sm" fontWeight="medium" noOfLines={1}>
                             {formData.file.name}

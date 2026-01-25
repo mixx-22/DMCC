@@ -228,7 +228,7 @@ const FormTemplateBuilder = () => {
 
   // Dark mode colors
   const cardBg = useColorModeValue("white", "gray.700");
-  const infoBg = useColorModeValue("blue.50", "blue.900");
+  const infoBg = useColorModeValue("info.50", "info.900");
 
   const [formData, setFormData] = useState({
     title: "",
@@ -771,7 +771,7 @@ const FormTemplateBuilder = () => {
                     <Button
                       leftIcon={editingQuestionId ? <FiEdit2 /> : <FiPlus />}
                       onClick={handleAddQuestion}
-                      colorScheme={editingQuestionId ? "orange" : "blue"}
+                      colorScheme={editingQuestionId ? "orange" : "info"}
                       size="md"
                       w="full"
                     >
