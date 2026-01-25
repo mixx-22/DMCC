@@ -441,7 +441,7 @@ const DocumentDetail = () => {
                 </Box>
 
                 <Box my={4}>
-                  <Text fontSize="sm" color="gray.600">
+                  <Text fontSize="sm" color="gray.600" mb={2}>
                     Privacy Settings
                   </Text>
                   <PrivacyDisplay
