@@ -93,7 +93,7 @@ const FileTypeAsyncSelect = ({
     onChange(fileType);
   };
 
-  const selectedValue = value
+  const selectedValue = value?.id
     ? {
         value: value.id,
         label: value.name,
@@ -110,7 +110,7 @@ const FileTypeAsyncSelect = ({
         value={selectedValue}
         onChange={handleChange}
         loadOptions={loadOptions}
-        placeholder="Type at least 2 characters to search file types..."
+        placeholder="Start searching file types..."
         noOptionsMessage={({ inputValue }) =>
           inputValue.length < 2
             ? "Type at least 2 characters to search"

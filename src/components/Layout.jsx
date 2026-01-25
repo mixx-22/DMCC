@@ -12,7 +12,7 @@ const Layout = ({ children }) => {
   const smallMaxContent = useMemo(() => {
     const pathSegments = location.pathname.split("/").filter(Boolean);
     return (
-      (["users", "teams"].includes(pathSegments[0]) &&
+      (["users", "teams", "document"].includes(pathSegments[0]) &&
         pathSegments.length === 2) ||
       (["settings", "create-form"].includes(pathSegments[0]) &&
         pathSegments.length === 1)
