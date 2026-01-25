@@ -152,6 +152,15 @@ const DocumentDetail = () => {
     return Math.round((bytes / Math.pow(k, i)) * 100) / 100 + " " + sizes[i];
   };
 
+  const formatDateResponse = (dateString) => {
+    try {
+      const date = new Date(dateString);
+      return isNaN(date.getTime()) ? dateString : date.toLocaleDateString();
+    } catch {
+      return dateString;
+    }
+  };
+
   const isDocumentValid = () => {
     if (!document || typeof document !== "object") return false;
     if (!document.type) return false;
@@ -945,16 +954,7 @@ const DocumentDetail = () => {
                                     </Text>
                                   ) : question.type === "date" ? (
                                     <Text fontSize="sm">
-                                      {(() => {
-                                        try {
-                                          const date = new Date(response);
-                                          return isNaN(date.getTime())
-                                            ? response
-                                            : date.toLocaleDateString();
-                                        } catch {
-                                          return response;
-                                        }
-                                      })()}
+                                      {formatDateResponse(response)}
                                     </Text>
                                   ) : (
                                     <Text fontSize="sm">{response}</Text>
