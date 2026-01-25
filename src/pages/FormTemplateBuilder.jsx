@@ -264,7 +264,6 @@ const FormTemplateBuilder = () => {
   const [loadingForm, setLoadingForm] = useState(false);
   const [originalDocument, setOriginalDocument] = useState(null);
 
-  // Load existing form template if editing
   useEffect(() => {
     const loadFormTemplate = async () => {
       if (id) {
@@ -289,7 +288,7 @@ const FormTemplateBuilder = () => {
             setQuestions(document.metadata?.questions || []);
             setIsEditMode(true);
             setDocumentId(id);
-            setOriginalDocument(document); // Store the original document
+            setOriginalDocument(document);
           } else {
             if (import.meta.env.DEV) {
               console.log("Document is not a formTemplate or doesn't exist");
@@ -371,7 +370,6 @@ const FormTemplateBuilder = () => {
   };
 
   const handleAddQuestion = () => {
-    // Allow adding questions even without label - removed validation
     try {
       const question = createQuestion({
         label: currentQuestion.label || "Untitled Question",
@@ -384,7 +382,6 @@ const FormTemplateBuilder = () => {
       });
 
       if (editingQuestionId) {
-        // Update existing question
         setQuestions((prev) =>
           prev.map((q) =>
             q.id === editingQuestionId
@@ -395,7 +392,6 @@ const FormTemplateBuilder = () => {
         toast.success("Question updated");
         setEditingQuestionId(null);
       } else {
-        // Add new question to bottom
         setQuestions((prev) => [...prev, question]);
         toast.success("Question added");
       }
@@ -458,7 +454,7 @@ const FormTemplateBuilder = () => {
         title: formData.title,
         description: formData.description,
         type: "formTemplate",
-        status: 1, // Auto-approved
+        status: 1,
         metadata: {
           questions,
         },
@@ -466,20 +462,18 @@ const FormTemplateBuilder = () => {
 
       if (isEditMode && documentId) {
         if (!originalDocument) {
-          // Fallback if original document wasn't loaded properly
           if (import.meta.env.DEV) {
             console.warn("Original document not available, using minimal update data");
           }
           await updateDocument(documentId, formTemplateData);
         } else {
-          // Update existing form template - preserve all original document fields
           const updateData = {
-            ...originalDocument, // Preserve all original fields
+            ...originalDocument,
             title: formData.title,
             description: formData.description,
             metadata: {
-              ...originalDocument.metadata, // Preserve any existing metadata fields
-              questions, // Update questions
+              ...originalDocument.metadata,
+              questions,
             },
           };
           
@@ -489,7 +483,6 @@ const FormTemplateBuilder = () => {
           description: `"${formData.title}" has been updated successfully`,
         });
       } else {
-        // Create new form template
         await createDocument({
           ...formTemplateData,
           parentId,
