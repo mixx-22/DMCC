@@ -232,14 +232,20 @@ const Layout = () => {
   // Sync updates from DocumentsContext to local state
   // When a document is updated in the drawer, update it in recentFolders/recentFiles
   useEffect(() => {
-    if (!documentsFromContext || documentsFromContext.length === 0) return;
+    if (!documentsFromContext) return;
+
+    // Create a Map for O(1) lookup performance
+    const docsMap = new Map();
+    documentsFromContext.forEach((doc) => {
+      const id = doc.id || doc._id;
+      if (id) docsMap.set(id, doc);
+    });
 
     // Update recentFolders if any folder was updated
     setRecentFolders((prevFolders) =>
       prevFolders.map((folder) => {
-        const updated = documentsFromContext.find(
-          (doc) => (doc.id || doc._id) === (folder.id || folder._id),
-        );
+        const id = folder.id || folder._id;
+        const updated = docsMap.get(id);
         return updated ? { ...folder, ...updated } : folder;
       }),
     );
@@ -247,9 +253,8 @@ const Layout = () => {
     // Update recentFiles if any file was updated
     setRecentFiles((prevFiles) =>
       prevFiles.map((file) => {
-        const updated = documentsFromContext.find(
-          (doc) => (doc.id || doc._id) === (file.id || file._id),
-        );
+        const id = file.id || file._id;
+        const updated = docsMap.get(id);
         return updated ? { ...file, ...updated } : file;
       }),
     );
