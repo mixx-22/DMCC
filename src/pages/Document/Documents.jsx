@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useEffect, useRef } from "react";
 import { useParams, useLocation, useNavigate } from "react-router-dom";
 import {
   Box,
@@ -48,6 +48,7 @@ const Documents = () => {
     viewMode,
     toggleViewMode,
     selectedDocument,
+    setSelectedDocument,
     handleDocumentClick,
     closeDocumentDrawer,
   } = useLayout();
