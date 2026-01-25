@@ -410,6 +410,34 @@ const DocumentDetail = () => {
         );
 
       case "select":
+        return (
+          <FormControl key={question.id}>
+            <FormLabel>
+              {index + 1}. {question.label}
+            </FormLabel>
+            <ChakraSelect
+              isMulti
+              value={
+                value
+                  ? Array.isArray(value)
+                    ? value.map(val => ({ value: val, label: val }))
+                    : [{ value: value, label: value }]
+                  : []
+              }
+              onChange={(options) =>
+                handleResponseChange(question.id, options?.map(opt => opt.value) || [])
+              }
+              placeholder="Select options (multiple)"
+              options={
+                question.options?.map((opt) => ({
+                  value: opt,
+                  label: opt,
+                })) || []
+              }
+            />
+          </FormControl>
+        );
+
       case "dropdown":
         return (
           <FormControl key={question.id}>
@@ -457,7 +485,7 @@ const DocumentDetail = () => {
           </FormControl>
         );
 
-      case "checkbox":
+      case "checkboxes":
         return (
           <FormControl key={question.id}>
             <FormLabel>
@@ -1224,7 +1252,7 @@ const DocumentDetail = () => {
                                 >
                                   {hasResponse ? (
                                     <>
-                                      {question.type === "checkbox" &&
+                                      {(question.type === "checkboxes" || question.type === "select") &&
                                       Array.isArray(response) ? (
                                         <VStack align="start" spacing={1}>
                                           {response.map((item, idx) => (

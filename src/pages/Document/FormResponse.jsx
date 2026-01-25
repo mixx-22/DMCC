@@ -353,6 +353,44 @@ const FormResponse = () => {
         );
 
       case "select":
+        return (
+          <FormControl
+            key={question.id}
+            isRequired={question.required}
+            isInvalid={hasError}
+          >
+            <FormLabel>
+              {index + 1}. {question.label}
+              {question.required && (
+                <Badge ml={2} colorScheme="red" fontSize="xs">
+                  Required
+                </Badge>
+              )}
+            </FormLabel>
+            <ChakraSelect
+              isMulti
+              value={
+                responses[question.id]
+                  ? Array.isArray(responses[question.id])
+                    ? responses[question.id].map(val => ({ value: val, label: val }))
+                    : [{ value: responses[question.id], label: responses[question.id] }]
+                  : []
+              }
+              onChange={(options) => handleInputChange(question.id, options?.map(opt => opt.value) || [])}
+              placeholder="Select options (multiple)"
+              options={
+                question.options?.map((opt) => ({
+                  value: opt,
+                  label: opt,
+                })) || []
+              }
+            />
+            {hasError && (
+              <FormErrorMessage>{errors[question.id]}</FormErrorMessage>
+            )}
+          </FormControl>
+        );
+
       case "dropdown":
         return (
           <FormControl
@@ -422,7 +460,7 @@ const FormResponse = () => {
           </FormControl>
         );
 
-      case "checkbox":
+      case "checkboxes":
         return (
           <FormControl
             key={question.id}
