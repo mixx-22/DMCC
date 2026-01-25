@@ -125,7 +125,7 @@ const DocumentDrawer = ({ document, isOpen, onClose }) => {
       setTitleCache(trimmedTitle);
       // Update selectedDocument to reflect changes in Dashboard
       if (updatedDoc) {
-        setSelectedDocument({ ...document, ...updatedDoc });
+        setSelectedDocument(updatedDoc);
       }
     } catch (error) {
       toast.error("Update Failed", {
@@ -151,7 +151,7 @@ const DocumentDrawer = ({ document, isOpen, onClose }) => {
       setDescriptionCache(newDescription);
       // Update selectedDocument to reflect changes in Dashboard
       if (updatedDoc) {
-        setSelectedDocument({ ...document, ...updatedDoc });
+        setSelectedDocument(updatedDoc);
       }
     } catch (error) {
       toast.error("Update Failed", {

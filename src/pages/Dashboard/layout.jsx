@@ -228,8 +228,9 @@ const Layout = () => {
     fetchRecentFiles();
   }, [fileLimit, filteredDocuments]);
 
-  // Sync updates when selectedDocument changes (after edits in drawer)
-  // When a document is updated in the drawer, update it in recentFolders/recentFiles
+  // Sync updates when selectedDocument changes
+  // This runs when: 1) a document is selected to view, or 2) a document is updated in the drawer
+  // Updates the matching document in recentFolders or recentFiles arrays
   useEffect(() => {
     if (!selectedDocument) return;
 
