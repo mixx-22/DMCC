@@ -30,6 +30,7 @@ import {
   Spinner,
   Center,
   useColorModeValue,
+  Spacer,
 } from "@chakra-ui/react";
 import { Select as ChakraSelect } from "chakra-react-select";
 import { SingleDatepicker } from "chakra-dayzed-datepicker";
@@ -78,11 +79,6 @@ const SortableQuestion = ({ question, index, onRemove, onEdit }) => {
     transition,
     isDragging,
   } = useSortable({ id: question.id });
-
-  const cardBg = useColorModeValue("white", "gray.700");
-  const cardBorderColor = useColorModeValue("gray.200", "gray.600");
-  const hoverBorderColor = useColorModeValue("blue.300", "blue.500");
-  const dragBorderColor = useColorModeValue("blue.400", "blue.400");
 
   const style = {
     transform: CSS.Transform.toString(transform),
@@ -163,29 +159,22 @@ const SortableQuestion = ({ question, index, onRemove, onEdit }) => {
   };
 
   return (
-    <Box ref={setNodeRef} style={style}>
-      <Card
-        mb={4}
-        borderWidth={2}
-        borderColor={isDragging ? dragBorderColor : cardBorderColor}
-        bg={cardBg}
-        _hover={{ borderColor: hoverBorderColor }}
-        variant="filled"
-      >
+    <Stack spacing={4} ref={setNodeRef} style={style}>
+      <Card variant="filled" boxShadow="none">
         <CardBody>
           <Flex gap={3} align="start">
-            <IconButton
-              icon={<FiMenu />}
-              size="sm"
-              variant="ghost"
-              cursor="grab"
-              _active={{ cursor: "grabbing" }}
-              aria-label="Drag to reorder"
-              {...attributes}
-              {...listeners}
-            />
             <VStack flex={1} align="stretch" spacing={3}>
-              <Flex justify="space-between" align="start">
+              <Flex align="center">
+                <IconButton
+                  icon={<FiMenu />}
+                  size="sm"
+                  variant="ghost"
+                  cursor="grab"
+                  _active={{ cursor: "grabbing" }}
+                  aria-label="Drag to reorder"
+                  {...attributes}
+                  {...listeners}
+                />
                 <HStack>
                   <Text fontWeight="medium" fontSize="sm" color="gray.600">
                     Question {index + 1}
@@ -195,10 +184,8 @@ const SortableQuestion = ({ question, index, onRemove, onEdit }) => {
                       Required
                     </Tag>
                   )}
-                  <Tag size="sm" colorScheme="brandPrimary" variant="subtle">
-                    {question.type}
-                  </Tag>
                 </HStack>
+                <Spacer />
                 <HStack spacing={1}>
                   <IconButton
                     icon={<FiEdit2 />}
@@ -228,7 +215,7 @@ const SortableQuestion = ({ question, index, onRemove, onEdit }) => {
           </Flex>
         </CardBody>
       </Card>
-    </Box>
+    </Stack>
   );
 };
 
@@ -566,9 +553,8 @@ const FormTemplateBuilder = () => {
           </Button>
         </Flex>
       </PageFooter>
-
-      <Box p={{ base: 4, md: 8 }} maxW="900px" mx="auto">
-        <VStack spacing={6} align="stretch">
+      <Flex gap={4} maxW="container.xl" flexDir={{ base: "column", lg: "row" }}>
+        <Stack spacing={4} w="full" maxW={{ base: "unset", lg: "xs" }}>
           {/* Form Information */}
           <Card>
             <CardBody>
@@ -585,14 +571,14 @@ const FormTemplateBuilder = () => {
                           title: e.target.value,
                         }))
                       }
-                      placeholder="Enter form template title"
+                      placeholder="Enter form title"
                       size="lg"
                     />
                   </FormControl>
 
                   <FormControl flex={1}>
                     <FormLabel>Description</FormLabel>
-                    <Input
+                    <Textarea
                       value={formData.description}
                       onChange={(e) =>
                         setFormData((prev) => ({
@@ -608,7 +594,8 @@ const FormTemplateBuilder = () => {
               </VStack>
             </CardBody>
           </Card>
-
+        </Stack>
+        <Stack spacing={4} flex={1}>
           {/* Form Preview with Questions */}
           <Card>
             <CardBody>
@@ -624,14 +611,7 @@ const FormTemplateBuilder = () => {
 
                 {/* Questions List */}
                 {questions.length === 0 ? (
-                  <Box
-                    p={8}
-                    textAlign="center"
-                    borderWidth={2}
-                    borderStyle="dashed"
-                    borderColor="gray.300"
-                    borderRadius="md"
-                  >
+                  <Box p={8} textAlign="center">
                     <Text color="gray.500" mb={2}>
                       No questions yet. Add your first question below.
                     </Text>
@@ -815,8 +795,8 @@ const FormTemplateBuilder = () => {
               </VStack>
             </CardBody>
           </Card>
-        </VStack>
-      </Box>
+        </Stack>
+      </Flex>
     </Box>
   );
 };

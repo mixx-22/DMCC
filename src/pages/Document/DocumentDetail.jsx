@@ -282,10 +282,7 @@ const DocumentDetail = () => {
         >
           <Stack spacing={4} w="full" maxW={{ base: "unset", lg: "xs" }}>
             {/* Main Document Info - Spans 8 columns, 2 rows */}
-            <Card
-              gridColumn={{ base: "1", lg: "1 / 9" }}
-              gridRow={{ base: "auto", lg: "1 / 3" }}
-            >
+            <Card>
               <CardBody>
                 <Flex justify="space-between" align="start" mb={4}>
                   <HStack spacing={4} flex="1" align="start">
@@ -654,10 +651,7 @@ const DocumentDetail = () => {
             {["file"].includes(document?.type) &&
               document?.metadata?.fileType?.requiresApproval &&
               document?.metadata?.fileType?.trackVersioning && (
-                <Card
-                  gridColumn={{ base: "1", lg: "9 / 13" }}
-                  gridRow={{ base: "auto", lg: "1 / 3" }}
-                >
+                <Card>
                   <CardBody>
                     <Text fontWeight="semibold" mb={4}>
                       Version Control

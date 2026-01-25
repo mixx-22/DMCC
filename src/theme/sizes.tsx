@@ -2,6 +2,7 @@ export const sizes = {
   page: {
     maxContent: "1200px",
     "maxContent-sm": "800px",
+    "maxContent-xs": "600px",
     padding: "1rem",
   },
   sidebar: {

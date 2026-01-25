@@ -9,13 +9,16 @@ import { useLayout } from "../context/_useContext";
 const Layout = ({ children }) => {
   const location = useLocation();
   const { pageRef } = useLayout();
+  const xsmallMaxContent = useMemo(() => {
+    const pathSegments = location.pathname.split("/").filter(Boolean);
+    return ["form"].includes(pathSegments[1]) && pathSegments.length === 3;
+  }, [location.pathname]);
   const smallMaxContent = useMemo(() => {
     const pathSegments = location.pathname.split("/").filter(Boolean);
     return (
       (["users", "teams", "document"].includes(pathSegments[0]) &&
         pathSegments.length === 2) ||
-      (["settings", "create-form"].includes(pathSegments[0]) &&
-        pathSegments.length === 1)
+      (["settings"].includes(pathSegments[0]) && pathSegments.length === 1)
     );
   }, [location.pathname]);
   const contentBg = useColorModeValue("gray.50", "gray.900");
@@ -42,7 +45,13 @@ const Layout = ({ children }) => {
           pb={isMobile ? "80px" : 0}
         >
           <Box
-            maxW={smallMaxContent ? "page.maxContent-sm" : "page.maxContent"}
+            maxW={
+              xsmallMaxContent
+                ? "page.maxContent-xs"
+                : smallMaxContent
+                  ? "page.maxContent-sm"
+                  : "page.maxContent"
+            }
             mx="auto"
             w="full"
             p="page.padding"

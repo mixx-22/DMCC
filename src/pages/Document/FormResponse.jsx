@@ -171,7 +171,7 @@ const FormResponse = () => {
 
       // Create form response document
       const responseDocument = {
-        title: `${formTemplate.title} - response`,
+        title: `${formTemplate.title} - Response from ${currentUser?.firstName || "User"}`,
         type: "formResponse",
         parentId: formTemplate.parentId,
         path: Array.isArray(formTemplate.path)
