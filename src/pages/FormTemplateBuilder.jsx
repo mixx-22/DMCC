@@ -138,6 +138,21 @@ const SortableQuestion = ({ question, index, onRemove, onEdit }) => {
             }
           />
         );
+      case INPUT_TYPES.RADIO:
+        return (
+          <VStack align="start" spacing={2}>
+            {question.options?.map((option, idx) => (
+              <Checkbox key={idx} isDisabled type="radio">
+                {option}
+              </Checkbox>
+            ))}
+            {(!question.options || question.options.length === 0) && (
+              <Text fontSize="sm" color="gray.500">
+                No options defined
+              </Text>
+            )}
+          </VStack>
+        );
       case INPUT_TYPES.CHECKBOXES:
         return (
           <VStack align="start" spacing={2}>
@@ -479,7 +494,7 @@ const FormTemplateBuilder = () => {
           description: `"${formData.title}" has been updated successfully`,
         });
       } else {
-        await createDocument({
+        const newDoc = await createDocument({
           ...formTemplateData,
           parentId,
           path,
@@ -487,6 +502,13 @@ const FormTemplateBuilder = () => {
         toast.success("Form Template Created", {
           description: `"${formData.title}" has been created successfully`,
         });
+        // Redirect to document view for new forms
+        if (newDoc?._id) {
+          navigate(`/documents/${newDoc._id}`);
+        } else {
+          navigate("/documents");
+        }
+        return;
       }
 
       navigate("/documents");
@@ -547,6 +569,20 @@ const FormTemplateBuilder = () => {
       </PageHeader>
       <PageFooter>
         <Flex gap={4} justifyContent="flex-end">
+          <Button
+            variant="ghost"
+            onClick={() => {
+              if (isEditMode && documentId) {
+                // For existing form, go to document view
+                navigate(`/documents/${documentId}`);
+              } else {
+                // For new form, just go back
+                navigate("/documents");
+              }
+            }}
+          >
+            Cancel
+          </Button>
           <Button
             leftIcon={<FiSave />}
             colorScheme="brandPrimary"
@@ -697,31 +733,38 @@ const FormTemplateBuilder = () => {
                       </FormControl>
 
                       <FormControl flex={1}>
-                        <Select
-                          value={currentQuestion.type}
-                          onChange={(e) =>
+                        <ChakraSelect
+                          value={{
+                            value: currentQuestion.type,
+                            label: currentQuestion.type === INPUT_TYPES.TEXT ? 'Text' :
+                                   currentQuestion.type === INPUT_TYPES.NUMBER ? 'Number' :
+                                   currentQuestion.type === INPUT_TYPES.CURRENCY ? 'Currency' :
+                                   currentQuestion.type === INPUT_TYPES.TEXTAREA ? 'Text Area' :
+                                   currentQuestion.type === INPUT_TYPES.DATE ? 'Date' :
+                                   currentQuestion.type === INPUT_TYPES.SELECT ? 'Select' :
+                                   currentQuestion.type === INPUT_TYPES.DROPDOWN ? 'Dropdown' :
+                                   currentQuestion.type === INPUT_TYPES.RADIO ? 'Radio' :
+                                   currentQuestion.type === INPUT_TYPES.CHECKBOXES ? 'Checkboxes' : 'Text'
+                          }}
+                          onChange={(option) =>
                             setCurrentQuestion((prev) => ({
                               ...prev,
-                              type: e.target.value,
+                              type: option?.value || INPUT_TYPES.TEXT,
                               options: [],
                             }))
                           }
-                          size="md"
-                          bg={cardBg}
-                        >
-                          <option value={INPUT_TYPES.TEXT}>Text</option>
-                          <option value={INPUT_TYPES.NUMBER}>Number</option>
-                          <option value={INPUT_TYPES.CURRENCY}>Currency</option>
-                          <option value={INPUT_TYPES.TEXTAREA}>
-                            Text Area
-                          </option>
-                          <option value={INPUT_TYPES.DATE}>Date</option>
-                          <option value={INPUT_TYPES.SELECT}>Select</option>
-                          <option value={INPUT_TYPES.DROPDOWN}>Dropdown</option>
-                          <option value={INPUT_TYPES.CHECKBOXES}>
-                            Checkboxes
-                          </option>
-                        </Select>
+                          options={[
+                            { value: INPUT_TYPES.TEXT, label: 'Text' },
+                            { value: INPUT_TYPES.NUMBER, label: 'Number' },
+                            { value: INPUT_TYPES.CURRENCY, label: 'Currency' },
+                            { value: INPUT_TYPES.TEXTAREA, label: 'Text Area' },
+                            { value: INPUT_TYPES.DATE, label: 'Date' },
+                            { value: INPUT_TYPES.SELECT, label: 'Select' },
+                            { value: INPUT_TYPES.DROPDOWN, label: 'Dropdown' },
+                            { value: INPUT_TYPES.RADIO, label: 'Radio' },
+                            { value: INPUT_TYPES.CHECKBOXES, label: 'Checkboxes' },
+                          ]}
+                        />
                       </FormControl>
                     </Flex>
 
