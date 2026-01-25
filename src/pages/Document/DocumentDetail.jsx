@@ -1008,10 +1008,12 @@ const DocumentDetail = () => {
                   ? "Audit Schedule"
                   : document?.type === "formTemplate"
                     ? "Form Template"
-                    : document?.type
-                      ? document?.type.charAt(0).toUpperCase() +
-                        document?.type.slice(1)
-                      : "Unknown"}
+                    : document?.type === "formResponse"
+                      ? "Form Response"
+                      : document?.type
+                        ? document?.type.charAt(0).toUpperCase() +
+                          document?.type.slice(1)
+                        : "Unknown"}
               </MenuItem>
               <Divider />
               <MenuItem
@@ -1024,10 +1026,12 @@ const DocumentDetail = () => {
                   ? "Audit Schedule"
                   : document?.type === "formTemplate"
                     ? "Form Template"
-                    : document?.type
-                      ? document?.type.charAt(0).toUpperCase() +
-                        document?.type.slice(1)
-                      : "Unknown"}
+                    : document?.type === "formResponse"
+                      ? "Form Response"
+                      : document?.type
+                        ? document?.type.charAt(0).toUpperCase() +
+                          document?.type.slice(1)
+                        : "Unknown"}
               </MenuItem>
             </MenuList>
           </Menu>
