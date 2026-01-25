@@ -280,6 +280,8 @@ const DocumentDetail = () => {
           : question.response,
       }));
 
+      // Only update the questions array to avoid overwriting other metadata
+      // Note: Backend should verify document ownership before allowing updates
       const updatedDoc = await updateDocument(document, {
         metadata: {
           ...document.metadata,
@@ -327,7 +329,7 @@ const DocumentDetail = () => {
             </FormLabel>
             <Input
               type={question.type}
-              value={value || ""}
+              value={value ?? ""}
               onChange={(e) => handleResponseChange(question.id, e.target.value)}
               placeholder={`Enter ${question.type}`}
               size="sm"
@@ -342,7 +344,7 @@ const DocumentDetail = () => {
               {index + 1}. {question.label}
             </FormLabel>
             <Textarea
-              value={value || ""}
+              value={value ?? ""}
               onChange={(e) => handleResponseChange(question.id, e.target.value)}
               placeholder="Enter your answer"
               rows={4}
@@ -359,7 +361,7 @@ const DocumentDetail = () => {
             </FormLabel>
             <Input
               type="date"
-              value={value || ""}
+              value={value ?? ""}
               onChange={(e) => handleResponseChange(question.id, e.target.value)}
               size="sm"
             />
@@ -374,7 +376,7 @@ const DocumentDetail = () => {
               {index + 1}. {question.label}
             </FormLabel>
             <Select
-              value={value || ""}
+              value={value ?? ""}
               onChange={(e) => handleResponseChange(question.id, e.target.value)}
               placeholder="Select an option"
               size="sm"
@@ -395,7 +397,7 @@ const DocumentDetail = () => {
               {index + 1}. {question.label}
             </FormLabel>
             <RadioGroup
-              value={value || ""}
+              value={value ?? ""}
               onChange={(val) => handleResponseChange(question.id, val)}
             >
               <Stack spacing={2}>
@@ -416,7 +418,7 @@ const DocumentDetail = () => {
               {index + 1}. {question.label}
             </FormLabel>
             <CheckboxGroup
-              value={value || []}
+              value={value ?? []}
               onChange={(values) => handleResponseChange(question.id, values)}
             >
               <Stack spacing={2}>
@@ -437,7 +439,7 @@ const DocumentDetail = () => {
               {index + 1}. {question.label}
             </FormLabel>
             <Input
-              value={value || ""}
+              value={value ?? ""}
               onChange={(e) => handleResponseChange(question.id, e.target.value)}
               placeholder="Enter your answer"
               size="sm"
