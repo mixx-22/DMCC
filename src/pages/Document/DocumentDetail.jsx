@@ -223,8 +223,11 @@ const DocumentDetail = () => {
 
   // Handle document updates from modals
   const handleDocumentUpdate = (updatedDoc) => {
-    // Merge the updated document data into the current state
-    setDocument((prev) => ({ ...prev, ...updatedDoc }));
+    // Validate updatedDoc before merging
+    if (updatedDoc && typeof updatedDoc === 'object') {
+      // Merge the updated document data into the current state
+      setDocument((prev) => ({ ...prev, ...updatedDoc }));
+    }
   };
 
   if (loading) {
