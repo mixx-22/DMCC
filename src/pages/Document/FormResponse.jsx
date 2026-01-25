@@ -27,6 +27,8 @@ import {
   Badge,
   useColorModeValue,
 } from "@chakra-ui/react";
+import { Select as ChakraSelect } from "chakra-react-select";
+import { SingleDatepicker } from "chakra-dayzed-datepicker";
 import { FiSend, FiArrowLeft } from "react-icons/fi";
 import PageHeader from "../../components/PageHeader";
 import PageFooter from "../../components/PageFooter";
@@ -336,10 +338,13 @@ const FormResponse = () => {
                 </Badge>
               )}
             </FormLabel>
-            <Input
-              type="date"
-              value={responses[question.id] || ""}
-              onChange={(e) => handleInputChange(question.id, e.target.value)}
+            <SingleDatepicker
+              name={`date-input-${question.id}`}
+              date={responses[question.id] ? new Date(responses[question.id]) : undefined}
+              onDateChange={(date) => handleInputChange(question.id, date?.toISOString().split('T')[0] || "")}
+              configs={{
+                dateFormat: "MM/dd/yyyy",
+              }}
             />
             {hasError && (
               <FormErrorMessage>{errors[question.id]}</FormErrorMessage>
@@ -363,17 +368,21 @@ const FormResponse = () => {
                 </Badge>
               )}
             </FormLabel>
-            <Select
-              value={responses[question.id] || ""}
-              onChange={(e) => handleInputChange(question.id, e.target.value)}
+            <ChakraSelect
+              value={
+                responses[question.id]
+                  ? { value: responses[question.id], label: responses[question.id] }
+                  : null
+              }
+              onChange={(option) => handleInputChange(question.id, option?.value || "")}
               placeholder="Select an option"
-            >
-              {question.options?.map((option, idx) => (
-                <option key={idx} value={option}>
-                  {option}
-                </option>
-              ))}
-            </Select>
+              options={
+                question.options?.map((opt) => ({
+                  value: opt,
+                  label: opt,
+                })) || []
+              }
+            />
             {hasError && (
               <FormErrorMessage>{errors[question.id]}</FormErrorMessage>
             )}

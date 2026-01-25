@@ -44,6 +44,8 @@ import {
   FormControl,
   FormLabel,
 } from "@chakra-ui/react";
+import { Select as ChakraSelect } from "chakra-react-select";
+import { SingleDatepicker } from "chakra-dayzed-datepicker";
 import {
   FiTrash2,
   FiMove,
@@ -394,12 +396,15 @@ const DocumentDetail = () => {
             <FormLabel>
               {index + 1}. {question.label}
             </FormLabel>
-            <Input
-              type="date"
-              value={value ?? ""}
-              onChange={(e) =>
-                handleResponseChange(question.id, e.target.value)
+            <SingleDatepicker
+              name={`date-input-${question.id}`}
+              date={value ? new Date(value) : undefined}
+              onDateChange={(date) =>
+                handleResponseChange(question.id, date?.toISOString().split('T')[0] || "")
               }
+              configs={{
+                dateFormat: "MM/dd/yyyy",
+              }}
             />
           </FormControl>
         );
@@ -411,19 +416,23 @@ const DocumentDetail = () => {
             <FormLabel>
               {index + 1}. {question.label}
             </FormLabel>
-            <Select
-              value={value ?? ""}
-              onChange={(e) =>
-                handleResponseChange(question.id, e.target.value)
+            <ChakraSelect
+              value={
+                value
+                  ? { value: value, label: value }
+                  : null
+              }
+              onChange={(option) =>
+                handleResponseChange(question.id, option?.value || "")
               }
               placeholder="Select an option"
-            >
-              {question.options?.map((option, idx) => (
-                <option key={idx} value={option}>
-                  {option}
-                </option>
-              ))}
-            </Select>
+              options={
+                question.options?.map((opt) => ({
+                  value: opt,
+                  label: opt,
+                })) || []
+              }
+            />
           </FormControl>
         );
 
