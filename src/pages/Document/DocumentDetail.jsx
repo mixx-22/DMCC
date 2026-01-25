@@ -239,7 +239,6 @@ const DocumentDetail = () => {
             </VStack>
           </Center>
         </Box>
-        <PageFooter />
       </>
     );
   }
@@ -266,7 +265,6 @@ const DocumentDetail = () => {
             </VStack>
           </Center>
         </Box>
-        <PageFooter />
       </>
     );
   }
@@ -976,38 +974,41 @@ const DocumentDetail = () => {
 
       {/* Quick Actions in PageFooter */}
       <PageFooter>
-        <HStack spacing={3} justify="flex-end" w="full">
-          {document?.type === "formTemplate" && (
-            <Button
-              colorScheme="brandPrimary"
-              size="md"
-              onClick={() => navigate(`/documents/form/${id}`)}
-              leftIcon={<FiEdit />}
-            >
-              Response
-            </Button>
-          )}
-          {document?.type === "file" && document?.metadata?.key && (
-            <>
-              <Tooltip label="Download this file">
+        {(document?.type === "file" && document?.metadata?.key) ||
+        document?.type === "formTemplate" ? (
+          <HStack spacing={3} justify="flex-end" w="full">
+            {document?.type === "formTemplate" && (
+              <Button
+                colorScheme="brandPrimary"
+                size="md"
+                onClick={() => navigate(`/documents/form/${id}`)}
+                leftIcon={<FiEdit />}
+              >
+                Response
+              </Button>
+            )}
+            {document?.type === "file" && document?.metadata?.key && (
+              <>
+                <Tooltip label="Download this file">
+                  <Box>
+                    <DownloadButton
+                      document={document}
+                      size="md"
+                      isDisabled={!isValid}
+                    />
+                  </Box>
+                </Tooltip>
                 <Box>
-                  <DownloadButton
-                    document={document}
+                  <PreviewButton
+                    document={{ ...document, id }}
                     size="md"
                     isDisabled={!isValid}
                   />
                 </Box>
-              </Tooltip>
-              <Box>
-                <PreviewButton
-                  document={{ ...document, id }}
-                  size="md"
-                  isDisabled={!isValid}
-                />
-              </Box>
-            </>
-          )}
-        </HStack>
+              </>
+            )}
+          </HStack>
+        ) : undefined}
       </PageFooter>
 
       {/* Modals - All receive full document object with ID from URL */}
