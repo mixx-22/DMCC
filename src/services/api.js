@@ -14,14 +14,11 @@ const createApiUrl = (endpoint) => {
 export const apiService = {
   async login(username, password) {
     if (!USE_API) {
-      // Mock login: accept any username/password, return a mock user and token
       if (!username || !password) {
         throw new Error("Username and password are required");
       }
-      // You can customize this mock user as needed
-      // Mock a JWT token with expiry 1 hour from now
       const now = Date.now();
-      const expiresAt = now + 60 * 60 * 1000; // 1 hour
+      const expiresAt = now + 60 * 60 * 1000;
       const mockToken = {
         value: "mock-token-123",
         expiresAt,
@@ -66,15 +63,12 @@ export const apiService = {
 
   async request(endpoint, options = {}) {
     try {
-      // Get token from cookie only
       const token = cookieService.getToken();
 
       const headers = {
         ...options.headers,
       };
 
-      // Only set Content-Type for non-FormData requests
-      // FormData will set its own Content-Type with boundary
       if (!(options.body instanceof FormData)) {
         headers["Content-Type"] = "application/json";
       }
@@ -83,7 +77,6 @@ export const apiService = {
         headers.Authorization = `Bearer ${token}`;
       }
 
-      // Build URL with query parameters if provided
       let url = createApiUrl(endpoint);
       if (options.params) {
         const queryString = new URLSearchParams(
@@ -102,12 +95,11 @@ export const apiService = {
       const response = await fetch(url, {
         ...options,
         headers,
-        credentials: "include", // Include cookies in requests for server-set HttpOnly cookies
+        credentials: "include",
       });
 
       if (!response.ok) {
         if (response.status === 401) {
-          // Clear cookie on authentication failure
           cookieService.removeToken();
           window.location.href = "/login";
         }
@@ -132,7 +124,6 @@ export const apiService = {
    */
   async uploadFile(file) {
     if (!USE_API) {
-      // Mock mode: simulate upload and return mock data
       return {
         filename: file.name,
         size: file.size,
@@ -141,7 +132,6 @@ export const apiService = {
     }
 
     const formData = new FormData();
-    // Note: 'file' is the expected field name by the POST /upload endpoint
     formData.append("file", file);
 
     const response = await this.request("/documents/upload", {
@@ -149,8 +139,6 @@ export const apiService = {
       body: formData,
     });
 
-    // Extract the data from response
-    // Note: API returns 'fileName' (camelCase) not 'filename'
     const data = response.data || response;
     return {
       filename: data.fileName,
@@ -167,12 +155,10 @@ export const apiService = {
    */
   async downloadDocument(fileName, key) {
     if (!USE_API) {
-      // Mock mode: create a simple text file blob
       const mockContent = `Mock file: ${fileName}\nKey: ${key}\nDownloaded at: ${new Date().toISOString()}`;
       return new Blob([mockContent], { type: 'text/plain' });
     }
 
-    // Get token from cookie
     const token = cookieService.getToken();
 
     const headers = {
@@ -198,7 +184,6 @@ export const apiService = {
       throw new Error(`Download failed with status ${response.status}`);
     }
 
-    // Check content type to determine if it's a blob or JSON
     const contentType = response.headers.get("content-type");
     
     if (contentType && contentType.includes("application/json")) {
@@ -226,14 +211,12 @@ export const apiService = {
    */
   async previewDocument(id, fileName = '') {
     if (!USE_API) {
-      // Mock mode: create a mock file blob based on file extension
       const extension = fileName.split('.').pop().toLowerCase();
       let mimeType = 'application/octet-stream';
       let mockContent = `Mock preview: ${fileName}\nID: ${id}`;
       
       if (['jpg', 'jpeg', 'png', 'gif', 'webp'].includes(extension)) {
         mimeType = `image/${extension === 'jpg' ? 'jpeg' : extension}`;
-        // Create a simple 1x1 colored pixel as mock image
         const canvas = document.createElement('canvas');
         canvas.width = 1;
         canvas.height = 1;
@@ -252,7 +235,6 @@ export const apiService = {
       return new Blob([mockContent], { type: mimeType });
     }
 
-    // Get token from cookie
     const token = cookieService.getToken();
 
     const headers = {};
@@ -275,7 +257,6 @@ export const apiService = {
       throw new Error(`Preview failed with status ${response.status}`);
     }
 
-    // Check content type to determine if it's a blob or JSON
     const contentType = response.headers.get("content-type");
     
     if (contentType && contentType.includes("application/json")) {

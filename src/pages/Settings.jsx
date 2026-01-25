@@ -48,16 +48,14 @@ const Settings = () => {
     setLoading(true);
     try {
       if (!USE_API) {
-        // Mock data for development
         const mockSettings = {
           data: {
-            teamLeaderRole: null, // Initially no role set
+            teamLeaderRole: null,
           },
         };
         setTeamLeaderRole(mockSettings.data.teamLeaderRole);
         setInitialTeamLeaderRole(mockSettings.data.teamLeaderRole);
 
-        // Update user context with settings
         updateUserProfile({ settings: mockSettings.data });
       } else {
         const response = await apiService.request(SETTINGS_ENDPOINT, {
@@ -68,7 +66,6 @@ const Settings = () => {
         setTeamLeaderRole(settings.teamLeaderRole || null);
         setInitialTeamLeaderRole(settings.teamLeaderRole || null);
 
-        // Update user context with settings
         updateUserProfile({ settings });
       }
     } catch (error) {
@@ -87,12 +84,10 @@ const Settings = () => {
       };
 
       if (!USE_API) {
-        // Mock save for development
         setTimeout(() => {
           toast.success("Settings saved successfully");
           setInitialTeamLeaderRole(teamLeaderRole);
 
-          // Update user context with new settings
           updateUserProfile({ settings: payload });
           setSaving(false);
         }, 500);
@@ -107,7 +102,6 @@ const Settings = () => {
       toast.success("Settings saved successfully");
       setInitialTeamLeaderRole(teamLeaderRole);
 
-      // Update user context with new settings
       updateUserProfile({ settings: payload });
     } catch (error) {
       console.error("Failed to save settings:", error);

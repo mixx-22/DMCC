@@ -36,9 +36,8 @@ import { useLayout } from "../context/_useContext";
 
 const DOCUMENTS_ENDPOINT = "/documents";
 const USE_API = import.meta.env.VITE_USE_API !== "false";
-const DEBOUNCE_DELAY = 500; // 500ms debounce
+const DEBOUNCE_DELAY = 500;
 
-// Date range options for the dropdown
 const DATE_RANGE_OPTIONS = [
   { value: "today", label: "Today" },
   { value: "last7days", label: "Last 7 days" },
@@ -48,7 +47,6 @@ const DATE_RANGE_OPTIONS = [
   { value: "custom", label: "Custom range" },
 ];
 
-// Helper function to get the label for a date range value
 const getDateRangeLabel = (value) => {
   const option = DATE_RANGE_OPTIONS.find((opt) => opt.value === value);
   return option ? option.label : null;
@@ -65,12 +63,10 @@ const Search = () => {
     closeDocumentDrawer,
   } = useLayout();
 
-  // Collapse/expand filters
   const { isOpen: filtersOpen, onToggle: toggleFilters } = useDisclosure({
     defaultIsOpen: false,
   });
 
-  // Search filters
   const [keyword, setKeyword] = useState(searchParams.get("keyword") || "");
   const [type, setType] = useState(searchParams.get("type") || "");
   const [dateRange, setDateRange] = useState(
@@ -84,18 +80,14 @@ const Search = () => {
   ]);
   const [owners, setOwners] = useState([]);
 
-  // Search results and loading state
   const [searchResults, setSearchResults] = useState([]);
   const [loading, setLoading] = useState(false);
   const [hasSearched, setHasSearched] = useState(false);
 
-  // Debounce timer ref
   const debounceTimerRef = useRef(null);
 
-  // Ref to prevent infinite loop when syncing from URL
   const isSyncingFromURL = useRef(false);
 
-  // Sync all filter states from URL params when they change
   useEffect(() => {
     isSyncingFromURL.current = true;
 
@@ -148,12 +140,9 @@ const Search = () => {
       params.owners = encodeURIComponent(JSON.stringify(owners));
     }
     setSearchParams(params, { replace: true });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [keyword, type, dateRange, selectedDates, owners]);
 
-  // Perform search with API request
   const performSearch = useCallback(async () => {
-    // Only search if we have a keyword (as per requirement)
     if (!keyword.trim()) {
       setSearchResults([]);
       setHasSearched(false);
@@ -161,11 +150,9 @@ const Search = () => {
     }
 
     if (!USE_API) {
-      // Mock mode: use localStorage
       const saved = localStorage.getItem("documents");
       const allDocs = saved ? JSON.parse(saved) : [];
 
-      // Apply client-side filtering in mock mode
       let filtered = [...allDocs];
 
       if (keyword.trim()) {
