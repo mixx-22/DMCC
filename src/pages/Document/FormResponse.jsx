@@ -16,7 +16,6 @@ import {
   FormLabel,
   Input,
   Textarea,
-  Select,
   Radio,
   RadioGroup,
   Checkbox,
@@ -340,8 +339,17 @@ const FormResponse = () => {
             </FormLabel>
             <SingleDatepicker
               name={`date-input-${question.id}`}
-              date={responses[question.id] ? new Date(responses[question.id]) : undefined}
-              onDateChange={(date) => handleInputChange(question.id, date?.toISOString().split('T')[0] || "")}
+              date={
+                responses[question.id]
+                  ? new Date(responses[question.id])
+                  : undefined
+              }
+              onDateChange={(date) =>
+                handleInputChange(
+                  question.id,
+                  date?.toISOString().split("T")[0] || "",
+                )
+              }
               configs={{
                 dateFormat: "MM/dd/yyyy",
               }}
@@ -372,11 +380,24 @@ const FormResponse = () => {
               value={
                 responses[question.id]
                   ? Array.isArray(responses[question.id])
-                    ? responses[question.id].map(val => ({ value: val, label: val }))
-                    : [{ value: responses[question.id], label: responses[question.id] }]
+                    ? responses[question.id].map((val) => ({
+                        value: val,
+                        label: val,
+                      }))
+                    : [
+                        {
+                          value: responses[question.id],
+                          label: responses[question.id],
+                        },
+                      ]
                   : []
               }
-              onChange={(options) => handleInputChange(question.id, options?.map(opt => opt.value) || [])}
+              onChange={(options) =>
+                handleInputChange(
+                  question.id,
+                  options?.map((opt) => opt.value) || [],
+                )
+              }
               placeholder="Select options (multiple)"
               options={
                 question.options?.map((opt) => ({
@@ -409,10 +430,15 @@ const FormResponse = () => {
             <ChakraSelect
               value={
                 responses[question.id]
-                  ? { value: responses[question.id], label: responses[question.id] }
+                  ? {
+                      value: responses[question.id],
+                      label: responses[question.id],
+                    }
                   : null
               }
-              onChange={(option) => handleInputChange(question.id, option?.value || "")}
+              onChange={(option) =>
+                handleInputChange(question.id, option?.value || "")
+              }
               placeholder="Select an option"
               options={
                 question.options?.map((opt) => ({

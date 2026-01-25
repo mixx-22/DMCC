@@ -36,7 +36,6 @@ import {
   Spacer,
   Input,
   Textarea,
-  Select,
   Radio,
   RadioGroup,
   Checkbox,
@@ -400,7 +399,10 @@ const DocumentDetail = () => {
               name={`date-input-${question.id}`}
               date={value ? new Date(value) : undefined}
               onDateChange={(date) =>
-                handleResponseChange(question.id, date?.toISOString().split('T')[0] || "")
+                handleResponseChange(
+                  question.id,
+                  date?.toISOString().split("T")[0] || "",
+                )
               }
               configs={{
                 dateFormat: "MM/dd/yyyy",
@@ -420,12 +422,15 @@ const DocumentDetail = () => {
               value={
                 value
                   ? Array.isArray(value)
-                    ? value.map(val => ({ value: val, label: val }))
+                    ? value.map((val) => ({ value: val, label: val }))
                     : [{ value: value, label: value }]
                   : []
               }
               onChange={(options) =>
-                handleResponseChange(question.id, options?.map(opt => opt.value) || [])
+                handleResponseChange(
+                  question.id,
+                  options?.map((opt) => opt.value) || [],
+                )
               }
               placeholder="Select options (multiple)"
               options={
@@ -445,11 +450,7 @@ const DocumentDetail = () => {
               {index + 1}. {question.label}
             </FormLabel>
             <ChakraSelect
-              value={
-                value
-                  ? { value: value, label: value }
-                  : null
-              }
+              value={value ? { value: value, label: value } : null}
               onChange={(option) =>
                 handleResponseChange(question.id, option?.value || "")
               }
@@ -1252,7 +1253,8 @@ const DocumentDetail = () => {
                                 >
                                   {hasResponse ? (
                                     <>
-                                      {(question.type === "checkboxes" || question.type === "select") &&
+                                      {(question.type === "checkboxes" ||
+                                        question.type === "select") &&
                                       Array.isArray(response) ? (
                                         <VStack align="start" spacing={1}>
                                           {response.map((item, idx) => (
