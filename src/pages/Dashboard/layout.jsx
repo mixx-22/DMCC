@@ -53,7 +53,7 @@ const Layout = () => {
   const filesLoadedRef = useRef(false);
 
   const folderLimit = useBreakpointValue({ base: 4, sm: 6, lg: 8 });
-  const fileLimit = useBreakpointValue({ base: 4, sm: 6, lg: 8 });
+  const fileLimit = useBreakpointValue({ base: 8, sm: 12, lg: 12 });
 
   const greetingColor = useColorModeValue("gray.500", "gray.300");
   const dateColor = useColorModeValue("gray.400", "gray.400");
