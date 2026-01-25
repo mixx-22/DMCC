@@ -8,9 +8,9 @@ const AuptilyzeFolder = ({ sx = {}, ...props }) => {
       "brandPrimary.600",
       "white",
       "brandPrimary.400",
-      "brandPrimary.500",
+      "brandPrimary.800",
       "gray.300",
-      "brandPrimary.400",
+      "brandPrimary.700",
     ],
   );
   return (

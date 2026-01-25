@@ -110,7 +110,7 @@ const Accounts = () => {
       case "supervisor":
         return "purple";
       case "user":
-        return "blue";
+        return "info";
       default:
         return "gray";
     }

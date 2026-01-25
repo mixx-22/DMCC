@@ -11,7 +11,7 @@ const DocumentBadges = ({ data = {}, isValid }) => {
       <Badge
         colorScheme={
           type === "folder"
-            ? "blue"
+            ? "brandPrimary"
             : type === "auditSchedule"
               ? "purple"
               : ["formTemplate", "formResponse"].includes(type)
