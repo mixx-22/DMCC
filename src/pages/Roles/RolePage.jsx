@@ -72,7 +72,6 @@ const RolePage = () => {
   });
   const [validationErrors, setValidationErrors] = useState({});
 
-  // Initialize form data when role loads
   useEffect(() => {
     if (role && !isNewRole) {
       setFormData({
@@ -99,7 +98,6 @@ const RolePage = () => {
   };
 
   const handlePermissionsChange = async (newPermissions) => {
-    // Check if any delete permission was toggled ON
     const hasNewDeleteEnabled = checkIfDeleteWasEnabled(
       formData.permissions,
       newPermissions,
@@ -137,12 +135,10 @@ const RolePage = () => {
     }
   };
 
-  // Helper to check if any delete permission was newly enabled
   const checkIfDeleteWasEnabled = (oldPerms, newPerms) => {
     const checkObject = (oldObj, newObj) => {
       for (const key in newObj) {
         if (key === "d") {
-          // Check if delete was toggled from 0 to 1
           if (oldObj?.[key] === 0 && newObj[key] === 1) {
             return true;
           }
@@ -198,7 +194,6 @@ const RolePage = () => {
       });
 
       if (result.isConfirmed) {
-        // Set all delete permissions to 1
         const updatedPermissions = setAllDeletePermissions(
           formData.permissions,
           true,
