@@ -4,9 +4,11 @@ import Sidebar from "./Sidebar";
 import Header from "./Header";
 import Footer from "./Footer";
 import { useLocation } from "react-router-dom";
+import { useLayout } from "../context/_useContext";
 
 const Layout = ({ children }) => {
   const location = useLocation();
+  const { pageRef } = useLayout();
   const smallMaxContent = useMemo(() => {
     const pathSegments = location.pathname.split("/").filter(Boolean);
     return (
@@ -31,7 +33,7 @@ const Layout = ({ children }) => {
   return (
     <Flex h="100vh" overflow="hidden">
       <Sidebar />
-      <Flex direction="column" flex={1} overflow="hidden">
+      <Flex ref={pageRef} direction="column" flex={1} overflow="hidden">
         <Header />
         <Box
           flex={1}

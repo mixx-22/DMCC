@@ -2,6 +2,7 @@ import { useRef, useState, useCallback, useEffect } from "react";
 import { LayoutContext } from "./_contexts";
 
 export const LayoutProvider = ({ children }) => {
+  const pageRef = useRef();
   const headerRef = useRef();
   const footerRef = useRef();
   const [hasHeaderContent, setHasHeaderContent] = useState(false);
@@ -68,6 +69,7 @@ export const LayoutProvider = ({ children }) => {
   return (
     <LayoutContext.Provider
       value={{
+        pageRef,
         headerRef,
         footerRef,
         hasHeaderContent,

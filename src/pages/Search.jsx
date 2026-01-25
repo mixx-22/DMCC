@@ -56,6 +56,7 @@ const Search = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
   const {
+    pageRef,
     viewMode,
     toggleViewMode,
     selectedDocument,
@@ -140,7 +141,7 @@ const Search = () => {
       params.owners = encodeURIComponent(JSON.stringify(owners));
     }
     setSearchParams(params, { replace: true });
-  }, [keyword, type, dateRange, selectedDates, owners]);
+  }, [keyword, type, dateRange, selectedDates, owners, setSearchParams]);
 
   const performSearch = useCallback(async () => {
     if (!keyword.trim()) {
@@ -372,6 +373,7 @@ const Search = () => {
                         <FormControl>
                           <FormLabel>Type</FormLabel>
                           <Select
+                            menuPortalTarget={document.body}
                             value={
                               type
                                 ? {
@@ -412,6 +414,7 @@ const Search = () => {
                         <FormControl>
                           <FormLabel>Date Range</FormLabel>
                           <Select
+                            menuPortalTarget={document.body}
                             value={
                               dateRange
                                 ? {
@@ -438,6 +441,8 @@ const Search = () => {
                           <FormControl>
                             <FormLabel>Select Date Range</FormLabel>
                             <RangeDatepicker
+                              usePortal
+                              portalRef={pageRef}
                               selectedDates={selectedDates}
                               onDateChange={setSelectedDates}
                               propsConfigs={{
@@ -531,7 +536,9 @@ const Search = () => {
                   navigate(`/documents/folders/${doc.id}`);
                 } else if (doc.type === "file" || doc.type === "formTemplate") {
                   navigate(`/document/${doc.id}`, {
-                    state: { from: { path: "/search", label: "Search Results" } },
+                    state: {
+                      from: { path: "/search", label: "Search Results" },
+                    },
                   });
                 }
               }
@@ -549,7 +556,9 @@ const Search = () => {
                   navigate(`/documents/folders/${doc.id}`);
                 } else if (doc.type === "file" || doc.type === "formTemplate") {
                   navigate(`/document/${doc.id}`, {
-                    state: { from: { path: "/search", label: "Search Results" } },
+                    state: {
+                      from: { path: "/search", label: "Search Results" },
+                    },
                   });
                 }
               }

@@ -100,7 +100,8 @@ const UserAsyncSelect = ({
         debounceTimerRef.current = setTimeout(async () => {
           if (!USE_API) {
             const filtered = MOCK_USERS.filter((user) => {
-              const fullName = `${user.firstName} ${user.lastName}`.toLowerCase();
+              const fullName =
+                `${user.firstName} ${user.lastName}`.toLowerCase();
               const email = user.email.toLowerCase();
               return (
                 fullName.includes(inputValue.toLowerCase()) ||
@@ -112,7 +113,7 @@ const UserAsyncSelect = ({
                 value: getUserId(user),
                 label: `${user.firstName} ${user.lastName}`,
                 user: user,
-              }))
+              })),
             );
             return;
           }
@@ -132,7 +133,7 @@ const UserAsyncSelect = ({
                 value: getUserId(user),
                 label: `${user.firstName} ${user.lastName}`,
                 user: user,
-              }))
+              })),
             );
           } catch (error) {
             console.error("Failed to fetch users:", error);
@@ -344,6 +345,7 @@ const UserAsyncSelect = ({
             loadingMessage={() => "Loading users..."}
             colorScheme="brandPrimary"
             useBasicStyles
+            menuPortalTarget={document.body}
           />
         </Box>
         {!readonly && (
