@@ -16,7 +16,6 @@ import {
   FormLabel,
   Input,
   Textarea,
-  Select,
   Radio,
   RadioGroup,
   Checkbox,
@@ -26,7 +25,10 @@ import {
   Divider,
   Badge,
   useColorModeValue,
+  FormHelperText,
 } from "@chakra-ui/react";
+import { Select as ChakraSelect } from "chakra-react-select";
+import { SingleDatepicker } from "chakra-dayzed-datepicker";
 import { FiSend, FiArrowLeft } from "react-icons/fi";
 import PageHeader from "../../components/PageHeader";
 import PageFooter from "../../components/PageFooter";
@@ -136,10 +138,7 @@ const FormResponse = () => {
       // Build questions array with responses
       const questionsWithResponses = formTemplate.metadata.questions.map(
         (question) => ({
-          id: question.id,
-          label: question.label,
-          type: question.type,
-          required: question.required,
+          ...question,
           response: responses[question.id],
         }),
       );
@@ -163,10 +162,10 @@ const FormResponse = () => {
 
       // Add form template author to privacy if exists
       if (
-        formTemplate.author?.id &&
-        !updatedPrivacy.users.includes(formTemplate.author.id)
+        formTemplate.owner?.id &&
+        !updatedPrivacy.users.includes(formTemplate.owner.id)
       ) {
-        updatedPrivacy.users.push(formTemplate.author.id);
+        updatedPrivacy.users.push(formTemplate.owner.id);
       }
 
       // Create form response document
@@ -194,10 +193,12 @@ const FormResponse = () => {
       });
 
       // Navigate to the created response document
-      if (createdDoc?.id || createdDoc?._id) {
-        navigate(`/document/${createdDoc.id || createdDoc._id}`);
+      const docId = createdDoc?._id || createdDoc?.id;
+      if (docId) {
+        navigate(`/document/${docId}`);
       } else {
-        navigate(`/document/${id}`);
+        console.error("Created document has no ID:", createdDoc);
+        navigate("/documents");
       }
     } catch (error) {
       console.error("Error submitting form:", error);
@@ -336,10 +337,22 @@ const FormResponse = () => {
                 </Badge>
               )}
             </FormLabel>
-            <Input
-              type="date"
-              value={responses[question.id] || ""}
-              onChange={(e) => handleInputChange(question.id, e.target.value)}
+            <SingleDatepicker
+              name={`date-input-${question.id}`}
+              date={
+                responses[question.id]
+                  ? new Date(responses[question.id])
+                  : undefined
+              }
+              onDateChange={(date) =>
+                handleInputChange(
+                  question.id,
+                  date?.toISOString().split("T")[0] || "",
+                )
+              }
+              configs={{
+                dateFormat: "MMMM dd, yyyy",
+              }}
             />
             {hasError && (
               <FormErrorMessage>{errors[question.id]}</FormErrorMessage>
@@ -348,6 +361,60 @@ const FormResponse = () => {
         );
 
       case "select":
+        return (
+          <FormControl
+            key={question.id}
+            isRequired={question.required}
+            isInvalid={hasError}
+          >
+            <FormLabel>
+              {index + 1}. {question.label}
+              {question.required && (
+                <Badge ml={2} colorScheme="red" fontSize="xs">
+                  Required
+                </Badge>
+              )}
+            </FormLabel>
+            <ChakraSelect
+              isMulti
+              value={
+                responses[question.id]
+                  ? Array.isArray(responses[question.id])
+                    ? responses[question.id].map((val) => ({
+                        value: val,
+                        label: val,
+                      }))
+                    : [
+                        {
+                          value: responses[question.id],
+                          label: responses[question.id],
+                        },
+                      ]
+                  : []
+              }
+              onChange={(options) =>
+                handleInputChange(
+                  question.id,
+                  options?.map((opt) => opt.value) || [],
+                )
+              }
+              placeholder="Select options (multiple)"
+              options={
+                question.options?.map((opt) => ({
+                  value: opt,
+                  label: opt,
+                })) || []
+              }
+            />
+            {hasError && (
+              <FormErrorMessage>{errors[question.id]}</FormErrorMessage>
+            )}
+            <FormHelperText>
+              Select up to {question?.options?.length} items.
+            </FormHelperText>
+          </FormControl>
+        );
+
       case "dropdown":
         return (
           <FormControl
@@ -363,20 +430,30 @@ const FormResponse = () => {
                 </Badge>
               )}
             </FormLabel>
-            <Select
-              value={responses[question.id] || ""}
-              onChange={(e) => handleInputChange(question.id, e.target.value)}
+            <ChakraSelect
+              value={
+                responses[question.id]
+                  ? {
+                      value: responses[question.id],
+                      label: responses[question.id],
+                    }
+                  : null
+              }
+              onChange={(option) =>
+                handleInputChange(question.id, option?.value || "")
+              }
               placeholder="Select an option"
-            >
-              {question.options?.map((option, idx) => (
-                <option key={idx} value={option}>
-                  {option}
-                </option>
-              ))}
-            </Select>
+              options={
+                question.options?.map((opt) => ({
+                  value: opt,
+                  label: opt,
+                })) || []
+              }
+            />
             {hasError && (
               <FormErrorMessage>{errors[question.id]}</FormErrorMessage>
             )}
+            <FormHelperText>Select one.</FormHelperText>
           </FormControl>
         );
 
@@ -413,7 +490,7 @@ const FormResponse = () => {
           </FormControl>
         );
 
-      case "checkbox":
+      case "checkboxes":
         return (
           <FormControl
             key={question.id}
@@ -443,6 +520,9 @@ const FormResponse = () => {
             {hasError && (
               <FormErrorMessage>{errors[question.id]}</FormErrorMessage>
             )}
+            <FormHelperText>
+              Select up to {question?.options?.length} items.
+            </FormHelperText>
           </FormControl>
         );
 

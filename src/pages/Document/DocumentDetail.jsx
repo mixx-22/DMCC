@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import {
   useParams,
   useNavigate,
@@ -34,7 +34,17 @@ import {
   useColorModeValue,
   Stack,
   Spacer,
+  Input,
+  Textarea,
+  Radio,
+  RadioGroup,
+  Checkbox,
+  CheckboxGroup,
+  FormControl,
+  FormLabel,
 } from "@chakra-ui/react";
+import { Select as ChakraSelect } from "chakra-react-select";
+import { SingleDatepicker } from "chakra-dayzed-datepicker";
 import {
   FiTrash2,
   FiMove,
@@ -46,6 +56,7 @@ import {
   FiUpload,
   FiLock,
   FiUnlock,
+  FiSave,
 } from "react-icons/fi";
 import PageHeader from "../../components/PageHeader";
 import PageFooter from "../../components/PageFooter";
@@ -59,17 +70,22 @@ import PreviewButton from "../../components/Document/PreviewButton";
 import Timestamp from "../../components/Timestamp";
 import Breadcrumbs from "../../components/Document/Breadcrumbs";
 import PrivacyDisplay from "../../components/Document/PrivacyDisplay";
-import { useDocuments } from "../../context/_useContext";
+import { useDocuments, useUser } from "../../context/_useContext";
 import { toast } from "sonner";
 import DocumentBadges from "./Badges";
+import moment from "moment";
 
 const DocumentDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const location = useLocation();
   const { fetchDocumentById, updateDocument, loading } = useDocuments();
+  const { user: currentUser } = useUser();
 
   const [document, setDocument] = useState(null);
+  const [isEditable, setIsEditable] = useState(false);
+  const [editedResponses, setEditedResponses] = useState({});
+  const [isSaving, setIsSaving] = useState(false);
   const fetchedRef = useRef(false);
   const currentIdRef = useRef(null);
   const titleTextareaRef = useRef(null);
@@ -79,6 +95,7 @@ const DocumentDetail = () => {
   const cardBorderColor = useColorModeValue("gray.200", "gray.600");
   const cardBg = useColorModeValue("gray.50", "gray.700");
   const errorColor = useColorModeValue("error.600", "error.200");
+  const responseBg = useColorModeValue("gray.100", "gray.600");
 
   const {
     isOpen: isDeleteOpen,
@@ -151,6 +168,17 @@ const DocumentDetail = () => {
     return Math.round((bytes / Math.pow(k, i)) * 100) / 100 + " " + sizes[i];
   };
 
+  const formatDateResponse = (dateString) => {
+    try {
+      const date = new Date(dateString);
+      return isNaN(date.getTime())
+        ? dateString
+        : moment(date).format("MMMM DD, yyyy");
+    } catch {
+      return dateString;
+    }
+  };
+
   const isDocumentValid = () => {
     if (!document || typeof document !== "object") return false;
     if (!document.type) return false;
@@ -220,6 +248,291 @@ const DocumentDetail = () => {
   const handleDocumentUpdate = (updatedDoc) => {
     if (updatedDoc && typeof updatedDoc === "object") {
       setDocument((prev) => ({ ...prev, ...updatedDoc }));
+    }
+  };
+
+  const handleResponseChange = (questionId, value) => {
+    setEditedResponses((prev) => ({
+      ...prev,
+      [questionId]: value,
+    }));
+  };
+
+  const handleEditToggle = () => {
+    if (!isEditable) {
+      // Initialize editedResponses with current responses
+      const currentResponses = {};
+      document?.metadata?.questions?.forEach((question) => {
+        currentResponses[question.id] = question.response;
+      });
+      setEditedResponses(currentResponses);
+    } else {
+      // Cancel editing - reset editedResponses
+      setEditedResponses({});
+    }
+    setIsEditable(!isEditable);
+  };
+
+  const handleSaveResponses = async () => {
+    setIsSaving(true);
+    try {
+      // Update questions with new responses
+      const updatedQuestions = document.metadata.questions.map((question) => ({
+        ...question,
+        response:
+          editedResponses[question.id] !== undefined
+            ? editedResponses[question.id]
+            : question.response,
+      }));
+
+      // Only update the questions array to avoid overwriting other metadata
+      // Note: Backend should verify document ownership before allowing updates
+      const updatedDoc = await updateDocument(document, {
+        metadata: {
+          ...document.metadata,
+          questions: updatedQuestions,
+        },
+      });
+
+      setDocument((prev) => ({ ...prev, ...updatedDoc }));
+      setIsEditable(false);
+      setEditedResponses({});
+
+      toast.success("Responses Updated", {
+        description: "Form responses have been updated successfully",
+        duration: 2000,
+      });
+    } catch (error) {
+      console.error("Error updating responses:", error);
+      toast.error("Update Failed", {
+        description: "Failed to update form responses",
+        duration: 3000,
+      });
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const isUserOwner = useMemo(() => {
+    if (!document || !currentUser) return false;
+    return document?.owner?._id === currentUser?.id;
+  }, [currentUser, document]);
+
+  const renderEditableQuestion = (question, index) => {
+    const value =
+      editedResponses[question.id] !== undefined
+        ? editedResponses[question.id]
+        : question.response;
+
+    switch (question.type) {
+      case "text":
+        return (
+          <FormControl key={question.id}>
+            <FormLabel>
+              {index + 1}. {question.label}
+            </FormLabel>
+            <Input
+              value={value ?? ""}
+              onChange={(e) =>
+                handleResponseChange(question.id, e.target.value)
+              }
+              placeholder="Enter your answer"
+            />
+          </FormControl>
+        );
+
+      case "textarea":
+        return (
+          <FormControl key={question.id}>
+            <FormLabel>
+              {index + 1}. {question.label}
+            </FormLabel>
+            <Textarea
+              value={value ?? ""}
+              onChange={(e) =>
+                handleResponseChange(question.id, e.target.value)
+              }
+              placeholder="Enter your answer"
+              rows={4}
+            />
+          </FormControl>
+        );
+
+      case "number":
+        return (
+          <FormControl key={question.id}>
+            <FormLabel>
+              {index + 1}. {question.label}
+            </FormLabel>
+            <Input
+              type="number"
+              value={value ?? ""}
+              onChange={(e) =>
+                handleResponseChange(question.id, e.target.value)
+              }
+              placeholder="Enter a number"
+            />
+          </FormControl>
+        );
+
+      case "email":
+        return (
+          <FormControl key={question.id}>
+            <FormLabel>
+              {index + 1}. {question.label}
+            </FormLabel>
+            <Input
+              type="email"
+              value={value ?? ""}
+              onChange={(e) =>
+                handleResponseChange(question.id, e.target.value)
+              }
+              placeholder="Enter email address"
+            />
+          </FormControl>
+        );
+
+      case "date":
+        return (
+          <FormControl
+            key={question.id}
+            sx={{
+              button: {
+                w: "full",
+                justifyContent: "flex-start",
+              },
+            }}
+          >
+            <FormLabel>
+              {index + 1}. {question.label}
+            </FormLabel>
+            <SingleDatepicker
+              name={`date-input-${question.id}`}
+              date={value ? new Date(value) : undefined}
+              onDateChange={(date) =>
+                handleResponseChange(
+                  question.id,
+                  date?.toISOString().split("T")[0] || "",
+                )
+              }
+              configs={{
+                dateFormat: "MMMM dd, yyyy",
+              }}
+            />
+          </FormControl>
+        );
+
+      case "select":
+        return (
+          <FormControl key={question.id}>
+            <FormLabel>
+              {index + 1}. {question.label}
+            </FormLabel>
+            <ChakraSelect
+              isMulti
+              value={
+                value
+                  ? Array.isArray(value)
+                    ? value.map((val) => ({ value: val, label: val }))
+                    : [{ value: value, label: value }]
+                  : []
+              }
+              onChange={(options) =>
+                handleResponseChange(
+                  question.id,
+                  options?.map((opt) => opt.value) || [],
+                )
+              }
+              placeholder="Select options (multiple)"
+              options={
+                question.options?.map((opt) => ({
+                  value: opt,
+                  label: opt,
+                })) || []
+              }
+            />
+          </FormControl>
+        );
+
+      case "dropdown":
+        return (
+          <FormControl key={question.id}>
+            <FormLabel>
+              {index + 1}. {question.label}
+            </FormLabel>
+            <ChakraSelect
+              value={value ? { value: value, label: value } : null}
+              onChange={(option) =>
+                handleResponseChange(question.id, option?.value || "")
+              }
+              placeholder="Select an option"
+              options={
+                question.options?.map((opt) => ({
+                  value: opt,
+                  label: opt,
+                })) || []
+              }
+            />
+          </FormControl>
+        );
+
+      case "radio":
+        return (
+          <FormControl key={question.id}>
+            <FormLabel>
+              {index + 1}. {question.label}
+            </FormLabel>
+            <RadioGroup
+              value={value ?? ""}
+              onChange={(val) => handleResponseChange(question.id, val)}
+            >
+              <Stack spacing={2}>
+                {question.options?.map((option, idx) => (
+                  <Radio key={idx} value={option}>
+                    {option}
+                  </Radio>
+                ))}
+              </Stack>
+            </RadioGroup>
+          </FormControl>
+        );
+
+      case "checkboxes":
+        return (
+          <FormControl key={question.id}>
+            <FormLabel>
+              {index + 1}. {question.label}
+            </FormLabel>
+            <CheckboxGroup
+              value={value ?? []}
+              onChange={(values) => handleResponseChange(question.id, values)}
+            >
+              <Stack spacing={2}>
+                {question.options?.map((option, idx) => (
+                  <Checkbox key={idx} value={option}>
+                    {option}
+                  </Checkbox>
+                ))}
+              </Stack>
+            </CheckboxGroup>
+          </FormControl>
+        );
+
+      default:
+        return (
+          <FormControl key={question.id}>
+            <FormLabel>
+              {index + 1}. {question.label}
+            </FormLabel>
+            <Input
+              value={value ?? ""}
+              onChange={(e) =>
+                handleResponseChange(question.id, e.target.value)
+              }
+              placeholder="Enter your answer"
+            />
+          </FormControl>
+        );
     }
   };
 
@@ -645,6 +958,33 @@ const DocumentDetail = () => {
                 </CardBody>
               </Card>
             )}
+
+            {document?.type === "formResponse" && (
+              <Card>
+                <CardBody>
+                  <VStack align="stretch" spacing={4}>
+                    <Text fontSize="sm" color="gray.600">
+                      This is a response to a template. Click the button below
+                      to view the original form template.
+                    </Text>
+                    {document?.metadata?.templateId && (
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        colorScheme="brandPrimary"
+                        leftIcon={<FiEdit />}
+                        onClick={() =>
+                          navigate(`/document/${document.metadata.templateId}`)
+                        }
+                        w="full"
+                      >
+                        View Form Template
+                      </Button>
+                    )}
+                  </VStack>
+                </CardBody>
+              </Card>
+            )}
           </Stack>
           <Stack spacing={4} flex={1}>
             {/* Version Control & Approval Status Combined - Spans 4 columns, 2 rows */}
@@ -801,7 +1141,7 @@ const DocumentDetail = () => {
                       size="sm"
                       colorScheme="brandPrimary"
                       leftIcon={<FiEdit />}
-                      onClick={() => navigate(`/edit-form/${document._id}`)}
+                      onClick={() => navigate(`/edit-form/${id}`)}
                     >
                       Edit Form
                     </Button>
@@ -857,6 +1197,122 @@ const DocumentDetail = () => {
               </Card>
             )}
 
+            {document?.type === "formResponse" && (
+              <Card>
+                <CardBody>
+                  <Flex justify="space-between" align="center" mb={4}>
+                    <Text fontWeight="semibold">Response</Text>
+                    {isUserOwner && (
+                      <HStack spacing={2}>
+                        {isEditable && (
+                          <Button
+                            size="sm"
+                            colorScheme="green"
+                            leftIcon={<FiSave />}
+                            onClick={handleSaveResponses}
+                            isLoading={isSaving}
+                          >
+                            Save
+                          </Button>
+                        )}
+                        <Button
+                          size="sm"
+                          colorScheme={isEditable ? "gray" : "brandPrimary"}
+                          leftIcon={<FiEdit />}
+                          onClick={handleEditToggle}
+                          isDisabled={isSaving}
+                        >
+                          {isEditable ? "Cancel" : "Edit Response"}
+                        </Button>
+                      </HStack>
+                    )}
+                  </Flex>
+                  {document?.metadata?.questions &&
+                  document.metadata.questions.length > 0 ? (
+                    <VStack align="stretch" spacing={4}>
+                      {isEditable
+                        ? document.metadata.questions.map((question, index) =>
+                            renderEditableQuestion(question, index),
+                          )
+                        : document.metadata.questions.map((question, index) => {
+                            const response = question.response;
+                            const hasResponse =
+                              response !== null &&
+                              response !== undefined &&
+                              response !== "" &&
+                              !(
+                                Array.isArray(response) && response.length === 0
+                              );
+
+                            return (
+                              <Box
+                                key={question.id}
+                                p={4}
+                                borderWidth={1}
+                                borderRadius="md"
+                                borderColor={cardBorderColor}
+                                bg={cardBg}
+                              >
+                                <Text fontWeight="medium" mb={2}>
+                                  {index + 1}. {question.label}
+                                </Text>
+                                <Box
+                                  mt={2}
+                                  p={3}
+                                  borderRadius="md"
+                                  bg={responseBg}
+                                >
+                                  {hasResponse ? (
+                                    <>
+                                      {(question.type === "checkboxes" ||
+                                        question.type === "select") &&
+                                      Array.isArray(response) ? (
+                                        <VStack align="start" spacing={1}>
+                                          {response.map((item, idx) => (
+                                            <Text key={idx} fontSize="sm">
+                                              ✓ {item}
+                                            </Text>
+                                          ))}
+                                        </VStack>
+                                      ) : question.type === "textarea" ? (
+                                        <Text
+                                          fontSize="sm"
+                                          whiteSpace="pre-wrap"
+                                          wordBreak="break-word"
+                                        >
+                                          {response}
+                                        </Text>
+                                      ) : question.type === "date" ? (
+                                        <Text fontSize="sm">
+                                          {formatDateResponse(response)}
+                                        </Text>
+                                      ) : (
+                                        <Text fontSize="sm">{response}</Text>
+                                      )}
+                                    </>
+                                  ) : (
+                                    <Text
+                                      fontSize="sm"
+                                      color="gray.500"
+                                      fontStyle="italic"
+                                    >
+                                      No response provided
+                                    </Text>
+                                  )}
+                                </Box>
+                              </Box>
+                            );
+                          })}
+                    </VStack>
+                  ) : (
+                    <Text fontSize="sm" color="gray.500">
+                      No responses available.
+                    </Text>
+                  )}
+                </CardBody>
+              </Card>
+            )}
+
             <Center
               h="full"
               display="none"
@@ -886,10 +1342,12 @@ const DocumentDetail = () => {
                   ? "Audit Schedule"
                   : document?.type === "formTemplate"
                     ? "Form Template"
-                    : document?.type
-                      ? document?.type.charAt(0).toUpperCase() +
-                        document?.type.slice(1)
-                      : "Unknown"}
+                    : document?.type === "formResponse"
+                      ? "Form Response"
+                      : document?.type
+                        ? document?.type.charAt(0).toUpperCase() +
+                          document?.type.slice(1)
+                        : "Unknown"}
               </MenuItem>
               <Divider />
               <MenuItem
@@ -902,10 +1360,12 @@ const DocumentDetail = () => {
                   ? "Audit Schedule"
                   : document?.type === "formTemplate"
                     ? "Form Template"
-                    : document?.type
-                      ? document?.type.charAt(0).toUpperCase() +
-                        document?.type.slice(1)
-                      : "Unknown"}
+                    : document?.type === "formResponse"
+                      ? "Form Response"
+                      : document?.type
+                        ? document?.type.charAt(0).toUpperCase() +
+                          document?.type.slice(1)
+                        : "Unknown"}
               </MenuItem>
             </MenuList>
           </Menu>
@@ -917,7 +1377,7 @@ const DocumentDetail = () => {
               onClick={() => navigate(`/documents/form/${id}`)}
               leftIcon={<FiEdit />}
             >
-              Response
+              Add Response
             </Button>
           )}
           {document?.type === "file" && document?.metadata?.key && (

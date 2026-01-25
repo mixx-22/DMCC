@@ -24,6 +24,7 @@ export const INPUT_TYPES = {
   DATE: 'date',
   SELECT: 'select',
   DROPDOWN: 'dropdown',
+  RADIO: 'radio',
   CHECKBOXES: 'checkboxes',
 };
 
@@ -33,6 +34,7 @@ export const INPUT_TYPES = {
 const OPTION_BASED_TYPES = [
   INPUT_TYPES.SELECT,
   INPUT_TYPES.DROPDOWN,
+  INPUT_TYPES.RADIO,
   INPUT_TYPES.CHECKBOXES,
 ];
 
