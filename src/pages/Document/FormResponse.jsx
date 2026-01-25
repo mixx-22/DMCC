@@ -31,14 +31,14 @@ import { FiSend, FiArrowLeft } from "react-icons/fi";
 import PageHeader from "../../components/PageHeader";
 import PageFooter from "../../components/PageFooter";
 import Breadcrumbs from "../../components/Document/Breadcrumbs";
-import { useDocuments } from "../../context/_useContext";
+import { useDocuments, useUser } from "../../context/_useContext";
 import { toast } from "sonner";
-import api from "../../services/api";
 
 const FormResponse = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { fetchDocumentById } = useDocuments();
+  const { fetchDocumentById, createDocument } = useDocuments();
+  const { user: currentUser } = useUser();
 
   const [formTemplate, setFormTemplate] = useState(null);
   const [responses, setResponses] = useState({});
@@ -133,22 +133,76 @@ const FormResponse = () => {
 
     setIsSubmitting(true);
     try {
-      // Submit form responses to the backend
-      await api.post("/form-responses", {
-        formTemplateId: id,
-        responses: responses,
-      });
+      // Build questions array with responses
+      const questionsWithResponses = formTemplate.metadata.questions.map(
+        (question) => ({
+          id: question.id,
+          label: question.label,
+          type: question.type,
+          required: question.required,
+          response: responses[question.id],
+        }),
+      );
+
+      // Copy privacy settings and add current user if not already included
+      const templatePrivacy = formTemplate.privacy || {
+        users: [],
+        teams: [],
+        roles: [],
+      };
+      const updatedPrivacy = {
+        users: [...(templatePrivacy.users || [])],
+        teams: [...(templatePrivacy.teams || [])],
+        roles: [...(templatePrivacy.roles || [])],
+      };
+
+      // Add current user to privacy if not already included
+      if (currentUser?.id && !updatedPrivacy.users.includes(currentUser.id)) {
+        updatedPrivacy.users.push(currentUser.id);
+      }
+
+      // Add form template author to privacy if exists
+      if (
+        formTemplate.author?.id &&
+        !updatedPrivacy.users.includes(formTemplate.author.id)
+      ) {
+        updatedPrivacy.users.push(formTemplate.author.id);
+      }
+
+      // Create form response document
+      const responseDocument = {
+        title: `${formTemplate.title} - response`,
+        type: "formResponse",
+        parentId: formTemplate.parentId,
+        path: Array.isArray(formTemplate.path)
+          ? formTemplate.path
+          : formTemplate.path
+            ? [formTemplate.path]
+            : [],
+        privacy: updatedPrivacy,
+        metadata: {
+          templateId: formTemplate._id || formTemplate.id || id,
+          questions: questionsWithResponses,
+        },
+      };
+
+      const createdDoc = await createDocument(responseDocument);
 
       toast.success("Success", {
         description: "Form response submitted successfully",
         duration: 3000,
       });
-      navigate(`/documents/${id}`);
+
+      // Navigate to the created response document
+      if (createdDoc?.id || createdDoc?._id) {
+        navigate(`/document/${createdDoc.id || createdDoc._id}`);
+      } else {
+        navigate(`/document/${id}`);
+      }
     } catch (error) {
       console.error("Error submitting form:", error);
       toast.error("Submission Failed", {
-        description:
-          error.response?.data?.message || "Failed to submit form response",
+        description: error.message || "Failed to submit form response",
         duration: 3000,
       });
     } finally {
