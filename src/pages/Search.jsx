@@ -87,15 +87,25 @@ const Search = () => {
 
   // Debounce timer ref
   const debounceTimerRef = useRef(null);
+  
+  // Ref to prevent infinite loop when syncing from URL
+  const isSyncingFromURL = useRef(false);
 
-  // Sync keyword from URL params when they change (e.g., from SearchInput navigation)
+  // Sync all filter states from URL params when they change
   useEffect(() => {
-    const urlKeyword = searchParams.get("keyword") || "";
-    setKeyword(urlKeyword);
-  }, [searchParams]);
-
-  // Load owners from query params when URL changes
-  useEffect(() => {
+    isSyncingFromURL.current = true;
+    
+    setKeyword(searchParams.get("keyword") || "");
+    setType(searchParams.get("type") || "");
+    setDateRange(searchParams.get("dateRange") || "");
+    
+    const startDate = searchParams.get("startDate");
+    const endDate = searchParams.get("endDate");
+    setSelectedDates([
+      startDate ? new Date(startDate) : null,
+      endDate ? new Date(endDate) : null,
+    ]);
+    
     const ownersParam = searchParams.get("owners");
     if (ownersParam) {
       try {
@@ -103,14 +113,25 @@ const Search = () => {
         setOwners(ownersArray);
       } catch (e) {
         console.error("Failed to parse owners from query params:", e);
+        setOwners([]);
       }
     } else {
       setOwners([]);
     }
+    
+    // Reset flag after state updates
+    setTimeout(() => {
+      isSyncingFromURL.current = false;
+    }, 0);
   }, [searchParams]);
 
   // Update URL when filters change (without debounce)
   useEffect(() => {
+    // Skip if we're syncing from URL to avoid infinite loop
+    if (isSyncingFromURL.current) {
+      return;
+    }
+    
     const params = {};
     if (keyword) params.keyword = keyword;
     if (type) params.type = type;
