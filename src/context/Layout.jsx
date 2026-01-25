@@ -5,8 +5,6 @@ export const LayoutProvider = ({ children }) => {
   const pageRef = useRef();
   const headerRef = useRef();
   const footerRef = useRef();
-  const [hasHeaderContent, setHasHeaderContent] = useState(false);
-  const [hasFooterContent, setHasFooterContent] = useState(false);
 
   // View mode state - shared across the entire site
   const [viewMode, setViewMode] = useState(() => {
@@ -23,14 +21,6 @@ export const LayoutProvider = ({ children }) => {
   useEffect(() => {
     localStorage.setItem("viewMode", viewMode);
   }, [viewMode]);
-
-  const updateHeaderContent = useCallback((hasContent) => {
-    setHasHeaderContent(hasContent);
-  }, []);
-
-  const updateFooterContent = useCallback((hasContent) => {
-    setHasFooterContent(hasContent);
-  }, []);
 
   // Toggle view mode between grid and list
   const toggleViewMode = useCallback(() => {
@@ -72,10 +62,6 @@ export const LayoutProvider = ({ children }) => {
         pageRef,
         headerRef,
         footerRef,
-        hasHeaderContent,
-        hasFooterContent,
-        updateHeaderContent,
-        updateFooterContent,
         viewMode,
         setViewMode,
         toggleViewMode,

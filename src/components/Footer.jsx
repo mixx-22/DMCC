@@ -1,33 +1,10 @@
-import { Flex, Box, useColorModeValue } from "@chakra-ui/react";
+import { Box } from "@chakra-ui/react";
 import { useLayout } from "../context/_useContext";
 
 const Footer = () => {
-  const { footerRef, hasFooterContent } = useLayout();
-  const bgColor = useColorModeValue("gray.50", "gray.900");
+  const { footerRef } = useLayout();
 
-  if (!hasFooterContent) return null;
-
-  return (
-    <Flex
-      bg={bgColor}
-      borderTop="1px"
-      border="none"
-      position="sticky"
-      bottom={0}
-      zIndex="sticky"
-      h="sidebar.row"
-      justify="center"
-    >
-      <Flex
-        w="full"
-        px="page.padding"
-        maxW="page.maxContent"
-        alignItems="center"
-      >
-        <Box w="full" flex={1} ref={footerRef}></Box>
-      </Flex>
-    </Flex>
-  );
+  return <Box ref={footerRef}></Box>;
 };
 
 export default Footer;
