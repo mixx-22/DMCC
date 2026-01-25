@@ -11,7 +11,6 @@ import {
   Textarea,
   VStack,
   HStack,
-  Select,
   Switch,
   Text,
   IconButton,
@@ -26,6 +25,7 @@ import {
   NumberInput,
   NumberInputField,
   Checkbox,
+  Radio,
   Stack,
   Spinner,
   Center,
@@ -142,9 +142,9 @@ const SortableQuestion = ({ question, index, onRemove, onEdit }) => {
         return (
           <VStack align="start" spacing={2}>
             {question.options?.map((option, idx) => (
-              <Checkbox key={idx} isDisabled type="radio">
+              <Radio key={idx} isDisabled>
                 {option}
-              </Checkbox>
+              </Radio>
             ))}
             {(!question.options || question.options.length === 0) && (
               <Text fontSize="sm" color="gray.500">
@@ -232,6 +232,22 @@ const SortableQuestion = ({ question, index, onRemove, onEdit }) => {
       </Card>
     </Stack>
   );
+};
+
+// Helper function to get display label for input type
+const getTypeLabel = (type) => {
+  const typeLabels = {
+    [INPUT_TYPES.TEXT]: 'Text',
+    [INPUT_TYPES.NUMBER]: 'Number',
+    [INPUT_TYPES.CURRENCY]: 'Currency',
+    [INPUT_TYPES.TEXTAREA]: 'Text Area',
+    [INPUT_TYPES.DATE]: 'Date',
+    [INPUT_TYPES.SELECT]: 'Select',
+    [INPUT_TYPES.DROPDOWN]: 'Dropdown',
+    [INPUT_TYPES.RADIO]: 'Radio',
+    [INPUT_TYPES.CHECKBOXES]: 'Checkboxes',
+  };
+  return typeLabels[type] || 'Text';
 };
 
 const FormTemplateBuilder = () => {
@@ -736,15 +752,7 @@ const FormTemplateBuilder = () => {
                         <ChakraSelect
                           value={{
                             value: currentQuestion.type,
-                            label: currentQuestion.type === INPUT_TYPES.TEXT ? 'Text' :
-                                   currentQuestion.type === INPUT_TYPES.NUMBER ? 'Number' :
-                                   currentQuestion.type === INPUT_TYPES.CURRENCY ? 'Currency' :
-                                   currentQuestion.type === INPUT_TYPES.TEXTAREA ? 'Text Area' :
-                                   currentQuestion.type === INPUT_TYPES.DATE ? 'Date' :
-                                   currentQuestion.type === INPUT_TYPES.SELECT ? 'Select' :
-                                   currentQuestion.type === INPUT_TYPES.DROPDOWN ? 'Dropdown' :
-                                   currentQuestion.type === INPUT_TYPES.RADIO ? 'Radio' :
-                                   currentQuestion.type === INPUT_TYPES.CHECKBOXES ? 'Checkboxes' : 'Text'
+                            label: getTypeLabel(currentQuestion.type)
                           }}
                           onChange={(option) =>
                             setCurrentQuestion((prev) => ({
