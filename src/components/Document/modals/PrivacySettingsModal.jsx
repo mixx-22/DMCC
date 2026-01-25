@@ -57,25 +57,24 @@ const PrivacySettingsModal = ({ isOpen, onClose, document, onUpdate }) => {
       });
     };
 
-    const newData = {
-      ...document,
+    // Send only the changed fields, not the entire document
+    const updates = {
       privacy: {
-        ...document.privacy,
         users: extractIds(privacySettings.users),
         teams: extractIds(privacySettings.teams),
         roles: extractIds(privacySettings.roles),
       },
       permissionOverrides: {
-        ...document.permissionOverrides,
         readOnly: privacySettings.readOnly,
         restricted: privacySettings.restricted,
       },
     };
 
     try {
-      const updatedDoc = await updateDocument(document.id, newData);
+      // API returns the full updated document with populated objects
+      const updatedDoc = await updateDocument(document.id, updates);
 
-      // Update parent component's document state with the response (includes updatedAt)
+      // Update parent component's document state with the API response
       if (onUpdate && updatedDoc) {
         onUpdate(updatedDoc);
       }
