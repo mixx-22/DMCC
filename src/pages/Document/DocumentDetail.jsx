@@ -655,6 +655,33 @@ const DocumentDetail = () => {
                 </CardBody>
               </Card>
             )}
+
+            {document?.type === "formResponse" && (
+              <Card>
+                <CardBody>
+                  <VStack align="stretch" spacing={4}>
+                    <Text fontSize="sm" color="gray.600">
+                      This is a response to a template. Click the button below
+                      to view the original form template.
+                    </Text>
+                    {document?.metadata?.templateId && (
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        colorScheme="brandPrimary"
+                        leftIcon={<FiEdit />}
+                        onClick={() =>
+                          navigate(`/document/${document.metadata.templateId}`)
+                        }
+                        w="full"
+                      >
+                        View Form Template
+                      </Button>
+                    )}
+                  </VStack>
+                </CardBody>
+              </Card>
+            )}
           </Stack>
           <Stack spacing={4} flex={1}>
             {/* Version Control & Approval Status Combined - Spans 4 columns, 2 rows */}
@@ -799,33 +826,6 @@ const DocumentDetail = () => {
               </Card>
             )}
 
-            {document?.type === "formResponse" && (
-              <Card>
-                <CardBody>
-                  <VStack align="stretch" spacing={4}>
-                    <Text fontWeight="semibold">
-                      Form Template
-                    </Text>
-                    <Text fontSize="sm" color="gray.600">
-                      This is a response to the form template. Click the button below to view the original form template.
-                    </Text>
-                    {document?.metadata?.templateId && (
-                      <Button
-                        colorScheme="brandPrimary"
-                        leftIcon={<FiEdit />}
-                        onClick={() =>
-                          navigate(`/document/${document.metadata.templateId}`)
-                        }
-                        w="full"
-                      >
-                        View Form Template
-                      </Button>
-                    )}
-                  </VStack>
-                </CardBody>
-              </Card>
-            )}
-
             {document?.type === "formTemplate" && (
               <Card>
                 <CardBody>
@@ -898,8 +898,7 @@ const DocumentDetail = () => {
               <Card>
                 <CardBody>
                   <Text fontWeight="semibold" mb={4}>
-                    Form Responses (
-                    {document?.metadata?.questions?.length || 0})
+                    Response
                   </Text>
                   {document?.metadata?.questions &&
                   document.metadata.questions.length > 0 ? (
@@ -924,15 +923,7 @@ const DocumentDetail = () => {
                             <Text fontWeight="medium" mb={2}>
                               {index + 1}. {question.label}
                             </Text>
-                            <Text fontSize="xs" color="gray.500" mb={2}>
-                              Type: {question.type}
-                            </Text>
-                            <Box
-                              mt={2}
-                              p={3}
-                              borderRadius="md"
-                              bg={responseBg}
-                            >
+                            <Box mt={2} p={3} borderRadius="md" bg={responseBg}>
                               {hasResponse ? (
                                 <>
                                   {question.type === "checkbox" &&
@@ -961,7 +952,11 @@ const DocumentDetail = () => {
                                   )}
                                 </>
                               ) : (
-                                <Text fontSize="sm" color="gray.500" fontStyle="italic">
+                                <Text
+                                  fontSize="sm"
+                                  color="gray.500"
+                                  fontStyle="italic"
+                                >
                                   No response provided
                                 </Text>
                               )}
