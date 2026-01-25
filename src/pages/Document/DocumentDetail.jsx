@@ -79,6 +79,7 @@ const DocumentDetail = () => {
   const cardBorderColor = useColorModeValue("gray.200", "gray.600");
   const cardBg = useColorModeValue("gray.50", "gray.700");
   const errorColor = useColorModeValue("error.600", "error.200");
+  const responseBg = useColorModeValue("gray.100", "gray.600");
 
   const {
     isOpen: isDeleteOpen,
@@ -789,6 +790,33 @@ const DocumentDetail = () => {
               </Card>
             )}
 
+            {document?.type === "formResponse" && (
+              <Card>
+                <CardBody>
+                  <VStack align="stretch" spacing={4}>
+                    <Text fontWeight="semibold">
+                      Form Template
+                    </Text>
+                    <Text fontSize="sm" color="gray.600">
+                      This is a response to a form template. Click the button below to view the original form template.
+                    </Text>
+                    {document?.metadata?.templateId && (
+                      <Button
+                        colorScheme="brandPrimary"
+                        leftIcon={<FiEdit />}
+                        onClick={() =>
+                          navigate(`/document/${document.metadata.templateId}`)
+                        }
+                        w="full"
+                      >
+                        View Form Template
+                      </Button>
+                    )}
+                  </VStack>
+                </CardBody>
+              </Card>
+            )}
+
             {document?.type === "formTemplate" && (
               <Card>
                 <CardBody>
@@ -851,6 +879,91 @@ const DocumentDetail = () => {
                   ) : (
                     <Text fontSize="sm" color="gray.500">
                       No questions have been added to this form template yet.
+                    </Text>
+                  )}
+                </CardBody>
+              </Card>
+            )}
+
+            {document?.type === "formResponse" && (
+              <Card>
+                <CardBody>
+                  <Text fontWeight="semibold" mb={4}>
+                    Form Responses (
+                    {document?.metadata?.questions?.length || 0})
+                  </Text>
+                  {document?.metadata?.questions &&
+                  document.metadata.questions.length > 0 ? (
+                    <VStack align="stretch" spacing={4}>
+                      {document.metadata.questions.map((question, index) => {
+                        const response = question.response;
+                        const hasResponse =
+                          response !== null &&
+                          response !== undefined &&
+                          response !== "" &&
+                          !(Array.isArray(response) && response.length === 0);
+
+                        return (
+                          <Box
+                            key={question.id}
+                            p={4}
+                            borderWidth={1}
+                            borderRadius="md"
+                            borderColor={cardBorderColor}
+                            bg={cardBg}
+                          >
+                            <Text fontWeight="medium" mb={2}>
+                              {index + 1}. {question.label}
+                            </Text>
+                            <Text fontSize="xs" color="gray.500" mb={2}>
+                              Type: {question.type}
+                            </Text>
+                            <Box
+                              mt={2}
+                              p={3}
+                              borderRadius="md"
+                              bg={responseBg}
+                            >
+                              {hasResponse ? (
+                                <>
+                                  {question.type === "checkbox" &&
+                                  Array.isArray(response) ? (
+                                    <VStack align="start" spacing={1}>
+                                      {response.map((item, idx) => (
+                                        <Text key={idx} fontSize="sm">
+                                          ✓ {item}
+                                        </Text>
+                                      ))}
+                                    </VStack>
+                                  ) : question.type === "textarea" ? (
+                                    <Text
+                                      fontSize="sm"
+                                      whiteSpace="pre-wrap"
+                                      wordBreak="break-word"
+                                    >
+                                      {response}
+                                    </Text>
+                                  ) : question.type === "date" ? (
+                                    <Text fontSize="sm">
+                                      {new Date(response).toLocaleDateString()}
+                                    </Text>
+                                  ) : (
+                                    <Text fontSize="sm">{response}</Text>
+                                  )}
+                                </>
+                              ) : (
+                                <Text fontSize="sm" color="gray.500" fontStyle="italic">
+                                  No response provided
+                                </Text>
+                              )}
+                            </Box>
+                          </Box>
+                        );
+                      })}
+                    </VStack>
+                  ) : (
+                    <Text fontSize="sm" color="gray.500">
+                      No responses available.
                     </Text>
                   )}
                 </CardBody>
