@@ -178,8 +178,9 @@ const DocumentDetail = () => {
     }
 
     try {
-      await updateDocument(id, { title: trimmedTitle });
-      setDocument((prev) => ({ ...prev, title: trimmedTitle }));
+      const updatedDoc = await updateDocument(id, { title: trimmedTitle });
+      // Update local state with response data (includes updatedAt)
+      setDocument((prev) => ({ ...prev, ...updatedDoc }));
       toast.success("Title Updated", {
         description: "Document title has been updated",
         duration: 2000,
@@ -203,8 +204,9 @@ const DocumentDetail = () => {
     }
 
     try {
-      await updateDocument(id, { description: newDescription });
-      setDocument((prev) => ({ ...prev, description: newDescription }));
+      const updatedDoc = await updateDocument(id, { description: newDescription });
+      // Update local state with response data (includes updatedAt)
+      setDocument((prev) => ({ ...prev, ...updatedDoc }));
       toast.success("Description Updated", {
         description: "Document description has been updated",
         duration: 2000,
@@ -217,6 +219,12 @@ const DocumentDetail = () => {
       // Revert on error
       setDocument((prev) => ({ ...prev }));
     }
+  };
+
+  // Handle document updates from modals
+  const handleDocumentUpdate = (updatedDoc) => {
+    // Merge the updated document data into the current state
+    setDocument((prev) => ({ ...prev, ...updatedDoc }));
   };
 
   if (loading) {
@@ -1006,6 +1014,7 @@ const DocumentDetail = () => {
         isOpen={isPrivacyOpen}
         onClose={onPrivacyClose}
         document={{ ...document, id }}
+        onUpdate={handleDocumentUpdate}
       />
       <DeleteDocumentModal
         isOpen={isDeleteOpen}
@@ -1017,11 +1026,13 @@ const DocumentDetail = () => {
         isOpen={isFileTypeOpen}
         onClose={onFileTypeClose}
         document={{ ...document, id }}
+        onUpdate={handleDocumentUpdate}
       />
       <ManageDocumentMetadataModal
         isOpen={isMetadataOpen}
         onClose={onMetadataClose}
         document={{ ...document, id }}
+        onUpdate={handleDocumentUpdate}
       />
     </>
   );

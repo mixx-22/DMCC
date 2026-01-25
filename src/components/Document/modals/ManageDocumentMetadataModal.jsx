@@ -17,7 +17,7 @@ import {
 import { toast } from "sonner";
 import { useDocuments } from "../../../context/_useContext";
 
-const ManageDocumentMetadataModal = ({ isOpen, onClose, document }) => {
+const ManageDocumentMetadataModal = ({ isOpen, onClose, document, onUpdate }) => {
   const { updateDocument } = useDocuments();
   const [documentNumber, setDocumentNumber] = useState("");
   const [issuedDate, setIssuedDate] = useState("");
@@ -35,7 +35,7 @@ const ManageDocumentMetadataModal = ({ isOpen, onClose, document }) => {
 
   const handleSave = async () => {
     try {
-      await updateDocument(document.id, {
+      const updatedDoc = await updateDocument(document.id, {
         metadata: {
           ...document.metadata,
           documentNumber: documentNumber.trim() || undefined,
@@ -43,6 +43,11 @@ const ManageDocumentMetadataModal = ({ isOpen, onClose, document }) => {
           effectivityDate: effectivityDate || undefined,
         },
       });
+
+      // Update parent component's document state with the response (includes updatedAt)
+      if (onUpdate && updatedDoc) {
+        onUpdate(updatedDoc);
+      }
 
       toast.success("Document Metadata Updated", {
         description: "Document metadata has been successfully updated",

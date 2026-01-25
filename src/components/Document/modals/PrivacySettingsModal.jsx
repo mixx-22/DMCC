@@ -22,7 +22,7 @@ import TeamAsyncSelect from "../../TeamAsyncSelect";
 import RoleAsyncSelect from "../../RoleAsyncSelect";
 import { useDocuments } from "../../../context/_useContext";
 
-const PrivacySettingsModal = ({ isOpen, onClose, document }) => {
+const PrivacySettingsModal = ({ isOpen, onClose, document, onUpdate }) => {
   const { updateDocument } = useDocuments();
   const [privacySettings, setPrivacySettings] = useState({
     users: [],
@@ -46,7 +46,7 @@ const PrivacySettingsModal = ({ isOpen, onClose, document }) => {
 
   if (!document) return null;
 
-  const handleSave = () => {
+  const handleSave = async () => {
     // Extract only IDs from user/team/role objects for the API payload
     const extractIds = (items) => {
       return items.map((item) => {
@@ -72,14 +72,26 @@ const PrivacySettingsModal = ({ isOpen, onClose, document }) => {
       },
     };
 
-    updateDocument(document.id, newData);
+    try {
+      const updatedDoc = await updateDocument(document.id, newData);
 
-    toast.success("Privacy Settings Updated", {
-      description: "Privacy settings have been updated successfully",
-      duration: 3000,
-    });
+      // Update parent component's document state with the response (includes updatedAt)
+      if (onUpdate && updatedDoc) {
+        onUpdate(updatedDoc);
+      }
 
-    onClose();
+      toast.success("Privacy Settings Updated", {
+        description: "Privacy settings have been updated successfully",
+        duration: 3000,
+      });
+
+      onClose();
+    } catch (error) {
+      toast.error("Update Failed", {
+        description: error.message || "Failed to update privacy settings",
+        duration: 3000,
+      });
+    }
   };
 
   return (
