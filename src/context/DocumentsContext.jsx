@@ -288,6 +288,9 @@ export const DocumentsProvider = ({ children }) => {
 
   // Update a document
   const updateDocument = async (id, updates) => {
+    // Format updates for API (extract IDs, trim strings, etc.)
+    const formattedUpdates = formatUpdatesForAPI(updates);
+
     if (!USE_API) {
       // Mock mode: use localStorage
       const saved = localStorage.getItem("documents");
@@ -296,7 +299,7 @@ export const DocumentsProvider = ({ children }) => {
         doc.id === id
           ? {
               ...doc,
-              ...updates,
+              ...formattedUpdates,
               updatedAt: new Date().toISOString(),
             }
           : doc,
@@ -305,9 +308,6 @@ export const DocumentsProvider = ({ children }) => {
       setDocuments(updated);
       return;
     }
-
-    // Format updates for API (extract IDs, trim strings, etc.)
-    const formattedUpdates = formatUpdatesForAPI(updates);
 
     // API mode: PUT /documents/:id
     try {
