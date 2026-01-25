@@ -223,6 +223,7 @@ const Sidebar = () => {
         children: [
           { path: "/settings", label: "All Settings" },
           { path: "/roles", label: "Roles & Permissions" },
+          { path: "/file-types", label: "File Types" },
         ],
       });
     }

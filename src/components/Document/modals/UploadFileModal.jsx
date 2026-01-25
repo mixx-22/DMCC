@@ -22,6 +22,7 @@ import { useDropzone } from "react-dropzone";
 import { FiUploadCloud, FiFile, FiX } from "react-icons/fi";
 import { toast } from "sonner";
 import { useDocuments } from "../../../context/_useContext";
+import FileTypeAsyncSelect from "../../FileTypeAsyncSelect";
 
 const UploadFileModal = ({ isOpen, onClose, parentId, path }) => {
   const { createDocument } = useDocuments();
@@ -29,6 +30,7 @@ const UploadFileModal = ({ isOpen, onClose, parentId, path }) => {
     title: "",
     description: "",
     file: null,
+    fileType: null,
   });
 
   const onDrop = useCallback((acceptedFiles) => {
@@ -87,6 +89,8 @@ const UploadFileModal = ({ isOpen, onClose, parentId, path }) => {
           file: formData.file,
           filename: formData.file.name,
           size: formData.file.size,
+          // Save fileType as just the id when saving
+          fileType: formData.fileType?.id || null,
         },
       });
 
@@ -99,6 +103,7 @@ const UploadFileModal = ({ isOpen, onClose, parentId, path }) => {
         title: "",
         description: "",
         file: null,
+        fileType: null,
       });
       onClose();
     } catch (error) {
@@ -114,6 +119,7 @@ const UploadFileModal = ({ isOpen, onClose, parentId, path }) => {
       title: "",
       description: "",
       file: null,
+      fileType: null,
     });
     onClose();
   };
@@ -235,6 +241,14 @@ const UploadFileModal = ({ isOpen, onClose, parentId, path }) => {
                   name="fileDescription"
                 />
               </FormControl>
+
+              <FileTypeAsyncSelect
+                value={formData.fileType}
+                onChange={(fileType) =>
+                  setFormData((prev) => ({ ...prev, fileType }))
+                }
+                helperText="Type at least 2 characters to search for file types"
+              />
             </VStack>
           </ModalBody>
           <ModalFooter>

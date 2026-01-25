@@ -18,7 +18,7 @@ import {
   Box,
   useColorModeValue,
 } from "@chakra-ui/react";
-import { FiMoreVertical, FiChevronDown, FiChevronRight } from "react-icons/fi";
+import { FiMoreVertical, FiChevronDown, FiChevronUp } from "react-icons/fi";
 import { useState } from "react";
 import { getDocumentIcon, isDocumentValid } from "./DocumentIcon";
 import { DocumentHoverPopover } from "./DocumentHoverPopover";
@@ -34,7 +34,7 @@ export const ListView = ({
 }) => {
   const navigate = useNavigate();
   const [isFoldersOpen, setIsFoldersOpen] = useState(true);
-  
+
   const rowHoverBg = useColorModeValue("gray.50", "gray.700");
   const selectedBg = useColorModeValue("blue.50", "blue.900");
 
@@ -219,11 +219,11 @@ export const ListView = ({
             <Box>
               <Flex align="center" mb={3}>
                 <Button
-                  leftIcon={
-                    isFoldersOpen ? <FiChevronDown /> : <FiChevronRight />
+                  rightIcon={
+                    isFoldersOpen ? <FiChevronDown /> : <FiChevronUp />
                   }
                   onClick={() => setIsFoldersOpen(!isFoldersOpen)}
-                  variant="ghost"
+                  variant="link"
                   size="sm"
                   fontWeight="semibold"
                   color="gray.600"

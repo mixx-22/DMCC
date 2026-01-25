@@ -24,6 +24,8 @@ import Roles from "./pages/Roles";
 import RolePage from "./pages/Roles/RolePage";
 import { RolesProvider } from "./context/RolesContext";
 import { RoleProvider } from "./context/RoleContext";
+import FileTypes from "./pages/FileTypes";
+import { FileTypesProvider } from "./context/FileTypesContext";
 import { useBreakpointValue } from "@chakra-ui/react";
 import Menu from "./pages/Menu";
 import Notifications from "./pages/Notifications";
@@ -194,6 +196,14 @@ function App() {
                         <RoleProvider>
                           <RolePage />
                         </RoleProvider>
+                      }
+                    />
+                    <Route
+                      path="/file-types"
+                      element={
+                        <FileTypesProvider>
+                          <FileTypes />
+                        </FileTypesProvider>
                       }
                     />
                   </Routes>
