@@ -170,10 +170,6 @@ const Sidebar = () => {
   const activeColor = useColorModeValue("brandPrimary.600", "brandPrimary.200");
   const hoverBg = useColorModeValue("gray.50", "whiteAlpha.100");
   const menuHeaderColor = useColorModeValue("gray.500", "gray.400");
-  const bgGradient = useColorModeValue(
-    "linear(to-t, brandPrimary.600 0%, white 75%)",
-    "linear(to-t, brandPrimary.900 0%, gray.700 60%)",
-  );
 
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
@@ -556,7 +552,6 @@ const Sidebar = () => {
     <Box
       w={isCollapsed ? "sidebar.collapsed" : "sidebar.expanded"}
       bg={bgColor}
-      bgGradient={bgGradient}
       h="100vh"
       position="sticky"
       top={0}
