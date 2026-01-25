@@ -286,17 +286,19 @@ export const DocumentsProvider = ({ children }) => {
       const payloadMeta = { ...updates.metadata };
       const consolidatedMeta = { ...updates.metadata };
       
-      // Trim document number and convert empty strings to undefined (removes field from API payload)
-      if (typeof payloadMeta.documentNumber === 'string') {
-        payloadMeta.documentNumber = payloadMeta.documentNumber.trim() || undefined;
-        consolidatedMeta.documentNumber = payloadMeta.documentNumber; // Use trimmed value
+      // Trim document number for both payload and consolidated data
+      if (typeof updates.metadata.documentNumber === 'string') {
+        const trimmedDocNumber = updates.metadata.documentNumber.trim() || undefined;
+        payloadMeta.documentNumber = trimmedDocNumber;
+        consolidatedMeta.documentNumber = trimmedDocNumber;
       }
       
       // For API payload: extract fileType ID if it's an object
       if (payloadMeta.fileType && typeof payloadMeta.fileType === 'object') {
         payloadMeta.fileType = payloadMeta.fileType.id || payloadMeta.fileType._id || null;
       }
-      // For consolidated data: keep the full fileType object for UI display
+      // For consolidated data: fileType remains as the full object for UI display
+      // (consolidatedMeta.fileType is already the full object from ...updates.metadata)
       
       payload.metadata = payloadMeta;
       consolidatedData.metadata = consolidatedMeta;
@@ -347,12 +349,16 @@ export const DocumentsProvider = ({ children }) => {
 
       // Optimize: Update document in existing array instead of re-fetching
       // Use API response if available, otherwise construct from consolidatedData
-      const updatedDoc = response.data ||
-        response.document || {
-          ...consolidatedData, // Fallback to consolidatedData instead of payload
+      let updatedDoc = response.data || response.document;
+      
+      // If no response data, construct fallback from consolidatedData with explicit overrides
+      if (!updatedDoc) {
+        updatedDoc = {
           id,
           updatedAt: new Date().toISOString(),
+          ...consolidatedData, // Spread consolidatedData after explicit fields
         };
+      }
 
       // Check if document is being moved to a different folder
       const isMoving = "parentId" in updates;
