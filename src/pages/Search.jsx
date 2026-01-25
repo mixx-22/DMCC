@@ -20,6 +20,7 @@ import {
   GridItem,
   Collapse,
   useDisclosure,
+  InputRightElement,
 } from "@chakra-ui/react";
 import { FiGrid, FiList, FiChevronDown, FiChevronUp } from "react-icons/fi";
 import { Select } from "chakra-react-select";
@@ -57,9 +58,11 @@ const Search = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
   const { viewMode, toggleViewMode } = useLayout();
-  
+
   // Collapse/expand filters
-  const { isOpen: filtersOpen, onToggle: toggleFilters } = useDisclosure({ defaultIsOpen: false });
+  const { isOpen: filtersOpen, onToggle: toggleFilters } = useDisclosure({
+    defaultIsOpen: false,
+  });
 
   // Search filters
   const [keyword, setKeyword] = useState(searchParams.get("keyword") || "");
@@ -87,25 +90,25 @@ const Search = () => {
 
   // Debounce timer ref
   const debounceTimerRef = useRef(null);
-  
+
   // Ref to prevent infinite loop when syncing from URL
   const isSyncingFromURL = useRef(false);
 
   // Sync all filter states from URL params when they change
   useEffect(() => {
     isSyncingFromURL.current = true;
-    
+
     setKeyword(searchParams.get("keyword") || "");
     setType(searchParams.get("type") || "");
     setDateRange(searchParams.get("dateRange") || "");
-    
+
     const startDate = searchParams.get("startDate");
     const endDate = searchParams.get("endDate");
     setSelectedDates([
       startDate ? new Date(startDate) : null,
       endDate ? new Date(endDate) : null,
     ]);
-    
+
     const ownersParam = searchParams.get("owners");
     if (ownersParam) {
       try {
@@ -118,7 +121,7 @@ const Search = () => {
     } else {
       setOwners([]);
     }
-    
+
     // Reset flag after state updates
     setTimeout(() => {
       isSyncingFromURL.current = false;
@@ -131,7 +134,7 @@ const Search = () => {
     if (isSyncingFromURL.current) {
       return;
     }
-    
+
     const params = {};
     if (keyword) params.keyword = keyword;
     if (type) params.type = type;
@@ -373,18 +376,23 @@ const Search = () => {
               <SearchInput
                 placeholder="Search documents..."
                 defaultValue={keyword}
-              />
+              >
+                <InputRightElement w="max-content" pr={2}>
+                  <Button
+                    size="xs"
+                    variant="ghost"
+                    borderRadius="full"
+                    colorScheme="brandPrimary"
+                    onClick={toggleFilters}
+                    rightIcon={
+                      filtersOpen ? <FiChevronUp /> : <FiChevronDown />
+                    }
+                  >
+                    Filters
+                  </Button>
+                </InputRightElement>
+              </SearchInput>
             </Box>
-
-            {/* Filters Toggle Button */}
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={toggleFilters}
-              rightIcon={filtersOpen ? <FiChevronUp /> : <FiChevronDown />}
-            >
-              {filtersOpen ? "Hide Filters" : "Show Filters"}
-            </Button>
 
             {/* Collapsible Filters Card */}
             <Collapse in={filtersOpen} style={{ width: "100%" }}>
@@ -405,18 +413,27 @@ const Search = () => {
                                 ? {
                                     value: type,
                                     label:
-                                      type.charAt(0).toUpperCase() + type.slice(1),
+                                      type.charAt(0).toUpperCase() +
+                                      type.slice(1),
                                   }
                                 : null
                             }
-                            onChange={(option) => setType(option ? option.value : "")}
+                            onChange={(option) =>
+                              setType(option ? option.value : "")
+                            }
                             options={[
                               { value: "file", label: "File" },
                               { value: "folder", label: "Folder" },
-                              { value: "auditSchedule", label: "Audit Schedule" },
+                              {
+                                value: "auditSchedule",
+                                label: "Audit Schedule",
+                              },
                               { value: "formTemplate", label: "Form Template" },
                               { value: "formResponse", label: "Form Response" },
-                              { value: "qualityDocument", label: "Quality Document" },
+                              {
+                                value: "qualityDocument",
+                                label: "Quality Document",
+                              },
                             ]}
                             placeholder="All types"
                             isClearable
@@ -485,6 +502,8 @@ const Search = () => {
                     {/* Clear Filters Button */}
                     <Flex justify="flex-end">
                       <Button
+                        size="sm"
+                        colorScheme="error"
                         variant="ghost"
                         onClick={() => {
                           navigate("/search");

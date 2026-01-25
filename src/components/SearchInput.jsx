@@ -13,6 +13,7 @@ const SearchInput = ({
   header = false,
   placeholder = "Search...",
   defaultValue = "",
+  children,
   ...props
 }) => {
   const navigate = useNavigate();
@@ -50,6 +51,7 @@ const SearchInput = ({
           size="sm"
         />
       </InputLeftElement>
+      {children}
     </InputGroup>
   );
 };
@@ -58,6 +60,7 @@ SearchInput.propTypes = {
   header: PropTypes.bool,
   placeholder: PropTypes.string,
   defaultValue: PropTypes.string,
+  children: PropTypes.node,
 };
 
 export default SearchInput;
