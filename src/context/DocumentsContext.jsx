@@ -26,9 +26,6 @@ export const DocumentsProvider = ({ children }) => {
   // Current folder navigation
   const [currentFolderId, setCurrentFolderId] = useState(null);
 
-  // Selected document for drawer
-  const [selectedDocument, setSelectedDocument] = useState(null);
-
   // Refs to prevent duplicate fetch requests
   const fetchingRef = useRef(false);
   const lastFetchedFolderIdRef = useRef(null);
@@ -346,7 +343,6 @@ export const DocumentsProvider = ({ children }) => {
   // Navigate to folder
   const navigateToFolder = (folderId) => {
     setCurrentFolderId(folderId);
-    setSelectedDocument(null);
   };
 
   // Check if user can view document based on privacy settings
@@ -393,7 +389,6 @@ export const DocumentsProvider = ({ children }) => {
     folder,
     documents,
     currentFolderId,
-    selectedDocument,
     loading,
     error,
     createDocument,
@@ -401,7 +396,6 @@ export const DocumentsProvider = ({ children }) => {
     deleteDocument,
     moveDocument,
     navigateToFolder,
-    setSelectedDocument,
     canViewDocument,
     getVisibleDocuments,
     fetchDocuments,

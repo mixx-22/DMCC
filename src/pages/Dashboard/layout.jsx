@@ -15,7 +15,7 @@ import {
   IconButton,
   Spacer,
 } from "@chakra-ui/react";
-import { Link as RouterLink } from "react-router-dom";
+import { Link as RouterLink, useNavigate } from "react-router-dom";
 import { useState, useEffect, useMemo, useRef } from "react";
 import { format } from "date-fns";
 import { FiGrid, FiList } from "react-icons/fi";
@@ -27,13 +27,21 @@ import { ChevronDownIcon } from "@chakra-ui/icons";
 import { GridView } from "../../components/Document/GridView";
 import { ListView } from "../../components/Document/ListView";
 import PageHeader from "../../components/PageHeader";
+import DocumentDrawer from "../../components/Document/DocumentDrawer";
 
 const MotionBox = motion(Box);
 
 const Layout = () => {
   const { documents } = useApp();
   const { user: currentUser } = useUser();
-  const { viewMode, toggleViewMode } = useLayout();
+  const {
+    viewMode,
+    toggleViewMode,
+    selectedDocument,
+    handleDocumentClick,
+    closeDocumentDrawer,
+  } = useLayout();
+  const navigate = useNavigate();
   const [selectedTeam, setSelectedTeam] = useState("all");
   const [greeting, setGreeting] = useState("");
   const [pendingApprovals, setPendingApprovals] = useState(0);
@@ -220,6 +228,32 @@ const Layout = () => {
     fetchRecentFiles();
   }, [fileLimit, filteredDocuments]);
 
+  // Sync updates when selectedDocument changes
+  // This runs when: 1) a document is selected to view, or 2) a document is updated in the drawer
+  // Updates the matching document in recentFolders or recentFiles arrays
+  useEffect(() => {
+    if (!selectedDocument) return;
+
+    const docId = selectedDocument.id || selectedDocument._id;
+    if (!docId) return;
+
+    // Update recentFolders if the selected document is a folder
+    setRecentFolders((prevFolders) =>
+      prevFolders.map((folder) => {
+        const folderId = folder.id || folder._id;
+        return folderId === docId ? { ...folder, ...selectedDocument } : folder;
+      }),
+    );
+
+    // Update recentFiles if the selected document is a file
+    setRecentFiles((prevFiles) =>
+      prevFiles.map((file) => {
+        const fileId = file.id || file._id;
+        return fileId === docId ? { ...file, ...selectedDocument } : file;
+      }),
+    );
+  }, [selectedDocument]);
+
   // Get user teams from the current user object
   const userTeams = useMemo(() => {
     // Check if user has teams property and it's an array
@@ -342,7 +376,20 @@ const Layout = () => {
           <Text fontSize="xl" fontWeight="500" mb={4} color={headingColor}>
             Recent Folders
           </Text>
-          <GridView foldersOnly documents={recentFolders} />
+          <GridView
+            foldersOnly
+            documents={recentFolders}
+            selectedDocument={selectedDocument}
+            onDocumentClick={(doc) => {
+              const result = handleDocumentClick(doc);
+              if (result.isDoubleClick) {
+                // Navigate to folder on double-click
+                if (doc.type === "folder" || doc.type === "auditSchedule") {
+                  navigate(`/documents/folders/${doc.id}`);
+                }
+              }
+            }}
+          />
         </Box>
 
         {/* Recent Documents */}
@@ -363,17 +410,47 @@ const Layout = () => {
             <GridView
               filesOnly
               documents={recentFiles}
+              selectedDocument={selectedDocument}
+              onDocumentClick={(doc) => {
+                const result = handleDocumentClick(doc);
+                if (result.isDoubleClick) {
+                  // Navigate to document on double-click
+                  if (doc.type === "file" || doc.type === "formTemplate") {
+                    navigate(`/document/${doc.id}`, {
+                      state: { from: { path: "/", label: "Dashboard" } },
+                    });
+                  }
+                }
+              }}
               sourcePage={{ path: "/", label: "Dashboard" }}
             />
           ) : (
             <ListView
               filesOnly
               documents={recentFiles}
+              selectedDocument={selectedDocument}
+              onDocumentClick={(doc) => {
+                const result = handleDocumentClick(doc);
+                if (result.isDoubleClick) {
+                  // Navigate to document on double-click
+                  if (doc.type === "file" || doc.type === "formTemplate") {
+                    navigate(`/document/${doc.id}`, {
+                      state: { from: { path: "/", label: "Dashboard" } },
+                    });
+                  }
+                }
+              }}
               sourcePage={{ path: "/", label: "Dashboard" }}
             />
           )}
         </Box>
       </MotionBox>
+
+      <DocumentDrawer
+        document={selectedDocument}
+        isOpen={!!selectedDocument}
+        onClose={closeDocumentDrawer}
+      />
     </>
   );
 };

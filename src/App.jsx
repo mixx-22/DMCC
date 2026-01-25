@@ -34,7 +34,6 @@ import ChangePassword from "./pages/ChangePassword";
 import Settings from "./pages/Settings";
 import { useApp } from "./context/_useContext";
 import { UserProfileProvider } from "./context/UserProfileContext";
-import { DocumentsProvider } from "./context/DocumentsContext";
 import FormTemplateBuilder from "./pages/FormTemplateBuilder";
 import QualityDocuments from "./pages/QualityDocuments";
 
@@ -85,61 +84,24 @@ function App() {
                       element={<ChangePassword />}
                     />
                     <Route path="/settings" element={<Settings />} />
-                    <Route
-                      path="/documents"
-                      element={
-                        <DocumentsProvider>
-                          <Documents />
-                        </DocumentsProvider>
-                      }
-                    />
-                    <Route
-                      path="/document/:id"
-                      element={
-                        <DocumentsProvider>
-                          <DocumentDetail />
-                        </DocumentsProvider>
-                      }
-                    />
+                    <Route path="/documents" element={<Documents />} />
+                    <Route path="/document/:id" element={<DocumentDetail />} />
                     <Route
                       path="/documents/folders/:id"
-                      element={
-                        <DocumentsProvider>
-                          <Documents />
-                        </DocumentsProvider>
-                      }
+                      element={<Documents />}
                     />
                     <Route
                       path="/quality-documents"
-                      element={
-                        <DocumentsProvider>
-                          <QualityDocuments />
-                        </DocumentsProvider>
-                      }
+                      element={<QualityDocuments />}
                     />
-                    <Route
-                      path="/search"
-                      element={
-                        <DocumentsProvider>
-                          <Search />
-                        </DocumentsProvider>
-                      }
-                    />
+                    <Route path="/search" element={<Search />} />
                     <Route
                       path="/create-form"
-                      element={
-                        <DocumentsProvider>
-                          <FormTemplateBuilder />
-                        </DocumentsProvider>
-                      }
+                      element={<FormTemplateBuilder />}
                     />
                     <Route
                       path="/edit-form/:id"
-                      element={
-                        <DocumentsProvider>
-                          <FormTemplateBuilder />
-                        </DocumentsProvider>
-                      }
+                      element={<FormTemplateBuilder />}
                     />
                     <Route path="/archive" element={<Archive />} />
                     <Route

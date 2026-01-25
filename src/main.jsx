@@ -5,6 +5,7 @@ import App from "./App";
 import theme from "./theme";
 import { AppProvider } from "./context/AppContext";
 import { UserProvider } from "./context/UserContext";
+import { DocumentsProvider } from "./context/DocumentsContext";
 import "./index.css";
 import Fonts from "./components/Fonts";
 import { LayoutProvider } from "./context/Layout";
@@ -14,10 +15,12 @@ ReactDOM.createRoot(document.getElementById("root")).render(
     <ChakraProvider theme={theme}>
       <UserProvider>
         <AppProvider>
-          <LayoutProvider>
-            <Fonts />
-            <App />
-          </LayoutProvider>
+          <DocumentsProvider>
+            <LayoutProvider>
+              <Fonts />
+              <App />
+            </LayoutProvider>
+          </DocumentsProvider>
         </AppProvider>
       </UserProvider>
     </ChakraProvider>

@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useEffect, useRef } from "react";
 import { useParams, useLocation, useNavigate } from "react-router-dom";
 import {
   Box,
@@ -37,19 +37,22 @@ const Documents = () => {
   const navigate = useNavigate();
   const {
     currentFolderId,
-    selectedDocument,
     folder,
     documents,
     navigateToFolder,
-    setSelectedDocument,
     loading,
     createDocument,
     fetchDocuments,
   } = useDocuments();
-  const { viewMode, toggleViewMode } = useLayout();
+  const {
+    viewMode,
+    toggleViewMode,
+    selectedDocument,
+    setSelectedDocument,
+    handleDocumentClick,
+    closeDocumentDrawer,
+  } = useLayout();
 
-  const [lastClickTime, setLastClickTime] = useState(0);
-  const [lastClickId, setLastClickId] = useState(null);
   const isFolderView = location.pathname.includes("/folders/");
   const fetchedRef = useRef(false);
   const currentIdRef = useRef(null);
@@ -186,34 +189,6 @@ const Documents = () => {
     }
   };
 
-  const handleDocumentClick = (doc) => {
-    console.log(doc);
-    const now = Date.now();
-    const timeDiff = now - lastClickTime;
-
-    if (lastClickId === doc.id && timeDiff < 300) {
-      if (doc.type === "folder" || doc.type === "auditSchedule") {
-        const folderTitle = doc?.title || "Untitled";
-        navigateToFolder(doc.id, folderTitle);
-        navigate(`/documents/folders/${doc.id}`);
-      } else if (doc.type === "file" || doc.type === "formTemplate") {
-        const sourcePage = {
-          path: isFolderView
-            ? `/documents/folders/${currentFolderId}`
-            : "/documents",
-          label: isFolderView ? folder?.title || "Folder" : "All Documents",
-        };
-        navigate(`/document/${doc.id}`, { state: { from: sourcePage } });
-      }
-      setLastClickTime(0);
-      setLastClickId(null);
-    } else {
-      setSelectedDocument(doc);
-      setLastClickTime(now);
-      setLastClickId(doc.id);
-    }
-  };
-
   return (
     <Box>
       <PageHeader>
@@ -270,7 +245,25 @@ const Documents = () => {
           <GridView
             documents={documents}
             selectedDocument={selectedDocument}
-            onDocumentClick={handleDocumentClick}
+            onDocumentClick={(doc) => {
+              const result = handleDocumentClick(doc);
+              if (result.isDoubleClick) {
+                // Navigate on double-click
+                if (doc.type === "folder" || doc.type === "auditSchedule") {
+                  navigate(`/documents/folders/${doc.id}`);
+                } else if (doc.type === "file" || doc.type === "formTemplate") {
+                  const sourcePage = {
+                    path: isFolderView
+                      ? `/documents/folders/${currentFolderId}`
+                      : "/documents",
+                    label: isFolderView
+                      ? folder?.title || "Folder"
+                      : "All Documents",
+                  };
+                  navigate(`/document/${doc.id}`, { state: { from: sourcePage } });
+                }
+              }
+            }}
             sourcePage={{
               path: isFolderView
                 ? `/documents/folders/${currentFolderId}`
@@ -282,8 +275,25 @@ const Documents = () => {
           <ListView
             documents={documents}
             selectedDocument={selectedDocument}
-            onDocumentClick={handleDocumentClick}
-            onMoreOptions={setSelectedDocument}
+            onDocumentClick={(doc) => {
+              const result = handleDocumentClick(doc);
+              if (result.isDoubleClick) {
+                // Navigate on double-click
+                if (doc.type === "folder" || doc.type === "auditSchedule") {
+                  navigate(`/documents/folders/${doc.id}`);
+                } else if (doc.type === "file" || doc.type === "formTemplate") {
+                  const sourcePage = {
+                    path: isFolderView
+                      ? `/documents/folders/${currentFolderId}`
+                      : "/documents",
+                    label: isFolderView
+                      ? folder?.title || "Folder"
+                      : "All Documents",
+                  };
+                  navigate(`/document/${doc.id}`, { state: { from: sourcePage } });
+                }
+              }
+            }}
             sourcePage={{
               path: isFolderView
                 ? `/documents/folders/${currentFolderId}`
@@ -309,7 +319,7 @@ const Documents = () => {
       <DocumentDrawer
         document={selectedDocument}
         isOpen={!!selectedDocument}
-        onClose={() => setSelectedDocument(null)}
+        onClose={closeDocumentDrawer}
       />
     </Box>
   );
