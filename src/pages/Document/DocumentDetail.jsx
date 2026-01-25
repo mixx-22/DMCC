@@ -1366,7 +1366,7 @@ const DocumentDetail = () => {
               onClick={() => navigate(`/documents/form/${id}`)}
               leftIcon={<FiEdit />}
             >
-              Response
+              Add Response
             </Button>
           )}
           {document?.type === "file" && document?.metadata?.key && (

@@ -25,6 +25,7 @@ import {
   Divider,
   Badge,
   useColorModeValue,
+  FormHelperText,
 } from "@chakra-ui/react";
 import { Select as ChakraSelect } from "chakra-react-select";
 import { SingleDatepicker } from "chakra-dayzed-datepicker";
@@ -137,10 +138,7 @@ const FormResponse = () => {
       // Build questions array with responses
       const questionsWithResponses = formTemplate.metadata.questions.map(
         (question) => ({
-          id: question.id,
-          label: question.label,
-          type: question.type,
-          required: question.required,
+          ...question,
           response: responses[question.id],
         }),
       );
@@ -164,10 +162,10 @@ const FormResponse = () => {
 
       // Add form template author to privacy if exists
       if (
-        formTemplate.author?.id &&
-        !updatedPrivacy.users.includes(formTemplate.author.id)
+        formTemplate.owner?.id &&
+        !updatedPrivacy.users.includes(formTemplate.owner.id)
       ) {
-        updatedPrivacy.users.push(formTemplate.author.id);
+        updatedPrivacy.users.push(formTemplate.owner.id);
       }
 
       // Create form response document
@@ -409,6 +407,9 @@ const FormResponse = () => {
             {hasError && (
               <FormErrorMessage>{errors[question.id]}</FormErrorMessage>
             )}
+            <FormHelperText>
+              Select up to {question?.options?.length} items.
+            </FormHelperText>
           </FormControl>
         );
 
@@ -450,6 +451,7 @@ const FormResponse = () => {
             {hasError && (
               <FormErrorMessage>{errors[question.id]}</FormErrorMessage>
             )}
+            <FormHelperText>Select one.</FormHelperText>
           </FormControl>
         );
 
@@ -516,6 +518,9 @@ const FormResponse = () => {
             {hasError && (
               <FormErrorMessage>{errors[question.id]}</FormErrorMessage>
             )}
+            <FormHelperText>
+              Select up to {question?.options?.length} items.
+            </FormHelperText>
           </FormControl>
         );
 
