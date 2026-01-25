@@ -257,43 +257,59 @@ export const DocumentsProvider = ({ children }) => {
   };
 
   // Helper function to format updates for API
+  // Returns both the API payload and consolidated data for UI display
   const formatUpdatesForAPI = (updates) => {
-    const formatted = { ...updates };
+    const payload = { ...updates };
+    const consolidatedData = { ...updates };
 
-    // Format privacy settings - extract IDs from user/team/role objects
-    if (formatted.privacy) {
-      formatted.privacy = {
-        ...formatted.privacy,
-        users: extractIds(formatted.privacy.users),
-        teams: extractIds(formatted.privacy.teams),
-        roles: extractIds(formatted.privacy.roles),
+    // Format privacy settings
+    if (updates.privacy) {
+      // For API payload: extract IDs from user/team/role objects
+      payload.privacy = {
+        ...updates.privacy,
+        users: extractIds(updates.privacy.users),
+        teams: extractIds(updates.privacy.teams),
+        roles: extractIds(updates.privacy.roles),
+      };
+      
+      // For consolidated data: keep the full objects as-is for UI display
+      consolidatedData.privacy = {
+        ...updates.privacy,
+        users: updates.privacy.users || [],
+        teams: updates.privacy.teams || [],
+        roles: updates.privacy.roles || [],
       };
     }
 
     // Format metadata
-    if (formatted.metadata) {
-      const meta = { ...formatted.metadata };
+    if (updates.metadata) {
+      const payloadMeta = { ...updates.metadata };
+      const consolidatedMeta = { ...updates.metadata };
       
       // Trim document number and convert empty strings to undefined (removes field from API payload)
-      if (typeof meta.documentNumber === 'string') {
-        meta.documentNumber = meta.documentNumber.trim() || undefined;
+      if (typeof payloadMeta.documentNumber === 'string') {
+        payloadMeta.documentNumber = payloadMeta.documentNumber.trim() || undefined;
+        consolidatedMeta.documentNumber = payloadMeta.documentNumber; // Use trimmed value
       }
       
-      // Extract fileType ID if it's an object
-      if (meta.fileType && typeof meta.fileType === 'object') {
-        meta.fileType = meta.fileType.id || meta.fileType._id || null;
+      // For API payload: extract fileType ID if it's an object
+      if (payloadMeta.fileType && typeof payloadMeta.fileType === 'object') {
+        payloadMeta.fileType = payloadMeta.fileType.id || payloadMeta.fileType._id || null;
       }
+      // For consolidated data: keep the full fileType object for UI display
       
-      formatted.metadata = meta;
+      payload.metadata = payloadMeta;
+      consolidatedData.metadata = consolidatedMeta;
     }
 
-    return formatted;
+    return { payload, consolidatedData };
   };
 
   // Update a document
   const updateDocument = async (id, updates) => {
     // Format updates for API (extract IDs, trim strings, etc.)
-    const formattedUpdates = formatUpdatesForAPI(updates);
+    // Returns { payload, consolidatedData }
+    const { payload, consolidatedData } = formatUpdatesForAPI(updates);
 
     if (!USE_API) {
       // Mock mode: use localStorage
@@ -308,7 +324,7 @@ export const DocumentsProvider = ({ children }) => {
         doc.id === id
           ? {
               ...doc,
-              ...formattedUpdates,
+              ...consolidatedData, // Use consolidatedData instead of payload for consistency
               ...updatedDoc,
             }
           : doc,
@@ -326,13 +342,14 @@ export const DocumentsProvider = ({ children }) => {
     try {
       const response = await apiService.request(`${DOCUMENTS_ENDPOINT}/${id}`, {
         method: "PUT",
-        body: JSON.stringify(formattedUpdates),
+        body: JSON.stringify(payload), // Send payload to API
       });
 
       // Optimize: Update document in existing array instead of re-fetching
+      // Use API response if available, otherwise construct from consolidatedData
       const updatedDoc = response.data ||
         response.document || {
-          ...formattedUpdates,
+          ...consolidatedData, // Fallback to consolidatedData instead of payload
           id,
           updatedAt: new Date().toISOString(),
         };
