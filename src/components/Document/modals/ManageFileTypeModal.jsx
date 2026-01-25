@@ -30,7 +30,7 @@ const ManageFileTypeModal = ({ isOpen, onClose, document, onUpdate }) => {
   const handleSave = async () => {
     try {
       // Send raw fileType object - context will handle ID extraction
-      const updatedDoc = await updateDocument(document.id, {
+      const updatedDoc = await updateDocument(document, {
         metadata: {
           ...document.metadata,
           fileType: fileType || null,
@@ -50,7 +50,8 @@ const ManageFileTypeModal = ({ isOpen, onClose, document, onUpdate }) => {
       onClose();
     } catch (error) {
       toast.error("Failed to Update File Type", {
-        description: error.message || "An error occurred while updating the file type",
+        description:
+          error.message || "An error occurred while updating the file type",
         duration: 3000,
       });
     }

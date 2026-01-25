@@ -224,16 +224,16 @@ export const DocumentsProvider = ({ children }) => {
   const extractIds = (items) => {
     if (!items) return [];
     if (!Array.isArray(items)) return items;
-    
+
     return items.map((item) => {
       if (typeof item === "string") return item;
       return item?.id || item?._id;
     });
   };
 
-  const formatUpdatesForAPI = (updates) => {
+  const formatUpdatesForAPI = (data = {}, updates) => {
     const payload = { ...updates };
-    const consolidatedData = { ...updates };
+    const consolidatedData = { ...data, ...updates };
 
     if (updates.privacy) {
       payload.privacy = {
@@ -242,7 +242,7 @@ export const DocumentsProvider = ({ children }) => {
         teams: extractIds(updates.privacy.teams),
         roles: extractIds(updates.privacy.roles),
       };
-      
+
       consolidatedData.privacy = {
         ...updates.privacy,
         users: updates.privacy.users || [],
@@ -254,26 +254,33 @@ export const DocumentsProvider = ({ children }) => {
     if (updates.metadata) {
       const payloadMeta = { ...updates.metadata };
       const consolidatedMeta = { ...updates.metadata };
-      
-      if (typeof updates.metadata.documentNumber === 'string') {
-        const trimmedDocNumber = updates.metadata.documentNumber.trim() || undefined;
+
+      if (typeof updates.metadata.documentNumber === "string") {
+        const trimmedDocNumber =
+          updates.metadata.documentNumber.trim() || undefined;
         payloadMeta.documentNumber = trimmedDocNumber;
         consolidatedMeta.documentNumber = trimmedDocNumber;
       }
-      
-      if (payloadMeta.fileType && typeof payloadMeta.fileType === 'object') {
-        payloadMeta.fileType = payloadMeta.fileType.id || payloadMeta.fileType._id || null;
+
+      if (payloadMeta.fileType && typeof payloadMeta.fileType === "object") {
+        payloadMeta.fileType =
+          payloadMeta.fileType.id || payloadMeta.fileType._id || null;
       }
-      
+
       payload.metadata = payloadMeta;
       consolidatedData.metadata = consolidatedMeta;
     }
 
+    console.log({ payload, consolidatedData });
     return { payload, consolidatedData };
   };
 
-  const updateDocument = async (id, updates) => {
-    const { payload, consolidatedData } = formatUpdatesForAPI(updates);
+  const updateDocument = async (document, updates) => {
+    const id = document?.id || document?._id;
+    const { payload, consolidatedData } = formatUpdatesForAPI(
+      document,
+      updates,
+    );
 
     if (!USE_API) {
       const saved = localStorage.getItem("documents");
@@ -282,7 +289,7 @@ export const DocumentsProvider = ({ children }) => {
         id,
         updatedAt: new Date().toISOString(),
       };
-      
+
       const updated = docs.map((doc) =>
         doc.id === id
           ? {
@@ -292,13 +299,19 @@ export const DocumentsProvider = ({ children }) => {
             }
           : doc,
       );
-      
+
       const result = updated.find((doc) => doc.id === id);
-      
+
       localStorage.setItem("documents", JSON.stringify(updated));
       setDocuments(updated);
       return result;
     }
+
+    const updatedDoc = {
+      id,
+      ...consolidatedData,
+      updatedAt: new Date().toISOString(),
+    };
 
     try {
       const response = await apiService.request(`${DOCUMENTS_ENDPOINT}/${id}`, {
@@ -306,32 +319,26 @@ export const DocumentsProvider = ({ children }) => {
         body: JSON.stringify(payload),
       });
 
-      let updatedDoc = response.data || response.document;
-      
-      if (!updatedDoc) {
-        updatedDoc = {
-          id,
-          updatedAt: new Date().toISOString(),
-          ...consolidatedData,
-        };
-      }
+      if (response.success) {
+        const isMoving = "parentId" in updates;
+        const newParentId = updates.parentId;
 
-      const isMoving = "parentId" in updates;
-      const newParentId = updates.parentId;
+        if (isMoving && newParentId !== currentFolderId) {
+          setDocuments((prevDocs) =>
+            prevDocs.filter((doc) => doc.id !== id && doc._id !== id),
+          );
+        } else {
+          setDocuments((prevDocs) =>
+            prevDocs.map((doc) =>
+              doc.id === id || doc._id === id ? { ...doc, ...updatedDoc } : doc,
+            ),
+          );
+        }
 
-      if (isMoving && newParentId !== currentFolderId) {
-        setDocuments((prevDocs) =>
-          prevDocs.filter((doc) => doc.id !== id && doc._id !== id),
-        );
+        return updatedDoc;
       } else {
-        setDocuments((prevDocs) =>
-          prevDocs.map((doc) =>
-            doc.id === id || doc._id === id ? { ...doc, ...updatedDoc } : doc,
-          ),
-        );
+        throw "Refresh your tab to view changes.";
       }
-
-      return updatedDoc;
     } catch (err) {
       console.error("Failed to update document:", err);
       throw new Error(err.message || "Failed to update document");
@@ -370,8 +377,8 @@ export const DocumentsProvider = ({ children }) => {
     }
   };
 
-  const moveDocument = async (id, newParentId) => {
-    return updateDocument(id, { parentId: newParentId });
+  const moveDocument = async (document, newParentId) => {
+    return updateDocument(document, { parentId: newParentId });
   };
 
   const navigateToFolder = (folderId) => {

@@ -115,7 +115,7 @@ const DocumentDrawer = ({ document, isOpen, onClose }) => {
     }
 
     try {
-      const updatedDoc = await updateDocument(document.id || document._id, {
+      const updatedDoc = await updateDocument(document, {
         title: trimmedTitle,
       });
       toast.success("Title Updated", {
@@ -141,7 +141,7 @@ const DocumentDrawer = ({ document, isOpen, onClose }) => {
     }
 
     try {
-      const updatedDoc = await updateDocument(document.id || document._id, {
+      const updatedDoc = await updateDocument(document, {
         description: newDescription,
       });
       toast.success("Description Updated", {

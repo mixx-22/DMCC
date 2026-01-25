@@ -1,12 +1,15 @@
 # Token Management Usage Guide
 
 ## Overview
+
 All authentication tokens are stored **exclusively in cookies** using the `VITE_TOKEN_KEY` environment variable as the cookie name. localStorage is NOT used for token storage.
 
 ## Configuration
 
 ### Environment Variable
+
 Set the token cookie name in your `.env` file:
+
 ```bash
 VITE_TOKEN_KEY=authToken
 ```
@@ -22,30 +25,30 @@ If not set, defaults to `'authToken'`.
 The `apiService.request()` method automatically includes the token from cookies in all requests:
 
 ```javascript
-import apiService from '../services/api';
+import apiService from "../services/api";
 
 // Example: Fetch users
 async function getUsers() {
   try {
-    const users = await apiService.request('/api/users', {
-      method: 'GET',
+    const users = await apiService.request("/api/users", {
+      method: "GET",
     });
     return users;
   } catch (error) {
-    console.error('Failed to fetch users:', error);
+    console.error("Failed to fetch users:", error);
   }
 }
 
 // Example: Create a document
 async function createDocument(documentData) {
   try {
-    const result = await apiService.request('/api/documents', {
-      method: 'POST',
+    const result = await apiService.request("/api/documents", {
+      method: "POST",
       body: JSON.stringify(documentData),
     });
     return result;
   } catch (error) {
-    console.error('Failed to create document:', error);
+    console.error("Failed to create document:", error);
   }
 }
 
@@ -53,12 +56,12 @@ async function createDocument(documentData) {
 async function updateUser(userId, updates) {
   try {
     const result = await apiService.request(`/api/users/${userId}`, {
-      method: 'PUT',
+      method: "PUT",
       body: JSON.stringify(updates),
     });
     return result;
   } catch (error) {
-    console.error('Failed to update user:', error);
+    console.error("Failed to update user:", error);
   }
 }
 
@@ -66,10 +69,10 @@ async function updateUser(userId, updates) {
 async function deleteCertification(certId) {
   try {
     await apiService.request(`/api/certifications/${certId}`, {
-      method: 'DELETE',
+      method: "DELETE",
     });
   } catch (error) {
-    console.error('Failed to delete certification:', error);
+    console.error("Failed to delete certification:", error);
   }
 }
 ```
@@ -86,7 +89,7 @@ function LoginComponent() {
 
   const handleLogin = async (username, password) => {
     const result = await login(username, password);
-    
+
     if (result.success) {
       // Token is automatically stored in cookie
       // Navigate to dashboard or home page
@@ -105,7 +108,7 @@ function LoginComponent() {
 ### 3. Logout Flow
 
 ```javascript
-import { useUser } from '../context/useUser';
+import { useUser } from "../context/useUser";
 
 function LogoutButton() {
   const { logout } = useUser();
@@ -123,7 +126,7 @@ function LogoutButton() {
 ### 4. Accessing Token in Components (if needed)
 
 ```javascript
-import { useUser } from '../context/useUser';
+import { useUser } from "../context/useUser";
 
 function MyComponent() {
   const { authToken, isAuthenticated } = useUser();
@@ -146,7 +149,7 @@ function MyComponent() {
 For advanced use cases, you can use the cookieService directly:
 
 ```javascript
-import cookieService from '../services/cookieService';
+import cookieService from "../services/cookieService";
 
 // Check if user has a token
 const hasToken = cookieService.hasToken();
@@ -155,27 +158,29 @@ const hasToken = cookieService.hasToken();
 const token = cookieService.getToken();
 
 // Manually set a token with custom expiry (1 hour)
-cookieService.setToken('your-token', 1);
+cookieService.setToken("your-token", 1);
 
 // Set a JWT token (automatically parses expiry)
-cookieService.setJWTToken('your-jwt-token');
+cookieService.setJWTToken("your-jwt-token");
 
 // Remove token (used in logout)
 cookieService.removeToken();
 
 // Parse JWT payload
-const payload = cookieService.parseJWT('your-jwt-token');
-console.log('Token expires at:', payload.exp);
+const payload = cookieService.parseJWT("your-jwt-token");
+console.log("Token expires at:", payload.exp);
 ```
 
 ## Important Notes
 
 ### ✅ DO:
+
 - Use `apiService.request()` for ALL authenticated API calls
 - Let the login/logout functions handle token storage automatically
 - Use the `isAuthenticated` flag from `useUser()` to check auth status
 
 ### ❌ DON'T:
+
 - Store tokens in localStorage
 - Manually add Authorization headers (apiService does this)
 - Use raw `fetch()` for authenticated requests
@@ -193,21 +198,25 @@ All tokens stored in cookies have the following security settings:
 ## Automatic Token Handling
 
 ### On Login:
+
 1. Server returns JWT token
 2. Token is parsed to extract `exp` claim
 3. Token stored in cookie with matching expiry
 4. Token automatically included in all `apiService.request()` calls
 
 ### On API Requests:
+
 1. Token retrieved from cookie
 2. Added to `Authorization: Bearer <token>` header
 3. Sent with request
 
 ### On 401 Unauthorized:
+
 1. Token cookie is cleared
 2. User redirected to login page
 
 ### On Logout:
+
 1. Token cookie is cleared
 2. Session storage is cleared
 3. User data is removed from localStorage
@@ -217,9 +226,9 @@ All tokens stored in cookies have the following security settings:
 Here's a complete example of implementing a feature with authenticated API calls:
 
 ```javascript
-import { useState, useEffect } from 'react';
-import apiService from '../services/api';
-import { useUser } from '../context/useUser';
+import { useState, useEffect } from "react";
+import apiService from "../services/api";
+import { useUser } from "../context/useUser";
 
 function DocumentsPage() {
   const [documents, setDocuments] = useState([]);
@@ -237,12 +246,12 @@ function DocumentsPage() {
     try {
       setLoading(true);
       // Token automatically included from cookie
-      const data = await apiService.request('/api/documents', {
-        method: 'GET',
+      const data = await apiService.request("/api/documents", {
+        method: "GET",
       });
       setDocuments(data);
     } catch (error) {
-      console.error('Failed to fetch documents:', error);
+      console.error("Failed to fetch documents:", error);
     } finally {
       setLoading(false);
     }
@@ -251,13 +260,13 @@ function DocumentsPage() {
   const createDocument = async (docData) => {
     try {
       // Token automatically included from cookie
-      const newDoc = await apiService.request('/api/documents', {
-        method: 'POST',
+      const newDoc = await apiService.request("/api/documents", {
+        method: "POST",
         body: JSON.stringify(docData),
       });
       setDocuments([...documents, newDoc]);
     } catch (error) {
-      console.error('Failed to create document:', error);
+      console.error("Failed to create document:", error);
     }
   };
 
@@ -265,12 +274,12 @@ function DocumentsPage() {
     try {
       // Token automatically included from cookie
       const updatedDoc = await apiService.request(`/api/documents/${docId}`, {
-        method: 'PUT',
+        method: "PUT",
         body: JSON.stringify(updates),
       });
-      setDocuments(documents.map(d => d.id === docId ? updatedDoc : d));
+      setDocuments(documents.map((d) => (d.id === docId ? updatedDoc : d)));
     } catch (error) {
-      console.error('Failed to update document:', error);
+      console.error("Failed to update document:", error);
     }
   };
 
@@ -278,11 +287,11 @@ function DocumentsPage() {
     try {
       // Token automatically included from cookie
       await apiService.request(`/api/documents/${docId}`, {
-        method: 'DELETE',
+        method: "DELETE",
       });
-      setDocuments(documents.filter(d => d.id !== docId));
+      setDocuments(documents.filter((d) => d.id !== docId));
     } catch (error) {
-      console.error('Failed to delete document:', error);
+      console.error("Failed to delete document:", error);
     }
   };
 
@@ -291,18 +300,16 @@ function DocumentsPage() {
   return (
     <div>
       <h1>Documents</h1>
-      {documents.map(doc => (
+      {documents.map((doc) => (
         <div key={doc.id}>
           <h3>{doc.title}</h3>
-          <button onClick={() => updateDocument(doc.id, { title: 'Updated' })}>
+          <button onClick={() => updateDocument(doc, { title: "Updated" })}>
             Update
           </button>
-          <button onClick={() => deleteDocument(doc.id)}>
-            Delete
-          </button>
+          <button onClick={() => deleteDocument(doc)}>Delete</button>
         </div>
       ))}
-      <button onClick={() => createDocument({ title: 'New Doc' })}>
+      <button onClick={() => createDocument({ title: "New Doc" })}>
         Create Document
       </button>
     </div>
@@ -315,6 +322,7 @@ export default DocumentsPage;
 ## Summary
 
 **Key Points:**
+
 1. Tokens are stored **only in cookies** (no localStorage)
 2. Cookie name is configurable via `VITE_TOKEN_KEY`
 3. ALL requests use `apiService.request()` which automatically includes the token

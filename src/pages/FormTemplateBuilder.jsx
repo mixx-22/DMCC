@@ -78,7 +78,7 @@ const SortableQuestion = ({ question, index, onRemove, onEdit }) => {
     transition,
     isDragging,
   } = useSortable({ id: question.id });
-  
+
   const cardBg = useColorModeValue("white", "gray.700");
   const cardBorderColor = useColorModeValue("gray.200", "gray.600");
   const hoverBorderColor = useColorModeValue("blue.300", "blue.500");
@@ -238,7 +238,7 @@ const FormTemplateBuilder = () => {
   const { id } = useParams();
   const { createDocument, updateDocument, fetchDocumentById } = useDocuments();
   const { parentId, path } = location.state || {};
-  
+
   // Dark mode colors
   const cardBg = useColorModeValue("white", "gray.700");
   const infoBg = useColorModeValue("blue.50", "blue.900");
@@ -276,10 +276,13 @@ const FormTemplateBuilder = () => {
           if (import.meta.env.DEV) {
             console.log("Fetched document:", document);
           }
-          
+
           if (document && document.type === "formTemplate") {
             if (import.meta.env.DEV) {
-              console.log("Setting form data and questions:", document.metadata?.questions);
+              console.log(
+                "Setting form data and questions:",
+                document.metadata?.questions,
+              );
             }
             setFormData({
               title: document.title || "",
@@ -294,7 +297,8 @@ const FormTemplateBuilder = () => {
               console.log("Document is not a formTemplate or doesn't exist");
             }
             toast.error("Invalid Form Template", {
-              description: "This document is not a form template or does not exist.",
+              description:
+                "This document is not a form template or does not exist.",
             });
           }
         } catch (error) {
@@ -463,9 +467,11 @@ const FormTemplateBuilder = () => {
       if (isEditMode && documentId) {
         if (!originalDocument) {
           if (import.meta.env.DEV) {
-            console.warn("Original document not available, using minimal update data");
+            console.warn(
+              "Original document not available, using minimal update data",
+            );
           }
-          await updateDocument(documentId, formTemplateData);
+          await updateDocument(document, formTemplateData);
         } else {
           const updateData = {
             ...originalDocument,
@@ -476,8 +482,8 @@ const FormTemplateBuilder = () => {
               questions,
             },
           };
-          
-          await updateDocument(documentId, updateData);
+
+          await updateDocument(document, updateData);
         }
         toast.success("Form Template Updated", {
           description: `"${formData.title}" has been updated successfully`,

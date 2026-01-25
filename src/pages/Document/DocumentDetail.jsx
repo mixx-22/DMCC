@@ -1,5 +1,10 @@
 import { useState, useEffect, useRef } from "react";
-import { useParams, useNavigate, useLocation, Link as RouterLink } from "react-router-dom";
+import {
+  useParams,
+  useNavigate,
+  useLocation,
+  Link as RouterLink,
+} from "react-router-dom";
 import {
   Box,
   VStack,
@@ -70,7 +75,7 @@ const DocumentDetail = () => {
   const currentIdRef = useRef(null);
   const titleTextareaRef = useRef(null);
   const descriptionTextareaRef = useRef(null);
-  
+
   const contentBg = useColorModeValue("gray.50", "gray.800");
   const cardBorderColor = useColorModeValue("gray.200", "gray.600");
   const cardBg = useColorModeValue("gray.50", "gray.700");
@@ -172,7 +177,9 @@ const DocumentDetail = () => {
     }
 
     try {
-      const updatedDoc = await updateDocument(id, { title: trimmedTitle });
+      const updatedDoc = await updateDocument(document, {
+        title: trimmedTitle,
+      });
       setDocument((prev) => ({ ...prev, ...updatedDoc }));
       toast.success("Title Updated", {
         description: "Document title has been updated",
@@ -193,7 +200,9 @@ const DocumentDetail = () => {
     }
 
     try {
-      const updatedDoc = await updateDocument(id, { description: newDescription });
+      const updatedDoc = await updateDocument(document, {
+        description: newDescription,
+      });
       setDocument((prev) => ({ ...prev, ...updatedDoc }));
       toast.success("Description Updated", {
         description: "Document description has been updated",
@@ -209,7 +218,7 @@ const DocumentDetail = () => {
   };
 
   const handleDocumentUpdate = (updatedDoc) => {
-    if (updatedDoc && typeof updatedDoc === 'object') {
+    if (updatedDoc && typeof updatedDoc === "object") {
       setDocument((prev) => ({ ...prev, ...updatedDoc }));
     }
   };
@@ -602,7 +611,7 @@ const DocumentDetail = () => {
                                 </Text>
                                 <Text fontSize="sm">
                                   {new Date(
-                                    document.metadata.issuedDate
+                                    document.metadata.issuedDate,
                                   ).toLocaleDateString()}
                                 </Text>
                               </HStack>
@@ -618,7 +627,7 @@ const DocumentDetail = () => {
                                 </Text>
                                 <Text fontSize="sm">
                                   {new Date(
-                                    document.metadata.effectivityDate
+                                    document.metadata.effectivityDate,
                                   ).toLocaleDateString()}
                                 </Text>
                               </HStack>

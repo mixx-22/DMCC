@@ -17,7 +17,12 @@ import {
 import { toast } from "sonner";
 import { useDocuments } from "../../../context/_useContext";
 
-const ManageDocumentMetadataModal = ({ isOpen, onClose, document, onUpdate }) => {
+const ManageDocumentMetadataModal = ({
+  isOpen,
+  onClose,
+  document,
+  onUpdate,
+}) => {
   const { updateDocument } = useDocuments();
   const [documentNumber, setDocumentNumber] = useState("");
   const [issuedDate, setIssuedDate] = useState("");
@@ -36,7 +41,7 @@ const ManageDocumentMetadataModal = ({ isOpen, onClose, document, onUpdate }) =>
   const handleSave = async () => {
     try {
       // Send raw data - context will handle formatting (trimming, etc.)
-      const updatedDoc = await updateDocument(document.id, {
+      const updatedDoc = await updateDocument(document, {
         metadata: {
           ...document.metadata,
           documentNumber: documentNumber || undefined,
@@ -58,7 +63,8 @@ const ManageDocumentMetadataModal = ({ isOpen, onClose, document, onUpdate }) =>
       onClose();
     } catch (error) {
       toast.error("Failed to Update Document Metadata", {
-        description: error.message || "An error occurred while updating the metadata",
+        description:
+          error.message || "An error occurred while updating the metadata",
         duration: 3000,
       });
     }

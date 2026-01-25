@@ -63,7 +63,7 @@ const PrivacySettingsModal = ({ isOpen, onClose, document, onUpdate }) => {
 
     try {
       // API returns the full updated document with populated objects
-      const updatedDoc = await updateDocument(document.id, updates);
+      const updatedDoc = await updateDocument(document, updates);
 
       // Update parent component's document state with the API response
       if (onUpdate && updatedDoc) {

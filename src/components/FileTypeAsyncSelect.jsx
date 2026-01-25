@@ -14,7 +14,14 @@ const MOCK_FILE_TYPES = [
   { _id: "5", id: "5", name: "Procedure" },
 ];
 
-const FileTypeAsyncSelect = ({ value, onChange, isInvalid, label = "File Type", helperText, ...props }) => {
+const FileTypeAsyncSelect = ({
+  value,
+  onChange,
+  isInvalid,
+  label = "File Type",
+  helperText,
+  ...props
+}) => {
   const debounceTimer = useRef(null);
 
   const loadOptions = useCallback((inputValue, callback) => {
@@ -32,13 +39,16 @@ const FileTypeAsyncSelect = ({ value, onChange, isInvalid, label = "File Type", 
     debounceTimer.current = setTimeout(async () => {
       if (!USE_API) {
         const filtered = MOCK_FILE_TYPES.filter((fileType) =>
-          fileType.name.toLowerCase().includes(inputValue.toLowerCase())
+          fileType.name.toLowerCase().includes(inputValue.toLowerCase()),
         );
         callback(
           filtered.map((fileType) => ({
             value: fileType.id || fileType._id,
             label: fileType.name,
-          }))
+            isQualityDocument: fileType.isQualityDocument,
+            requiresApproval: fileType.requiresApproval,
+            trackVersioning: fileType.trackVersioning,
+          })),
         );
         return;
       }
@@ -57,7 +67,10 @@ const FileTypeAsyncSelect = ({ value, onChange, isInvalid, label = "File Type", 
           fileTypes.map((fileType) => ({
             value: fileType.id || fileType._id,
             label: fileType.name,
-          }))
+            isQualityDocument: fileType.isQualityDocument,
+            requiresApproval: fileType.requiresApproval,
+            trackVersioning: fileType.trackVersioning,
+          })),
         );
       } catch (error) {
         console.error("Failed to fetch file types:", error);
@@ -67,22 +80,26 @@ const FileTypeAsyncSelect = ({ value, onChange, isInvalid, label = "File Type", 
   }, []);
 
   const handleChange = (selectedOption) => {
-    // When loading: value is {id, name}
-    // When saving: we pass just the id
     const fileType = selectedOption
       ? {
           id: selectedOption.value,
           name: selectedOption.label,
+          isQualityDocument: selectedOption.isQualityDocument,
+          requiresApproval: selectedOption.requiresApproval,
+          trackVersioning: selectedOption.trackVersioning,
         }
       : null;
+
     onChange(fileType);
   };
 
-  // Convert the value from {id, name} to the format expected by AsyncSelect
   const selectedValue = value
     ? {
         value: value.id,
         label: value.name,
+        isQualityDocument: value.isQualityDocument,
+        requiresApproval: value.requiresApproval,
+        trackVersioning: value.trackVersioning,
       }
     : null;
 

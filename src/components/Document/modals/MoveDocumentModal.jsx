@@ -48,7 +48,11 @@ import apiService from "../../../services/api";
 const DOCUMENTS_ENDPOINT = "/documents";
 
 const MoveDocumentModal = ({ isOpen, onClose, document }) => {
-  const { updateDocument, createDocument, navigateToFolder: navigateToFolderContext } = useDocuments();
+  const {
+    updateDocument,
+    createDocument,
+    navigateToFolder: navigateToFolderContext,
+  } = useDocuments();
 
   const [currentLocation, setCurrentLocation] = useState(null);
   const [breadcrumbPath, setBreadcrumbPath] = useState([]);
@@ -410,10 +414,9 @@ const MoveDocumentModal = ({ isOpen, onClose, document }) => {
     setLoading(true);
 
     try {
-      const docId = document._id || document.id;
       const newParentId = selectedDestination?.id || null;
-      
-      await updateDocument(docId, {
+
+      await updateDocument(document, {
         parentId: newParentId,
       });
 

@@ -62,7 +62,7 @@ const EditDocumentModal = ({ isOpen, onClose, document }) => {
       };
     }
 
-    updateDocument(document.id, updates);
+    updateDocument(document, updates);
 
     toast.success("Document Updated", {
       description: "Document has been updated successfully",
