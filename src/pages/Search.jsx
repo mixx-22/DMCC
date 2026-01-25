@@ -11,7 +11,6 @@ import {
   CardBody,
   FormControl,
   FormLabel,
-  Input,
   Button,
   VStack,
   Spinner,
@@ -19,11 +18,14 @@ import {
   Text,
   Grid,
   GridItem,
+  Collapse,
+  useDisclosure,
 } from "@chakra-ui/react";
-import { FiGrid, FiList } from "react-icons/fi";
+import { FiGrid, FiList, FiChevronDown, FiChevronUp } from "react-icons/fi";
 import { Select } from "chakra-react-select";
 import { RangeDatepicker } from "chakra-dayzed-datepicker";
 import PageHeader from "../components/PageHeader";
+import SearchInput from "../components/SearchInput";
 import UserAsyncSelect from "../components/UserAsyncSelect";
 import { GridView } from "../components/Document/GridView";
 import { ListView } from "../components/Document/ListView";
@@ -55,6 +57,9 @@ const Search = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
   const { viewMode, toggleViewMode } = useLayout();
+  
+  // Collapse/expand filters
+  const { isOpen: filtersOpen, onToggle: toggleFilters } = useDisclosure({ defaultIsOpen: false });
 
   // Search filters
   const [keyword, setKeyword] = useState(searchParams.get("keyword") || "");
@@ -333,131 +338,144 @@ const Search = () => {
       </PageHeader>
 
       <Stack spacing={6}>
-        {/* Search Filters Card */}
-        <Card>
-          <CardBody>
-            <VStack spacing={4} align="stretch">
-              <Grid
-                templateColumns={{ base: "1fr", md: "repeat(2, 1fr)" }}
-                gap={4}
-              >
-                {/* Keyword Input */}
-                <GridItem colSpan={{ base: 1, md: 2 }}>
-                  <FormControl>
-                    <FormLabel>Keyword</FormLabel>
-                    <Input
-                      value={keyword}
-                      onChange={(e) => setKeyword(e.target.value)}
-                      placeholder="Search by title or description..."
-                    />
-                  </FormControl>
-                </GridItem>
+        {/* Centered Search Input and Filters */}
+        <Center>
+          <Stack spacing={4} w="full" maxW="4xl" align="center">
+            {/* Search Input */}
+            <Box w="full" maxW="md">
+              <SearchInput
+                placeholder="Search documents..."
+                defaultValue={keyword}
+              />
+            </Box>
 
-                {/* Type Filter */}
-                <GridItem>
-                  <FormControl>
-                    <FormLabel>Type</FormLabel>
-                    <Select
-                      value={
-                        type
-                          ? {
-                              value: type,
-                              label:
-                                type.charAt(0).toUpperCase() + type.slice(1),
+            {/* Filters Toggle Button */}
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={toggleFilters}
+              rightIcon={filtersOpen ? <FiChevronUp /> : <FiChevronDown />}
+            >
+              {filtersOpen ? "Hide Filters" : "Show Filters"}
+            </Button>
+
+            {/* Collapsible Filters Card */}
+            <Collapse in={filtersOpen} style={{ width: "100%" }}>
+              <Card w="full">
+                <CardBody>
+                  <VStack spacing={4} align="stretch">
+                    <Grid
+                      templateColumns={{ base: "1fr", md: "repeat(2, 1fr)" }}
+                      gap={4}
+                    >
+                      {/* Type Filter */}
+                      <GridItem>
+                        <FormControl>
+                          <FormLabel>Type</FormLabel>
+                          <Select
+                            value={
+                              type
+                                ? {
+                                    value: type,
+                                    label:
+                                      type.charAt(0).toUpperCase() + type.slice(1),
+                                  }
+                                : null
                             }
-                          : null
-                      }
-                      onChange={(option) => setType(option ? option.value : "")}
-                      options={[
-                        { value: "file", label: "File" },
-                        { value: "folder", label: "Folder" },
-                        { value: "auditSchedule", label: "Audit Schedule" },
-                        { value: "formTemplate", label: "Form Template" },
-                        { value: "formResponse", label: "Form Response" },
-                        { value: "qualityDocument", label: "Quality Document" },
-                      ]}
-                      placeholder="All types"
-                      isClearable
-                      colorScheme="brandPrimary"
-                      useBasicStyles
-                    />
-                  </FormControl>
-                </GridItem>
+                            onChange={(option) => setType(option ? option.value : "")}
+                            options={[
+                              { value: "file", label: "File" },
+                              { value: "folder", label: "Folder" },
+                              { value: "auditSchedule", label: "Audit Schedule" },
+                              { value: "formTemplate", label: "Form Template" },
+                              { value: "formResponse", label: "Form Response" },
+                              { value: "qualityDocument", label: "Quality Document" },
+                            ]}
+                            placeholder="All types"
+                            isClearable
+                            colorScheme="brandPrimary"
+                            useBasicStyles
+                          />
+                        </FormControl>
+                      </GridItem>
 
-                {/* Date Range Filter */}
-                <GridItem>
-                  <FormControl>
-                    <FormLabel>Date Range</FormLabel>
-                    <Select
-                      value={
-                        dateRange
-                          ? {
-                              value: dateRange,
-                              label: getDateRangeLabel(dateRange),
+                      {/* Date Range Filter */}
+                      <GridItem>
+                        <FormControl>
+                          <FormLabel>Date Range</FormLabel>
+                          <Select
+                            value={
+                              dateRange
+                                ? {
+                                    value: dateRange,
+                                    label: getDateRangeLabel(dateRange),
+                                  }
+                                : null
                             }
-                          : null
-                      }
-                      onChange={(option) =>
-                        setDateRange(option ? option.value : "")
-                      }
-                      options={DATE_RANGE_OPTIONS}
-                      placeholder="All dates"
-                      isClearable
-                      colorScheme="brandPrimary"
-                      useBasicStyles
-                    />
-                  </FormControl>
-                </GridItem>
+                            onChange={(option) =>
+                              setDateRange(option ? option.value : "")
+                            }
+                            options={DATE_RANGE_OPTIONS}
+                            placeholder="All dates"
+                            isClearable
+                            colorScheme="brandPrimary"
+                            useBasicStyles
+                          />
+                        </FormControl>
+                      </GridItem>
 
-                {/* Custom Date Range */}
-                {dateRange === "custom" && (
-                  <GridItem colSpan={{ base: 1, md: 2 }}>
-                    <FormControl>
-                      <FormLabel>Select Date Range</FormLabel>
-                      <RangeDatepicker
-                        selectedDates={selectedDates}
-                        onDateChange={setSelectedDates}
-                        propsConfigs={{
-                          inputProps: {
-                            placeholder: "Select date range",
-                          },
+                      {/* Custom Date Range */}
+                      {dateRange === "custom" && (
+                        <GridItem colSpan={{ base: 1, md: 2 }}>
+                          <FormControl>
+                            <FormLabel>Select Date Range</FormLabel>
+                            <RangeDatepicker
+                              selectedDates={selectedDates}
+                              onDateChange={setSelectedDates}
+                              propsConfigs={{
+                                inputProps: {
+                                  placeholder: "Select date range",
+                                },
+                              }}
+                            />
+                          </FormControl>
+                        </GridItem>
+                      )}
+
+                      {/* Owners Filter */}
+                      <GridItem colSpan={{ base: 1, md: 2 }}>
+                        <UserAsyncSelect
+                          label="Owners"
+                          placeholder="Search for document owners..."
+                          value={owners}
+                          onChange={setOwners}
+                          limit={5}
+                          displayMode="badges"
+                        />
+                      </GridItem>
+                    </Grid>
+
+                    {/* Clear Filters Button */}
+                    <Flex justify="flex-end">
+                      <Button
+                        variant="ghost"
+                        onClick={() => {
+                          setKeyword("");
+                          setType("");
+                          setDateRange("");
+                          setSelectedDates([null, null]);
+                          setOwners([]);
                         }}
-                      />
-                    </FormControl>
-                  </GridItem>
-                )}
-
-                {/* Owners Filter */}
-                <GridItem colSpan={{ base: 1, md: 2 }}>
-                  <UserAsyncSelect
-                    label="Owners"
-                    placeholder="Search for document owners..."
-                    value={owners}
-                    onChange={setOwners}
-                    limit={5}
-                    displayMode="badges"
-                  />
-                </GridItem>
-              </Grid>
-
-              {/* Clear Filters Button */}
-              <Flex justify="flex-end">
-                <Button
-                  variant="ghost"
-                  onClick={() => {
-                    setKeyword("");
-                    setType("");
-                    setDateRange("");
-                    setSelectedDates([null, null]);
-                    setOwners([]);
-                  }}
-                >
-                  Clear All Filters
-                </Button>
-              </Flex>
-            </VStack>
-          </CardBody>
-        </Card>
+                      >
+                        Clear All Filters
+                      </Button>
+                    </Flex>
+                  </VStack>
+                </CardBody>
+              </Card>
+            </Collapse>
+          </Stack>
+        </Center>
 
         {/* Results Summary */}
         <Flex justify="space-between" align="center">
