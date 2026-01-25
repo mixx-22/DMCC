@@ -243,7 +243,11 @@ export const DocumentsProvider = ({ children }) => {
 
   // Helper function to extract IDs from objects
   const extractIds = (items) => {
+    // Handle null/undefined by returning empty array
+    if (!items) return [];
+    // If not an array, return as-is
     if (!Array.isArray(items)) return items;
+    
     return items.map((item) => {
       // If item is already a string (just an ID), return it
       if (typeof item === "string") return item;
@@ -270,7 +274,7 @@ export const DocumentsProvider = ({ children }) => {
     if (formatted.metadata) {
       const meta = { ...formatted.metadata };
       
-      // Trim document number
+      // Trim document number and convert empty strings to undefined (removes field from API payload)
       if (typeof meta.documentNumber === 'string') {
         meta.documentNumber = meta.documentNumber.trim() || undefined;
       }
@@ -295,18 +299,27 @@ export const DocumentsProvider = ({ children }) => {
       // Mock mode: use localStorage
       const saved = localStorage.getItem("documents");
       const docs = saved ? JSON.parse(saved) : [];
+      const updatedDoc = {
+        id,
+        updatedAt: new Date().toISOString(),
+      };
+      
       const updated = docs.map((doc) =>
         doc.id === id
           ? {
               ...doc,
               ...formattedUpdates,
-              updatedAt: new Date().toISOString(),
+              ...updatedDoc,
             }
           : doc,
       );
+      
+      // Find and return the updated document
+      const result = updated.find((doc) => doc.id === id);
+      
       localStorage.setItem("documents", JSON.stringify(updated));
       setDocuments(updated);
-      return;
+      return result;
     }
 
     // API mode: PUT /documents/:id
