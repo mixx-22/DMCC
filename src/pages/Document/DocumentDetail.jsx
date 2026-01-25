@@ -862,6 +862,14 @@ const DocumentDetail = () => {
                 </CardBody>
               </Card>
             )}
+
+            <Center
+              h="full"
+              display="none"
+              sx={{ "&:only-child": { display: "inline-flex" } }}
+            >
+              No Info
+            </Center>
           </Stack>
         </Flex>
       </Box>
