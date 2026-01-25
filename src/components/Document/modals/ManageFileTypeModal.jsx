@@ -15,7 +15,7 @@ import { toast } from "sonner";
 import FileTypeAsyncSelect from "../../FileTypeAsyncSelect";
 import { useDocuments } from "../../../context/_useContext";
 
-const ManageFileTypeModal = ({ isOpen, onClose, document }) => {
+const ManageFileTypeModal = ({ isOpen, onClose, document, onUpdate }) => {
   const { updateDocument } = useDocuments();
   const [fileType, setFileType] = useState(null);
 
@@ -29,12 +29,18 @@ const ManageFileTypeModal = ({ isOpen, onClose, document }) => {
 
   const handleSave = async () => {
     try {
-      await updateDocument(document.id, {
+      // Send raw fileType object - context will handle ID extraction
+      const updatedDoc = await updateDocument(document.id, {
         metadata: {
           ...document.metadata,
-          fileType: fileType ? fileType.id : null,
+          fileType: fileType || null,
         },
       });
+
+      // Update parent component's document state with the response (includes updatedAt)
+      if (onUpdate && updatedDoc) {
+        onUpdate(updatedDoc);
+      }
 
       toast.success("File Type Updated", {
         description: `File type has been ${fileType ? `set to "${fileType.name}"` : "removed"}`,

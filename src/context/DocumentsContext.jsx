@@ -238,40 +238,124 @@ export const DocumentsProvider = ({ children }) => {
     }
   };
 
+  // Helper function to extract IDs from objects
+  const extractIds = (items) => {
+    // Handle null/undefined by returning empty array
+    if (!items) return [];
+    // If not an array, return as-is
+    if (!Array.isArray(items)) return items;
+    
+    return items.map((item) => {
+      // If item is already a string (just an ID), return it
+      if (typeof item === "string") return item;
+      // Otherwise extract the ID from the object
+      return item?.id || item?._id;
+    });
+  };
+
+  // Helper function to format updates for API
+  // Returns both the API payload and consolidated data for UI display
+  const formatUpdatesForAPI = (updates) => {
+    const payload = { ...updates };
+    const consolidatedData = { ...updates };
+
+    // Format privacy settings
+    if (updates.privacy) {
+      // For API payload: extract IDs from user/team/role objects
+      payload.privacy = {
+        ...updates.privacy,
+        users: extractIds(updates.privacy.users),
+        teams: extractIds(updates.privacy.teams),
+        roles: extractIds(updates.privacy.roles),
+      };
+      
+      // For consolidated data: keep the full objects as-is for UI display
+      consolidatedData.privacy = {
+        ...updates.privacy,
+        users: updates.privacy.users || [],
+        teams: updates.privacy.teams || [],
+        roles: updates.privacy.roles || [],
+      };
+    }
+
+    // Format metadata
+    if (updates.metadata) {
+      const payloadMeta = { ...updates.metadata };
+      const consolidatedMeta = { ...updates.metadata };
+      
+      // Trim document number for both payload and consolidated data
+      if (typeof updates.metadata.documentNumber === 'string') {
+        const trimmedDocNumber = updates.metadata.documentNumber.trim() || undefined;
+        payloadMeta.documentNumber = trimmedDocNumber;
+        consolidatedMeta.documentNumber = trimmedDocNumber;
+      }
+      
+      // For API payload: extract fileType ID if it's an object
+      if (payloadMeta.fileType && typeof payloadMeta.fileType === 'object') {
+        payloadMeta.fileType = payloadMeta.fileType.id || payloadMeta.fileType._id || null;
+      }
+      // For consolidated data: fileType remains as the full object for UI display
+      // (consolidatedMeta.fileType is already the full object from ...updates.metadata)
+      
+      payload.metadata = payloadMeta;
+      consolidatedData.metadata = consolidatedMeta;
+    }
+
+    return { payload, consolidatedData };
+  };
+
   // Update a document
   const updateDocument = async (id, updates) => {
+    // Format updates for API (extract IDs, trim strings, etc.)
+    // Returns { payload, consolidatedData }
+    const { payload, consolidatedData } = formatUpdatesForAPI(updates);
+
     if (!USE_API) {
       // Mock mode: use localStorage
       const saved = localStorage.getItem("documents");
       const docs = saved ? JSON.parse(saved) : [];
+      const updatedDoc = {
+        id,
+        updatedAt: new Date().toISOString(),
+      };
+      
       const updated = docs.map((doc) =>
         doc.id === id
           ? {
               ...doc,
-              ...updates,
-              updatedAt: new Date().toISOString(),
+              ...consolidatedData, // Use consolidatedData instead of payload for consistency
+              ...updatedDoc,
             }
           : doc,
       );
+      
+      // Find and return the updated document
+      const result = updated.find((doc) => doc.id === id);
+      
       localStorage.setItem("documents", JSON.stringify(updated));
       setDocuments(updated);
-      return;
+      return result;
     }
 
     // API mode: PUT /documents/:id
     try {
       const response = await apiService.request(`${DOCUMENTS_ENDPOINT}/${id}`, {
         method: "PUT",
-        body: JSON.stringify(updates),
+        body: JSON.stringify(payload), // Send payload to API
       });
 
       // Optimize: Update document in existing array instead of re-fetching
-      const updatedDoc = response.data ||
-        response.document || {
-          ...updates,
+      // Use API response if available, otherwise construct from consolidatedData
+      let updatedDoc = response.data || response.document;
+      
+      // If no response data, construct fallback from consolidatedData with explicit overrides
+      if (!updatedDoc) {
+        updatedDoc = {
           id,
           updatedAt: new Date().toISOString(),
+          ...consolidatedData, // Spread consolidatedData after explicit fields
         };
+      }
 
       // Check if document is being moved to a different folder
       const isMoving = "parentId" in updates;

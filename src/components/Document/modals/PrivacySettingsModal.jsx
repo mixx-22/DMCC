@@ -22,7 +22,7 @@ import TeamAsyncSelect from "../../TeamAsyncSelect";
 import RoleAsyncSelect from "../../RoleAsyncSelect";
 import { useDocuments } from "../../../context/_useContext";
 
-const PrivacySettingsModal = ({ isOpen, onClose, document }) => {
+const PrivacySettingsModal = ({ isOpen, onClose, document, onUpdate }) => {
   const { updateDocument } = useDocuments();
   const [privacySettings, setPrivacySettings] = useState({
     users: [],
@@ -46,40 +46,42 @@ const PrivacySettingsModal = ({ isOpen, onClose, document }) => {
 
   if (!document) return null;
 
-  const handleSave = () => {
-    // Extract only IDs from user/team/role objects for the API payload
-    const extractIds = (items) => {
-      return items.map((item) => {
-        // If item is already a string (just an ID), return it
-        if (typeof item === "string") return item;
-        // Otherwise extract the ID from the object
-        return item.id || item._id;
-      });
-    };
-
-    const newData = {
-      ...document,
+  const handleSave = async () => {
+    // Send only the changed fields with raw data (objects, not IDs)
+    // The context will handle formatting for the API
+    const updates = {
       privacy: {
-        ...document.privacy,
-        users: extractIds(privacySettings.users),
-        teams: extractIds(privacySettings.teams),
-        roles: extractIds(privacySettings.roles),
+        users: privacySettings.users,
+        teams: privacySettings.teams,
+        roles: privacySettings.roles,
       },
       permissionOverrides: {
-        ...document.permissionOverrides,
         readOnly: privacySettings.readOnly,
         restricted: privacySettings.restricted,
       },
     };
 
-    updateDocument(document.id, newData);
+    try {
+      // API returns the full updated document with populated objects
+      const updatedDoc = await updateDocument(document.id, updates);
 
-    toast.success("Privacy Settings Updated", {
-      description: "Privacy settings have been updated successfully",
-      duration: 3000,
-    });
+      // Update parent component's document state with the API response
+      if (onUpdate && updatedDoc) {
+        onUpdate(updatedDoc);
+      }
 
-    onClose();
+      toast.success("Privacy Settings Updated", {
+        description: "Privacy settings have been updated successfully",
+        duration: 3000,
+      });
+
+      onClose();
+    } catch (error) {
+      toast.error("Update Failed", {
+        description: error.message || "Failed to update privacy settings",
+        duration: 3000,
+      });
+    }
   };
 
   return (

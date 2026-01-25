@@ -12,6 +12,7 @@ import {
 } from "@chakra-ui/react";
 import { FiGlobe } from "react-icons/fi";
 import TooltipAvatar from "../TooltipAvatar";
+import { generateSummary } from "../../helpers/describePrivacy";
 
 /**
  * PrivacyDisplay Component
@@ -38,29 +39,6 @@ const PrivacyDisplay = ({
   // Check if document is public (no users, teams, or roles)
   const isPublic =
     users.length === 0 && teams.length === 0 && roles.length === 0;
-
-  // Generate summary text
-  const generateSummary = () => {
-    const parts = [];
-
-    if (users.length > 0) {
-      parts.push(`${users.length} user${users.length !== 1 ? "s" : ""}`);
-    }
-
-    if (teams.length > 0) {
-      parts.push(`${teams.length} team${teams.length !== 1 ? "s" : ""}`);
-    }
-
-    if (roles.length > 0) {
-      parts.push(`${roles.length} role${roles.length !== 1 ? "s" : ""}`);
-    }
-
-    if (parts.length === 0) {
-      return "Public - Everyone can view";
-    }
-
-    return `Shared with ${parts.join(", ")}`;
-  };
 
   return (
     <VStack align="stretch" spacing={0}>
@@ -125,7 +103,7 @@ const PrivacyDisplay = ({
 
       {/* Summary Text */}
       <Text fontSize="xs" color={summaryColor}>
-        {generateSummary()}
+        {generateSummary({ users, teams })}
       </Text>
       {/* Manage Access Button */}
       <Box mt={2}>
