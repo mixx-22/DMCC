@@ -105,7 +105,7 @@ const ManageDocumentMetadataModal = ({ isOpen, onClose, document }) => {
           <Button variant="ghost" mr={3} onClick={onClose}>
             Cancel
           </Button>
-          <Button colorScheme="blue" onClick={handleSave}>
+          <Button colorScheme="brandPrimary" onClick={handleSave}>
             Save Changes
           </Button>
         </ModalFooter>

@@ -194,7 +194,7 @@ const TeamAsyncSelect = ({
                         name={team.name}
                         ml={-1}
                         mr={2}
-                        bg="blue.500"
+                        bg="brandPrimary.500"
                       />
                       <TagLabel>{team.name}</TagLabel>
                     </Tag>
@@ -241,7 +241,7 @@ const TeamAsyncSelect = ({
                         name={team.name}
                         ml={-1}
                         mr={2}
-                        bg="blue.500"
+                        bg="brandPrimary.500"
                       />
                       <TagLabel>{team.name}</TagLabel>
                     </Tag>

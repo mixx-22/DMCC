@@ -167,7 +167,7 @@ const FileTypesList = () => {
                             <Badge colorScheme="purple">Quality</Badge>
                           )}
                           {fileType.requiresApproval && (
-                            <Badge colorScheme="blue">Approval</Badge>
+                            <Badge colorScheme="brandPrimary">Approval</Badge>
                           )}
                           {fileType.trackVersioning && (
                             <Badge colorScheme="green">Versioning</Badge>

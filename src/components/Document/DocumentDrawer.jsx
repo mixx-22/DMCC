@@ -449,7 +449,7 @@ const DocumentDrawer = ({ document, isOpen, onClose }) => {
                             <Button
                               size="xs"
                               variant="ghost"
-                              colorScheme="blue"
+                              colorScheme="brandPrimary"
                               onClick={onFileTypeOpen}
                             >
                               Change
@@ -459,7 +459,7 @@ const DocumentDrawer = ({ document, isOpen, onClose }) => {
                           <Button
                             size="sm"
                             variant="outline"
-                            colorScheme="blue"
+                            colorScheme="brandPrimary"
                             onClick={onFileTypeOpen}
                           >
                             Assign File Type
@@ -525,7 +525,7 @@ const DocumentDrawer = ({ document, isOpen, onClose }) => {
                             <Button
                               size="xs"
                               variant="ghost"
-                              colorScheme="blue"
+                              colorScheme="brandPrimary"
                               onClick={onMetadataOpen}
                               alignSelf="flex-start"
                             >
@@ -536,7 +536,7 @@ const DocumentDrawer = ({ document, isOpen, onClose }) => {
                           <Button
                             size="sm"
                             variant="outline"
-                            colorScheme="blue"
+                            colorScheme="brandPrimary"
                             onClick={onMetadataOpen}
                           >
                             Add Metadata
