@@ -91,10 +91,7 @@ const Search = () => {
   // Sync keyword from URL params when they change (e.g., from SearchInput navigation)
   useEffect(() => {
     const urlKeyword = searchParams.get("keyword") || "";
-    if (urlKeyword !== keyword) {
-      setKeyword(urlKeyword);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    setKeyword(urlKeyword);
   }, [searchParams]);
 
   // Load owners from query params when URL changes
@@ -469,11 +466,7 @@ const Search = () => {
                       <Button
                         variant="ghost"
                         onClick={() => {
-                          setKeyword("");
-                          setType("");
-                          setDateRange("");
-                          setSelectedDates([null, null]);
-                          setOwners([]);
+                          navigate("/search");
                         }}
                       >
                         Clear All Filters
