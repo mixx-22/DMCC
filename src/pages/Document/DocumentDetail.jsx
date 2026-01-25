@@ -798,7 +798,7 @@ const DocumentDetail = () => {
                       Form Template
                     </Text>
                     <Text fontSize="sm" color="gray.600">
-                      This is a response to a form template. Click the button below to view the original form template.
+                      This is a response to the form template. Click the button below to view the original form template.
                     </Text>
                     {document?.metadata?.templateId && (
                       <Button
@@ -945,7 +945,16 @@ const DocumentDetail = () => {
                                     </Text>
                                   ) : question.type === "date" ? (
                                     <Text fontSize="sm">
-                                      {new Date(response).toLocaleDateString()}
+                                      {(() => {
+                                        try {
+                                          const date = new Date(response);
+                                          return isNaN(date.getTime())
+                                            ? response
+                                            : date.toLocaleDateString();
+                                        } catch {
+                                          return response;
+                                        }
+                                      })()}
                                     </Text>
                                   ) : (
                                     <Text fontSize="sm">{response}</Text>
