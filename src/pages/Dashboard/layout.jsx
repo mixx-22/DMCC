@@ -19,7 +19,7 @@ import { Link as RouterLink, useNavigate } from "react-router-dom";
 import { useState, useEffect, useMemo, useRef } from "react";
 import { format } from "date-fns";
 import { FiGrid, FiList } from "react-icons/fi";
-import { useApp, useUser, useLayout } from "../../context/_useContext";
+import { useApp, useUser, useLayout, useDocuments } from "../../context/_useContext";
 import { motion } from "framer-motion";
 import SearchInput from "../../components/SearchInput";
 import apiService from "../../services/api";
@@ -34,6 +34,7 @@ const MotionBox = motion(Box);
 const Layout = () => {
   const { documents } = useApp();
   const { user: currentUser } = useUser();
+  const { documents: documentsFromContext } = useDocuments();
   const {
     viewMode,
     toggleViewMode,
@@ -227,6 +228,32 @@ const Layout = () => {
 
     fetchRecentFiles();
   }, [fileLimit, filteredDocuments]);
+
+  // Sync updates from DocumentsContext to local state
+  // When a document is updated in the drawer, update it in recentFolders/recentFiles
+  useEffect(() => {
+    if (!documentsFromContext || documentsFromContext.length === 0) return;
+
+    // Update recentFolders if any folder was updated
+    setRecentFolders((prevFolders) =>
+      prevFolders.map((folder) => {
+        const updated = documentsFromContext.find(
+          (doc) => (doc.id || doc._id) === (folder.id || folder._id),
+        );
+        return updated ? { ...folder, ...updated } : folder;
+      }),
+    );
+
+    // Update recentFiles if any file was updated
+    setRecentFiles((prevFiles) =>
+      prevFiles.map((file) => {
+        const updated = documentsFromContext.find(
+          (doc) => (doc.id || doc._id) === (file.id || file._id),
+        );
+        return updated ? { ...file, ...updated } : file;
+      }),
+    );
+  }, [documentsFromContext]);
 
   // Get user teams from the current user object
   const userTeams = useMemo(() => {
