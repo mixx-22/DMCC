@@ -88,6 +88,15 @@ const Search = () => {
   // Debounce timer ref
   const debounceTimerRef = useRef(null);
 
+  // Sync keyword from URL params when they change (e.g., from SearchInput navigation)
+  useEffect(() => {
+    const urlKeyword = searchParams.get("keyword") || "";
+    if (urlKeyword !== keyword) {
+      setKeyword(urlKeyword);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchParams]);
+
   // Load owners from query params when URL changes
   useEffect(() => {
     const ownersParam = searchParams.get("owners");
