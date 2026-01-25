@@ -194,10 +194,12 @@ const FormResponse = () => {
       });
 
       // Navigate to the created response document
-      if (createdDoc?.id || createdDoc?._id) {
-        navigate(`/document/${createdDoc.id || createdDoc._id}`);
+      const docId = createdDoc?._id || createdDoc?.id;
+      if (docId) {
+        navigate(`/document/${docId}`);
       } else {
-        navigate(`/document/${id}`);
+        console.error("Created document has no ID:", createdDoc);
+        navigate("/documents");
       }
     } catch (error) {
       console.error("Error submitting form:", error);
