@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Search Page - Before and After</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background: #f7fafc;
+            padding: 20px;
+        }
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        h1 {
+            text-align: center;
+            margin-bottom: 40px;
+            color: #2d3748;
+        }
+        .comparison {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 40px;
+        }
+        .version {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        .version h2 {
+            text-align: center;
+            margin-bottom: 20px;
+            color: #4a5568;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #e2e8f0;
+        }
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px;
+            background: white;
+            border-bottom: 1px solid #e2e8f0;
+            margin-bottom: 20px;
+        }
+        .page-title {
+            font-size: 24px;
+            font-weight: 600;
+            color: #2d3748;
+        }
+        .content {
+            padding: 20px;
+        }
+        
+        /* Before - Full width filters */
+        .before .filters-card {
+            background: white;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        .before .filter-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+        .before .filter-full {
+            grid-column: span 2;
+        }
+        
+        /* After - Centered with collapsible filters */
+        .after .centered-section {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-bottom: 24px;
+        }
+        .after .search-container {
+            width: 100%;
+            max-width: 448px;
+            margin-bottom: 16px;
+        }
+        .after .toggle-button {
+            background: transparent;
+            border: none;
+            padding: 8px 16px;
+            cursor: pointer;
+            color: #4a5568;
+            font-size: 14px;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .after .toggle-button:hover {
+            background: #f7fafc;
+        }
+        .after .filters-wrapper {
+            width: 100%;
+            max-width: 896px;
+            margin-top: 16px;
+        }
+        .after .filters-card {
+            background: white;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 20px;
+        }
+        .after .filter-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+        .after .filter-full {
+            grid-column: span 2;
+        }
+        
+        /* Common styles */
+        .search-input {
+            width: 100%;
+            padding: 10px 16px 10px 40px;
+            border: 1px solid #e2e8f0;
+            border-radius: 24px;
+            font-size: 14px;
+            background: #f7fafc;
+        }
+        .search-input:focus {
+            outline: none;
+            background: white;
+            border-color: #cbd5e0;
+        }
+        .search-input-styled {
+            background: #f7fafc;
+        }
+        .input, select {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid #e2e8f0;
+            border-radius: 6px;
+            font-size: 14px;
+        }
+        .label {
+            display: block;
+            margin-bottom: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            color: #4a5568;
+        }
+        .filter-group {
+            margin-bottom: 16px;
+        }
+        .clear-button {
+            float: right;
+            background: transparent;
+            border: none;
+            padding: 8px 16px;
+            cursor: pointer;
+            color: #718096;
+            font-size: 14px;
+        }
+        .clear-button:hover {
+            color: #4a5568;
+        }
+        .results-summary {
+            padding: 0 20px;
+            margin-bottom: 16px;
+            color: #718096;
+            font-size: 14px;
+        }
+        
+        .badge {
+            display: inline-block;
+            background: #48bb78;
+            color: white;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 500;
+            margin-right: 8px;
+        }
+        
+        .note {
+            background: #edf2f7;
+            border-left: 4px solid #4299e1;
+            padding: 16px;
+            margin-top: 20px;
+            border-radius: 4px;
+        }
+        .note h3 {
+            color: #2d3748;
+            margin-bottom: 8px;
+        }
+        .note ul {
+            margin-left: 20px;
+            color: #4a5568;
+        }
+        .note li {
+            margin-bottom: 4px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Search Page UI Improvements</h1>
+        
+        <div class="comparison">
+            <!-- BEFORE -->
+            <div class="version before">
+                <h2>❌ Before</h2>
+                
+                <div class="page-header">
+                    <div class="page-title">Search Auptilyze</div>
+                    <div>⊞</div>
+                </div>
+                
+                <div class="content">
+                    <div class="filters-card">
+                        <div class="filter-grid">
+                            <div class="filter-full filter-group">
+                                <label class="label">Keyword</label>
+                                <input type="text" class="input" placeholder="Search by title or description...">
+                            </div>
+                            
+                            <div class="filter-group">
+                                <label class="label">Type</label>
+                                <select class="input">
+                                    <option>All types</option>
+                                    <option>File</option>
+                                    <option>Folder</option>
+                                </select>
+                            </div>
+                            
+                            <div class="filter-group">
+                                <label class="label">Date Range</label>
+                                <select class="input">
+                                    <option>All dates</option>
+                                    <option>Today</option>
+                                    <option>Last 7 days</option>
+                                </select>
+                            </div>
+                            
+                            <div class="filter-full filter-group">
+                                <label class="label">Owners</label>
+                                <input type="text" class="input" placeholder="Search for document owners...">
+                            </div>
+                        </div>
+                        
+                        <button class="clear-button">Clear All Filters</button>
+                        <div style="clear: both;"></div>
+                    </div>
+                    
+                    <div class="results-summary">
+                        Enter a keyword to start searching
+                    </div>
+                </div>
+            </div>
+            
+            <!-- AFTER -->
+            <div class="version after">
+                <h2>✅ After (New Design)</h2>
+                
+                <div class="page-header">
+                    <div class="page-title">Search Auptilyze</div>
+                    <div>⊞</div>
+                </div>
+                
+                <div class="content">
+                    <div class="centered-section">
+                        <div class="search-container">
+                            <input type="text" class="search-input search-input-styled" placeholder="Search documents...">
+                        </div>
+                        
+                        <button class="toggle-button">
+                            <span>Show Filters</span>
+                            <span>▼</span>
+                        </button>
+                        
+                        <!-- Filters are collapsed by default, shown here for demonstration -->
+                        <div class="filters-wrapper" style="display: none;">
+                            <div class="filters-card">
+                                <div class="filter-grid">
+                                    <div class="filter-group">
+                                        <label class="label">Type</label>
+                                        <select class="input">
+                                            <option>All types</option>
+                                            <option>File</option>
+                                            <option>Folder</option>
+                                        </select>
+                                    </div>
+                                    
+                                    <div class="filter-group">
+                                        <label class="label">Date Range</label>
+                                        <select class="input">
+                                            <option>All dates</option>
+                                            <option>Today</option>
+                                            <option>Last 7 days</option>
+                                        </select>
+                                    </div>
+                                    
+                                    <div class="filter-full filter-group">
+                                        <label class="label">Owners</label>
+                                        <input type="text" class="input" placeholder="Search for document owners...">
+                                    </div>
+                                </div>
+                                
+                                <button class="clear-button">Clear All Filters</button>
+                                <div style="clear: both;"></div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="results-summary">
+                        Enter a keyword to start searching
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="note">
+            <h3>Key Improvements:</h3>
+            <ul>
+                <li><span class="badge">✓</span> <strong>Styled SearchInput:</strong> Now uses the custom SearchInput component with rounded corners and search icon (like the Dashboard)</li>
+                <li><span class="badge">✓</span> <strong>Centered Layout:</strong> Search input and filters are centered on the page (max-width: 4xl) similar to the Dashboard layout</li>
+                <li><span class="badge">✓</span> <strong>Collapsible Filters:</strong> Filters are hidden by default with a "Show/Hide Filters" toggle button to reduce clutter</li>
+                <li><span class="badge">✓</span> <strong>Clean Design:</strong> Removed the keyword input field from filters since the main SearchInput handles that</li>
+                <li><span class="badge">✓</span> <strong>Preserved Functionality:</strong> All search functionality and results display remain unchanged</li>
+            </ul>
+        </div>
+    </div>
+    
+    <script>
+        // Add click handler to demonstrate collapse/expand
+        document.querySelector('.after .toggle-button').addEventListener('click', function() {
+            const filters = document.querySelector('.after .filters-wrapper');
+            const buttonText = this.querySelector('span:first-child');
+            const icon = this.querySelector('span:last-child');
+            
+            if (filters.style.display === 'none') {
+                filters.style.display = 'block';
+                buttonText.textContent = 'Hide Filters';
+                icon.textContent = '▲';
+            } else {
+                filters.style.display = 'none';
+                buttonText.textContent = 'Show Filters';
+                icon.textContent = '▼';
+            }
+        });
+    </script>
+</body>
+</html>
