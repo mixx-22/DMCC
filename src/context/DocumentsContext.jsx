@@ -271,7 +271,6 @@ export const DocumentsProvider = ({ children }) => {
       consolidatedData.metadata = consolidatedMeta;
     }
 
-    console.log({ payload, consolidatedData });
     return { payload, consolidatedData };
   };
 
