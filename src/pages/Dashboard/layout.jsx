@@ -27,13 +27,20 @@ import { ChevronDownIcon } from "@chakra-ui/icons";
 import { GridView } from "../../components/Document/GridView";
 import { ListView } from "../../components/Document/ListView";
 import PageHeader from "../../components/PageHeader";
+import DocumentDrawer from "../../components/Document/DocumentDrawer";
 
 const MotionBox = motion(Box);
 
 const Layout = () => {
   const { documents } = useApp();
   const { user: currentUser } = useUser();
-  const { viewMode, toggleViewMode } = useLayout();
+  const {
+    viewMode,
+    toggleViewMode,
+    selectedDocument,
+    handleDocumentClick,
+    closeDocumentDrawer,
+  } = useLayout();
   const [selectedTeam, setSelectedTeam] = useState("all");
   const [greeting, setGreeting] = useState("");
   const [pendingApprovals, setPendingApprovals] = useState(0);
@@ -342,7 +349,14 @@ const Layout = () => {
           <Text fontSize="xl" fontWeight="500" mb={4} color={headingColor}>
             Recent Folders
           </Text>
-          <GridView foldersOnly documents={recentFolders} />
+          <GridView
+            foldersOnly
+            documents={recentFolders}
+            selectedDocument={selectedDocument}
+            onDocumentClick={(doc) =>
+              handleDocumentClick(doc, { path: "/", label: "Dashboard" })
+            }
+          />
         </Box>
 
         {/* Recent Documents */}
@@ -363,17 +377,31 @@ const Layout = () => {
             <GridView
               filesOnly
               documents={recentFiles}
+              selectedDocument={selectedDocument}
+              onDocumentClick={(doc) =>
+                handleDocumentClick(doc, { path: "/", label: "Dashboard" })
+              }
               sourcePage={{ path: "/", label: "Dashboard" }}
             />
           ) : (
             <ListView
               filesOnly
               documents={recentFiles}
+              selectedDocument={selectedDocument}
+              onDocumentClick={(doc) =>
+                handleDocumentClick(doc, { path: "/", label: "Dashboard" })
+              }
               sourcePage={{ path: "/", label: "Dashboard" }}
             />
           )}
         </Box>
       </MotionBox>
+
+      <DocumentDrawer
+        document={selectedDocument}
+        isOpen={!!selectedDocument}
+        onClose={closeDocumentDrawer}
+      />
     </>
   );
 };

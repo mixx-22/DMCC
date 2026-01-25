@@ -54,7 +54,13 @@ const getDateRangeLabel = (value) => {
 const Search = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
-  const { viewMode, toggleViewMode } = useLayout();
+  const {
+    viewMode,
+    toggleViewMode,
+    selectedDocument,
+    handleDocumentClick,
+    closeDocumentDrawer,
+  } = useLayout();
 
   // Search filters
   const [keyword, setKeyword] = useState(searchParams.get("keyword") || "");
@@ -72,13 +78,8 @@ const Search = () => {
 
   // Search results and loading state
   const [searchResults, setSearchResults] = useState([]);
-  const [selectedDocument, setSelectedDocument] = useState(null);
   const [loading, setLoading] = useState(false);
   const [hasSearched, setHasSearched] = useState(false);
-
-  // Double-click detection for navigation (same as Documents page)
-  const [lastClickTime, setLastClickTime] = useState(0);
-  const [lastClickId, setLastClickId] = useState(null);
 
   // Debounce timer ref
   const debounceTimerRef = useRef(null);
@@ -290,30 +291,6 @@ const Search = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [keyword, type, dateRange, selectedDates, owners]);
 
-  // Handle document click with double-click detection (same as Documents page)
-  const handleDocumentClick = (doc) => {
-    const now = Date.now();
-    const timeDiff = now - lastClickTime;
-
-    if (lastClickId === doc.id && timeDiff < 300) {
-      // Double click - navigate to document/folder
-      if (doc.type === "folder" || doc.type === "auditSchedule") {
-        navigate(`/documents/folders/${doc.id}`);
-      } else if (doc.type === "file") {
-        navigate(`/document/${doc.id}`, {
-          state: { from: { path: "/search", label: "Search Results" } },
-        });
-      }
-      setLastClickTime(0);
-      setLastClickId(null);
-    } else {
-      // Single click - show in drawer
-      setSelectedDocument(doc);
-      setLastClickTime(now);
-      setLastClickId(doc.id);
-    }
-  };
-
   return (
     <Box>
       <PageHeader>
@@ -499,13 +476,23 @@ const Search = () => {
           <GridView
             documents={searchResults}
             selectedDocument={selectedDocument}
-            onDocumentClick={handleDocumentClick}
+            onDocumentClick={(doc) =>
+              handleDocumentClick(doc, {
+                path: "/search",
+                label: "Search Results",
+              })
+            }
           />
         ) : (
           <ListView
             documents={searchResults}
             selectedDocument={selectedDocument}
-            onDocumentClick={handleDocumentClick}
+            onDocumentClick={(doc) =>
+              handleDocumentClick(doc, {
+                path: "/search",
+                label: "Search Results",
+              })
+            }
           />
         )}
       </Stack>
@@ -513,7 +500,7 @@ const Search = () => {
       <DocumentDrawer
         document={selectedDocument}
         isOpen={!!selectedDocument}
-        onClose={() => setSelectedDocument(null)}
+        onClose={closeDocumentDrawer}
       />
     </Box>
   );
