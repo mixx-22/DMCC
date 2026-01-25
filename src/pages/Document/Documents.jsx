@@ -256,7 +256,7 @@ const Documents = () => {
         />
         {loading ? (
           <Center py={12}>
-            <Spinner size="xl" color="blue.500" />
+            <Spinner size="xl" color="brandPrimary.500" />
           </Center>
         ) : documents.length === 0 ? (
           <EmptyState

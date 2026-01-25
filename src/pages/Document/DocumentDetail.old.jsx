@@ -175,7 +175,7 @@ const DocumentDetail = () => {
         <Box flex="1" bg="gray.50" p={8}>
           <Center h="400px">
             <VStack>
-              <Spinner size="xl" color="blue.500" />
+              <Spinner size="xl" color="brandPrimary.500" />
               <Text mt={4} color="gray.600">
                 Loading document...
               </Text>

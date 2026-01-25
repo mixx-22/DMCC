@@ -125,7 +125,7 @@ const Accounts = () => {
         <Flex gap={4} justifyContent="flex-end">
           <Button
             leftIcon={<FiPlus />}
-            colorScheme="blue"
+            colorScheme="brandPrimary"
             onClick={handleCreate}
           >
             Create New Account

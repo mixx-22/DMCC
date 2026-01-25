@@ -675,7 +675,7 @@ const MoveDocumentModal = ({ isOpen, onClose, document }) => {
                         </Text>
                       </HStack>
                       {selectedDestination?.id === currentLocation?.id && (
-                        <FiCheck color="blue" />
+                        <FiCheck color="brandPrimary" />
                       )}
                     </HStack>
                   </Box>
@@ -787,7 +787,7 @@ const MoveDocumentModal = ({ isOpen, onClose, document }) => {
                     <Box
                       p={3}
                       borderWidth={1}
-                      borderColor="blue.300"
+                      borderColor="brandPrimary.300"
                       borderRadius="md"
                       bg={bgColor}
                     >
@@ -837,7 +837,7 @@ const MoveDocumentModal = ({ isOpen, onClose, document }) => {
             Cancel
           </Button>
           <Button
-            colorScheme="blue"
+            colorScheme="brandPrimary"
             onClick={handleMove}
             isLoading={loading}
             isDisabled={!selectedDestination}
