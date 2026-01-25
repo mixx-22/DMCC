@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import {
   useParams,
   useNavigate,
@@ -275,9 +275,10 @@ const DocumentDetail = () => {
       // Update questions with new responses
       const updatedQuestions = document.metadata.questions.map((question) => ({
         ...question,
-        response: editedResponses[question.id] !== undefined 
-          ? editedResponses[question.id] 
-          : question.response,
+        response:
+          editedResponses[question.id] !== undefined
+            ? editedResponses[question.id]
+            : question.response,
       }));
 
       // Only update the questions array to avoid overwriting other metadata
@@ -292,7 +293,7 @@ const DocumentDetail = () => {
       setDocument((prev) => ({ ...prev, ...updatedDoc }));
       setIsEditable(false);
       setEditedResponses({});
-      
+
       toast.success("Responses Updated", {
         description: "Form responses have been updated successfully",
         duration: 2000,
@@ -308,15 +309,16 @@ const DocumentDetail = () => {
     }
   };
 
-  const isUserOwner = () => {
+  const isUserOwner = useMemo(() => {
     if (!document || !currentUser) return false;
-    return document.owner?.id === currentUser.id;
-  };
+    return document?.owner?._id === currentUser?.id;
+  }, [currentUser, document]);
 
   const renderEditableQuestion = (question, index) => {
-    const value = editedResponses[question.id] !== undefined 
-      ? editedResponses[question.id] 
-      : question.response;
+    const value =
+      editedResponses[question.id] !== undefined
+        ? editedResponses[question.id]
+        : question.response;
 
     switch (question.type) {
       case "text":
@@ -330,7 +332,9 @@ const DocumentDetail = () => {
             <Input
               type={question.type}
               value={value ?? ""}
-              onChange={(e) => handleResponseChange(question.id, e.target.value)}
+              onChange={(e) =>
+                handleResponseChange(question.id, e.target.value)
+              }
               placeholder={`Enter ${question.type}`}
               size="sm"
             />
@@ -345,7 +349,9 @@ const DocumentDetail = () => {
             </FormLabel>
             <Textarea
               value={value ?? ""}
-              onChange={(e) => handleResponseChange(question.id, e.target.value)}
+              onChange={(e) =>
+                handleResponseChange(question.id, e.target.value)
+              }
               placeholder="Enter your answer"
               rows={4}
               size="sm"
@@ -362,7 +368,9 @@ const DocumentDetail = () => {
             <Input
               type="date"
               value={value ?? ""}
-              onChange={(e) => handleResponseChange(question.id, e.target.value)}
+              onChange={(e) =>
+                handleResponseChange(question.id, e.target.value)
+              }
               size="sm"
             />
           </FormControl>
@@ -377,7 +385,9 @@ const DocumentDetail = () => {
             </FormLabel>
             <Select
               value={value ?? ""}
-              onChange={(e) => handleResponseChange(question.id, e.target.value)}
+              onChange={(e) =>
+                handleResponseChange(question.id, e.target.value)
+              }
               placeholder="Select an option"
               size="sm"
             >
@@ -440,7 +450,9 @@ const DocumentDetail = () => {
             </FormLabel>
             <Input
               value={value ?? ""}
-              onChange={(e) => handleResponseChange(question.id, e.target.value)}
+              onChange={(e) =>
+                handleResponseChange(question.id, e.target.value)
+              }
               placeholder="Enter your answer"
               size="sm"
             />
@@ -1115,7 +1127,7 @@ const DocumentDetail = () => {
                 <CardBody>
                   <Flex justify="space-between" align="center" mb={4}>
                     <Text fontWeight="semibold">Response</Text>
-                    {isUserOwner() && (
+                    {isUserOwner && (
                       <HStack spacing={2}>
                         {isEditable && (
                           <Button
@@ -1135,7 +1147,7 @@ const DocumentDetail = () => {
                           onClick={handleEditToggle}
                           isDisabled={isSaving}
                         >
-                          {isEditable ? "Cancel" : "Edit"}
+                          {isEditable ? "Cancel" : "Edit Response"}
                         </Button>
                       </HStack>
                     )}
@@ -1154,8 +1166,7 @@ const DocumentDetail = () => {
                               response !== undefined &&
                               response !== "" &&
                               !(
-                                Array.isArray(response) &&
-                                response.length === 0
+                                Array.isArray(response) && response.length === 0
                               );
 
                             return (
