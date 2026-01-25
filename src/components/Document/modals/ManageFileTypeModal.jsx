@@ -29,10 +29,11 @@ const ManageFileTypeModal = ({ isOpen, onClose, document, onUpdate }) => {
 
   const handleSave = async () => {
     try {
+      // Send raw fileType object - context will handle ID extraction
       const updatedDoc = await updateDocument(document.id, {
         metadata: {
           ...document.metadata,
-          fileType: fileType ? fileType.id : null,
+          fileType: fileType || null,
         },
       });
 

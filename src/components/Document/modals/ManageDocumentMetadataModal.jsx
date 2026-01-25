@@ -35,10 +35,11 @@ const ManageDocumentMetadataModal = ({ isOpen, onClose, document, onUpdate }) =>
 
   const handleSave = async () => {
     try {
+      // Send raw data - context will handle formatting (trimming, etc.)
       const updatedDoc = await updateDocument(document.id, {
         metadata: {
           ...document.metadata,
-          documentNumber: documentNumber.trim() || undefined,
+          documentNumber: documentNumber || undefined,
           issuedDate: issuedDate || undefined,
           effectivityDate: effectivityDate || undefined,
         },

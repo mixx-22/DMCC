@@ -241,6 +241,51 @@ export const DocumentsProvider = ({ children }) => {
     }
   };
 
+  // Helper function to extract IDs from objects
+  const extractIds = (items) => {
+    if (!Array.isArray(items)) return items;
+    return items.map((item) => {
+      // If item is already a string (just an ID), return it
+      if (typeof item === "string") return item;
+      // Otherwise extract the ID from the object
+      return item?.id || item?._id;
+    });
+  };
+
+  // Helper function to format updates for API
+  const formatUpdatesForAPI = (updates) => {
+    const formatted = { ...updates };
+
+    // Format privacy settings - extract IDs from user/team/role objects
+    if (formatted.privacy) {
+      formatted.privacy = {
+        ...formatted.privacy,
+        users: extractIds(formatted.privacy.users),
+        teams: extractIds(formatted.privacy.teams),
+        roles: extractIds(formatted.privacy.roles),
+      };
+    }
+
+    // Format metadata
+    if (formatted.metadata) {
+      const meta = { ...formatted.metadata };
+      
+      // Trim document number
+      if (typeof meta.documentNumber === 'string') {
+        meta.documentNumber = meta.documentNumber.trim() || undefined;
+      }
+      
+      // Extract fileType ID if it's an object
+      if (meta.fileType && typeof meta.fileType === 'object') {
+        meta.fileType = meta.fileType.id || meta.fileType._id || null;
+      }
+      
+      formatted.metadata = meta;
+    }
+
+    return formatted;
+  };
+
   // Update a document
   const updateDocument = async (id, updates) => {
     if (!USE_API) {
@@ -261,17 +306,20 @@ export const DocumentsProvider = ({ children }) => {
       return;
     }
 
+    // Format updates for API (extract IDs, trim strings, etc.)
+    const formattedUpdates = formatUpdatesForAPI(updates);
+
     // API mode: PUT /documents/:id
     try {
       const response = await apiService.request(`${DOCUMENTS_ENDPOINT}/${id}`, {
         method: "PUT",
-        body: JSON.stringify(updates),
+        body: JSON.stringify(formattedUpdates),
       });
 
       // Optimize: Update document in existing array instead of re-fetching
       const updatedDoc = response.data ||
         response.document || {
-          ...updates,
+          ...formattedUpdates,
           id,
           updatedAt: new Date().toISOString(),
         };
