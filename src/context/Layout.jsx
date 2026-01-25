@@ -1,9 +1,7 @@
 import { useRef, useState, useCallback, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
 import { LayoutContext } from "./_contexts";
 
 export const LayoutProvider = ({ children }) => {
-  const navigate = useNavigate();
   const headerRef = useRef();
   const footerRef = useRef();
   const [hasHeaderContent, setHasHeaderContent] = useState(false);
@@ -39,33 +37,27 @@ export const LayoutProvider = ({ children }) => {
   }, []);
 
   // Handle document click with double-click detection
-  // sourcePage: optional object with { path, label } for navigation state
+  // Returns true if it was a double-click (caller should handle navigation)
+  // Returns false if it was a single-click (drawer should be shown)
   const handleDocumentClick = useCallback(
-    (doc, sourcePage = null) => {
+    (doc) => {
       const now = Date.now();
       const timeDiff = now - lastClickTime;
 
       if (lastClickId === doc.id && timeDiff < 300) {
-        // Double click - navigate to document/folder
-        if (doc.type === "folder" || doc.type === "auditSchedule") {
-          navigate(`/documents/folders/${doc.id}`);
-        } else if (doc.type === "file" || doc.type === "formTemplate") {
-          if (sourcePage) {
-            navigate(`/document/${doc.id}`, { state: { from: sourcePage } });
-          } else {
-            navigate(`/document/${doc.id}`);
-          }
-        }
+        // Double click - caller should handle navigation
         setLastClickTime(0);
         setLastClickId(null);
+        return { isDoubleClick: true, document: doc };
       } else {
         // Single click - show in drawer
         setSelectedDocument(doc);
         setLastClickTime(now);
         setLastClickId(doc.id);
+        return { isDoubleClick: false, document: doc };
       }
     },
-    [lastClickTime, lastClickId, navigate],
+    [lastClickTime, lastClickId],
   );
 
   // Close document drawer

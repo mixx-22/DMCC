@@ -15,7 +15,7 @@ import {
   IconButton,
   Spacer,
 } from "@chakra-ui/react";
-import { Link as RouterLink } from "react-router-dom";
+import { Link as RouterLink, useNavigate } from "react-router-dom";
 import { useState, useEffect, useMemo, useRef } from "react";
 import { format } from "date-fns";
 import { FiGrid, FiList } from "react-icons/fi";
@@ -41,6 +41,7 @@ const Layout = () => {
     handleDocumentClick,
     closeDocumentDrawer,
   } = useLayout();
+  const navigate = useNavigate();
   const [selectedTeam, setSelectedTeam] = useState("all");
   const [greeting, setGreeting] = useState("");
   const [pendingApprovals, setPendingApprovals] = useState(0);
@@ -353,9 +354,15 @@ const Layout = () => {
             foldersOnly
             documents={recentFolders}
             selectedDocument={selectedDocument}
-            onDocumentClick={(doc) =>
-              handleDocumentClick(doc, { path: "/", label: "Dashboard" })
-            }
+            onDocumentClick={(doc) => {
+              const result = handleDocumentClick(doc);
+              if (result.isDoubleClick) {
+                // Navigate to folder on double-click
+                if (doc.type === "folder" || doc.type === "auditSchedule") {
+                  navigate(`/documents/folders/${doc.id}`);
+                }
+              }
+            }}
           />
         </Box>
 
@@ -378,9 +385,17 @@ const Layout = () => {
               filesOnly
               documents={recentFiles}
               selectedDocument={selectedDocument}
-              onDocumentClick={(doc) =>
-                handleDocumentClick(doc, { path: "/", label: "Dashboard" })
-              }
+              onDocumentClick={(doc) => {
+                const result = handleDocumentClick(doc);
+                if (result.isDoubleClick) {
+                  // Navigate to document on double-click
+                  if (doc.type === "file" || doc.type === "formTemplate") {
+                    navigate(`/document/${doc.id}`, {
+                      state: { from: { path: "/", label: "Dashboard" } },
+                    });
+                  }
+                }
+              }}
               sourcePage={{ path: "/", label: "Dashboard" }}
             />
           ) : (
@@ -388,9 +403,17 @@ const Layout = () => {
               filesOnly
               documents={recentFiles}
               selectedDocument={selectedDocument}
-              onDocumentClick={(doc) =>
-                handleDocumentClick(doc, { path: "/", label: "Dashboard" })
-              }
+              onDocumentClick={(doc) => {
+                const result = handleDocumentClick(doc);
+                if (result.isDoubleClick) {
+                  // Navigate to document on double-click
+                  if (doc.type === "file" || doc.type === "formTemplate") {
+                    navigate(`/document/${doc.id}`, {
+                      state: { from: { path: "/", label: "Dashboard" } },
+                    });
+                  }
+                }
+              }}
               sourcePage={{ path: "/", label: "Dashboard" }}
             />
           )}

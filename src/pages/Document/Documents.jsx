@@ -245,14 +245,25 @@ const Documents = () => {
           <GridView
             documents={documents}
             selectedDocument={selectedDocument}
-            onDocumentClick={(doc) =>
-              handleDocumentClick(doc, {
-                path: isFolderView
-                  ? `/documents/folders/${currentFolderId}`
-                  : "/documents",
-                label: isFolderView ? folder?.title || "Folder" : "All Documents",
-              })
-            }
+            onDocumentClick={(doc) => {
+              const result = handleDocumentClick(doc);
+              if (result.isDoubleClick) {
+                // Navigate on double-click
+                if (doc.type === "folder" || doc.type === "auditSchedule") {
+                  navigate(`/documents/folders/${doc.id}`);
+                } else if (doc.type === "file" || doc.type === "formTemplate") {
+                  const sourcePage = {
+                    path: isFolderView
+                      ? `/documents/folders/${currentFolderId}`
+                      : "/documents",
+                    label: isFolderView
+                      ? folder?.title || "Folder"
+                      : "All Documents",
+                  };
+                  navigate(`/document/${doc.id}`, { state: { from: sourcePage } });
+                }
+              }
+            }}
             sourcePage={{
               path: isFolderView
                 ? `/documents/folders/${currentFolderId}`
@@ -264,14 +275,25 @@ const Documents = () => {
           <ListView
             documents={documents}
             selectedDocument={selectedDocument}
-            onDocumentClick={(doc) =>
-              handleDocumentClick(doc, {
-                path: isFolderView
-                  ? `/documents/folders/${currentFolderId}`
-                  : "/documents",
-                label: isFolderView ? folder?.title || "Folder" : "All Documents",
-              })
-            }
+            onDocumentClick={(doc) => {
+              const result = handleDocumentClick(doc);
+              if (result.isDoubleClick) {
+                // Navigate on double-click
+                if (doc.type === "folder" || doc.type === "auditSchedule") {
+                  navigate(`/documents/folders/${doc.id}`);
+                } else if (doc.type === "file" || doc.type === "formTemplate") {
+                  const sourcePage = {
+                    path: isFolderView
+                      ? `/documents/folders/${currentFolderId}`
+                      : "/documents",
+                    label: isFolderView
+                      ? folder?.title || "Folder"
+                      : "All Documents",
+                  };
+                  navigate(`/document/${doc.id}`, { state: { from: sourcePage } });
+                }
+              }
+            }}
             sourcePage={{
               path: isFolderView
                 ? `/documents/folders/${currentFolderId}`

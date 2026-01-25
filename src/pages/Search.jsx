@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from "react";
-import { useSearchParams } from "react-router-dom";
+import { useSearchParams, useNavigate } from "react-router-dom";
 import {
   Box,
   Heading,
@@ -53,6 +53,7 @@ const getDateRangeLabel = (value) => {
 
 const Search = () => {
   const [searchParams, setSearchParams] = useSearchParams();
+  const navigate = useNavigate();
   const {
     viewMode,
     toggleViewMode,
@@ -475,23 +476,37 @@ const Search = () => {
           <GridView
             documents={searchResults}
             selectedDocument={selectedDocument}
-            onDocumentClick={(doc) =>
-              handleDocumentClick(doc, {
-                path: "/search",
-                label: "Search Results",
-              })
-            }
+            onDocumentClick={(doc) => {
+              const result = handleDocumentClick(doc);
+              if (result.isDoubleClick) {
+                // Navigate on double-click
+                if (doc.type === "folder" || doc.type === "auditSchedule") {
+                  navigate(`/documents/folders/${doc.id}`);
+                } else if (doc.type === "file" || doc.type === "formTemplate") {
+                  navigate(`/document/${doc.id}`, {
+                    state: { from: { path: "/search", label: "Search Results" } },
+                  });
+                }
+              }
+            }}
           />
         ) : (
           <ListView
             documents={searchResults}
             selectedDocument={selectedDocument}
-            onDocumentClick={(doc) =>
-              handleDocumentClick(doc, {
-                path: "/search",
-                label: "Search Results",
-              })
-            }
+            onDocumentClick={(doc) => {
+              const result = handleDocumentClick(doc);
+              if (result.isDoubleClick) {
+                // Navigate on double-click
+                if (doc.type === "folder" || doc.type === "auditSchedule") {
+                  navigate(`/documents/folders/${doc.id}`);
+                } else if (doc.type === "file" || doc.type === "formTemplate") {
+                  navigate(`/document/${doc.id}`, {
+                    state: { from: { path: "/search", label: "Search Results" } },
+                  });
+                }
+              }
+            }}
           />
         )}
       </Stack>
