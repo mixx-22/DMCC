@@ -458,7 +458,10 @@ const FormTemplateBuilder = () => {
               "Original document not available, using minimal update data",
             );
           }
-          await updateDocument(document, formTemplateData);
+          await updateDocument(
+            { _id: documentId, id: documentId },
+            formTemplateData,
+          );
         } else {
           const updateData = {
             ...originalDocument,
@@ -470,7 +473,7 @@ const FormTemplateBuilder = () => {
             },
           };
 
-          await updateDocument(document, updateData);
+          await updateDocument(originalDocument, updateData);
         }
         toast.success("Form Template Updated", {
           description: `"${formData.title}" has been updated successfully`,

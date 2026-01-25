@@ -1130,7 +1130,7 @@ const DocumentDetail = () => {
                       size="sm"
                       colorScheme="brandPrimary"
                       leftIcon={<FiEdit />}
-                      onClick={() => navigate(`/edit-form/${document._id}`)}
+                      onClick={() => navigate(`/edit-form/${id}`)}
                     >
                       Edit Form
                     </Button>
