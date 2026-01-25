@@ -73,6 +73,7 @@ import PrivacyDisplay from "../../components/Document/PrivacyDisplay";
 import { useDocuments, useUser } from "../../context/_useContext";
 import { toast } from "sonner";
 import DocumentBadges from "./Badges";
+import moment from "moment";
 
 const DocumentDetail = () => {
   const { id } = useParams();
@@ -170,7 +171,9 @@ const DocumentDetail = () => {
   const formatDateResponse = (dateString) => {
     try {
       const date = new Date(dateString);
-      return isNaN(date.getTime()) ? dateString : date.toLocaleDateString();
+      return isNaN(date.getTime())
+        ? dateString
+        : moment(date).format("MMMM DD, yyyy");
     } catch {
       return dateString;
     }
@@ -391,7 +394,15 @@ const DocumentDetail = () => {
 
       case "date":
         return (
-          <FormControl key={question.id}>
+          <FormControl
+            key={question.id}
+            sx={{
+              button: {
+                w: "full",
+                justifyContent: "flex-start",
+              },
+            }}
+          >
             <FormLabel>
               {index + 1}. {question.label}
             </FormLabel>
@@ -405,7 +416,7 @@ const DocumentDetail = () => {
                 )
               }
               configs={{
-                dateFormat: "MM/dd/yyyy",
+                dateFormat: "MMMM dd, yyyy",
               }}
             />
           </FormControl>

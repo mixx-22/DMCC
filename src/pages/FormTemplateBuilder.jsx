@@ -119,7 +119,7 @@ const SortableQuestion = ({ question, index, onRemove, onEdit }) => {
             date={new Date()}
             disabled
             configs={{
-              dateFormat: "MM/dd/yyyy",
+              dateFormat: "MMMM dd, yyyy",
             }}
           />
         );
@@ -237,17 +237,17 @@ const SortableQuestion = ({ question, index, onRemove, onEdit }) => {
 // Helper function to get display label for input type
 const getTypeLabel = (type) => {
   const typeLabels = {
-    [INPUT_TYPES.TEXT]: 'Text',
-    [INPUT_TYPES.NUMBER]: 'Number',
-    [INPUT_TYPES.CURRENCY]: 'Currency',
-    [INPUT_TYPES.TEXTAREA]: 'Text Area',
-    [INPUT_TYPES.DATE]: 'Date',
-    [INPUT_TYPES.SELECT]: 'Select',
-    [INPUT_TYPES.DROPDOWN]: 'Dropdown',
-    [INPUT_TYPES.RADIO]: 'Radio',
-    [INPUT_TYPES.CHECKBOXES]: 'Checkboxes',
+    [INPUT_TYPES.TEXT]: "Text",
+    [INPUT_TYPES.NUMBER]: "Number",
+    [INPUT_TYPES.CURRENCY]: "Currency",
+    [INPUT_TYPES.TEXTAREA]: "Text Area",
+    [INPUT_TYPES.DATE]: "Date",
+    [INPUT_TYPES.SELECT]: "Select",
+    [INPUT_TYPES.DROPDOWN]: "Dropdown",
+    [INPUT_TYPES.RADIO]: "Radio",
+    [INPUT_TYPES.CHECKBOXES]: "Checkboxes",
   };
-  return typeLabels[type] || 'Text';
+  return typeLabels[type] || "Text";
 };
 
 const FormTemplateBuilder = () => {
@@ -509,6 +509,9 @@ const FormTemplateBuilder = () => {
         toast.success("Form Template Updated", {
           description: `"${formData.title}" has been updated successfully`,
         });
+
+        navigate(`/document/${documentId}`);
+        return;
       } else {
         const newDoc = await createDocument({
           ...formTemplateData,
@@ -526,8 +529,6 @@ const FormTemplateBuilder = () => {
         }
         return;
       }
-
-      navigate("/documents");
     } catch (error) {
       toast.error(
         isEditMode
@@ -752,7 +753,7 @@ const FormTemplateBuilder = () => {
                         <ChakraSelect
                           value={{
                             value: currentQuestion.type,
-                            label: getTypeLabel(currentQuestion.type)
+                            label: getTypeLabel(currentQuestion.type),
                           }}
                           onChange={(option) =>
                             setCurrentQuestion((prev) => ({
@@ -762,15 +763,18 @@ const FormTemplateBuilder = () => {
                             }))
                           }
                           options={[
-                            { value: INPUT_TYPES.TEXT, label: 'Text' },
-                            { value: INPUT_TYPES.NUMBER, label: 'Number' },
-                            { value: INPUT_TYPES.CURRENCY, label: 'Currency' },
-                            { value: INPUT_TYPES.TEXTAREA, label: 'Text Area' },
-                            { value: INPUT_TYPES.DATE, label: 'Date' },
-                            { value: INPUT_TYPES.SELECT, label: 'Select' },
-                            { value: INPUT_TYPES.DROPDOWN, label: 'Dropdown' },
-                            { value: INPUT_TYPES.RADIO, label: 'Radio' },
-                            { value: INPUT_TYPES.CHECKBOXES, label: 'Checkboxes' },
+                            { value: INPUT_TYPES.TEXT, label: "Text" },
+                            { value: INPUT_TYPES.NUMBER, label: "Number" },
+                            { value: INPUT_TYPES.CURRENCY, label: "Currency" },
+                            { value: INPUT_TYPES.TEXTAREA, label: "Text Area" },
+                            { value: INPUT_TYPES.DATE, label: "Date" },
+                            { value: INPUT_TYPES.SELECT, label: "Select" },
+                            { value: INPUT_TYPES.DROPDOWN, label: "Dropdown" },
+                            { value: INPUT_TYPES.RADIO, label: "Radio" },
+                            {
+                              value: INPUT_TYPES.CHECKBOXES,
+                              label: "Checkboxes",
+                            },
                           ]}
                         />
                       </FormControl>

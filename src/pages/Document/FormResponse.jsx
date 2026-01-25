@@ -351,7 +351,7 @@ const FormResponse = () => {
                 )
               }
               configs={{
-                dateFormat: "MM/dd/yyyy",
+                dateFormat: "MMMM dd, yyyy",
               }}
             />
             {hasError && (
