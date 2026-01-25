@@ -4,8 +4,8 @@ import PropTypes from "prop-types";
 import {
   InputGroup,
   Input,
-  InputRightElement,
   IconButton,
+  InputLeftElement,
 } from "@chakra-ui/react";
 import { FiSearch } from "react-icons/fi";
 
@@ -40,7 +40,7 @@ const SearchInput = ({
         placeholder={placeholder}
         variant="search"
       />
-      <InputRightElement>
+      <InputLeftElement>
         <IconButton
           isRound
           icon={<FiSearch />}
@@ -49,7 +49,7 @@ const SearchInput = ({
           variant="ghost"
           size="sm"
         />
-      </InputRightElement>
+      </InputLeftElement>
     </InputGroup>
   );
 };

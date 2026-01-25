@@ -47,7 +47,7 @@ const DATE_RANGE_OPTIONS = [
 
 // Helper function to get the label for a date range value
 const getDateRangeLabel = (value) => {
-  const option = DATE_RANGE_OPTIONS.find(opt => opt.value === value);
+  const option = DATE_RANGE_OPTIONS.find((opt) => opt.value === value);
   return option ? option.label : null;
 };
 
@@ -60,10 +60,12 @@ const Search = () => {
   const [keyword, setKeyword] = useState(searchParams.get("keyword") || "");
   const [type, setType] = useState(searchParams.get("type") || "");
   const [dateRange, setDateRange] = useState(
-    searchParams.get("dateRange") || ""
+    searchParams.get("dateRange") || "",
   );
   const [selectedDates, setSelectedDates] = useState([
-    searchParams.get("startDate") ? new Date(searchParams.get("startDate")) : null,
+    searchParams.get("startDate")
+      ? new Date(searchParams.get("startDate"))
+      : null,
     searchParams.get("endDate") ? new Date(searchParams.get("endDate")) : null,
   ]);
   const [owners, setOwners] = useState([]);
@@ -103,8 +105,8 @@ const Search = () => {
     if (type) params.type = type;
     if (dateRange) params.dateRange = dateRange;
     if (dateRange === "custom" && selectedDates[0] && selectedDates[1]) {
-      params.startDate = selectedDates[0].toISOString().split('T')[0];
-      params.endDate = selectedDates[1].toISOString().split('T')[0];
+      params.startDate = selectedDates[0].toISOString().split("T")[0];
+      params.endDate = selectedDates[1].toISOString().split("T")[0];
     }
     if (owners.length > 0) {
       params.owners = encodeURIComponent(JSON.stringify(owners));
@@ -126,23 +128,25 @@ const Search = () => {
       // Mock mode: use localStorage
       const saved = localStorage.getItem("documents");
       const allDocs = saved ? JSON.parse(saved) : [];
-      
+
       // Apply client-side filtering in mock mode
       let filtered = [...allDocs];
-      
+
       if (keyword.trim()) {
         const lowerKeyword = keyword.toLowerCase().trim();
         filtered = filtered.filter((doc) => {
           const title = (doc.title || "").toLowerCase();
           const description = (doc.description || "").toLowerCase();
-          return title.includes(lowerKeyword) || description.includes(lowerKeyword);
+          return (
+            title.includes(lowerKeyword) || description.includes(lowerKeyword)
+          );
         });
       }
-      
+
       if (type) {
         filtered = filtered.filter((doc) => doc.type === type);
       }
-      
+
       if (dateRange && dateRange !== "custom") {
         const now = new Date();
         let startDate = new Date();
@@ -181,25 +185,30 @@ const Search = () => {
             return docDate >= startDate;
           });
         }
-      } else if (dateRange === "custom" && selectedDates[0] && selectedDates[1]) {
+      } else if (
+        dateRange === "custom" &&
+        selectedDates[0] &&
+        selectedDates[1]
+      ) {
         const startOfDay = new Date(selectedDates[0]);
         const endOfDay = new Date(selectedDates[1]);
         endOfDay.setHours(23, 59, 59, 999);
-        
+
         filtered = filtered.filter((doc) => {
           const docDate = new Date(doc.createdAt || doc.updatedAt);
           return docDate >= startOfDay && docDate <= endOfDay;
         });
       }
-      
+
       if (owners.length > 0) {
         const ownerIds = owners.map((o) => o.id || o._id);
         filtered = filtered.filter((doc) => {
-          const creatorId = doc.createdBy?.id || doc.createdBy?._id || doc.createdBy;
+          const creatorId =
+            doc.createdBy?.id || doc.createdBy?._id || doc.createdBy;
           return ownerIds.includes(creatorId);
         });
       }
-      
+
       setSearchResults(filtered);
       setHasSearched(true);
       return;
@@ -211,23 +220,23 @@ const Search = () => {
 
     try {
       const params = {};
-      
+
       if (keyword.trim()) {
         params.keyword = keyword.trim();
       }
-      
+
       if (type) {
         params.type = type;
       }
-      
+
       if (dateRange) {
         params.dateRange = dateRange;
         if (dateRange === "custom" && selectedDates[0] && selectedDates[1]) {
-          params.startDate = selectedDates[0].toISOString().split('T')[0];
-          params.endDate = selectedDates[1].toISOString().split('T')[0];
+          params.startDate = selectedDates[0].toISOString().split("T")[0];
+          params.endDate = selectedDates[1].toISOString().split("T")[0];
         }
       }
-      
+
       if (owners.length > 0) {
         // Send owner IDs as comma-separated string
         params.owners = owners.map((o) => o.id || o._id).join(",");
@@ -239,7 +248,7 @@ const Search = () => {
       });
 
       const { success = false, data = { documents: [] } } = response;
-      
+
       if (success) {
         setSearchResults(data.documents || []);
       } else {
@@ -291,7 +300,9 @@ const Search = () => {
       if (doc.type === "folder" || doc.type === "auditSchedule") {
         navigate(`/documents/folders/${doc.id}`);
       } else if (doc.type === "file") {
-        navigate(`/document/${doc.id}`, { state: { from: { path: "/search", label: "Search Results" } } });
+        navigate(`/document/${doc.id}`, {
+          state: { from: { path: "/search", label: "Search Results" } },
+        });
       }
       setLastClickTime(0);
       setLastClickId(null);
@@ -308,7 +319,7 @@ const Search = () => {
       <PageHeader>
         <Flex justify="space-between" align="center" w="full">
           <Heading variant="pageTitle" noOfLines={1}>
-            Search
+            Search {import.meta.env.VITE_PROJECT_NAME || "Auptilyze"}
           </Heading>
           <HStack>
             <IconButton
@@ -347,7 +358,15 @@ const Search = () => {
                   <FormControl>
                     <FormLabel>Type</FormLabel>
                     <Select
-                      value={type ? { value: type, label: type.charAt(0).toUpperCase() + type.slice(1) } : null}
+                      value={
+                        type
+                          ? {
+                              value: type,
+                              label:
+                                type.charAt(0).toUpperCase() + type.slice(1),
+                            }
+                          : null
+                      }
                       onChange={(option) => setType(option ? option.value : "")}
                       options={[
                         { value: "file", label: "File" },
@@ -370,8 +389,17 @@ const Search = () => {
                   <FormControl>
                     <FormLabel>Date Range</FormLabel>
                     <Select
-                      value={dateRange ? { value: dateRange, label: getDateRangeLabel(dateRange) } : null}
-                      onChange={(option) => setDateRange(option ? option.value : "")}
+                      value={
+                        dateRange
+                          ? {
+                              value: dateRange,
+                              label: getDateRangeLabel(dateRange),
+                            }
+                          : null
+                      }
+                      onChange={(option) =>
+                        setDateRange(option ? option.value : "")
+                      }
                       options={DATE_RANGE_OPTIONS}
                       placeholder="All dates"
                       isClearable
@@ -481,7 +509,7 @@ const Search = () => {
           />
         )}
       </Stack>
-      
+
       <DocumentDrawer
         document={selectedDocument}
         isOpen={!!selectedDocument}

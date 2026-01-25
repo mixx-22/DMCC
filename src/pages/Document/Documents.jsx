@@ -13,6 +13,8 @@ import {
   ListItem,
   Text,
   Icon,
+  Spacer,
+  Hide,
 } from "@chakra-ui/react";
 import { FiGrid, FiList, FiCheckCircle, FiXCircle } from "react-icons/fi";
 import { toast } from "sonner";
@@ -184,7 +186,8 @@ const Documents = () => {
     }
   };
 
-      const handleDocumentClick = (doc) => {
+  const handleDocumentClick = (doc) => {
+    console.log(doc);
     const now = Date.now();
     const timeDiff = now - lastClickTime;
 
@@ -195,8 +198,10 @@ const Documents = () => {
         navigate(`/documents/folders/${doc.id}`);
       } else if (doc.type === "file" || doc.type === "formTemplate") {
         const sourcePage = {
-          path: isFolderView ? `/documents/folders/${currentFolderId}` : "/documents",
-          label: isFolderView ? folder?.title || "Folder" : "All Documents"
+          path: isFolderView
+            ? `/documents/folders/${currentFolderId}`
+            : "/documents",
+          label: isFolderView ? folder?.title || "Folder" : "All Documents",
         };
         navigate(`/document/${doc.id}`, { state: { from: sourcePage } });
       }
@@ -212,10 +217,13 @@ const Documents = () => {
   return (
     <Box>
       <PageHeader>
-        <Flex justify="space-between" align="center" w="full" gap={4}>
-          <Box w="full" maxW="xl">
-            <SearchInput placeholder="Search documents..." header />
-          </Box>
+        <Flex justify="center" align="center" w="full" gap={4}>
+          <Hide below="md">
+            <Box w="full" maxW="xl" ml={-2}>
+              <SearchInput placeholder="Search documents..." header />
+            </Box>
+          </Hide>
+          <Spacer />
           <HStack>
             <IconButton
               icon={viewMode === "grid" ? <FiList /> : <FiGrid />}
@@ -264,8 +272,10 @@ const Documents = () => {
             selectedDocument={selectedDocument}
             onDocumentClick={handleDocumentClick}
             sourcePage={{
-              path: isFolderView ? `/documents/folders/${currentFolderId}` : "/documents",
-              label: isFolderView ? folder?.title || "Folder" : "All Documents"
+              path: isFolderView
+                ? `/documents/folders/${currentFolderId}`
+                : "/documents",
+              label: isFolderView ? folder?.title || "Folder" : "All Documents",
             }}
           />
         ) : (
@@ -275,8 +285,10 @@ const Documents = () => {
             onDocumentClick={handleDocumentClick}
             onMoreOptions={setSelectedDocument}
             sourcePage={{
-              path: isFolderView ? `/documents/folders/${currentFolderId}` : "/documents",
-              label: isFolderView ? folder?.title || "Folder" : "All Documents"
+              path: isFolderView
+                ? `/documents/folders/${currentFolderId}`
+                : "/documents",
+              label: isFolderView ? folder?.title || "Folder" : "All Documents",
             }}
           />
         )}

@@ -12,11 +12,6 @@ const search = definePartsStyle((props) => {
   const hasValue = value?.length > 0;
   return {
     field: {
-      pl: hasValue
-        ? "var(--input-padding)"
-        : isHeader
-          ? 0
-          : "var(--input-padding)",
       bg: hasValue
         ? mode(`white`, `gray.800`)(props)
         : isHeader
@@ -29,11 +24,6 @@ const search = definePartsStyle((props) => {
       borderRadius: "full",
       fontFamily: "body",
       _hover: {
-        pl: hasValue
-          ? "var(--input-padding)"
-          : isHeader
-            ? "var(--input-padding)"
-            : "var(--input-padding)",
         bg: hasValue
           ? mode(`gray.100`, `gray.900`)(props)
           : isHeader

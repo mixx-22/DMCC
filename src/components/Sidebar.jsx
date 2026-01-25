@@ -32,6 +32,7 @@ import {
   FiSettings,
   FiBell,
   FiFolder,
+  FiSearch,
 } from "react-icons/fi";
 import { HiOutlineUser, HiOutlineUserGroup } from "react-icons/hi2";
 import logoDefault from "../images/auptilyze.png";
@@ -451,7 +452,20 @@ const Sidebar = () => {
               _hover={{ bg: hoverBg }}
               borderRadius="md"
             />
-
+            {/* Search Button */}
+            <IconButton
+              aria-label="Search"
+              icon={<FiSearch size={24} />}
+              variant="ghost"
+              onClick={() => navigate("/search")}
+              display="flex"
+              flexDirection="column"
+              h="auto"
+              py={2}
+              color={location.pathname === "/search" ? activeColor : textColor}
+              _hover={{ bg: hoverBg }}
+              borderRadius="md"
+            />
             {/* Documents Button */}
             <IconButton
               aria-label="Documents"
@@ -530,8 +544,6 @@ const Sidebar = () => {
             />
           </Flex>
         </Box>
-
-        {/* Old drawer removed - menu now opens as a page */}
       </>
     );
   }
