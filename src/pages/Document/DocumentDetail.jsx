@@ -322,21 +322,17 @@ const DocumentDetail = () => {
 
     switch (question.type) {
       case "text":
-      case "email":
-      case "number":
         return (
           <FormControl key={question.id}>
-            <FormLabel fontSize="sm" fontWeight="medium">
+            <FormLabel>
               {index + 1}. {question.label}
             </FormLabel>
             <Input
-              type={question.type}
               value={value ?? ""}
               onChange={(e) =>
                 handleResponseChange(question.id, e.target.value)
               }
-              placeholder={`Enter ${question.type}`}
-              size="sm"
+              placeholder="Enter your answer"
             />
           </FormControl>
         );
@@ -344,7 +340,7 @@ const DocumentDetail = () => {
       case "textarea":
         return (
           <FormControl key={question.id}>
-            <FormLabel fontSize="sm" fontWeight="medium">
+            <FormLabel>
               {index + 1}. {question.label}
             </FormLabel>
             <Textarea
@@ -354,7 +350,40 @@ const DocumentDetail = () => {
               }
               placeholder="Enter your answer"
               rows={4}
-              size="sm"
+            />
+          </FormControl>
+        );
+
+      case "number":
+        return (
+          <FormControl key={question.id}>
+            <FormLabel>
+              {index + 1}. {question.label}
+            </FormLabel>
+            <Input
+              type="number"
+              value={value ?? ""}
+              onChange={(e) =>
+                handleResponseChange(question.id, e.target.value)
+              }
+              placeholder="Enter a number"
+            />
+          </FormControl>
+        );
+
+      case "email":
+        return (
+          <FormControl key={question.id}>
+            <FormLabel>
+              {index + 1}. {question.label}
+            </FormLabel>
+            <Input
+              type="email"
+              value={value ?? ""}
+              onChange={(e) =>
+                handleResponseChange(question.id, e.target.value)
+              }
+              placeholder="Enter email address"
             />
           </FormControl>
         );
@@ -362,7 +391,7 @@ const DocumentDetail = () => {
       case "date":
         return (
           <FormControl key={question.id}>
-            <FormLabel fontSize="sm" fontWeight="medium">
+            <FormLabel>
               {index + 1}. {question.label}
             </FormLabel>
             <Input
@@ -371,7 +400,6 @@ const DocumentDetail = () => {
               onChange={(e) =>
                 handleResponseChange(question.id, e.target.value)
               }
-              size="sm"
             />
           </FormControl>
         );
@@ -380,7 +408,7 @@ const DocumentDetail = () => {
       case "dropdown":
         return (
           <FormControl key={question.id}>
-            <FormLabel fontSize="sm" fontWeight="medium">
+            <FormLabel>
               {index + 1}. {question.label}
             </FormLabel>
             <Select
@@ -389,7 +417,6 @@ const DocumentDetail = () => {
                 handleResponseChange(question.id, e.target.value)
               }
               placeholder="Select an option"
-              size="sm"
             >
               {question.options?.map((option, idx) => (
                 <option key={idx} value={option}>
@@ -403,7 +430,7 @@ const DocumentDetail = () => {
       case "radio":
         return (
           <FormControl key={question.id}>
-            <FormLabel fontSize="sm" fontWeight="medium">
+            <FormLabel>
               {index + 1}. {question.label}
             </FormLabel>
             <RadioGroup
@@ -412,7 +439,7 @@ const DocumentDetail = () => {
             >
               <Stack spacing={2}>
                 {question.options?.map((option, idx) => (
-                  <Radio key={idx} value={option} size="sm">
+                  <Radio key={idx} value={option}>
                     {option}
                   </Radio>
                 ))}
@@ -424,7 +451,7 @@ const DocumentDetail = () => {
       case "checkbox":
         return (
           <FormControl key={question.id}>
-            <FormLabel fontSize="sm" fontWeight="medium">
+            <FormLabel>
               {index + 1}. {question.label}
             </FormLabel>
             <CheckboxGroup
@@ -433,7 +460,7 @@ const DocumentDetail = () => {
             >
               <Stack spacing={2}>
                 {question.options?.map((option, idx) => (
-                  <Checkbox key={idx} value={option} size="sm">
+                  <Checkbox key={idx} value={option}>
                     {option}
                   </Checkbox>
                 ))}
@@ -445,7 +472,7 @@ const DocumentDetail = () => {
       default:
         return (
           <FormControl key={question.id}>
-            <FormLabel fontSize="sm" fontWeight="medium">
+            <FormLabel>
               {index + 1}. {question.label}
             </FormLabel>
             <Input
@@ -454,7 +481,6 @@ const DocumentDetail = () => {
                 handleResponseChange(question.id, e.target.value)
               }
               placeholder="Enter your answer"
-              size="sm"
             />
           </FormControl>
         );
