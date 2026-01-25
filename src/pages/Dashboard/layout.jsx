@@ -19,7 +19,7 @@ import { Link as RouterLink, useNavigate } from "react-router-dom";
 import { useState, useEffect, useMemo, useRef } from "react";
 import { format } from "date-fns";
 import { FiGrid, FiList } from "react-icons/fi";
-import { useApp, useUser, useLayout, useDocuments } from "../../context/_useContext";
+import { useApp, useUser, useLayout } from "../../context/_useContext";
 import { motion } from "framer-motion";
 import SearchInput from "../../components/SearchInput";
 import apiService from "../../services/api";
@@ -34,7 +34,6 @@ const MotionBox = motion(Box);
 const Layout = () => {
   const { documents } = useApp();
   const { user: currentUser } = useUser();
-  const { documents: documentsFromContext } = useDocuments();
   const {
     viewMode,
     toggleViewMode,
@@ -229,36 +228,30 @@ const Layout = () => {
     fetchRecentFiles();
   }, [fileLimit, filteredDocuments]);
 
-  // Sync updates from DocumentsContext to local state
+  // Sync updates when selectedDocument changes (after edits in drawer)
   // When a document is updated in the drawer, update it in recentFolders/recentFiles
   useEffect(() => {
-    if (!documentsFromContext) return;
+    if (!selectedDocument) return;
 
-    // Create a Map for O(1) lookup performance
-    const docsMap = new Map();
-    documentsFromContext.forEach((doc) => {
-      const id = doc.id || doc._id;
-      if (id) docsMap.set(id, doc);
-    });
+    const docId = selectedDocument.id || selectedDocument._id;
+    if (!docId) return;
 
-    // Update recentFolders if any folder was updated
+    // Update recentFolders if the selected document is a folder
     setRecentFolders((prevFolders) =>
       prevFolders.map((folder) => {
-        const id = folder.id || folder._id;
-        const updated = docsMap.get(id);
-        return updated ? { ...folder, ...updated } : folder;
+        const folderId = folder.id || folder._id;
+        return folderId === docId ? { ...folder, ...selectedDocument } : folder;
       }),
     );
 
-    // Update recentFiles if any file was updated
+    // Update recentFiles if the selected document is a file
     setRecentFiles((prevFiles) =>
       prevFiles.map((file) => {
-        const id = file.id || file._id;
-        const updated = docsMap.get(id);
-        return updated ? { ...file, ...updated } : file;
+        const fileId = file.id || file._id;
+        return fileId === docId ? { ...file, ...selectedDocument } : file;
       }),
     );
-  }, [documentsFromContext]);
+  }, [selectedDocument]);
 
   // Get user teams from the current user object
   const userTeams = useMemo(() => {

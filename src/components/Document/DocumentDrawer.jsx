@@ -31,7 +31,7 @@ import PrivacyDisplay from "./PrivacyDisplay";
 import ManageFileTypeModal from "./modals/ManageFileTypeModal";
 import ManageDocumentMetadataModal from "./modals/ManageDocumentMetadataModal";
 import DownloadButton from "./DownloadButton";
-import { useDocuments } from "../../context/_useContext";
+import { useDocuments, useLayout } from "../../context/_useContext";
 import { toast } from "sonner";
 import { useEffect, useRef, useState } from "react";
 import { Link as RouterLink } from "react-router-dom";
@@ -39,6 +39,7 @@ import { getDocumentIcon } from "./DocumentIcon";
 
 const DocumentDrawer = ({ document, isOpen, onClose }) => {
   const { updateDocument } = useDocuments();
+  const { setSelectedDocument } = useLayout();
   const [titleCache, setTitleCache] = useState("");
   const [descriptionCache, setDescriptionCache] = useState("");
   const titleTextareaRef = useRef(null);
@@ -114,7 +115,7 @@ const DocumentDrawer = ({ document, isOpen, onClose }) => {
     }
 
     try {
-      await updateDocument(document.id || document._id, {
+      const updatedDoc = await updateDocument(document.id || document._id, {
         title: trimmedTitle,
       });
       toast.success("Title Updated", {
@@ -122,6 +123,10 @@ const DocumentDrawer = ({ document, isOpen, onClose }) => {
         duration: 2000,
       });
       setTitleCache(trimmedTitle);
+      // Update selectedDocument to reflect changes in Dashboard
+      if (updatedDoc) {
+        setSelectedDocument({ ...document, ...updatedDoc });
+      }
     } catch (error) {
       toast.error("Update Failed", {
         description: "Failed to update title",
@@ -136,7 +141,7 @@ const DocumentDrawer = ({ document, isOpen, onClose }) => {
     }
 
     try {
-      await updateDocument(document.id || document._id, {
+      const updatedDoc = await updateDocument(document.id || document._id, {
         description: newDescription,
       });
       toast.success("Description Updated", {
@@ -144,6 +149,10 @@ const DocumentDrawer = ({ document, isOpen, onClose }) => {
         duration: 2000,
       });
       setDescriptionCache(newDescription);
+      // Update selectedDocument to reflect changes in Dashboard
+      if (updatedDoc) {
+        setSelectedDocument({ ...document, ...updatedDoc });
+      }
     } catch (error) {
       toast.error("Update Failed", {
         description: "Failed to update description",
