@@ -1,5 +1,4 @@
 import {
-  IoFolder,
   IoDocument,
   IoCalendar,
   IoAlertCircle,
@@ -11,7 +10,6 @@ import {
   IoArchive,
 } from "react-icons/io5";
 import { getFileExtension } from "../../utils/fileTypes";
-import { Folder } from "../../icons/Folder";
 import AuptilyzeFolder from "../AuptilyzeFolder";
 
 /**
@@ -120,8 +118,9 @@ export const getDocumentIcon = (doc, size = 24) => {
     case "auditSchedule":
       return <IoCalendar size={size} color="#805AD5" />;
     case "formTemplate":
+    case "formResponse":
       return <IoDocumentText size={size} color="#38A169" />;
-    case "file":
+    case "file": {
       if (!doc?.metadata?.filename) {
         return (
           <IoAlertCircle
@@ -131,7 +130,6 @@ export const getDocumentIcon = (doc, size = 24) => {
           />
         );
       }
-      // Get file-specific icon based on extension
       const { icon: IconComponent, color } = getFileIconByExtension(
         doc.metadata.filename,
       );
@@ -142,6 +140,7 @@ export const getDocumentIcon = (doc, size = 24) => {
           title={doc.metadata.filename}
         />
       );
+    }
     default:
       return (
         <IoAlertCircle

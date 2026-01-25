@@ -106,11 +106,11 @@ const PrivacyDisplay = ({
         {generateSummary({ users, teams })}
       </Text>
       {/* Manage Access Button */}
-      <Box mt={2}>
+      <Box>
         <Button
           size={buttonSize ?? size}
           colorScheme="brandPrimary"
-          variant="outline"
+          variant="link"
           onClick={onManageAccess}
         >
           Manage Access

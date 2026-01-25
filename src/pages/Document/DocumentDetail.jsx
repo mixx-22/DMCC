@@ -18,16 +18,13 @@ import {
   Spinner,
   Center,
   Badge,
-  Container,
   Heading,
-  SimpleGrid,
   Avatar,
   Icon,
   Menu,
   MenuButton,
   MenuList,
   MenuItem,
-  IconButton,
   Flex,
   Tooltip,
   Editable,
@@ -35,6 +32,8 @@ import {
   EditablePreview,
   Link,
   useColorModeValue,
+  Stack,
+  Spacer,
 } from "@chakra-ui/react";
 import {
   FiTrash2,
@@ -62,7 +61,7 @@ import Breadcrumbs from "../../components/Document/Breadcrumbs";
 import PrivacyDisplay from "../../components/Document/PrivacyDisplay";
 import { useDocuments } from "../../context/_useContext";
 import { toast } from "sonner";
-import { getDocumentIcon } from "../../components/Document/DocumentIcon";
+import DocumentBadges from "./Badges";
 
 const DocumentDetail = () => {
   const { id } = useParams();
@@ -79,6 +78,7 @@ const DocumentDetail = () => {
   const contentBg = useColorModeValue("gray.50", "gray.800");
   const cardBorderColor = useColorModeValue("gray.200", "gray.600");
   const cardBg = useColorModeValue("gray.50", "gray.700");
+  const errorColor = useColorModeValue("error.600", "error.200");
 
   const {
     isOpen: isDeleteOpen,
@@ -274,14 +274,13 @@ const DocumentDetail = () => {
       <PageHeader>
         <Breadcrumbs data={document} from={location.state?.from} />
       </PageHeader>
-      <Box flex="1" p={{ base: 4, md: 8 }}>
-        <Container maxW="container.xl">
-          {/* Bento Grid Layout */}
-          <SimpleGrid
-            columns={{ base: 1, lg: 12 }}
-            gap={6}
-            autoRows="minmax(120px, auto)"
-          >
+      <Box flex="1">
+        <Flex
+          gap={4}
+          maxW="container.xl"
+          flexDir={{ base: "column", lg: "row" }}
+        >
+          <Stack spacing={4} w="full" maxW={{ base: "unset", lg: "xs" }}>
             {/* Main Document Info - Spans 8 columns, 2 rows */}
             <Card
               gridColumn={{ base: "1", lg: "1 / 9" }}
@@ -290,7 +289,6 @@ const DocumentDetail = () => {
               <CardBody>
                 <Flex justify="space-between" align="start" mb={4}>
                   <HStack spacing={4} flex="1" align="start">
-                    {getDocumentIcon(document, 56)}
                     <VStack align="start" spacing={2} flex="1">
                       <Editable
                         key={`title-${document?.id || document?._id}`}
@@ -305,8 +303,7 @@ const DocumentDetail = () => {
                         selectAllOnFocus={false}
                       >
                         <EditablePreview
-                          py={2}
-                          px={2}
+                          w="full"
                           borderRadius="md"
                           _hover={{
                             background: "gray.100",
@@ -332,72 +329,28 @@ const DocumentDetail = () => {
                           }}
                         />
                       </Editable>
-                      <HStack spacing={2}>
-                        <Badge
-                          colorScheme={
-                            document?.type === "folder"
-                              ? "blue"
-                              : document?.type === "auditSchedule"
-                                ? "purple"
-                                : document?.type === "formTemplate"
-                                  ? "green"
-                                  : "gray"
-                          }
-                        >
-                          {document?.type === "auditSchedule"
-                            ? "Audit Schedule"
-                            : document?.type === "formTemplate"
-                              ? "Form Template"
-                              : document?.type
-                                ? document.type.charAt(0).toUpperCase() +
-                                  document.type.slice(1)
-                                : "Unknown"}
-                        </Badge>
-                        {!isValid && <Badge colorScheme="red">Broken</Badge>}
-                      </HStack>
+                      <DocumentBadges data={document} {...{ isValid }} />
                     </VStack>
                   </HStack>
-                  <Menu>
-                    <MenuButton
-                      as={IconButton}
-                      icon={<FiMoreVertical />}
-                      variant="ghost"
-                      size="sm"
-                    />
-                    <MenuList>
-                      <MenuItem icon={<FiMove />} onClick={onMoveOpen}>
-                        Move
-                      </MenuItem>
-                      <Divider />
-                      <MenuItem
-                        icon={<FiTrash2 />}
-                        color="red.500"
-                        onClick={onDeleteOpen}
-                      >
-                        Delete
-                      </MenuItem>
-                    </MenuList>
-                  </Menu>
                 </Flex>
 
                 <Divider mb={4} />
 
                 <Editable
+                  w="full"
                   key={`description-${document?.id || document?._id}`}
                   defaultValue={document?.description || ""}
                   onSubmit={handleDescriptionBlur}
                   placeholder="Add a description..."
-                  w="full"
                   isPreviewFocusable={true}
                   submitOnBlur={true}
                   selectAllOnFocus={false}
                 >
                   <EditablePreview
                     py={2}
-                    px={2}
+                    w="full"
                     borderRadius="md"
                     color={document?.description ? "gray.700" : "gray.400"}
-                    minH="60px"
                     _hover={{
                       background: "gray.100",
                       cursor: "pointer",
@@ -422,46 +375,19 @@ const DocumentDetail = () => {
                   />
                 </Editable>
 
-                <Divider mb={4} />
+                <Divider my={4} />
 
-                <SimpleGrid columns={{ base: 1, md: 2 }} spacing={4}>
-                  <Box>
-                    <Text fontSize="sm" color="gray.600" fontWeight="medium">
-                      Owner
-                    </Text>
-                    {document?.owner?.id ? (
-                      <Link
-                        as={RouterLink}
-                        to={`/users/${document.owner.id}`}
-                        _hover={{ textDecoration: "none" }}
-                      >
-                        <HStack mt={2} _hover={{ opacity: 0.8 }}>
-                          <Avatar
-                            size="sm"
-                            name={
-                              document?.owner?.firstName &&
-                              document?.owner?.lastName
-                                ? `${document.owner.firstName} ${document.owner.lastName}`
-                                : "Unknown"
-                            }
-                          />
-                          <VStack align="start" spacing={0}>
-                            <Text fontSize="sm" fontWeight="medium">
-                              {document?.owner?.firstName &&
-                              document?.owner?.lastName
-                                ? `${document.owner.firstName} ${document.owner.lastName}`
-                                : "Unknown"}
-                            </Text>
-                            {document?.owner?.team && (
-                              <Text fontSize="xs" color="gray.500">
-                                {document.owner.team}
-                              </Text>
-                            )}
-                          </VStack>
-                        </HStack>
-                      </Link>
-                    ) : (
-                      <HStack mt={2}>
+                <Box my={4}>
+                  <Text fontSize="sm" color="gray.600">
+                    Owner
+                  </Text>
+                  {document?.owner?.id ? (
+                    <Link
+                      as={RouterLink}
+                      to={`/users/${document.owner.id}`}
+                      _hover={{ textDecoration: "none" }}
+                    >
+                      <HStack mt={2} _hover={{ opacity: 0.8 }}>
                         <Avatar
                           size="sm"
                           name={
@@ -485,30 +411,52 @@ const DocumentDetail = () => {
                           )}
                         </VStack>
                       </HStack>
-                    )}
-                  </Box>
+                    </Link>
+                  ) : (
+                    <HStack mt={2}>
+                      <Avatar
+                        size="sm"
+                        name={
+                          document?.owner?.firstName &&
+                          document?.owner?.lastName
+                            ? `${document.owner.firstName} ${document.owner.lastName}`
+                            : "Unknown"
+                        }
+                      />
+                      <VStack align="start" spacing={0}>
+                        <Text fontSize="sm" fontWeight="medium">
+                          {document?.owner?.firstName &&
+                          document?.owner?.lastName
+                            ? `${document.owner.firstName} ${document.owner.lastName}`
+                            : "Unknown"}
+                        </Text>
+                        {document?.owner?.team && (
+                          <Text fontSize="xs" color="gray.500">
+                            {document.owner.team}
+                          </Text>
+                        )}
+                      </VStack>
+                    </HStack>
+                  )}
+                </Box>
 
-                  <Box>
-                    <Text
-                      fontSize="sm"
-                      color="gray.600"
-                      fontWeight="medium"
-                      mb={2}
-                    >
-                      Privacy Settings
-                    </Text>
-                    <PrivacyDisplay
-                      document={document}
-                      onManageAccess={onPrivacyOpen}
-                      avatarSize="sm"
-                      buttonSize="xs"
-                    />
-                  </Box>
+                <Box my={4}>
+                  <Text fontSize="sm" color="gray.600">
+                    Privacy Settings
+                  </Text>
+                  <PrivacyDisplay
+                    document={document}
+                    onManageAccess={onPrivacyOpen}
+                    avatarSize="sm"
+                    buttonSize="xs"
+                  />
+                </Box>
 
+                <HStack>
                   {document?.createdAt && (
-                    <Box>
-                      <Text fontSize="sm" color="gray.600" fontWeight="medium">
-                        Created
+                    <Box flex={1}>
+                      <Text fontSize="sm" color="gray.600">
+                        Created At
                       </Text>
                       <Text fontSize="sm" mt={2}>
                         <Timestamp date={document.createdAt} />
@@ -517,8 +465,8 @@ const DocumentDetail = () => {
                   )}
 
                   {document?.updatedAt && (
-                    <Box>
-                      <Text fontSize="sm" color="gray.600" fontWeight="medium">
+                    <Box flex={1}>
+                      <Text fontSize="sm" color="gray.600">
                         Last Modified
                       </Text>
                       <Text fontSize="sm" mt={2}>
@@ -526,25 +474,21 @@ const DocumentDetail = () => {
                       </Text>
                     </Box>
                   )}
+                </HStack>
+              </CardBody>
+            </Card>
 
-                  {document?.type === "file" && document?.metadata?.size && (
-                    <Box>
-                      <Text fontSize="sm" color="gray.600" fontWeight="medium">
-                        File Size
+            {/* File/Folder Specific Details */}
+            {document?.type === "file" && (
+              <Card>
+                <CardBody>
+                  <VStack align="stretch" spacing={3}>
+                    <Stack w="full">
+                      <Text fontSize="sm" color="gray.600">
+                        File Type
                       </Text>
-                      <Text fontSize="sm" mt={2}>
-                        {formatFileSize(document.metadata.size)}
-                      </Text>
-                    </Box>
-                  )}
-
-                  {document?.type === "file" && (
-                    <>
-                      <Box>
-                        <Text fontSize="sm" fontWeight="semibold" mb={2}>
-                          File Type
-                        </Text>
-                        {document?.metadata?.fileType ? (
+                      {document?.metadata?.fileType?.id ? (
+                        <>
                           <HStack spacing={2}>
                             <Badge
                               colorScheme="purple"
@@ -553,7 +497,8 @@ const DocumentDetail = () => {
                               py={1}
                               borderRadius="md"
                             >
-                              {document.metadata.fileType.name}
+                              {document.metadata.fileType.name ||
+                                "Unknowon File Type"}
                             </Badge>
                             <Button
                               size="xs"
@@ -564,196 +509,92 @@ const DocumentDetail = () => {
                               Change
                             </Button>
                           </HStack>
-                        ) : (
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            colorScheme="brandPrimary"
-                            onClick={onFileTypeOpen}
-                          >
-                            Assign File Type
-                          </Button>
-                        )}
-                      </Box>
-
-                      <Box>
-                        <Text fontSize="sm" fontWeight="semibold" mb={2}>
-                          Document Metadata
-                        </Text>
-                        {document?.metadata?.documentNumber ||
-                        document?.metadata?.issuedDate ||
-                        document?.metadata?.effectivityDate ? (
-                          <VStack align="stretch" spacing={2}>
-                            {document.metadata.documentNumber && (
-                              <HStack spacing={2}>
-                                <Text
-                                  fontSize="xs"
-                                  color="gray.500"
-                                  minW="100px"
-                                >
-                                  Doc Number:
-                                </Text>
-                                <Text fontSize="sm" fontWeight="medium">
-                                  {document.metadata.documentNumber}
-                                </Text>
-                              </HStack>
-                            )}
-                            {document.metadata.issuedDate && (
-                              <HStack spacing={2}>
-                                <Text
-                                  fontSize="xs"
-                                  color="gray.500"
-                                  minW="100px"
-                                >
-                                  Issued Date:
-                                </Text>
-                                <Text fontSize="sm">
-                                  {new Date(
-                                    document.metadata.issuedDate,
-                                  ).toLocaleDateString()}
-                                </Text>
-                              </HStack>
-                            )}
-                            {document.metadata.effectivityDate && (
-                              <HStack spacing={2}>
-                                <Text
-                                  fontSize="xs"
-                                  color="gray.500"
-                                  minW="100px"
-                                >
-                                  Effectivity:
-                                </Text>
-                                <Text fontSize="sm">
-                                  {new Date(
-                                    document.metadata.effectivityDate,
-                                  ).toLocaleDateString()}
-                                </Text>
-                              </HStack>
-                            )}
+                          {document?.metadata?.fileType?.isQualityDocument ? (
+                            <VStack align="stretch" spacing={2} mt={2} w="full">
+                              {document.metadata.documentNumber && (
+                                <HStack spacing={2}>
+                                  <Text
+                                    fontSize="xs"
+                                    color="gray.500"
+                                    minW="100px"
+                                  >
+                                    Doc Number:
+                                  </Text>
+                                  <Text fontSize="sm">
+                                    {document.metadata.documentNumber}
+                                  </Text>
+                                </HStack>
+                              )}
+                              {document.metadata.issuedDate && (
+                                <HStack spacing={2}>
+                                  <Text
+                                    fontSize="xs"
+                                    color="gray.500"
+                                    minW="100px"
+                                  >
+                                    Issued Date:
+                                  </Text>
+                                  <Text fontSize="sm">
+                                    {new Date(
+                                      document.metadata.issuedDate,
+                                    ).toLocaleDateString()}
+                                  </Text>
+                                </HStack>
+                              )}
+                              {document.metadata.effectivityDate && (
+                                <HStack spacing={2}>
+                                  <Text
+                                    fontSize="xs"
+                                    color="gray.500"
+                                    minW="100px"
+                                  >
+                                    Effectivity:
+                                  </Text>
+                                  <Text fontSize="sm">
+                                    {new Date(
+                                      document.metadata.effectivityDate,
+                                    ).toLocaleDateString()}
+                                  </Text>
+                                </HStack>
+                              )}
+                              <Button
+                                size="xs"
+                                variant="link"
+                                colorScheme="brandPrimary"
+                                onClick={onMetadataOpen}
+                                alignSelf="flex-start"
+                              >
+                                Update Metadata
+                              </Button>
+                            </VStack>
+                          ) : (
                             <Button
+                              mt={2}
+                              w="full"
                               size="xs"
-                              variant="ghost"
+                              variant="outline"
                               colorScheme="brandPrimary"
                               onClick={onMetadataOpen}
-                              alignSelf="flex-start"
                             >
-                              Change
+                              Add Metadata
                             </Button>
-                          </VStack>
-                        ) : (
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            colorScheme="brandPrimary"
-                            onClick={onMetadataOpen}
-                          >
-                            Add Metadata
-                          </Button>
-                        )}
-                      </Box>
-                    </>
-                  )}
-                </SimpleGrid>
-              </CardBody>
-            </Card>
+                          )}
+                        </>
+                      ) : (
+                        <Button
+                          w="full"
+                          size="xs"
+                          variant="outline"
+                          colorScheme="brandSecondary"
+                          onClick={onFileTypeOpen}
+                        >
+                          Assign File Type
+                        </Button>
+                      )}
+                    </Stack>
 
-            {/* Version Control & Approval Status Combined - Spans 4 columns, 2 rows */}
-            <Card
-              gridColumn={{ base: "1", lg: "9 / 13" }}
-              gridRow={{ base: "auto", lg: "1 / 3" }}
-            >
-              <CardBody>
-                <Text fontWeight="semibold" mb={4}>
-                  Version Control
-                </Text>
-                <VStack spacing={3} align="stretch" mb={6}>
-                  <HStack justify="space-between">
-                    <HStack spacing={2}>
-                      <Icon as={FiLock} color="gray.500" />
-                      <Text fontSize="sm">Status</Text>
-                    </HStack>
-                    <Badge colorScheme="green">Available</Badge>
-                  </HStack>
-                  <Button
-                    leftIcon={<FiUnlock />}
-                    size="sm"
-                    colorScheme="orange"
-                    variant="outline"
-                    w="full"
-                    onClick={() => {
-                      // Pass full document object with ID from URL
-                      console.log("Check Out document:", { ...document, id });
-                    }}
-                  >
-                    Check Out
-                  </Button>
-                  <Button
-                    leftIcon={<FiUpload />}
-                    size="sm"
-                    colorScheme="green"
-                    variant="outline"
-                    w="full"
-                    isDisabled
-                    onClick={() => {
-                      // Pass full document object with ID from URL
-                      console.log("Check In document:", { ...document, id });
-                    }}
-                  >
-                    Check In
-                  </Button>
-                </VStack>
+                    <Divider />
 
-                <Divider mb={4} />
-
-                <Text fontWeight="semibold" mb={4}>
-                  Approval Status
-                </Text>
-                <VStack spacing={3} align="stretch">
-                  <HStack justify="space-between">
-                    <HStack spacing={2}>
-                      <Icon as={FiClock} color="orange.500" />
-                      <Text fontSize="sm">Awaiting review</Text>
-                    </HStack>
-                    <Badge colorScheme="yellow">Pending</Badge>
-                  </HStack>
-                  <Button
-                    leftIcon={<FiCheckCircle />}
-                    size="sm"
-                    colorScheme="green"
-                    variant="outline"
-                    w="full"
-                    onClick={() => {
-                      // Pass full document object with ID from URL
-                      console.log("Approve document:", { ...document, id });
-                    }}
-                  >
-                    Approve
-                  </Button>
-                  <Button
-                    leftIcon={<FiXCircle />}
-                    size="sm"
-                    colorScheme="red"
-                    variant="outline"
-                    w="full"
-                    onClick={() => {
-                      // Pass full document object with ID from URL
-                      console.log("Reject document:", { ...document, id });
-                    }}
-                  >
-                    Reject
-                  </Button>
-                </VStack>
-              </CardBody>
-            </Card>
-
-            {/* File/Folder Specific Details */}
-            {document?.type === "file" && (
-              <Card gridColumn={{ base: "1", lg: "1 / 13" }}>
-                <CardBody>
-                  <Text fontWeight="semibold" mb={4}>
-                    File Details
-                  </Text>
-                  <VStack align="stretch" spacing={3}>
                     {document?.metadata?.filename ? (
                       <Box>
                         <Text fontSize="sm" color="gray.600">
@@ -768,13 +609,14 @@ const DocumentDetail = () => {
                         ⚠️ Missing filename metadata
                       </Text>
                     )}
-                    {document?.metadata?.version && (
+
+                    {document?.metadata?.size && (
                       <Box>
                         <Text fontSize="sm" color="gray.600">
-                          Version
+                          File Size
                         </Text>
-                        <Text fontSize="sm" mt={1}>
-                          {document.metadata.version}
+                        <Text fontSize="sm" mt={2}>
+                          {formatFileSize(document.metadata.size)}
                         </Text>
                       </Box>
                     )}
@@ -784,7 +626,7 @@ const DocumentDetail = () => {
             )}
 
             {document?.type === "folder" && (
-              <Card gridColumn={{ base: "1", lg: "1 / 13" }}>
+              <Card>
                 <CardBody>
                   <Text fontWeight="semibold" mb={4}>
                     Folder Settings
@@ -806,9 +648,107 @@ const DocumentDetail = () => {
                 </CardBody>
               </Card>
             )}
+          </Stack>
+          <Stack spacing={4} flex={1}>
+            {/* Version Control & Approval Status Combined - Spans 4 columns, 2 rows */}
+            {["file"].includes(document?.type) &&
+              document?.metadata?.fileType?.requiresApproval &&
+              document?.metadata?.fileType?.trackVersioning && (
+                <Card
+                  gridColumn={{ base: "1", lg: "9 / 13" }}
+                  gridRow={{ base: "auto", lg: "1 / 3" }}
+                >
+                  <CardBody>
+                    <Text fontWeight="semibold" mb={4}>
+                      Version Control
+                    </Text>
+                    <VStack spacing={3} align="stretch" mb={6}>
+                      <HStack justify="space-between">
+                        <HStack spacing={2}>
+                          <Icon as={FiLock} color="gray.500" />
+                          <Text fontSize="sm">Status</Text>
+                        </HStack>
+                        <Badge colorScheme="green">Available</Badge>
+                      </HStack>
+                      <Button
+                        leftIcon={<FiUnlock />}
+                        size="sm"
+                        colorScheme="orange"
+                        variant="outline"
+                        w="full"
+                        onClick={() => {
+                          console.log("Check Out document:", {
+                            ...document,
+                            id,
+                          });
+                        }}
+                      >
+                        Check Out
+                      </Button>
+                      <Button
+                        leftIcon={<FiUpload />}
+                        size="sm"
+                        colorScheme="green"
+                        variant="outline"
+                        w="full"
+                        isDisabled
+                        onClick={() => {
+                          console.log("Check In document:", {
+                            ...document,
+                            id,
+                          });
+                        }}
+                      >
+                        Check In
+                      </Button>
+                    </VStack>
+
+                    <Divider mb={4} />
+
+                    <Text fontWeight="semibold" mb={4}>
+                      Approval Status
+                    </Text>
+                    <VStack spacing={3} align="stretch">
+                      <HStack justify="space-between">
+                        <HStack spacing={2}>
+                          <Icon as={FiClock} color="orange.500" />
+                          <Text fontSize="sm">Awaiting review</Text>
+                        </HStack>
+                        <Badge colorScheme="yellow">Pending</Badge>
+                      </HStack>
+                      <Button
+                        leftIcon={<FiCheckCircle />}
+                        size="sm"
+                        colorScheme="green"
+                        variant="outline"
+                        w="full"
+                        onClick={() => {
+                          // Pass full document object with ID from URL
+                          console.log("Approve document:", { ...document, id });
+                        }}
+                      >
+                        Approve
+                      </Button>
+                      <Button
+                        leftIcon={<FiXCircle />}
+                        size="sm"
+                        colorScheme="red"
+                        variant="outline"
+                        w="full"
+                        onClick={() => {
+                          // Pass full document object with ID from URL
+                          console.log("Reject document:", { ...document, id });
+                        }}
+                      >
+                        Reject
+                      </Button>
+                    </VStack>
+                  </CardBody>
+                </Card>
+              )}
 
             {document?.type === "auditSchedule" && (
-              <Card gridColumn={{ base: "1", lg: "1 / 13" }}>
+              <Card>
                 <CardBody>
                   <Text fontWeight="semibold" mb={4}>
                     Audit Details
@@ -856,7 +796,7 @@ const DocumentDetail = () => {
             )}
 
             {document?.type === "formTemplate" && (
-              <Card gridColumn={{ base: "1", lg: "1 / 13" }}>
+              <Card>
                 <CardBody>
                   <Flex justify="space-between" align="center" mb={4}>
                     <Text fontWeight="semibold">
@@ -922,93 +862,83 @@ const DocumentDetail = () => {
                 </CardBody>
               </Card>
             )}
-
-            {/* Privacy & Permissions */}
-            <Card gridColumn={{ base: "1", lg: "1 / 13" }}>
-              <CardBody>
-                <Text fontWeight="semibold" mb={4}>
-                  Permission Overrides
-                </Text>
-                <SimpleGrid columns={{ base: 1, md: 2 }} spacing={4}>
-                  <Box>
-                    <Text fontSize="sm" color="gray.600" fontWeight="medium">
-                      Read Only
-                    </Text>
-                    <Badge
-                      mt={2}
-                      colorScheme={
-                        document.permissionOverrides?.readOnly
-                          ? "orange"
-                          : "gray"
-                      }
-                    >
-                      {document.permissionOverrides?.readOnly
-                        ? "Read Only"
-                        : "Can Edit"}
-                    </Badge>
-                  </Box>
-
-                  <Box>
-                    <Text fontSize="sm" color="gray.600" fontWeight="medium">
-                      Restricted
-                    </Text>
-                    <Badge
-                      mt={2}
-                      colorScheme={
-                        document.permissionOverrides?.restricted
-                          ? "red"
-                          : "gray"
-                      }
-                    >
-                      {document.permissionOverrides?.restricted
-                        ? "Restricted"
-                        : "Open"}
-                    </Badge>
-                  </Box>
-                </SimpleGrid>
-              </CardBody>
-            </Card>
-          </SimpleGrid>
-        </Container>
+          </Stack>
+        </Flex>
       </Box>
 
       {/* Quick Actions in PageFooter */}
       <PageFooter>
-        {(document?.type === "file" && document?.metadata?.key) ||
-        document?.type === "formTemplate" ? (
-          <HStack spacing={3} justify="flex-end" w="full">
-            {document?.type === "formTemplate" && (
-              <Button
-                colorScheme="brandPrimary"
-                size="md"
-                onClick={() => navigate(`/documents/form/${id}`)}
-                leftIcon={<FiEdit />}
+        <HStack spacing={3} w="full">
+          <Menu>
+            <MenuButton
+              as={Button}
+              leftIcon={<FiMoreVertical />}
+              variant="ghost"
+            >
+              More Options
+            </MenuButton>
+            <MenuList>
+              <MenuItem icon={<FiMove />} onClick={onMoveOpen}>
+                Move{" "}
+                {document?.type === "auditSchedule"
+                  ? "Audit Schedule"
+                  : document?.type === "formTemplate"
+                    ? "Form Template"
+                    : document?.type
+                      ? document?.type.charAt(0).toUpperCase() +
+                        document?.type.slice(1)
+                      : "Unknown"}
+              </MenuItem>
+              <Divider />
+              <MenuItem
+                icon={<FiTrash2 />}
+                onClick={onDeleteOpen}
+                color={errorColor}
               >
-                Response
-              </Button>
-            )}
-            {document?.type === "file" && document?.metadata?.key && (
-              <>
-                <Tooltip label="Download this file">
-                  <Box>
-                    <DownloadButton
-                      document={document}
-                      size="md"
-                      isDisabled={!isValid}
-                    />
-                  </Box>
-                </Tooltip>
+                Delete{" "}
+                {document?.type === "auditSchedule"
+                  ? "Audit Schedule"
+                  : document?.type === "formTemplate"
+                    ? "Form Template"
+                    : document?.type
+                      ? document?.type.charAt(0).toUpperCase() +
+                        document?.type.slice(1)
+                      : "Unknown"}
+              </MenuItem>
+            </MenuList>
+          </Menu>
+          <Spacer />
+          {document?.type === "formTemplate" && (
+            <Button
+              colorScheme="brandPrimary"
+              size="md"
+              onClick={() => navigate(`/documents/form/${id}`)}
+              leftIcon={<FiEdit />}
+            >
+              Response
+            </Button>
+          )}
+          {document?.type === "file" && document?.metadata?.key && (
+            <>
+              <Tooltip label="Download this file">
                 <Box>
-                  <PreviewButton
-                    document={{ ...document, id }}
+                  <DownloadButton
+                    document={document}
                     size="md"
                     isDisabled={!isValid}
                   />
                 </Box>
-              </>
-            )}
-          </HStack>
-        ) : undefined}
+              </Tooltip>
+              <Box>
+                <PreviewButton
+                  document={{ ...document, id }}
+                  size="md"
+                  isDisabled={!isValid}
+                />
+              </Box>
+            </>
+          )}
+        </HStack>
       </PageFooter>
 
       {/* Modals - All receive full document object with ID from URL */}
