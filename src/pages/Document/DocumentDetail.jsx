@@ -105,7 +105,6 @@ const DocumentDetail = () => {
     onClose: onMetadataClose,
   } = useDisclosure();
 
-  // Fetch document using useRef to prevent duplicates
   useEffect(() => {
     const loadDocument = async () => {
       if (currentIdRef.current === id && fetchedRef.current) {
@@ -133,7 +132,6 @@ const DocumentDetail = () => {
     }
 
     return () => {
-      // Reset fetch ref on id change
       if (currentIdRef.current !== id) {
         fetchedRef.current = false;
       }
@@ -157,29 +155,24 @@ const DocumentDetail = () => {
 
   const isValid = isDocumentValid();
 
-  // Handle inline title update on blur
   const handleTitleBlur = async (newTitle) => {
     const trimmedTitle = newTitle.trim();
 
-    // If title is empty, revert and notify
     if (!trimmedTitle) {
       toast.error("Validation Error", {
         description: "Title cannot be empty. Reverted to previous value.",
         duration: 3000,
       });
-      // Force re-render to show original value
       setDocument((prev) => ({ ...prev }));
       return;
     }
 
-    // Only update if value actually changed
     if (trimmedTitle === document?.title) {
       return;
     }
 
     try {
       const updatedDoc = await updateDocument(id, { title: trimmedTitle });
-      // Update local state with response data (includes updatedAt)
       setDocument((prev) => ({ ...prev, ...updatedDoc }));
       toast.success("Title Updated", {
         description: "Document title has been updated",
@@ -190,22 +183,17 @@ const DocumentDetail = () => {
         description: "Failed to update title",
         duration: 3000,
       });
-      // Revert on error
       setDocument((prev) => ({ ...prev }));
     }
   };
 
-  // Handle inline description update on blur
   const handleDescriptionBlur = async (newDescription) => {
-    // Allow empty descriptions
-    // Only update if value actually changed
     if (newDescription === document?.description) {
       return;
     }
 
     try {
       const updatedDoc = await updateDocument(id, { description: newDescription });
-      // Update local state with response data (includes updatedAt)
       setDocument((prev) => ({ ...prev, ...updatedDoc }));
       toast.success("Description Updated", {
         description: "Document description has been updated",
@@ -216,16 +204,12 @@ const DocumentDetail = () => {
         description: "Failed to update description",
         duration: 3000,
       });
-      // Revert on error
       setDocument((prev) => ({ ...prev }));
     }
   };
 
-  // Handle document updates from modals
   const handleDocumentUpdate = (updatedDoc) => {
-    // Validate updatedDoc before merging
     if (updatedDoc && typeof updatedDoc === 'object') {
-      // Merge the updated document data into the current state
       setDocument((prev) => ({ ...prev, ...updatedDoc }));
     }
   };

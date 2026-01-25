@@ -57,7 +57,6 @@ const Documents = () => {
   const fetchedRef = useRef(false);
   const currentIdRef = useRef(null);
 
-  // Fetch documents when currentFolderId changes (on /documents page)
   useEffect(() => {
     fetchDocuments(currentFolderId);
   }, [currentFolderId, fetchDocuments]);
@@ -248,7 +247,6 @@ const Documents = () => {
             onDocumentClick={(doc) => {
               const result = handleDocumentClick(doc);
               if (result.isDoubleClick) {
-                // Navigate on double-click
                 if (doc.type === "folder" || doc.type === "auditSchedule") {
                   navigate(`/documents/folders/${doc.id}`);
                 } else if (doc.type === "file" || doc.type === "formTemplate") {
@@ -278,7 +276,6 @@ const Documents = () => {
             onDocumentClick={(doc) => {
               const result = handleDocumentClick(doc);
               if (result.isDoubleClick) {
-                // Navigate on double-click
                 if (doc.type === "folder" || doc.type === "auditSchedule") {
                   navigate(`/documents/folders/${doc.id}`);
                 } else if (doc.type === "file" || doc.type === "formTemplate") {

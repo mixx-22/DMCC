@@ -49,11 +49,9 @@ const Layout = () => {
   const [recentFolders, setRecentFolders] = useState([]);
   const [recentFiles, setRecentFiles] = useState([]);
 
-  // Refs to prevent multiple fetches
   const foldersLoadedRef = useRef(false);
   const filesLoadedRef = useRef(false);
 
-  // Responsive limits for items
   const folderLimit = useBreakpointValue({ base: 4, sm: 6, lg: 8 });
   const fileLimit = useBreakpointValue({ base: 4, sm: 6, lg: 8 });
 
@@ -63,7 +61,6 @@ const Layout = () => {
 
   const fetched = useRef();
 
-  // Generate time-based greeting
   useEffect(() => {
     if (fetched.current) return;
     fetched.current = true;
@@ -83,21 +80,17 @@ const Layout = () => {
     updateStatsByTeam("all");
   }, []);
 
-  // Get current date formatted
   const currentDate = format(new Date(), "EEEE, MMMM d");
 
-  // Filter documents by team
   const filteredDocuments = useMemo(() => {
     if (selectedTeam === "all") {
       return documents;
     }
-    // Filter by team - documents may have team or department property
     return documents.filter(
       (doc) => doc.team === selectedTeam || doc.department === selectedTeam,
     );
   }, [documents, selectedTeam]);
 
-  // Calculate metrics
   useEffect(() => {
     const pending = filteredDocuments.filter(
       (doc) => doc.status === "pending",
@@ -106,14 +99,12 @@ const Layout = () => {
     setTotalDocuments(filteredDocuments.length);
   }, [filteredDocuments]);
 
-  // Fetch recent folders from API - only once
   useEffect(() => {
     const fetchRecentFolders = async () => {
       if (!folderLimit || foldersLoadedRef.current) return;
       foldersLoadedRef.current = true;
 
       try {
-        // GET /recent-documents?type=folder&page=1&limit=n
         const response = await apiService.request("/recent-documents", {
           method: "GET",
           params: {
@@ -127,7 +118,6 @@ const Layout = () => {
         setRecentFolders(Array.isArray(folders) ? folders : []);
       } catch (error) {
         console.error("Failed to fetch recent folders:", error);
-        // Fallback to mock data on error
         const mockFolders = [
           {
             id: 1,
@@ -193,14 +183,12 @@ const Layout = () => {
     fetchRecentFolders();
   }, [folderLimit]);
 
-  // Fetch recent files from API - only once
   useEffect(() => {
     const fetchRecentFiles = async () => {
       if (!fileLimit || filesLoadedRef.current) return;
       filesLoadedRef.current = true;
 
       try {
-        // GET /recent-documents?type=file&page=1&limit=n
         const response = await apiService.request("/recent-documents", {
           method: "GET",
           params: {
@@ -214,7 +202,6 @@ const Layout = () => {
         setRecentFiles(Array.isArray(files) ? files : []);
       } catch (error) {
         console.error("Failed to fetch recent files:", error);
-        // Fallback to filtered documents on error
         const mockFiles = filteredDocuments.slice(0, fileLimit).map((doc) => ({
           ...doc,
           id: doc.id || doc._id,
@@ -228,16 +215,12 @@ const Layout = () => {
     fetchRecentFiles();
   }, [fileLimit, filteredDocuments]);
 
-  // Sync updates when selectedDocument changes
-  // This runs when: 1) a document is selected to view, or 2) a document is updated in the drawer
-  // Updates the matching document in recentFolders or recentFiles arrays
   useEffect(() => {
     if (!selectedDocument) return;
 
     const docId = selectedDocument.id || selectedDocument._id;
     if (!docId) return;
 
-    // Update recentFolders if the selected document is a folder
     setRecentFolders((prevFolders) =>
       prevFolders.map((folder) => {
         const folderId = folder.id || folder._id;
@@ -245,7 +228,6 @@ const Layout = () => {
       }),
     );
 
-    // Update recentFiles if the selected document is a file
     setRecentFiles((prevFiles) =>
       prevFiles.map((file) => {
         const fileId = file.id || file._id;
@@ -254,11 +236,8 @@ const Layout = () => {
     );
   }, [selectedDocument]);
 
-  // Get user teams from the current user object
   const userTeams = useMemo(() => {
-    // Check if user has teams property and it's an array
     if (!currentUser?.team || !Array.isArray(currentUser.team)) {
-      // Fallback to empty array if no teams
       return [];
     }
     return currentUser.team;
@@ -293,7 +272,6 @@ const Layout = () => {
   return (
     <>
       <PageHeader>
-        {/* Empty Box needed to enable header visibility - PageHeader checks for children to show/hide header */}
         <Box />
       </PageHeader>
       <MotionBox
@@ -310,7 +288,6 @@ const Layout = () => {
           alignItems="center"
           justifyContent="center"
         >
-          {/* Greeting Section */}
           <Center flexDir="column">
             <Text
               textAlign="center"
@@ -331,7 +308,6 @@ const Layout = () => {
             </Text>
           </Center>
 
-          {/* Team Filter and Metrics in Button Group Style */}
           <Box>
             <ButtonGroup isAttached variant="teamStats" size="sm">
               <Menu>
@@ -365,13 +341,11 @@ const Layout = () => {
             </ButtonGroup>
           </Box>
 
-          {/* Search Bar */}
           <Box w="full" maxW="md">
             <SearchInput placeholder="Search documents..." />
           </Box>
         </Stack>
 
-        {/* Recent Folders */}
         <Box mb={4}>
           <Text fontSize="xl" fontWeight="500" mb={4} color={headingColor}>
             Recent Folders
@@ -383,7 +357,6 @@ const Layout = () => {
             onDocumentClick={(doc) => {
               const result = handleDocumentClick(doc);
               if (result.isDoubleClick) {
-                // Navigate to folder on double-click
                 if (doc.type === "folder" || doc.type === "auditSchedule") {
                   navigate(`/documents/folders/${doc.id}`);
                 }
@@ -392,7 +365,6 @@ const Layout = () => {
           />
         </Box>
 
-        {/* Recent Documents */}
         <Box>
           <HStack alignItems="center" mb={4}>
             <Text fontSize="xl" fontWeight="500" color={headingColor}>
