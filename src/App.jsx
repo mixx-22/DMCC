@@ -35,6 +35,7 @@ import Settings from "./pages/Settings";
 import { useApp } from "./context/_useContext";
 import { UserProfileProvider } from "./context/UserProfileContext";
 import FormTemplateBuilder from "./pages/FormTemplateBuilder";
+import FormResponse from "./pages/Document/FormResponse";
 import QualityDocuments from "./pages/QualityDocuments";
 
 const ProtectedRoute = ({ children }) => {
@@ -93,6 +94,10 @@ function App() {
                     <Route
                       path="/quality-documents"
                       element={<QualityDocuments />}
+                    />
+                    <Route
+                      path="/documents/form/:id"
+                      element={<FormResponse />}
                     />
                     <Route path="/search" element={<Search />} />
                     <Route

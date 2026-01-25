@@ -916,6 +916,16 @@ const DocumentDetail = () => {
             </MenuList>
           </Menu>
           <Spacer />
+          {document?.type === "formTemplate" && (
+            <Button
+              colorScheme="brandPrimary"
+              size="md"
+              onClick={() => navigate(`/documents/form/${id}`)}
+              leftIcon={<FiEdit />}
+            >
+              Response
+            </Button>
+          )}
           {document?.type === "file" && document?.metadata?.key && (
             <>
               <Tooltip label="Download this file">
