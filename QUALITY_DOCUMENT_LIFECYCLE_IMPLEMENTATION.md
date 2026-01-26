@@ -61,10 +61,48 @@ UI component that displays:
 
 ### 3. `/src/components/Document/QualityDocumentActions.jsx`
 UI component that provides:
-- Role-aware action buttons based on workflow mode
+- **All lifecycle action buttons always visible**
+- State-based validation determines which buttons are enabled
+- Disabled buttons show tooltip with validation message
+- Actions: Submit, Approve (Endorse), Reject, Publish, Discard, Check Out
 - Confirmation dialogs for all actions
 - Integration with DocumentsContext lifecycle methods
 - Toast notifications for success/error
+
+## State-to-Action Enforcement
+
+The system enforces strict state-based action availability:
+
+### Uploaded State
+- **State:** `status: -1, checkedOut: 1, requestId: null, mode: null`
+- **Enabled Actions:** Submit only
+- **Disabled Actions:** Approve, Reject, Publish, Discard, Check Out
+
+### Submitted State
+- **State:** `status: 0, checkedOut: 0, requestId: !== null, mode: TEAM`
+- **Enabled Actions:** Approve (Endorse), Reject
+- **Disabled Actions:** Submit, Publish, Discard, Check Out
+
+### Endorsed State
+- **State:** `status: 0, checkedOut: 0, requestId: !== null, mode: CONTROLLER`
+- **Enabled Actions:** Publish only
+- **Disabled Actions:** Submit, Approve, Reject, Discard, Check Out
+
+### Rejected State
+- **State:** `status: -1, checkedOut: 0, requestId: !== null, mode: TEAM`
+- **Enabled Actions:** Discard, Submit
+- **Disabled Actions:** Approve, Reject, Publish, Check Out
+
+### Published State
+- **State:** `status: 2, checkedOut: 0, requestId: null, mode: null`
+- **Enabled Actions:** Check Out only
+- **Disabled Actions:** Submit, Approve, Reject, Publish, Discard
+
+### Checkout from Published
+When Check Out is executed on a published document:
+- Transitions to: `status: -1, checkedOut: 1, requestId: null, mode: null`
+- Document becomes editable
+- Workflow can restart completely
 
 ## Files Modified
 
@@ -75,17 +113,21 @@ Added lifecycle API methods:
 - `endorseDocumentRequest(requestId)` - PUT /documents/request/:id?type=endorse&mode=CONTROLLER
 - `rejectDocumentRequest(requestId)` - PUT /documents/request/:id?type=reject
 - `publishDocument(requestId)` - PUT /documents/request/:id?type=publish
+- `checkoutDocument(documentId)` - PUT /documents/:id/checkout
+- `rejectDocumentRequest(requestId)` - PUT /documents/request/:id?type=reject
+- `publishDocument(requestId)` - PUT /documents/request/:id?type=publish
 
 ### 2. `/src/context/DocumentsContext.jsx`
 Enhanced with:
 - Import of quality document utilities
 - Automatic lifecycle property initialization for new quality documents
-- Five new lifecycle methods:
+- Six lifecycle methods:
   - `submitDocumentForReview()` - Submit document for review
   - `discardDocumentRequest()` - Discard active request
   - `endorseDocumentForPublish()` - Endorse for publish
   - `rejectDocumentRequest()` - Reject document
   - `publishDocument()` - Publish document
+  - `checkoutDocument()` - Check out published document (restart workflow)
 - All methods include validation and proper state updates
 
 ### 3. `/src/pages/Document/DocumentDetail.jsx`
@@ -95,8 +137,9 @@ Integrated lifecycle UI:
 - Calculated `documentCanBeEdited` using `canEditDocument()`
 - Disabled title/description editables when document is checked in
 - Added QualityDocumentBadges next to existing DocumentBadges
-- Added QualityDocumentActions section for lifecycle buttons
-- Replaced old placeholder "Version Control & Approval Status" card with new "Lifecycle Status" card
+- Added separate "Lifecycle Status" card showing current state
+- Added "Version Control" card containing QualityDocumentActions buttons
+- Replaced old placeholder controls with state-driven validation
 
 ### 4. `/src/components/Document/modals/EditDocumentModal.jsx`
 Added lifecycle protection:

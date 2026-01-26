@@ -148,6 +148,7 @@ const QualityDocumentActions = ({ document, onUpdate }) => {
         return "";
     }
   };
+  
   // Validate all possible actions
   const submitValidation = validateTransition(document, "submit");
   const discardValidation = validateTransition(document, "discard");
@@ -155,6 +156,20 @@ const QualityDocumentActions = ({ document, onUpdate }) => {
   const rejectValidation = validateTransition(document, "reject");
   const publishValidation = validateTransition(document, "publish");
   const checkoutValidation = validateTransition(document, "checkout");
+
+  // Check if at least one action is valid
+  const hasAnyValidAction = 
+    submitValidation.valid ||
+    discardValidation.valid ||
+    endorseValidation.valid ||
+    rejectValidation.valid ||
+    publishValidation.valid ||
+    checkoutValidation.valid;
+
+  // Don't render anything if no actions are valid
+  if (!hasAnyValidAction) {
+    return null;
+  }
 
   return (
     <>
