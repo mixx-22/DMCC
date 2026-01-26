@@ -71,10 +71,7 @@ import { useDocuments, useUser } from "../../context/_useContext";
 import { toast } from "sonner";
 import DocumentBadges from "./Badges";
 import moment from "moment";
-import {
-  isQualityDocument,
-  canEditDocument,
-} from "../../utils/qualityDocumentUtils";
+import { canEditDocument } from "../../utils/qualityDocumentUtils";
 
 const DocumentDetail = () => {
   const { id } = useParams();
@@ -657,17 +654,6 @@ const DocumentDetail = () => {
                   </HStack>
                 </Flex>
 
-                {/* Quality Document Actions */}
-                {isQualityDocument(document) && (
-                  <>
-                    <QualityDocumentActions
-                      document={document}
-                      onUpdate={handleQualityDocumentUpdate}
-                    />
-                    <Divider my={4} />
-                  </>
-                )}
-
                 <Divider mb={4} />
 
                 <Editable
@@ -1049,6 +1035,22 @@ const DocumentDetail = () => {
                         </Badge>
                       </HStack>
                     </VStack>
+                  </CardBody>
+                </Card>
+              )}
+
+            {/* Version Control - Quality Documents */}
+            {["file"].includes(document?.type) &&
+              document?.metadata?.fileType?.isQualityDocument && (
+                <Card>
+                  <CardBody>
+                    <Text fontWeight="semibold" mb={4}>
+                      Version Control
+                    </Text>
+                    <QualityDocumentActions
+                      document={document}
+                      onUpdate={handleQualityDocumentUpdate}
+                    />
                   </CardBody>
                 </Card>
               )}
