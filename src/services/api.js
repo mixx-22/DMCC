@@ -275,6 +275,118 @@ export const apiService = {
     // Response is the file itself
     return await response.blob();
   },
+
+  /**
+   * Quality Document Lifecycle API Methods
+   */
+
+  /**
+   * Submit a document for review (creates a new request)
+   * @param {string} documentId - The document ID
+   * @returns {Promise<{requestId: string}>}
+   */
+  async submitDocumentRequest(documentId) {
+    if (!USE_API) {
+      // Mock mode
+      return {
+        success: true,
+        data: {
+          requestId: `req-${Date.now()}`,
+        },
+      };
+    }
+
+    const response = await this.request("/documents/request", {
+      method: "POST",
+      body: JSON.stringify({ documentId }),
+    });
+
+    return response;
+  },
+
+  /**
+   * Discard a document request
+   * @param {string} requestId - The request ID
+   * @returns {Promise<Object>}
+   */
+  async discardDocumentRequest(requestId) {
+    if (!USE_API) {
+      // Mock mode
+      return { success: true };
+    }
+
+    const response = await this.request(
+      `/documents/request/${requestId}?type=discard`,
+      {
+        method: "PUT",
+      },
+    );
+
+    return response;
+  },
+
+  /**
+   * Endorse a document request for publish
+   * @param {string} requestId - The request ID
+   * @returns {Promise<Object>}
+   */
+  async endorseDocumentRequest(requestId) {
+    if (!USE_API) {
+      // Mock mode
+      return { success: true };
+    }
+
+    const response = await this.request(
+      `/documents/request/${requestId}?type=endorse&mode=CONTROLLER`,
+      {
+        method: "PUT",
+      },
+    );
+
+    return response;
+  },
+
+  /**
+   * Reject a document request
+   * @param {string} requestId - The request ID
+   * @returns {Promise<Object>}
+   */
+  async rejectDocumentRequest(requestId) {
+    if (!USE_API) {
+      // Mock mode
+      return { success: true };
+    }
+
+    const response = await this.request(
+      `/documents/request/${requestId}?type=reject`,
+      {
+        method: "PUT",
+      },
+    );
+
+    return response;
+  },
+
+  /**
+   * Publish a document
+   * @param {string} requestId - The request ID
+   * @returns {Promise<Object>}
+   */
+  async publishDocument(requestId) {
+    if (!USE_API) {
+      // Mock mode
+      return { success: true };
+    }
+
+    const response = await this.request(
+      `/documents/request/${requestId}?type=publish`,
+      {
+        method: "PUT",
+      },
+    );
+
+    return response;
+  },
 };
 
 export default apiService;

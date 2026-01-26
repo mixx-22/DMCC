@@ -3,6 +3,12 @@ import apiService from "../services/api";
 import { DocumentsContext } from "./_contexts";
 import { useUser } from "./_useContext";
 import { uploadFileToServer } from "../utils/fileUpload";
+import {
+  isQualityDocument,
+  getInitialLifecycleProps,
+  validateTransition,
+  getExpectedState,
+} from "../utils/qualityDocumentUtils";
 
 const DOCUMENTS_ENDPOINT = "/documents";
 const USE_API = import.meta.env.VITE_USE_API !== "false";
@@ -163,6 +169,12 @@ export const DocumentsProvider = ({ children }) => {
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       };
+      
+      // Add lifecycle properties for quality documents
+      if (isQualityDocument(docWithId)) {
+        Object.assign(docWithId, getInitialLifecycleProps());
+      }
+      
       const saved = localStorage.getItem("documents");
       const docs = saved ? JSON.parse(saved) : [];
       const updated = [...docs, docWithId];
@@ -189,6 +201,11 @@ export const DocumentsProvider = ({ children }) => {
           };
         } else {
           throw new Error("File is required for document type 'file'");
+        }
+        
+        // Add lifecycle properties for quality documents
+        if (isQualityDocument(newDocument)) {
+          Object.assign(newDocument, getInitialLifecycleProps());
         }
 
         response = await apiService.request(DOCUMENTS_ENDPOINT, {
@@ -416,6 +433,162 @@ export const DocumentsProvider = ({ children }) => {
     return documents.filter(canViewDocument);
   };
 
+  // Quality Document Lifecycle Methods
+
+  /**
+   * Submit a quality document for review
+   * @param {Object} document - The document to submit
+   * @returns {Promise<Object>} - The updated document
+   */
+  const submitDocumentForReview = async (document) => {
+    const validation = validateTransition(document, "submit");
+    if (!validation.valid) {
+      throw new Error(validation.message);
+    }
+
+    try {
+      const response = await apiService.submitDocumentRequest(
+        document.id || document._id,
+      );
+
+      if (response.success || response.data) {
+        const requestId = response.data?.requestId || response.requestId;
+        const expectedState = getExpectedState("submit", requestId);
+
+        // Update the document with new lifecycle state
+        const updatedDoc = await updateDocument(document, expectedState);
+        return updatedDoc;
+      } else {
+        throw new Error(response.message || "Failed to submit document");
+      }
+    } catch (err) {
+      console.error("Failed to submit document:", err);
+      throw new Error(err.message || "Failed to submit document");
+    }
+  };
+
+  /**
+   * Discard a quality document request
+   * @param {Object} document - The document with request to discard
+   * @returns {Promise<Object>} - The updated document
+   */
+  const discardDocumentRequest = async (document) => {
+    const validation = validateTransition(document, "discard");
+    if (!validation.valid) {
+      throw new Error(validation.message);
+    }
+
+    try {
+      const response = await apiService.discardDocumentRequest(
+        document.requestId,
+      );
+
+      if (response.success !== false) {
+        const expectedState = getExpectedState("discard");
+
+        // Update the document with new lifecycle state
+        const updatedDoc = await updateDocument(document, expectedState);
+        return updatedDoc;
+      } else {
+        throw new Error(response.message || "Failed to discard request");
+      }
+    } catch (err) {
+      console.error("Failed to discard request:", err);
+      throw new Error(err.message || "Failed to discard request");
+    }
+  };
+
+  /**
+   * Endorse a quality document for publish
+   * @param {Object} document - The document to endorse
+   * @returns {Promise<Object>} - The updated document
+   */
+  const endorseDocumentForPublish = async (document) => {
+    const validation = validateTransition(document, "endorse");
+    if (!validation.valid) {
+      throw new Error(validation.message);
+    }
+
+    try {
+      const response = await apiService.endorseDocumentRequest(
+        document.requestId,
+      );
+
+      if (response.success !== false) {
+        const expectedState = getExpectedState("endorse", document.requestId);
+
+        // Update the document with new lifecycle state
+        const updatedDoc = await updateDocument(document, expectedState);
+        return updatedDoc;
+      } else {
+        throw new Error(response.message || "Failed to endorse document");
+      }
+    } catch (err) {
+      console.error("Failed to endorse document:", err);
+      throw new Error(err.message || "Failed to endorse document");
+    }
+  };
+
+  /**
+   * Reject a quality document request
+   * @param {Object} document - The document to reject
+   * @returns {Promise<Object>} - The updated document
+   */
+  const rejectDocumentRequest = async (document) => {
+    const validation = validateTransition(document, "reject");
+    if (!validation.valid) {
+      throw new Error(validation.message);
+    }
+
+    try {
+      const response = await apiService.rejectDocumentRequest(
+        document.requestId,
+      );
+
+      if (response.success !== false) {
+        const expectedState = getExpectedState("reject", document.requestId);
+
+        // Update the document with new lifecycle state
+        const updatedDoc = await updateDocument(document, expectedState);
+        return updatedDoc;
+      } else {
+        throw new Error(response.message || "Failed to reject document");
+      }
+    } catch (err) {
+      console.error("Failed to reject document:", err);
+      throw new Error(err.message || "Failed to reject document");
+    }
+  };
+
+  /**
+   * Publish a quality document
+   * @param {Object} document - The document to publish
+   * @returns {Promise<Object>} - The updated document
+   */
+  const publishDocument = async (document) => {
+    const validation = validateTransition(document, "publish");
+    if (!validation.valid) {
+      throw new Error(validation.message);
+    }
+
+    try {
+      const response = await apiService.publishDocument(document.requestId);
+
+      if (response.success !== false) {
+        const expectedState = getExpectedState("publish");
+
+        // Update the document with new lifecycle state
+        const updatedDoc = await updateDocument(document, expectedState);
+        return updatedDoc;
+      } else {
+        throw new Error(response.message || "Failed to publish document");
+      }
+    } catch (err) {
+      console.error("Failed to publish document:", err);
+      throw new Error(err.message || "Failed to publish document");
+    }
+  };
+
   const value = {
     folder,
     documents,
@@ -431,6 +604,12 @@ export const DocumentsProvider = ({ children }) => {
     getVisibleDocuments,
     fetchDocuments,
     fetchDocumentById,
+    // Quality Document Lifecycle Methods
+    submitDocumentForReview,
+    discardDocumentRequest,
+    endorseDocumentForPublish,
+    rejectDocumentRequest,
+    publishDocument,
   };
 
   return (

@@ -70,10 +70,16 @@ import PreviewButton from "../../components/Document/PreviewButton";
 import Timestamp from "../../components/Timestamp";
 import Breadcrumbs from "../../components/Document/Breadcrumbs";
 import PrivacyDisplay from "../../components/Document/PrivacyDisplay";
+import QualityDocumentBadges from "../../components/Document/QualityDocumentBadges";
+import QualityDocumentActions from "../../components/Document/QualityDocumentActions";
 import { useDocuments, useUser } from "../../context/_useContext";
 import { toast } from "sonner";
 import DocumentBadges from "./Badges";
 import moment from "moment";
+import {
+  isQualityDocument,
+  canEditDocument,
+} from "../../utils/qualityDocumentUtils";
 
 const DocumentDetail = () => {
   const { id } = useParams();
@@ -187,6 +193,14 @@ const DocumentDetail = () => {
   };
 
   const isValid = isDocumentValid();
+
+  // Handler for quality document lifecycle updates
+  const handleQualityDocumentUpdate = (updatedDoc) => {
+    setDocument(updatedDoc);
+  };
+
+  // Check if document can be edited (considering quality document lifecycle)
+  const documentCanBeEdited = canEditDocument(document);
 
   const handleTitleBlur = async (newTitle) => {
     const trimmedTitle = newTitle.trim();
@@ -608,16 +622,17 @@ const DocumentDetail = () => {
                         fontWeight="bold"
                         color={isValid ? "inherit" : "red.500"}
                         w="full"
-                        isPreviewFocusable={true}
+                        isPreviewFocusable={documentCanBeEdited}
                         submitOnBlur={true}
                         selectAllOnFocus={false}
+                        isDisabled={!documentCanBeEdited}
                       >
                         <EditablePreview
                           w="full"
                           borderRadius="md"
                           _hover={{
-                            background: "gray.100",
-                            cursor: "pointer",
+                            background: documentCanBeEdited ? "gray.100" : undefined,
+                            cursor: documentCanBeEdited ? "pointer" : "default",
                           }}
                         />
                         <EditableTextarea
@@ -639,10 +654,24 @@ const DocumentDetail = () => {
                           }}
                         />
                       </Editable>
-                      <DocumentBadges data={document} {...{ isValid }} />
+                      <HStack spacing={2}>
+                        <DocumentBadges data={document} {...{ isValid }} />
+                        <QualityDocumentBadges document={document} />
+                      </HStack>
                     </VStack>
                   </HStack>
                 </Flex>
+
+                {/* Quality Document Actions */}
+                {isQualityDocument(document) && (
+                  <>
+                    <QualityDocumentActions
+                      document={document}
+                      onUpdate={handleQualityDocumentUpdate}
+                    />
+                    <Divider my={4} />
+                  </>
+                )}
 
                 <Divider mb={4} />
 
@@ -652,9 +681,10 @@ const DocumentDetail = () => {
                   defaultValue={document?.description || ""}
                   onSubmit={handleDescriptionBlur}
                   placeholder="Add a description..."
-                  isPreviewFocusable={true}
+                  isPreviewFocusable={documentCanBeEdited}
                   submitOnBlur={true}
                   selectAllOnFocus={false}
+                  isDisabled={!documentCanBeEdited}
                 >
                   <EditablePreview
                     py={2}
@@ -662,8 +692,8 @@ const DocumentDetail = () => {
                     borderRadius="md"
                     color={document?.description ? "gray.700" : "gray.400"}
                     _hover={{
-                      background: "gray.100",
-                      cursor: "pointer",
+                      background: documentCanBeEdited ? "gray.100" : undefined,
+                      cursor: documentCanBeEdited ? "pointer" : "default",
                     }}
                   />
                   <EditableTextarea
