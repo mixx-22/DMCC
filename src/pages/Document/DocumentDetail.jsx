@@ -989,8 +989,7 @@ const DocumentDetail = () => {
           <Stack spacing={4} flex={1}>
             {/* Version Control & Approval Status Combined - Spans 4 columns, 2 rows */}
             {["file"].includes(document?.type) &&
-              document?.metadata?.fileType?.requiresApproval &&
-              document?.metadata?.fileType?.trackVersioning && (
+              document?.metadata?.fileType?.isQualityDocument && (
                 <Card>
                   <CardBody>
                     <Text fontWeight="semibold" mb={4}>

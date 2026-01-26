@@ -166,12 +166,6 @@ const FileTypesList = () => {
                           {fileType.isQualityDocument && (
                             <Badge colorScheme="purple">Quality</Badge>
                           )}
-                          {fileType.requiresApproval && (
-                            <Badge colorScheme="brandPrimary">Approval</Badge>
-                          )}
-                          {fileType.trackVersioning && (
-                            <Badge colorScheme="green">Versioning</Badge>
-                          )}
                           {fileType.isDefault && (
                             <Badge colorScheme="orange">Default</Badge>
                           )}
@@ -179,7 +173,11 @@ const FileTypesList = () => {
                       </Td>
 
                       <Td>
-                        <Timestamp date={fileType.updatedAt} showTime={true} fontSize="sm" />
+                        <Timestamp
+                          date={fileType.updatedAt}
+                          showTime={true}
+                          fontSize="sm"
+                        />
                       </Td>
 
                       <Td>

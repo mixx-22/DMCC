@@ -14,7 +14,6 @@ import {
   Switch,
   FormHelperText,
   HStack,
-  Text,
   useToast,
 } from "@chakra-ui/react";
 import { useState, useEffect } from "react";
@@ -31,8 +30,6 @@ const FileTypeModal = ({ isOpen, onClose, fileType }) => {
   const [formData, setFormData] = useState({
     name: "",
     isQualityDocument: false,
-    requiresApproval: false,
-    trackVersioning: false,
     isDefault: false,
   });
   const [saving, setSaving] = useState(false);
@@ -45,16 +42,12 @@ const FileTypeModal = ({ isOpen, onClose, fileType }) => {
       setFormData({
         name: fileType.name || "",
         isQualityDocument: fileType.isQualityDocument || false,
-        requiresApproval: fileType.requiresApproval || false,
-        trackVersioning: fileType.trackVersioning || false,
         isDefault: fileType.isDefault || false,
       });
     } else {
       setFormData({
         name: "",
         isQualityDocument: false,
-        requiresApproval: false,
-        trackVersioning: false,
         isDefault: false,
       });
     }
@@ -80,13 +73,13 @@ const FileTypeModal = ({ isOpen, onClose, fileType }) => {
       if (isEdit) {
         // Update existing file type
         const fileTypeId = fileType._id || fileType.id;
-        
+
         // Update the row optimistically
         updateItemOptimistically(fileTypeId, {
           ...formData,
           updatedAt: new Date().toISOString(),
         });
-        
+
         if (!USE_API) {
           // Mock update
           setTimeout(() => {
@@ -123,10 +116,10 @@ const FileTypeModal = ({ isOpen, onClose, fileType }) => {
             createdAt: new Date().toISOString(),
             updatedAt: new Date().toISOString(),
           };
-          
+
           // Add to top of current list optimistically
           addItemOptimistically(newFileType);
-          
+
           setTimeout(() => {
             toast({
               title: "File type created successfully",
@@ -145,7 +138,7 @@ const FileTypeModal = ({ isOpen, onClose, fileType }) => {
         });
 
         const newFileType = response.fileType || response.data || response;
-        
+
         // Add to top of current list optimistically
         addItemOptimistically({
           ...newFileType,
@@ -264,40 +257,6 @@ const FileTypeModal = ({ isOpen, onClose, fileType }) => {
                   isChecked={formData.isQualityDocument}
                   onChange={(e) =>
                     handleChange("isQualityDocument", e.target.checked)
-                  }
-                />
-              </HStack>
-            </FormControl>
-
-            <FormControl>
-              <HStack justify="space-between">
-                <VStack align="start" spacing={0}>
-                  <FormLabel mb={0}>Requires Approval</FormLabel>
-                  <FormHelperText mt={0}>
-                    Document requires approval before publishing
-                  </FormHelperText>
-                </VStack>
-                <Switch
-                  isChecked={formData.requiresApproval}
-                  onChange={(e) =>
-                    handleChange("requiresApproval", e.target.checked)
-                  }
-                />
-              </HStack>
-            </FormControl>
-
-            <FormControl>
-              <HStack justify="space-between">
-                <VStack align="start" spacing={0}>
-                  <FormLabel mb={0}>Track Versioning</FormLabel>
-                  <FormHelperText mt={0}>
-                    Enable version history tracking
-                  </FormHelperText>
-                </VStack>
-                <Switch
-                  isChecked={formData.trackVersioning}
-                  onChange={(e) =>
-                    handleChange("trackVersioning", e.target.checked)
                   }
                 />
               </HStack>

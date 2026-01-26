@@ -46,8 +46,6 @@ const FileTypeAsyncSelect = ({
             value: fileType.id || fileType._id,
             label: fileType.name,
             isQualityDocument: fileType.isQualityDocument,
-            requiresApproval: fileType.requiresApproval,
-            trackVersioning: fileType.trackVersioning,
           })),
         );
         return;
@@ -68,8 +66,6 @@ const FileTypeAsyncSelect = ({
             value: fileType.id || fileType._id,
             label: fileType.name,
             isQualityDocument: fileType.isQualityDocument,
-            requiresApproval: fileType.requiresApproval,
-            trackVersioning: fileType.trackVersioning,
           })),
         );
       } catch (error) {
@@ -85,8 +81,6 @@ const FileTypeAsyncSelect = ({
           id: selectedOption.value,
           name: selectedOption.label,
           isQualityDocument: selectedOption.isQualityDocument,
-          requiresApproval: selectedOption.requiresApproval,
-          trackVersioning: selectedOption.trackVersioning,
         }
       : null;
 
@@ -98,8 +92,6 @@ const FileTypeAsyncSelect = ({
         value: value.id,
         label: value.name,
         isQualityDocument: value.isQualityDocument,
-        requiresApproval: value.requiresApproval,
-        trackVersioning: value.trackVersioning,
       }
     : null;
 

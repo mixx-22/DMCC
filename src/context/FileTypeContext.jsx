@@ -11,8 +11,6 @@ const MOCK_FILE_TYPE = {
   _id: "1",
   name: "Quality Manual",
   isQualityDocument: true,
-  requiresApproval: true,
-  trackVersioning: true,
   isDefault: false,
   createdAt: "2024-01-15T10:00:00.000Z",
   updatedAt: "2024-01-15T10:00:00.000Z",
