@@ -51,6 +51,9 @@ const QualityDocumentUploadModal = ({ isOpen, onClose, parentId, path }) => {
   useEffect(() => {
     if (isOpen) {
       fetchFileTypes();
+    } else {
+      // Reset files when modal closes
+      setFiles([]);
     }
   }, [isOpen]);
 
@@ -284,47 +287,138 @@ const QualityDocumentUploadModal = ({ isOpen, onClose, parentId, path }) => {
                 </Text>
               </Center>
             ) : files.length > 0 ? (
-              <Box overflowX="auto">
-                <Table size="sm" variant="simple">
-                  <Thead>
-                    <Tr>
-                      <Th>File Name</Th>
-                      <Th>Size</Th>
-                      <Th width="200px">File Type</Th>
-                      <Th width="60px"></Th>
-                    </Tr>
-                  </Thead>
-                  <Tbody>
-                    {files.map((fileItem) => {
-                      const selectedValue = fileItem.fileType
-                        ? {
-                            value: fileItem.fileType.id,
-                            label: fileItem.fileType.name,
-                            isQualityDocument:
-                              fileItem.fileType.isQualityDocument,
-                          }
-                        : null;
+              <>
+                {/* Desktop Table View */}
+                <Box overflowX="auto" display={{ base: "none", md: "block" }}>
+                  <Table size="sm" variant="simple">
+                    <Thead>
+                      <Tr>
+                        <Th>File Name</Th>
+                        <Th>Size</Th>
+                        <Th width="250px">File Type</Th>
+                        <Th width="60px"></Th>
+                      </Tr>
+                    </Thead>
+                    <Tbody>
+                      {files.map((fileItem) => {
+                        const selectedValue = fileItem.fileType
+                          ? {
+                              value: fileItem.fileType.id,
+                              label: fileItem.fileType.name,
+                              isQualityDocument:
+                                fileItem.fileType.isQualityDocument,
+                            }
+                          : null;
 
-                      return (
-                        <Tr key={fileItem.id}>
-                          <Td>
-                            <Box display="flex" alignItems="center">
+                        return (
+                          <Tr key={fileItem.id}>
+                            <Td>
+                              <Box display="flex" alignItems="center">
+                                <Icon
+                                  as={FiFile}
+                                  color="brandPrimary.500"
+                                  mr={2}
+                                />
+                                <Text fontSize="sm" noOfLines={1}>
+                                  {fileItem.file.name}
+                                </Text>
+                              </Box>
+                            </Td>
+                            <Td>
+                              <Text fontSize="xs" color="gray.600">
+                                {formatFileSize(fileItem.file.size)}
+                              </Text>
+                            </Td>
+                            <Td>
+                              <Select
+                                value={selectedValue}
+                                onChange={(option) =>
+                                  handleFileTypeChange(fileItem.id, option)
+                                }
+                                options={fileTypeOptions}
+                                placeholder="Select file type..."
+                                isClearable
+                                size="sm"
+                                colorScheme="purple"
+                                useBasicStyles
+                                menuPortalTarget={document.body}
+                                styles={{
+                                  menuPortal: (base) => ({ ...base, zIndex: 9999 }),
+                                }}
+                              />
+                            </Td>
+                            <Td>
+                              <IconButton
+                                size="sm"
+                                variant="ghost"
+                                colorScheme="red"
+                                icon={<FiX />}
+                                onClick={() => handleFileRemove(fileItem.id)}
+                                aria-label="Remove file"
+                              />
+                            </Td>
+                          </Tr>
+                        );
+                      })}
+                    </Tbody>
+                  </Table>
+                </Box>
+
+                {/* Mobile Card View */}
+                <VStack
+                  spacing={3}
+                  display={{ base: "flex", md: "none" }}
+                  align="stretch"
+                >
+                  {files.map((fileItem) => {
+                    const selectedValue = fileItem.fileType
+                      ? {
+                          value: fileItem.fileType.id,
+                          label: fileItem.fileType.name,
+                          isQualityDocument:
+                            fileItem.fileType.isQualityDocument,
+                        }
+                      : null;
+
+                    return (
+                      <Box
+                        key={fileItem.id}
+                        p={3}
+                        borderWidth="1px"
+                        borderRadius="md"
+                        bg="white"
+                      >
+                        <VStack spacing={3} align="stretch">
+                          <Box display="flex" alignItems="center" justifyContent="space-between">
+                            <Box display="flex" alignItems="center" flex="1" minW="0">
                               <Icon
                                 as={FiFile}
                                 color="brandPrimary.500"
                                 mr={2}
+                                flexShrink={0}
                               />
-                              <Text fontSize="sm" noOfLines={1}>
+                              <Text fontSize="sm" noOfLines={1} fontWeight="medium">
                                 {fileItem.file.name}
                               </Text>
                             </Box>
-                          </Td>
-                          <Td>
-                            <Text fontSize="xs" color="gray.600">
-                              {formatFileSize(fileItem.file.size)}
+                            <IconButton
+                              size="sm"
+                              variant="ghost"
+                              colorScheme="red"
+                              icon={<FiX />}
+                              onClick={() => handleFileRemove(fileItem.id)}
+                              aria-label="Remove file"
+                              flexShrink={0}
+                              ml={2}
+                            />
+                          </Box>
+                          <Text fontSize="xs" color="gray.600">
+                            {formatFileSize(fileItem.file.size)}
+                          </Text>
+                          <Box>
+                            <Text fontSize="xs" fontWeight="medium" mb={1} color="gray.700">
+                              File Type
                             </Text>
-                          </Td>
-                          <Td>
                             <Select
                               value={selectedValue}
                               onChange={(option) =>
@@ -336,24 +430,18 @@ const QualityDocumentUploadModal = ({ isOpen, onClose, parentId, path }) => {
                               size="sm"
                               colorScheme="purple"
                               useBasicStyles
+                              menuPortalTarget={document.body}
+                              styles={{
+                                menuPortal: (base) => ({ ...base, zIndex: 9999 }),
+                              }}
                             />
-                          </Td>
-                          <Td>
-                            <IconButton
-                              size="sm"
-                              variant="ghost"
-                              colorScheme="red"
-                              icon={<FiX />}
-                              onClick={() => handleFileRemove(fileItem.id)}
-                              aria-label="Remove file"
-                            />
-                          </Td>
-                        </Tr>
-                      );
-                    })}
-                  </Tbody>
-                </Table>
-              </Box>
+                          </Box>
+                        </VStack>
+                      </Box>
+                    );
+                  })}
+                </VStack>
+              </>
             ) : (
               <Text fontSize="sm" color="gray.500" textAlign="center" py={4}>
                 No files selected. Add files using the drop zone above.
