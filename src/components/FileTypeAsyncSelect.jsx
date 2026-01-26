@@ -18,6 +18,7 @@ const FileTypeAsyncSelect = ({
   value,
   onChange,
   isInvalid,
+  isDisabled,
   label = "File Type",
   helperText,
   ...props
@@ -96,7 +97,7 @@ const FileTypeAsyncSelect = ({
     : null;
 
   return (
-    <FormControl isInvalid={isInvalid} {...props}>
+    <FormControl isInvalid={isInvalid} isDisabled={isDisabled} {...props}>
       <FormLabel>{label}</FormLabel>
       <AsyncSelect
         value={selectedValue}
@@ -114,6 +115,7 @@ const FileTypeAsyncSelect = ({
         loadingMessage={() => "Loading file types..."}
         colorScheme="purple"
         useBasicStyles
+        isDisabled={isDisabled}
       />
       {helperText && (
         <Text fontSize="xs" color="gray.500" mt={1}>
