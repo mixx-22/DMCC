@@ -140,8 +140,8 @@ const FileTypesList = () => {
               <Thead>
                 <Tr>
                   <Th>Name</Th>
-                  <Th>Properties</Th>
-                  <Th>Last Updated</Th>
+                  <Th textAlign="right"></Th>
+                  <Th textAlign="right">Last Updated</Th>
                   <Th width="80px">Actions</Th>
                 </Tr>
               </Thead>
@@ -161,18 +161,22 @@ const FileTypesList = () => {
                     <Tr key={fileType._id || fileType.id}>
                       <Td fontWeight="semibold">{fileType.name}</Td>
 
-                      <Td>
-                        <HStack spacing={2} flexWrap="wrap">
+                      <Td textAlign="right">
+                        <HStack
+                          spacing={2}
+                          flexWrap="wrap"
+                          justifyContent="flex-end"
+                        >
                           {fileType.isQualityDocument && (
-                            <Badge colorScheme="purple">Quality</Badge>
+                            <Badge colorScheme="purple">Quality Document</Badge>
                           )}
                           {fileType.isDefault && (
-                            <Badge colorScheme="orange">Default</Badge>
+                            <Badge colorScheme="brandPrimary">Default</Badge>
                           )}
                         </HStack>
                       </Td>
 
-                      <Td>
+                      <Td textAlign="right">
                         <Timestamp
                           date={fileType.updatedAt}
                           showTime={true}
