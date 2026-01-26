@@ -2,7 +2,7 @@ import PropTypes from "prop-types";
 import { useState } from "react";
 import {
   Button,
-  ButtonGroup,
+  Box,
   useDisclosure,
   Modal,
   ModalOverlay,
@@ -174,8 +174,8 @@ const QualityDocumentActions = ({ document, onUpdate }) => {
   return (
     <>
       <VStack spacing={3} align="stretch">
-        <ButtonGroup size="sm" spacing={2} flexWrap="wrap">
-          {/* Submit Button */}
+        {/* Submit Button */}
+        <Box>
           <Tooltip 
             label={!submitValidation.valid ? submitValidation.message : ""} 
             isDisabled={submitValidation.valid}
@@ -186,12 +186,19 @@ const QualityDocumentActions = ({ document, onUpdate }) => {
               onClick={() => openConfirmation("submit")}
               isLoading={isProcessing}
               isDisabled={!submitValidation.valid}
+              size="sm"
+              w="full"
             >
               Submit
             </Button>
           </Tooltip>
+          <Text fontSize="xs" color="gray.600" mt={1}>
+            Submit document for review. Locks editing until request is resolved.
+          </Text>
+        </Box>
 
-          {/* Approve (Endorse) Button */}
+        {/* Approve (Endorse) Button */}
+        <Box>
           <Tooltip 
             label={!endorseValidation.valid ? endorseValidation.message : ""} 
             isDisabled={endorseValidation.valid}
@@ -202,12 +209,19 @@ const QualityDocumentActions = ({ document, onUpdate }) => {
               onClick={() => openConfirmation("endorse")}
               isLoading={isProcessing}
               isDisabled={!endorseValidation.valid}
+              size="sm"
+              w="full"
             >
               Approve
             </Button>
           </Tooltip>
+          <Text fontSize="xs" color="gray.600" mt={1}>
+            Approve document and move to controller review for final publishing.
+          </Text>
+        </Box>
 
-          {/* Reject Button */}
+        {/* Reject Button */}
+        <Box>
           <Tooltip 
             label={!rejectValidation.valid ? rejectValidation.message : ""} 
             isDisabled={rejectValidation.valid}
@@ -219,12 +233,19 @@ const QualityDocumentActions = ({ document, onUpdate }) => {
               onClick={() => openConfirmation("reject")}
               isLoading={isProcessing}
               isDisabled={!rejectValidation.valid}
+              size="sm"
+              w="full"
             >
               Reject
             </Button>
           </Tooltip>
+          <Text fontSize="xs" color="gray.600" mt={1}>
+            Reject document and return to team. Team must discard or resubmit.
+          </Text>
+        </Box>
 
-          {/* Publish Button */}
+        {/* Publish Button */}
+        <Box>
           <Tooltip 
             label={!publishValidation.valid ? publishValidation.message : ""} 
             isDisabled={publishValidation.valid}
@@ -235,12 +256,19 @@ const QualityDocumentActions = ({ document, onUpdate }) => {
               onClick={() => openConfirmation("publish")}
               isLoading={isProcessing}
               isDisabled={!publishValidation.valid}
+              size="sm"
+              w="full"
             >
               Publish
             </Button>
           </Tooltip>
+          <Text fontSize="xs" color="gray.600" mt={1}>
+            Publish document as final version. Locks permanently until checked out.
+          </Text>
+        </Box>
 
-          {/* Discard Button */}
+        {/* Discard Button */}
+        <Box>
           <Tooltip 
             label={!discardValidation.valid ? discardValidation.message : ""} 
             isDisabled={discardValidation.valid}
@@ -252,12 +280,19 @@ const QualityDocumentActions = ({ document, onUpdate }) => {
               onClick={() => openConfirmation("discard")}
               isLoading={isProcessing}
               isDisabled={!discardValidation.valid}
+              size="sm"
+              w="full"
             >
               Discard
             </Button>
           </Tooltip>
+          <Text fontSize="xs" color="gray.600" mt={1}>
+            Discard current request and return document to editable working state.
+          </Text>
+        </Box>
 
-          {/* Check Out Button */}
+        {/* Check Out Button */}
+        <Box>
           <Tooltip 
             label={!checkoutValidation.valid ? checkoutValidation.message : ""} 
             isDisabled={checkoutValidation.valid}
@@ -268,11 +303,16 @@ const QualityDocumentActions = ({ document, onUpdate }) => {
               onClick={() => openConfirmation("checkout")}
               isLoading={isProcessing}
               isDisabled={!checkoutValidation.valid}
+              size="sm"
+              w="full"
             >
               Check Out
             </Button>
           </Tooltip>
-        </ButtonGroup>
+          <Text fontSize="xs" color="gray.600" mt={1}>
+            Check out published document to make changes and restart workflow.
+          </Text>
+        </Box>
       </VStack>
 
       {/* Confirmation Modal */}
