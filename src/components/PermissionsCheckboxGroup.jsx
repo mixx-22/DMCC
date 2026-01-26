@@ -86,6 +86,51 @@ const MODULES = [
     path: "document.download",
   },
   {
+    key: "document.permissions.preview",
+    label: "Preview",
+    description: "Preview documents",
+    level: 1,
+    parentLabel: (action) => {
+      switch (action) {
+        case "c":
+          return "Preview Documents";
+        case "r":
+          return "View Document Previews";
+        default:
+          return `${PERMISSION_LABELS[action]} Document Previews`;
+      }
+    },
+    path: "document.preview",
+  },
+  {
+    key: "request",
+    label: "Request",
+    description: "Manage document review requests",
+    level: 0,
+    path: "request",
+  },
+  {
+    key: "request.permissions.publish",
+    label: "Publish",
+    description: "Manage document publish requests",
+    level: 1,
+    parentLabel: (action) => {
+      switch (action) {
+        case "c":
+          return "Create Publish Requests";
+        case "r":
+          return "View Publish Requests";
+        case "u":
+          return "Update Publish Requests";
+        case "d":
+          return "Delete Publish Requests";
+        default:
+          return `${PERMISSION_LABELS[action]} Publish Requests`;
+      }
+    },
+    path: "request.publish",
+  },
+  {
     key: "audit",
     label: "Audit",
     description: "View audit logs and history",
@@ -103,7 +148,7 @@ const PermissionsCheckboxGroup = ({
     if (!permissions || !path) return false;
 
     const keys = (Array.isArray(path) ? path : path.split(".")).filter(
-      (k) => k !== "permission" && k !== "permissions"
+      (k) => k !== "permission" && k !== "permissions",
     );
 
     let current = permissions;
@@ -120,7 +165,7 @@ const PermissionsCheckboxGroup = ({
     if (readOnly || !onChange) return;
 
     const keys = (Array.isArray(path) ? path : path.split(".")).filter(
-      (k) => k !== "permission" && k !== "permissions"
+      (k) => k !== "permission" && k !== "permissions",
     );
 
     const newPermissions = JSON.parse(JSON.stringify(permissions));
@@ -256,7 +301,7 @@ const PermissionsCheckboxGroup = ({
                               handlePermissionChange(
                                 module.path,
                                 action,
-                                !isActive
+                                !isActive,
                               );
                             }
                           }}

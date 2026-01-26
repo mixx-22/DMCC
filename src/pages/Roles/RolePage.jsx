@@ -64,6 +64,16 @@ const RolePage = () => {
         permissions: {
           archive: { c: 0, r: 0, u: 0, d: 0 },
           download: { c: 0, r: 0, u: 0, d: 0 },
+          preview: { c: 0, r: 0, u: 0, d: 0 },
+        },
+      },
+      request: {
+        c: 0,
+        r: 0,
+        u: 0,
+        d: 0,
+        permissions: {
+          publish: { c: 0, r: 0, u: 0, d: 0 },
         },
       },
       audit: { c: 0, r: 0, u: 0, d: 0 },
