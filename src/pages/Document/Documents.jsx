@@ -106,7 +106,7 @@ const Documents = () => {
           type: "file",
           parentId: currentFolderId,
           path: "/",
-          status: 0,
+          status: -1,
           metadata: {
             file,
             filename: file.name,
@@ -258,7 +258,9 @@ const Documents = () => {
                       ? folder?.title || "Folder"
                       : "All Documents",
                   };
-                  navigate(`/document/${doc.id}`, { state: { from: sourcePage } });
+                  navigate(`/document/${doc.id}`, {
+                    state: { from: sourcePage },
+                  });
                 }
               }
             }}
@@ -287,7 +289,9 @@ const Documents = () => {
                       ? folder?.title || "Folder"
                       : "All Documents",
                   };
-                  navigate(`/document/${doc.id}`, { state: { from: sourcePage } });
+                  navigate(`/document/${doc.id}`, {
+                    state: { from: sourcePage },
+                  });
                 }
               }
             }}

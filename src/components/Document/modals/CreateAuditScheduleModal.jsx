@@ -51,7 +51,7 @@ const CreateAuditScheduleModal = ({ isOpen, onClose, parentId, path }) => {
           code: formData.code,
           type: formData.type,
           standard: formData.standard,
-          status: 0,
+          status: -1,
           auditors: [],
           organization: {},
         },

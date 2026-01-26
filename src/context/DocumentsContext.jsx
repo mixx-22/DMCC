@@ -155,7 +155,7 @@ export const DocumentsProvider = ({ children }) => {
         code: documentData.code || "",
         type: documentData.auditType || "",
         standard: documentData.standard || "",
-        status: 0,
+        status: -1,
         auditors: [],
         organization: {},
       };

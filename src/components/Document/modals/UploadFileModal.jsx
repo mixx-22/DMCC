@@ -84,7 +84,7 @@ const UploadFileModal = ({ isOpen, onClose, parentId, path }) => {
         type: "file",
         parentId,
         path,
-        status: 0,
+        status: -1,
         metadata: {
           file: formData.file,
           filename: formData.file.name,
