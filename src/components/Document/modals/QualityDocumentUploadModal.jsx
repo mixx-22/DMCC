@@ -70,7 +70,6 @@ const QualityDocumentUploadModal = ({ isOpen, onClose, parentId, path }) => {
         },
       });
 
-      // Handle different API response formats (data.data for standard responses, data.fileTypes for legacy)
       const fetchedFileTypes = data.data || data.fileTypes || [];
       setFileTypes(fetchedFileTypes);
     } catch (error) {
@@ -119,8 +118,8 @@ const QualityDocumentUploadModal = ({ isOpen, onClose, parentId, path }) => {
                   }
                 : null,
             }
-          : f
-      )
+          : f,
+      ),
     );
   };
 
@@ -138,7 +137,8 @@ const QualityDocumentUploadModal = ({ isOpen, onClose, parentId, path }) => {
     const filesWithoutFileType = files.filter((f) => !f.fileType);
     if (filesWithoutFileType.length > 0) {
       toast.error("Validation Error", {
-        description: "All files must have a file type selected. Please select a file type for each file before uploading.",
+        description:
+          "All files must have a file type selected. Please select a file type for each file before uploading.",
         duration: 4000,
       });
       return;
@@ -228,7 +228,11 @@ const QualityDocumentUploadModal = ({ isOpen, onClose, parentId, path }) => {
   }));
 
   return (
-    <Modal isOpen={isOpen} onClose={handleClose} size="xl">
+    <Modal
+      isOpen={isOpen}
+      onClose={handleClose}
+      size={{ base: "full", md: "4xl" }}
+    >
       <ModalOverlay />
       <ModalContent>
         <ModalHeader>Upload Quality Documents</ModalHeader>
@@ -358,7 +362,12 @@ const QualityDocumentUploadModal = ({ isOpen, onClose, parentId, path }) => {
           </VStack>
         </ModalBody>
         <ModalFooter>
-          <Button variant="ghost" mr={3} onClick={handleClose} isDisabled={uploading}>
+          <Button
+            variant="ghost"
+            mr={3}
+            onClick={handleClose}
+            isDisabled={uploading}
+          >
             Cancel
           </Button>
           <Button
