@@ -70,6 +70,7 @@ const QualityDocumentUploadModal = ({ isOpen, onClose, parentId, path }) => {
         },
       });
 
+      // Handle different API response formats (data.data for standard responses, data.fileTypes for legacy)
       const fetchedFileTypes = data.data || data.fileTypes || [];
       setFileTypes(fetchedFileTypes);
     } catch (error) {
@@ -88,7 +89,7 @@ const QualityDocumentUploadModal = ({ isOpen, onClose, parentId, path }) => {
     const newFiles = acceptedFiles.map((file) => ({
       file,
       fileType: null,
-      id: Math.random().toString(36).substr(2, 9),
+      id: Math.random().toString(36).substring(2, 11),
     }));
     setFiles((prev) => [...prev, ...newFiles]);
   }, []);
@@ -219,6 +220,7 @@ const QualityDocumentUploadModal = ({ isOpen, onClose, parentId, path }) => {
     return Math.round((bytes / Math.pow(k, i)) * 100) / 100 + " " + sizes[i];
   };
 
+  // Map file types to select options (handle both id and _id for API compatibility)
   const fileTypeOptions = fileTypes.map((ft) => ({
     value: ft.id || ft._id,
     label: ft.name,
