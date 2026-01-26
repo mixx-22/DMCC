@@ -9,13 +9,14 @@ import {
   ButtonGroup,
   Input,
 } from "@chakra-ui/react";
-import { FiPlus, FiFolder, FiCalendar, FiChevronDown, FiUpload, FiFileText } from "react-icons/fi";
+import { FiPlus, FiFolder, FiCalendar, FiChevronDown, FiUpload, FiFileText, FiAward } from "react-icons/fi";
 
 export const ActionButton = ({
   onFileSelect,
   onFolderModalOpen,
   onAuditModalOpen,
   onFormTemplateModalOpen,
+  onQualityDocumentModalOpen,
 }) => {
   const fileInputRef = useRef(null);
 
@@ -53,6 +54,9 @@ export const ActionButton = ({
           <MenuList>
             <MenuItem icon={<FiUpload />} onClick={handleFileClick}>
               New File
+            </MenuItem>
+            <MenuItem icon={<FiAward />} onClick={onQualityDocumentModalOpen}>
+              New Quality Document
             </MenuItem>
             <MenuItem icon={<FiFolder />} onClick={onFolderModalOpen}>
               New Folder
