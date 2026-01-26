@@ -20,6 +20,7 @@ const FileTypeAsyncSelect = ({
   isInvalid,
   label = "File Type",
   helperText,
+  isMulti = false,
   ...props
 }) => {
   const debounceTimer = useRef(null);
@@ -76,29 +77,50 @@ const FileTypeAsyncSelect = ({
   }, []);
 
   const handleChange = (selectedOption) => {
-    const fileType = selectedOption
-      ? {
-          id: selectedOption.value,
-          name: selectedOption.label,
-          isQualityDocument: selectedOption.isQualityDocument,
-        }
-      : null;
-
-    onChange(fileType);
+    if (isMulti) {
+      // Handle multi-select: selectedOption is an array
+      const fileTypes = selectedOption
+        ? selectedOption.map((opt) => ({
+            id: opt.value,
+            name: opt.label,
+            isQualityDocument: opt.isQualityDocument,
+          }))
+        : [];
+      onChange(fileTypes);
+    } else {
+      // Handle single select: selectedOption is an object or null
+      const fileType = selectedOption
+        ? {
+            id: selectedOption.value,
+            name: selectedOption.label,
+            isQualityDocument: selectedOption.isQualityDocument,
+          }
+        : null;
+      onChange(fileType);
+    }
   };
 
-  const selectedValue = value?.id
-    ? {
-        value: value.id,
-        label: value.name,
-        isQualityDocument: value.isQualityDocument,
-      }
-    : null;
+  const selectedValue = isMulti
+    ? Array.isArray(value)
+      ? value.map((ft) => ({
+          value: ft.id,
+          label: ft.name,
+          isQualityDocument: ft.isQualityDocument,
+        }))
+      : []
+    : value?.id
+      ? {
+          value: value.id,
+          label: value.name,
+          isQualityDocument: value.isQualityDocument,
+        }
+      : null;
 
   return (
     <FormControl isInvalid={isInvalid} {...props}>
       <FormLabel>{label}</FormLabel>
       <AsyncSelect
+        isMulti={isMulti}
         value={selectedValue}
         onChange={handleChange}
         loadOptions={loadOptions}
