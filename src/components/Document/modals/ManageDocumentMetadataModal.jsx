@@ -13,9 +13,13 @@ import {
   FormLabel,
   Input,
   Text,
+  Alert,
+  AlertIcon,
+  AlertDescription,
 } from "@chakra-ui/react";
 import { toast } from "sonner";
 import { useDocuments } from "../../../context/_useContext";
+import { canEditDocument } from "../../../utils/qualityDocumentUtils";
 
 const ManageDocumentMetadataModal = ({
   isOpen,
@@ -38,7 +42,18 @@ const ManageDocumentMetadataModal = ({
 
   if (!document) return null;
 
+  const documentCanBeEdited = canEditDocument(document);
+
   const handleSave = async () => {
+    // Check if document can be edited (quality document lifecycle check)
+    if (!documentCanBeEdited) {
+      toast.error("Edit Restricted", {
+        description: "This quality document is checked in and cannot be edited",
+        duration: 4000,
+      });
+      return;
+    }
+
     try {
       // Send raw data - context will handle formatting (trimming, etc.)
       const updatedDoc = await updateDocument(document, {
@@ -78,12 +93,22 @@ const ManageDocumentMetadataModal = ({
         <ModalCloseButton />
         <ModalBody>
           <VStack spacing={4} align="stretch">
+            {!documentCanBeEdited && (
+              <Alert status="warning">
+                <AlertIcon />
+                <AlertDescription>
+                  This quality document is checked in and cannot be edited.
+                  Please check it out first.
+                </AlertDescription>
+              </Alert>
+            )}
+            
             <Text fontSize="sm" color="gray.600" mb={2}>
               Manage metadata for &quot;{document.title}&quot;. These fields
               help track document details such as document number, issue date,
               and effectivity date.
             </Text>
-            <FormControl>
+            <FormControl isDisabled={!documentCanBeEdited}>
               <FormLabel fontSize="sm">Document Number</FormLabel>
               <Input
                 value={documentNumber}
@@ -92,7 +117,7 @@ const ManageDocumentMetadataModal = ({
                 size="md"
               />
             </FormControl>
-            <FormControl>
+            <FormControl isDisabled={!documentCanBeEdited}>
               <FormLabel fontSize="sm">Issued Date</FormLabel>
               <Input
                 type="date"
@@ -101,7 +126,7 @@ const ManageDocumentMetadataModal = ({
                 size="md"
               />
             </FormControl>
-            <FormControl>
+            <FormControl isDisabled={!documentCanBeEdited}>
               <FormLabel fontSize="sm">Effectivity Date</FormLabel>
               <Input
                 type="date"
@@ -117,7 +142,11 @@ const ManageDocumentMetadataModal = ({
           <Button variant="ghost" mr={3} onClick={onClose}>
             Cancel
           </Button>
-          <Button colorScheme="brandPrimary" onClick={handleSave}>
+          <Button 
+            colorScheme="brandPrimary" 
+            onClick={handleSave}
+            isDisabled={!documentCanBeEdited}
+          >
             Save Changes
           </Button>
         </ModalFooter>

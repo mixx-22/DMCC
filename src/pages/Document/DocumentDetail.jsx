@@ -50,12 +50,7 @@ import {
   FiMove,
   FiEdit,
   FiMoreVertical,
-  FiCheckCircle,
-  FiClock,
-  FiXCircle,
-  FiUpload,
   FiLock,
-  FiUnlock,
   FiSave,
 } from "react-icons/fi";
 import PageHeader from "../../components/PageHeader";
@@ -70,10 +65,13 @@ import PreviewButton from "../../components/Document/PreviewButton";
 import Timestamp from "../../components/Timestamp";
 import Breadcrumbs from "../../components/Document/Breadcrumbs";
 import PrivacyDisplay from "../../components/Document/PrivacyDisplay";
+import QualityDocumentBadges from "../../components/Document/QualityDocumentBadges";
+import QualityDocumentActions from "../../components/Document/QualityDocumentActions";
 import { useDocuments, useUser } from "../../context/_useContext";
 import { toast } from "sonner";
 import DocumentBadges from "./Badges";
 import moment from "moment";
+import { canEditDocument } from "../../utils/qualityDocumentUtils";
 
 const DocumentDetail = () => {
   const { id } = useParams();
@@ -187,6 +185,14 @@ const DocumentDetail = () => {
   };
 
   const isValid = isDocumentValid();
+
+  // Handler for quality document lifecycle updates
+  const handleQualityDocumentUpdate = (updatedDoc) => {
+    setDocument(updatedDoc);
+  };
+
+  // Check if document can be edited (considering quality document lifecycle)
+  const documentCanBeEdited = canEditDocument(document);
 
   const handleTitleBlur = async (newTitle) => {
     const trimmedTitle = newTitle.trim();
@@ -608,16 +614,17 @@ const DocumentDetail = () => {
                         fontWeight="bold"
                         color={isValid ? "inherit" : "red.500"}
                         w="full"
-                        isPreviewFocusable={true}
+                        isPreviewFocusable={documentCanBeEdited}
                         submitOnBlur={true}
                         selectAllOnFocus={false}
+                        isDisabled={!documentCanBeEdited}
                       >
                         <EditablePreview
                           w="full"
                           borderRadius="md"
                           _hover={{
-                            background: "gray.100",
-                            cursor: "pointer",
+                            background: documentCanBeEdited ? "gray.100" : undefined,
+                            cursor: documentCanBeEdited ? "pointer" : "default",
                           }}
                         />
                         <EditableTextarea
@@ -639,7 +646,10 @@ const DocumentDetail = () => {
                           }}
                         />
                       </Editable>
-                      <DocumentBadges data={document} {...{ isValid }} />
+                      <HStack spacing={2}>
+                        <DocumentBadges data={document} {...{ isValid }} />
+                        <QualityDocumentBadges document={document} />
+                      </HStack>
                     </VStack>
                   </HStack>
                 </Flex>
@@ -652,9 +662,10 @@ const DocumentDetail = () => {
                   defaultValue={document?.description || ""}
                   onSubmit={handleDescriptionBlur}
                   placeholder="Add a description..."
-                  isPreviewFocusable={true}
+                  isPreviewFocusable={documentCanBeEdited}
                   submitOnBlur={true}
                   selectAllOnFocus={false}
+                  isDisabled={!documentCanBeEdited}
                 >
                   <EditablePreview
                     py={2}
@@ -662,8 +673,8 @@ const DocumentDetail = () => {
                     borderRadius="md"
                     color={document?.description ? "gray.700" : "gray.400"}
                     _hover={{
-                      background: "gray.100",
-                      cursor: "pointer",
+                      background: documentCanBeEdited ? "gray.100" : undefined,
+                      cursor: documentCanBeEdited ? "pointer" : "default",
                     }}
                   />
                   <EditableTextarea
@@ -987,7 +998,48 @@ const DocumentDetail = () => {
             )}
           </Stack>
           <Stack spacing={4} flex={1}>
-            {/* Version Control & Approval Status Combined - Spans 4 columns, 2 rows */}
+            {/* Quality Document Lifecycle Status - Spans 4 columns, 2 rows */}
+            {["file"].includes(document?.type) &&
+              document?.metadata?.fileType?.isQualityDocument && (
+                <Card>
+                  <CardBody>
+                    <Text fontWeight="semibold" mb={4}>
+                      Lifecycle Status
+                    </Text>
+                    <VStack spacing={3} align="stretch">
+                      <HStack justify="space-between">
+                        <HStack spacing={2}>
+                          <Icon as={FiLock} color="gray.500" />
+                          <Text fontSize="sm">Document Status</Text>
+                        </HStack>
+                        <QualityDocumentBadges document={document} />
+                      </HStack>
+                      
+                      {document.requestId && (
+                        <HStack justify="space-between">
+                          <Text fontSize="sm" color="gray.600">
+                            Request ID
+                          </Text>
+                          <Text fontSize="sm" fontWeight="medium">
+                            {document.requestId}
+                          </Text>
+                        </HStack>
+                      )}
+                      
+                      <HStack justify="space-between">
+                        <Text fontSize="sm" color="gray.600">
+                          Editable
+                        </Text>
+                        <Badge colorScheme={documentCanBeEdited ? "green" : "red"}>
+                          {documentCanBeEdited ? "Yes" : "No"}
+                        </Badge>
+                      </HStack>
+                    </VStack>
+                  </CardBody>
+                </Card>
+              )}
+
+            {/* Version Control - Quality Documents */}
             {["file"].includes(document?.type) &&
               document?.metadata?.fileType?.isQualityDocument && (
                 <Card>
@@ -995,87 +1047,10 @@ const DocumentDetail = () => {
                     <Text fontWeight="semibold" mb={4}>
                       Version Control
                     </Text>
-                    <VStack spacing={3} align="stretch" mb={6}>
-                      <HStack justify="space-between">
-                        <HStack spacing={2}>
-                          <Icon as={FiLock} color="gray.500" />
-                          <Text fontSize="sm">Status</Text>
-                        </HStack>
-                        <Badge colorScheme="green">Available</Badge>
-                      </HStack>
-                      <Button
-                        leftIcon={<FiUnlock />}
-                        size="sm"
-                        colorScheme="orange"
-                        variant="outline"
-                        w="full"
-                        onClick={() => {
-                          console.log("Check Out document:", {
-                            ...document,
-                            id,
-                          });
-                        }}
-                      >
-                        Check Out
-                      </Button>
-                      <Button
-                        leftIcon={<FiUpload />}
-                        size="sm"
-                        colorScheme="green"
-                        variant="outline"
-                        w="full"
-                        isDisabled
-                        onClick={() => {
-                          console.log("Check In document:", {
-                            ...document,
-                            id,
-                          });
-                        }}
-                      >
-                        Check In
-                      </Button>
-                    </VStack>
-
-                    <Divider mb={4} />
-
-                    <Text fontWeight="semibold" mb={4}>
-                      Approval Status
-                    </Text>
-                    <VStack spacing={3} align="stretch">
-                      <HStack justify="space-between">
-                        <HStack spacing={2}>
-                          <Icon as={FiClock} color="orange.500" />
-                          <Text fontSize="sm">Awaiting review</Text>
-                        </HStack>
-                        <Badge colorScheme="yellow">Pending</Badge>
-                      </HStack>
-                      <Button
-                        leftIcon={<FiCheckCircle />}
-                        size="sm"
-                        colorScheme="green"
-                        variant="outline"
-                        w="full"
-                        onClick={() => {
-                          // Pass full document object with ID from URL
-                          console.log("Approve document:", { ...document, id });
-                        }}
-                      >
-                        Approve
-                      </Button>
-                      <Button
-                        leftIcon={<FiXCircle />}
-                        size="sm"
-                        colorScheme="red"
-                        variant="outline"
-                        w="full"
-                        onClick={() => {
-                          // Pass full document object with ID from URL
-                          console.log("Reject document:", { ...document, id });
-                        }}
-                      >
-                        Reject
-                      </Button>
-                    </VStack>
+                    <QualityDocumentActions
+                      document={document}
+                      onUpdate={handleQualityDocumentUpdate}
+                    />
                   </CardBody>
                 </Card>
               )}
