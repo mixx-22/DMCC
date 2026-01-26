@@ -159,7 +159,15 @@ const Search = () => {
       params.fileTypes = encodeURIComponent(JSON.stringify(fileTypes));
     }
     setSearchParams(params, { replace: true });
-  }, [keyword, type, dateRange, selectedDates, owners, fileTypes, setSearchParams]);
+  }, [
+    keyword,
+    type,
+    dateRange,
+    selectedDates,
+    owners,
+    fileTypes,
+    setSearchParams,
+  ]);
 
   const performSearch = useCallback(async () => {
     if (!keyword.trim()) {
@@ -416,6 +424,18 @@ const Search = () => {
                       templateColumns={{ base: "1fr", md: "repeat(2, 1fr)" }}
                       gap={4}
                     >
+                      {/* Owners Filter */}
+                      <GridItem colSpan={{ base: 1, md: 2 }}>
+                        <UserAsyncSelect
+                          label="Owners"
+                          placeholder="Search for document owners..."
+                          value={owners}
+                          onChange={setOwners}
+                          limit={5}
+                          displayMode="badges"
+                        />
+                      </GridItem>
+
                       {/* Type Filter */}
                       <GridItem>
                         <FormControl>
@@ -464,9 +484,9 @@ const Search = () => {
 
                       {/* File Type Filter - shown when Quality Document type is selected */}
                       {isFileTypeRequired && (
-                        <GridItem colSpan={{ base: 1, md: 2 }}>
+                        <GridItem>
                           <FileTypeAsyncSelect
-                            label="File Types (Required)"
+                            label="File Types"
                             placeholder="Select one or more file types..."
                             value={fileTypes}
                             onChange={setFileTypes}
@@ -504,7 +524,7 @@ const Search = () => {
 
                       {/* Custom Date Range */}
                       {dateRange === "custom" && (
-                        <GridItem colSpan={{ base: 1, md: 2 }}>
+                        <GridItem>
                           <FormControl>
                             <FormLabel>Select Date Range</FormLabel>
                             <RangeDatepicker
@@ -521,18 +541,6 @@ const Search = () => {
                           </FormControl>
                         </GridItem>
                       )}
-
-                      {/* Owners Filter */}
-                      <GridItem colSpan={{ base: 1, md: 2 }}>
-                        <UserAsyncSelect
-                          label="Owners"
-                          placeholder="Search for document owners..."
-                          value={owners}
-                          onChange={setOwners}
-                          limit={5}
-                          displayMode="badges"
-                        />
-                      </GridItem>
                     </Grid>
 
                     {/* Clear Filters Button */}
