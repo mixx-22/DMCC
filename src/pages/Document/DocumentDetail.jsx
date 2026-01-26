@@ -50,12 +50,7 @@ import {
   FiMove,
   FiEdit,
   FiMoreVertical,
-  FiCheckCircle,
-  FiClock,
-  FiXCircle,
-  FiUpload,
   FiLock,
-  FiUnlock,
   FiSave,
 } from "react-icons/fi";
 import PageHeader from "../../components/PageHeader";
@@ -1017,94 +1012,42 @@ const DocumentDetail = () => {
             )}
           </Stack>
           <Stack spacing={4} flex={1}>
-            {/* Version Control & Approval Status Combined - Spans 4 columns, 2 rows */}
+            {/* Quality Document Lifecycle Status - Spans 4 columns, 2 rows */}
             {["file"].includes(document?.type) &&
               document?.metadata?.fileType?.isQualityDocument && (
                 <Card>
                   <CardBody>
                     <Text fontWeight="semibold" mb={4}>
-                      Version Control
-                    </Text>
-                    <VStack spacing={3} align="stretch" mb={6}>
-                      <HStack justify="space-between">
-                        <HStack spacing={2}>
-                          <Icon as={FiLock} color="gray.500" />
-                          <Text fontSize="sm">Status</Text>
-                        </HStack>
-                        <Badge colorScheme="green">Available</Badge>
-                      </HStack>
-                      <Button
-                        leftIcon={<FiUnlock />}
-                        size="sm"
-                        colorScheme="orange"
-                        variant="outline"
-                        w="full"
-                        onClick={() => {
-                          console.log("Check Out document:", {
-                            ...document,
-                            id,
-                          });
-                        }}
-                      >
-                        Check Out
-                      </Button>
-                      <Button
-                        leftIcon={<FiUpload />}
-                        size="sm"
-                        colorScheme="green"
-                        variant="outline"
-                        w="full"
-                        isDisabled
-                        onClick={() => {
-                          console.log("Check In document:", {
-                            ...document,
-                            id,
-                          });
-                        }}
-                      >
-                        Check In
-                      </Button>
-                    </VStack>
-
-                    <Divider mb={4} />
-
-                    <Text fontWeight="semibold" mb={4}>
-                      Approval Status
+                      Lifecycle Status
                     </Text>
                     <VStack spacing={3} align="stretch">
                       <HStack justify="space-between">
                         <HStack spacing={2}>
-                          <Icon as={FiClock} color="orange.500" />
-                          <Text fontSize="sm">Awaiting review</Text>
+                          <Icon as={FiLock} color="gray.500" />
+                          <Text fontSize="sm">Document Status</Text>
                         </HStack>
-                        <Badge colorScheme="yellow">Pending</Badge>
+                        <QualityDocumentBadges document={document} />
                       </HStack>
-                      <Button
-                        leftIcon={<FiCheckCircle />}
-                        size="sm"
-                        colorScheme="green"
-                        variant="outline"
-                        w="full"
-                        onClick={() => {
-                          // Pass full document object with ID from URL
-                          console.log("Approve document:", { ...document, id });
-                        }}
-                      >
-                        Approve
-                      </Button>
-                      <Button
-                        leftIcon={<FiXCircle />}
-                        size="sm"
-                        colorScheme="red"
-                        variant="outline"
-                        w="full"
-                        onClick={() => {
-                          // Pass full document object with ID from URL
-                          console.log("Reject document:", { ...document, id });
-                        }}
-                      >
-                        Reject
-                      </Button>
+                      
+                      {document.requestId && (
+                        <HStack justify="space-between">
+                          <Text fontSize="sm" color="gray.600">
+                            Request ID
+                          </Text>
+                          <Text fontSize="sm" fontWeight="medium">
+                            {document.requestId}
+                          </Text>
+                        </HStack>
+                      )}
+                      
+                      <HStack justify="space-between">
+                        <Text fontSize="sm" color="gray.600">
+                          Editable
+                        </Text>
+                        <Badge colorScheme={documentCanBeEdited ? "green" : "red"}>
+                          {documentCanBeEdited ? "Yes" : "No"}
+                        </Badge>
+                      </HStack>
                     </VStack>
                   </CardBody>
                 </Card>
