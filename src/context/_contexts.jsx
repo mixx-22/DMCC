@@ -2,6 +2,7 @@ import { createContext } from "react";
 
 const AppContext = createContext();
 const LayoutContext = createContext();
+const PermissionContext = createContext();
 const RolesContext = createContext();
 const RoleContext = createContext();
 const UsersContext = createContext();
@@ -16,6 +17,7 @@ const FileTypeContext = createContext();
 export {
   AppContext,
   LayoutContext,
+  PermissionContext,
   RolesContext,
   RoleContext,
   UsersContext,
