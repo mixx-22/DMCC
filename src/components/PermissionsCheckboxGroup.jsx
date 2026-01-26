@@ -155,6 +155,7 @@ const PermissionsCheckboxGroup = ({
 
     for (let i = 0; i < keys.length; i++) {
       if (!current || typeof current !== "object") return false;
+      // Only read from "permission" (singular), ignore "permissions" (plural)
       current = i === 0 ? current[keys[i]] : current.permission?.[keys[i]];
     }
 
@@ -179,6 +180,14 @@ const PermissionsCheckboxGroup = ({
     }
 
     current[keys[0]] ??= {};
+    // Always remove "permissions" (plural) to prevent duplicates
+    if (current[keys[0]].permissions) {
+      // Merge data from "permissions" into "permission" if needed
+      if (!current[keys[0]].permission) {
+        current[keys[0]].permission = current[keys[0]].permissions;
+      }
+      delete current[keys[0]].permissions;
+    }
     current[keys[0]].permission ??= {};
     current = current[keys[0]].permission;
 

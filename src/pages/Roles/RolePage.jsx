@@ -61,7 +61,7 @@ const RolePage = () => {
         r: 0,
         u: 0,
         d: 0,
-        permissions: {
+        permission: {
           archive: { c: 0, r: 0, u: 0, d: 0 },
           download: { c: 0, r: 0, u: 0, d: 0 },
           preview: { c: 0, r: 0, u: 0, d: 0 },
@@ -72,7 +72,7 @@ const RolePage = () => {
         r: 0,
         u: 0,
         d: 0,
-        permissions: {
+        permission: {
           publish: { c: 0, r: 0, u: 0, d: 0 },
         },
       },
@@ -82,12 +82,41 @@ const RolePage = () => {
   });
   const [validationErrors, setValidationErrors] = useState({});
 
+  // Helper function to normalize permissions structure (convert "permissions" to "permission")
+  const normalizePermissions = (perms) => {
+    if (!perms || typeof perms !== "object") return perms;
+
+    const normalized = { ...perms };
+
+    Object.keys(normalized).forEach((key) => {
+      if (typeof normalized[key] === "object" && normalized[key] !== null) {
+        // If this object has both "permissions" and "permission", remove "permissions"
+        if (normalized[key].permissions && normalized[key].permission) {
+          delete normalized[key].permissions;
+        }
+        // If it has "permissions" but not "permission", rename it
+        else if (normalized[key].permissions && !normalized[key].permission) {
+          normalized[key].permission = normalized[key].permissions;
+          delete normalized[key].permissions;
+        }
+        // Recursively normalize nested structures
+        if (normalized[key].permission) {
+          normalized[key].permission = normalizePermissions(
+            normalized[key].permission,
+          );
+        }
+      }
+    });
+
+    return normalized;
+  };
+
   useEffect(() => {
     if (role && !isNewRole) {
       setFormData({
         title: role.title || "",
         description: role.description || "",
-        permissions: role.permissions || {},
+        permissions: normalizePermissions(role.permissions || {}),
         isSystemRole: role.isSystemRole || false,
       });
     }
