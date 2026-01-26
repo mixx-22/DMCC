@@ -148,7 +148,7 @@ const QualityDocumentActions = ({ document, onUpdate }) => {
         return "";
     }
   };
-  
+
   // Validate all possible actions
   const submitValidation = validateTransition(document, "submit");
   const discardValidation = validateTransition(document, "discard");

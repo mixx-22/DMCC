@@ -101,10 +101,11 @@ export const validateTransition = (document, action) => {
     case "submit":
       // UPLOADED: (status: -1, checkedOut: 1, requestId: null) - Submit allowed
       // REJECTED: (status: -1, checkedOut: 0, requestId: !== null, mode: TEAM) - Submit allowed
+      // Both states share status: -1, so we only check that condition
       if (status !== LIFECYCLE_STATUS.WORKING) {
         return { valid: false, message: "Document must be in working status to submit" };
       }
-      // Can submit from both uploaded state and rejected state
+      // Valid from both uploaded (checkedOut: 1, requestId: null) and rejected (checkedOut: 0, requestId: !== null)
       return { valid: true, message: "" };
 
     case "discard":
