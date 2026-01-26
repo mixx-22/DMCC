@@ -23,6 +23,7 @@ import PageFooter from "../../components/PageFooter";
 import SearchInput from "../../components/SearchInput";
 import CreateFolderModal from "../../components/Document/modals/CreateFolderModal";
 import CreateAuditScheduleModal from "../../components/Document/modals/CreateAuditScheduleModal";
+import QualityDocumentUploadModal from "../../components/Document/modals/QualityDocumentUploadModal";
 import DocumentDrawer from "../../components/Document/DocumentDrawer";
 import { GridView } from "../../components/Document/GridView";
 import { ListView } from "../../components/Document/ListView";
@@ -88,6 +89,11 @@ const Documents = () => {
     isOpen: isAuditModalOpen,
     onOpen: onAuditModalOpen,
     onClose: onAuditModalClose,
+  } = useDisclosure();
+  const {
+    isOpen: isQualityDocumentModalOpen,
+    onOpen: onQualityDocumentModalOpen,
+    onClose: onQualityDocumentModalClose,
   } = useDisclosure();
 
   const handleFormTemplateCreate = () => {
@@ -216,6 +222,7 @@ const Documents = () => {
             onFolderModalOpen={onFolderModalOpen}
             onAuditModalOpen={onAuditModalOpen}
             onFormTemplateModalOpen={handleFormTemplateCreate}
+            onQualityDocumentModalOpen={onQualityDocumentModalOpen}
           />
         </Flex>
       </PageFooter>
@@ -314,6 +321,12 @@ const Documents = () => {
       <CreateAuditScheduleModal
         isOpen={isAuditModalOpen}
         onClose={onAuditModalClose}
+        parentId={currentFolderId}
+        path={`/`}
+      />
+      <QualityDocumentUploadModal
+        isOpen={isQualityDocumentModalOpen}
+        onClose={onQualityDocumentModalClose}
         parentId={currentFolderId}
         path={`/`}
       />
