@@ -181,11 +181,14 @@ export const DocumentsProvider = ({ children }) => {
             apiService,
           );
 
+          // Preserve additional metadata fields (like fileType) while updating file-specific fields
           newDocument.metadata = {
+            ...documentData.metadata,
             filename: uploadResult.filename,
             size: uploadResult.size,
             key: uploadResult.key,
             version: DEFAULT_FILE_VERSION,
+            file: undefined, // Remove the File object from metadata
           };
         } else {
           throw new Error("File is required for document type 'file'");
