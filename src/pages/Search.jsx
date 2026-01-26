@@ -186,13 +186,18 @@ const Search = () => {
       }
 
       // Handle Quality Documents with file types
-      if (type === "qualityDocument" && fileTypes.length > 0) {
-        // Filter by file type names instead of document type
-        const fileTypeNames = fileTypes.map((ft) => ft.name);
-        filtered = filtered.filter((doc) => {
-          const docFileTypeName = doc.metadata?.fileType?.name;
-          return docFileTypeName && fileTypeNames.includes(docFileTypeName);
-        });
+      if (type === "qualityDocument") {
+        if (fileTypes.length > 0) {
+          // Filter by file type names instead of document type
+          const fileTypeNames = fileTypes.map((ft) => ft.name);
+          filtered = filtered.filter((doc) => {
+            const docFileTypeName = doc.metadata?.fileType?.name;
+            return docFileTypeName && fileTypeNames.includes(docFileTypeName);
+          });
+        } else {
+          // Quality Document selected but no file types - return empty results
+          filtered = [];
+        }
       } else if (type) {
         filtered = filtered.filter((doc) => doc.type === type);
       }
@@ -276,11 +281,17 @@ const Search = () => {
       }
 
       // Handle Quality Documents with file types
-      if (type === "qualityDocument" && fileTypes.length > 0) {
-        // When Quality Document type is selected with file types,
-        // use fileType params instead of type
-        // Multiple file types will be handled specially in the API call
-        params.fileType = fileTypes.map((ft) => ft.name);
+      if (type === "qualityDocument") {
+        if (fileTypes.length > 0) {
+          // When Quality Document type is selected with file types,
+          // use fileType params instead of type
+          // Multiple file types will be handled specially in the API call
+          params.fileType = fileTypes.map((ft) => ft.name);
+        } else {
+          // Quality Document selected but no file types - still search but with type filter
+          // This will likely return no results, but let the server handle it
+          params.type = type;
+        }
       } else if (type) {
         // For other types, use the type param normally
         params.type = type;
@@ -346,6 +357,10 @@ const Search = () => {
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [keyword, type, dateRange, selectedDates, owners, fileTypes]);
+
+  // Validation: file types are required when Quality Document type is selected
+  const isFileTypeRequired = type === "qualityDocument";
+  const hasFileTypeError = isFileTypeRequired && fileTypes.length === 0;
 
   return (
     <Box>
@@ -448,7 +463,7 @@ const Search = () => {
                       </GridItem>
 
                       {/* File Type Filter - shown when Quality Document type is selected */}
-                      {type === "qualityDocument" && (
+                      {isFileTypeRequired && (
                         <GridItem colSpan={{ base: 1, md: 2 }}>
                           <FileTypeAsyncSelect
                             label="File Types (Required)"
@@ -456,7 +471,7 @@ const Search = () => {
                             value={fileTypes}
                             onChange={setFileTypes}
                             isMulti={true}
-                            isInvalid={type === "qualityDocument" && fileTypes.length === 0}
+                            isInvalid={hasFileTypeError}
                           />
                         </GridItem>
                       )}
