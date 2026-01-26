@@ -393,6 +393,27 @@ export const apiService = {
 
     return response;
   },
+
+  /**
+   * Check out a published document (restart workflow)
+   * @param {string} documentId - The document ID
+   * @returns {Promise<Object>}
+   */
+  async checkoutDocument(documentId) {
+    if (!USE_API) {
+      // Mock mode
+      return { success: true };
+    }
+
+    const response = await this.request(
+      `/documents/${documentId}/checkout`,
+      {
+        method: "PUT",
+      },
+    );
+
+    return response;
+  },
 };
 
 export default apiService;

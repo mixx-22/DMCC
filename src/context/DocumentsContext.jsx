@@ -592,6 +592,37 @@ export const DocumentsProvider = ({ children }) => {
     }
   };
 
+  /**
+   * Check out a published quality document (restart workflow)
+   * @param {Object} document - The document to check out
+   * @returns {Promise<Object>} - The updated document
+   */
+  const checkoutDocument = async (document) => {
+    const validation = validateTransition(document, "checkout");
+    if (!validation.valid) {
+      throw new Error(validation.message);
+    }
+
+    try {
+      const response = await apiService.checkoutDocument(
+        document.id || document._id,
+      );
+
+      if (response.success !== false) {
+        const expectedState = getExpectedState("checkout");
+
+        // Update the document with new lifecycle state
+        const updatedDoc = await updateDocument(document, expectedState);
+        return updatedDoc;
+      } else {
+        throw new Error(response.message || "Failed to checkout document");
+      }
+    } catch (err) {
+      console.error("Failed to checkout document:", err);
+      throw new Error(err.message || "Failed to checkout document");
+    }
+  };
+
   const value = {
     folder,
     documents,
@@ -613,6 +644,7 @@ export const DocumentsProvider = ({ children }) => {
     endorseDocumentForPublish,
     rejectDocumentRequest,
     publishDocument,
+    checkoutDocument,
   };
 
   return (

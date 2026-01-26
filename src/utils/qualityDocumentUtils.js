@@ -87,7 +87,7 @@ export const canCreateVersion = (document) => {
 /**
  * Validate if a lifecycle transition is allowed
  * @param {Object} document - The current document state
- * @param {string} action - The action to perform (submit, discard, endorse, reject, publish)
+ * @param {string} action - The action to perform (submit, discard, endorse, reject, publish, checkout)
  * @returns {Object} - { valid: boolean, message: string }
  */
 export const validateTransition = (document, action) => {
@@ -99,32 +99,37 @@ export const validateTransition = (document, action) => {
 
   switch (action) {
     case "submit":
-      // Can submit when: status === -1, checkedOut === 1, requestId === null
+      // UPLOADED: (status: -1, checkedOut: 1, requestId: null) - Submit allowed
+      // REJECTED: (status: -1, checkedOut: 0, requestId: !== null, mode: TEAM) - Submit allowed
       if (status !== LIFECYCLE_STATUS.WORKING) {
         return { valid: false, message: "Document must be in working status to submit" };
       }
-      if (checkedOut !== CHECKOUT_STATUS.CHECKED_OUT) {
-        return { valid: false, message: "Document must be checked out to submit" };
-      }
-      if (requestId !== null) {
-        return { valid: false, message: "Document already has an active request" };
-      }
+      // Can submit from both uploaded state and rejected state
       return { valid: true, message: "" };
 
     case "discard":
-      // Can discard when: requestId !== null, mode === TEAM
+      // REJECTED: (status: -1, checkedOut: 0, requestId: !== null, mode: TEAM) - Discard allowed
+      if (status !== LIFECYCLE_STATUS.WORKING) {
+        return { valid: false, message: "Document must be in working status to discard" };
+      }
+      if (checkedOut !== CHECKOUT_STATUS.CHECKED_IN) {
+        return { valid: false, message: "Document must be checked in to discard" };
+      }
       if (requestId === null) {
         return { valid: false, message: "No active request to discard" };
       }
-      if (mode !== WORKFLOW_MODE.TEAM && mode !== WORKFLOW_MODE.CONTROLLER) {
-        return { valid: false, message: "Invalid workflow mode for discard" };
+      if (mode !== WORKFLOW_MODE.TEAM) {
+        return { valid: false, message: "Only team mode can discard" };
       }
       return { valid: true, message: "" };
 
     case "endorse":
-      // Can endorse when: status === 0, requestId !== null, mode === TEAM
+      // SUBMITTED: (status: 0, checkedOut: 0, requestId: !== null, mode: TEAM) - Endorse (Approve) allowed
       if (status !== LIFECYCLE_STATUS.UNDER_REVIEW) {
         return { valid: false, message: "Document must be under review to endorse" };
+      }
+      if (checkedOut !== CHECKOUT_STATUS.CHECKED_IN) {
+        return { valid: false, message: "Document must be checked in to endorse" };
       }
       if (requestId === null) {
         return { valid: false, message: "No active request to endorse" };
@@ -135,25 +140,47 @@ export const validateTransition = (document, action) => {
       return { valid: true, message: "" };
 
     case "reject":
-      // Can reject when: status === 0, requestId !== null
+      // SUBMITTED: (status: 0, checkedOut: 0, requestId: !== null, mode: TEAM) - Reject allowed
       if (status !== LIFECYCLE_STATUS.UNDER_REVIEW) {
         return { valid: false, message: "Document must be under review to reject" };
+      }
+      if (checkedOut !== CHECKOUT_STATUS.CHECKED_IN) {
+        return { valid: false, message: "Document must be checked in to reject" };
       }
       if (requestId === null) {
         return { valid: false, message: "No active request to reject" };
       }
+      if (mode !== WORKFLOW_MODE.TEAM) {
+        return { valid: false, message: "Only team mode can reject" };
+      }
       return { valid: true, message: "" };
 
     case "publish":
-      // Can publish when: status === 0, requestId !== null, mode === CONTROLLER
+      // ENDORSED: (status: 0, checkedOut: 0, requestId: !== null, mode: CONTROLLER) - Publish allowed
       if (status !== LIFECYCLE_STATUS.UNDER_REVIEW) {
         return { valid: false, message: "Document must be under review to publish" };
+      }
+      if (checkedOut !== CHECKOUT_STATUS.CHECKED_IN) {
+        return { valid: false, message: "Document must be checked in to publish" };
       }
       if (requestId === null) {
         return { valid: false, message: "No active request to publish" };
       }
       if (mode !== WORKFLOW_MODE.CONTROLLER) {
-        return { valid: false, message: "Only controller mode can be published" };
+        return { valid: false, message: "Only controller mode can publish" };
+      }
+      return { valid: true, message: "" };
+
+    case "checkout":
+      // PUBLISHED: (status: 2, checkedOut: 0, requestId: null) - Check Out allowed
+      if (status !== LIFECYCLE_STATUS.PUBLISHED) {
+        return { valid: false, message: "Only published documents can be checked out" };
+      }
+      if (checkedOut !== CHECKOUT_STATUS.CHECKED_IN) {
+        return { valid: false, message: "Document is already checked out" };
+      }
+      if (requestId !== null) {
+        return { valid: false, message: "Cannot checkout document with active request" };
       }
       return { valid: true, message: "" };
 
@@ -206,6 +233,14 @@ export const getExpectedState = (action, requestId = null) => {
       return {
         status: LIFECYCLE_STATUS.PUBLISHED,
         checkedOut: CHECKOUT_STATUS.CHECKED_IN,
+        requestId: null,
+        mode: WORKFLOW_MODE.NONE,
+      };
+
+    case "checkout":
+      return {
+        status: LIFECYCLE_STATUS.WORKING,
+        checkedOut: CHECKOUT_STATUS.CHECKED_OUT,
         requestId: null,
         mode: WORKFLOW_MODE.NONE,
       };
