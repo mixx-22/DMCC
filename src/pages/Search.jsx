@@ -28,6 +28,7 @@ import { RangeDatepicker } from "chakra-dayzed-datepicker";
 import PageHeader from "../components/PageHeader";
 import SearchInput from "../components/SearchInput";
 import UserAsyncSelect from "../components/UserAsyncSelect";
+import FileTypeAsyncSelect from "../components/FileTypeAsyncSelect";
 import { GridView } from "../components/Document/GridView";
 import { ListView } from "../components/Document/ListView";
 import DocumentDrawer from "../components/Document/DocumentDrawer";
@@ -70,6 +71,7 @@ const Search = () => {
 
   const [keyword, setKeyword] = useState(searchParams.get("keyword") || "");
   const [type, setType] = useState(searchParams.get("type") || "");
+  const [fileTypes, setFileTypes] = useState([]);
   const [dateRange, setDateRange] = useState(
     searchParams.get("dateRange") || "",
   );
@@ -116,6 +118,19 @@ const Search = () => {
       setOwners([]);
     }
 
+    const fileTypesParam = searchParams.get("fileTypes");
+    if (fileTypesParam) {
+      try {
+        const fileTypesArray = JSON.parse(decodeURIComponent(fileTypesParam));
+        setFileTypes(fileTypesArray);
+      } catch (e) {
+        console.error("Failed to parse fileTypes from query params:", e);
+        setFileTypes([]);
+      }
+    } else {
+      setFileTypes([]);
+    }
+
     // Reset flag after state updates
     setTimeout(() => {
       isSyncingFromURL.current = false;
@@ -140,8 +155,19 @@ const Search = () => {
     if (owners.length > 0) {
       params.owners = encodeURIComponent(JSON.stringify(owners));
     }
+    if (fileTypes.length > 0) {
+      params.fileTypes = encodeURIComponent(JSON.stringify(fileTypes));
+    }
     setSearchParams(params, { replace: true });
-  }, [keyword, type, dateRange, selectedDates, owners, setSearchParams]);
+  }, [
+    keyword,
+    type,
+    dateRange,
+    selectedDates,
+    owners,
+    fileTypes,
+    setSearchParams,
+  ]);
 
   const performSearch = useCallback(async () => {
     if (!keyword.trim()) {
@@ -167,7 +193,20 @@ const Search = () => {
         });
       }
 
-      if (type) {
+      // Handle Quality Documents with file types
+      if (type === "qualityDocument") {
+        if (fileTypes.length > 0) {
+          // Filter by file type names instead of document type
+          const fileTypeNames = fileTypes.map((ft) => ft.name);
+          filtered = filtered.filter((doc) => {
+            const docFileTypeName = doc.metadata?.fileType?.name;
+            return docFileTypeName && fileTypeNames.includes(docFileTypeName);
+          });
+        } else {
+          // Quality Document selected but no file types - return empty results
+          filtered = [];
+        }
+      } else if (type) {
         filtered = filtered.filter((doc) => doc.type === type);
       }
 
@@ -249,7 +288,20 @@ const Search = () => {
         params.keyword = keyword.trim();
       }
 
-      if (type) {
+      // Handle Quality Documents with file types
+      if (type === "qualityDocument") {
+        if (fileTypes.length > 0) {
+          // When Quality Document type is selected with file types,
+          // use fileType params instead of type
+          // Multiple file types will be handled specially in the API call
+          params.fileType = fileTypes.map((ft) => ft.name);
+        } else {
+          // Quality Document selected but no file types - still search but with type filter
+          // This will likely return no results, but let the server handle it
+          params.type = type;
+        }
+      } else if (type) {
+        // For other types, use the type param normally
         params.type = type;
       }
 
@@ -285,7 +337,7 @@ const Search = () => {
     } finally {
       setLoading(false);
     }
-  }, [keyword, type, dateRange, selectedDates, owners]);
+  }, [keyword, type, dateRange, selectedDates, owners, fileTypes]);
 
   // Debounced search effect - only trigger when user is idle and has a keyword
   useEffect(() => {
@@ -312,7 +364,11 @@ const Search = () => {
       }
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [keyword, type, dateRange, selectedDates, owners]);
+  }, [keyword, type, dateRange, selectedDates, owners, fileTypes]);
+
+  // Validation: file types are required when Quality Document type is selected
+  const isFileTypeRequired = type === "qualityDocument";
+  const hasFileTypeError = isFileTypeRequired && fileTypes.length === 0;
 
   return (
     <Box>
@@ -368,6 +424,18 @@ const Search = () => {
                       templateColumns={{ base: "1fr", md: "repeat(2, 1fr)" }}
                       gap={4}
                     >
+                      {/* Owners Filter */}
+                      <GridItem colSpan={{ base: 1, md: 2 }}>
+                        <UserAsyncSelect
+                          label="Owners"
+                          placeholder="Search for document owners..."
+                          value={owners}
+                          onChange={setOwners}
+                          limit={5}
+                          displayMode="badges"
+                        />
+                      </GridItem>
+
                       {/* Type Filter */}
                       <GridItem>
                         <FormControl>
@@ -384,9 +452,14 @@ const Search = () => {
                                   }
                                 : null
                             }
-                            onChange={(option) =>
-                              setType(option ? option.value : "")
-                            }
+                            onChange={(option) => {
+                              const newType = option ? option.value : "";
+                              setType(newType);
+                              // Clear file types when switching away from Quality Document
+                              if (newType !== "qualityDocument") {
+                                setFileTypes([]);
+                              }
+                            }}
                             options={[
                               { value: "file", label: "File" },
                               { value: "folder", label: "Folder" },
@@ -408,6 +481,20 @@ const Search = () => {
                           />
                         </FormControl>
                       </GridItem>
+
+                      {/* File Type Filter - shown when Quality Document type is selected */}
+                      {isFileTypeRequired && (
+                        <GridItem>
+                          <FileTypeAsyncSelect
+                            label="File Types"
+                            placeholder="Select one or more file types..."
+                            value={fileTypes}
+                            onChange={setFileTypes}
+                            isMulti={true}
+                            isInvalid={hasFileTypeError}
+                          />
+                        </GridItem>
+                      )}
 
                       {/* Date Range Filter */}
                       <GridItem>
@@ -437,7 +524,7 @@ const Search = () => {
 
                       {/* Custom Date Range */}
                       {dateRange === "custom" && (
-                        <GridItem colSpan={{ base: 1, md: 2 }}>
+                        <GridItem>
                           <FormControl>
                             <FormLabel>Select Date Range</FormLabel>
                             <RangeDatepicker
@@ -454,18 +541,6 @@ const Search = () => {
                           </FormControl>
                         </GridItem>
                       )}
-
-                      {/* Owners Filter */}
-                      <GridItem colSpan={{ base: 1, md: 2 }}>
-                        <UserAsyncSelect
-                          label="Owners"
-                          placeholder="Search for document owners..."
-                          value={owners}
-                          onChange={setOwners}
-                          limit={5}
-                          displayMode="badges"
-                        />
-                      </GridItem>
                     </Grid>
 
                     {/* Clear Filters Button */}

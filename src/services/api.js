@@ -79,14 +79,20 @@ export const apiService = {
 
       let url = createApiUrl(endpoint);
       if (options.params) {
-        const queryString = new URLSearchParams(
-          Object.entries(options.params).reduce((acc, [key, value]) => {
-            if (value !== undefined && value !== null && value !== "") {
-              acc[key] = value;
+        const searchParams = new URLSearchParams();
+        Object.entries(options.params).forEach(([key, value]) => {
+          if (value !== undefined && value !== null && value !== "") {
+            // Handle array values - append each item separately
+            if (Array.isArray(value)) {
+              value.forEach((item) => {
+                searchParams.append(key, item);
+              });
+            } else {
+              searchParams.append(key, value);
             }
-            return acc;
-          }, {}),
-        ).toString();
+          }
+        });
+        const queryString = searchParams.toString();
         if (queryString) {
           url = `${url}?${queryString}`;
         }
