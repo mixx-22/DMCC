@@ -97,7 +97,7 @@ const QualityDocuments = () => {
   return (
     <Box>
       <PageHeader>
-        <Flex justify="center" align="center" w="full" gap={4}>
+        <Flex align="center" w="full" gap={4}>
           <Heading variant="pageTitle">Quality Documents</Heading>
           <Spacer />
           <Hide below="md">
