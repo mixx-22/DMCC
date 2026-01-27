@@ -23,7 +23,6 @@ import {
   HStack,
   Progress,
   FormHelperText,
-  Badge,
 } from "@chakra-ui/react";
 import {
   FiArrowLeft,
@@ -57,7 +56,6 @@ const ScheduleForm = () => {
     deleteSchedule,
   } = useScheduleProfile();
   const errorColor = useColorModeValue("error.600", "error.400");
-  const summaryCardBg = useColorModeValue("gray.50", "gray.700");
 
   const isNewSchedule = id === "new";
   const [currentStep, setCurrentStep] = useState(1);

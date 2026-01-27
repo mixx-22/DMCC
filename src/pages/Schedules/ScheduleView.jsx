@@ -29,7 +29,6 @@ import { toast } from "sonner";
 import { useEffect } from "react";
 import Swal from "sweetalert2";
 import PageHeader from "../../components/PageHeader";
-import PageFooter from "../../components/PageFooter";
 import { useScheduleProfile } from "../../context/_useContext";
 import { getAuditTypeLabel } from "../../utils/auditHelpers";
 import OrganizationsList from "./OrganizationsList";

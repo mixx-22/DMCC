@@ -1,8 +1,6 @@
 import {
   Box,
   Text,
-  VStack,
-  HStack,
   Badge,
   IconButton,
   Spinner,
@@ -22,7 +20,7 @@ import { useState } from "react";
 import { toast } from "sonner";
 import Swal from "sweetalert2";
 
-const OrganizationsList = ({ scheduleId }) => {
+const OrganizationsList = () => {
   const [organizations] = useState([]);
   const [loading] = useState(false);
 
@@ -77,7 +75,8 @@ const OrganizationsList = ({ scheduleId }) => {
         borderStyle="dashed"
       >
         <Text color="gray.500">
-          No organizations added yet. Click "Add Organization" to get started.
+          No organizations added yet. Click &quot;Add Organization&quot; to get
+          started.
         </Text>
       </Box>
     );
