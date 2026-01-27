@@ -9,6 +9,8 @@ import {
   TeamProfileContext,
   UserProfileContext,
   RoleContext,
+  SchedulesContext,
+  ScheduleProfileContext,
   DocumentsContext,
   FileTypesContext,
   FileTypeContext,
@@ -79,6 +81,23 @@ export const useTeamProfile = () => {
   const context = useContext(TeamProfileContext);
   if (!context) {
     throw new Error("useTeamProfile must be used within TeamProfileProvider");
+  }
+  return context;
+};
+
+export const useSchedules = () => {
+  const context = useContext(SchedulesContext);
+  if (!context)
+    throw new Error("useSchedules must be used within SchedulesProvider");
+  return context;
+};
+
+export const useScheduleProfile = () => {
+  const context = useContext(ScheduleProfileContext);
+  if (!context) {
+    throw new Error(
+      "useScheduleProfile must be used within ScheduleProfileProvider",
+    );
   }
   return context;
 };

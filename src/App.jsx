@@ -19,6 +19,10 @@ import Teams from "./pages/Teams";
 import TeamPage from "./pages/Teams/TeamPage";
 import { TeamsProvider } from "./context/TeamsContext";
 import { TeamProfileProvider } from "./context/TeamProfileContext";
+import Schedules from "./pages/Schedules";
+import SchedulePage from "./pages/Schedules/SchedulePage";
+import { SchedulesProvider } from "./context/SchedulesContext";
+import { ScheduleProfileProvider } from "./context/ScheduleProfileContext";
 import Archive from "./pages/Archive";
 import Roles from "./pages/Roles";
 import RolePage from "./pages/Roles/RolePage";
@@ -147,6 +151,22 @@ function App() {
                         <TeamProfileProvider>
                           <TeamPage />
                         </TeamProfileProvider>
+                      }
+                    />
+                    <Route
+                      path="/schedules"
+                      element={
+                        <SchedulesProvider>
+                          <Schedules />
+                        </SchedulesProvider>
+                      }
+                    />
+                    <Route
+                      path="/schedules/:id"
+                      element={
+                        <ScheduleProfileProvider>
+                          <SchedulePage />
+                        </ScheduleProfileProvider>
                       }
                     />
                     <Route
