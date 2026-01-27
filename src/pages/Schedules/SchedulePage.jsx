@@ -22,9 +22,6 @@ import {
   Select,
   HStack,
   Progress,
-  Radio,
-  RadioGroup,
-  Stack,
   FormHelperText,
   Badge,
 } from "@chakra-ui/react";
@@ -410,35 +407,6 @@ const SchedulePage = () => {
                   <FormHelperText>
                     The audit standard or framework being followed (optional)
                   </FormHelperText>
-                </FormControl>
-
-                <FormControl>
-                  <FormLabel>Status</FormLabel>
-                  <RadioGroup
-                    value={formData.status.toString()}
-                    onChange={(value) =>
-                      handleFieldChange("status", parseInt(value))
-                    }
-                  >
-                    <Stack direction="row" spacing={6}>
-                      <Radio value="0">
-                        <HStack>
-                          <Badge colorScheme="blue">Ongoing</Badge>
-                          <Text fontSize="sm" color="gray.600">
-                            - Active audit in progress
-                          </Text>
-                        </HStack>
-                      </Radio>
-                      <Radio value="1">
-                        <HStack>
-                          <Badge colorScheme="green">Closed</Badge>
-                          <Text fontSize="sm" color="gray.600">
-                            - Audit completed
-                          </Text>
-                        </HStack>
-                      </Radio>
-                    </Stack>
-                  </RadioGroup>
                 </FormControl>
 
                 {/* Summary Card */}
