@@ -53,130 +53,129 @@ const FolderAsyncSelect = ({
     };
   }, []);
 
-  const loadOptions = useCallback(
-    (inputValue) => {
-      if (!inputValue || inputValue.length < 2) {
-        return Promise.resolve([]);
-      }
+  const loadOptions = useCallback((inputValue) => {
+    if (!inputValue || inputValue.length < 2) {
+      return Promise.resolve([]);
+    }
 
-      // Clear previous timeout
-      if (debounceTimerRef.current) {
-        clearTimeout(debounceTimerRef.current);
-      }
+    // Clear previous timeout
+    if (debounceTimerRef.current) {
+      clearTimeout(debounceTimerRef.current);
+    }
 
-      // Increment request ID for this search
-      const currentRequestId = ++requestIdRef.current;
+    // Increment request ID for this search
+    const currentRequestId = ++requestIdRef.current;
 
-      // Return a new promise that will be resolved after debounce
-      return new Promise((resolve) => {
-        debounceTimerRef.current = setTimeout(async () => {
-          // Check if this is still the latest request
-          if (currentRequestId !== requestIdRef.current) {
-            resolve([]); // Stale request, return empty
-            return;
+    // Return a new promise that will be resolved after debounce
+    return new Promise((resolve) => {
+      debounceTimerRef.current = setTimeout(async () => {
+        // Check if this is still the latest request
+        if (currentRequestId !== requestIdRef.current) {
+          resolve([]); // Stale request, return empty
+          return;
+        }
+
+        // Check if the input is in the format id:<id>
+        const idMatch = inputValue.match(/^id:(.+)$/i);
+
+        if (!USE_API) {
+          let filtered;
+          if (idMatch) {
+            // Search by ID
+            const searchId = idMatch[1].trim();
+            filtered = MOCK_FOLDERS.filter(
+              (folder) =>
+                folder._id ??
+                folder.id.toLowerCase().includes(searchId.toLowerCase()),
+            );
+          } else {
+            // Search by title
+            filtered = MOCK_FOLDERS.filter((folder) =>
+              folder.title.toLowerCase().includes(inputValue.toLowerCase()),
+            );
           }
 
-          // Check if the input is in the format id:<id>
-          const idMatch = inputValue.match(/^id:(.+)$/i);
+          // Check again if still the latest request before resolving
+          if (currentRequestId === requestIdRef.current) {
+            resolve(
+              filtered.map((folder) => ({
+                value: folder._id ?? folder.id,
+                label: folder.title,
+                folder: folder,
+              })),
+            );
+          } else {
+            resolve([]);
+          }
+          return;
+        }
 
-          if (!USE_API) {
-            let filtered;
-            if (idMatch) {
-              // Search by ID
-              const searchId = idMatch[1].trim();
-              filtered = MOCK_FOLDERS.filter((folder) =>
-                folder.id.toLowerCase().includes(searchId.toLowerCase())
-              );
-            } else {
-              // Search by title
-              filtered = MOCK_FOLDERS.filter((folder) =>
-                folder.title.toLowerCase().includes(inputValue.toLowerCase())
-              );
+        try {
+          let data;
+          if (idMatch) {
+            // Search by ID
+            const searchId = idMatch[1].trim();
+            data = await apiService.request(
+              `${DOCUMENTS_ENDPOINT}/${searchId}`,
+              {
+                method: "GET",
+              },
+            );
+
+            // Check if still the latest request
+            if (currentRequestId !== requestIdRef.current) {
+              resolve([]);
+              return;
             }
-            
-            // Check again if still the latest request before resolving
-            if (currentRequestId === requestIdRef.current) {
-              resolve(
-                filtered.map((folder) => ({
-                  value: folder.id,
-                  label: folder.title,
-                  folder: folder,
-                }))
-              );
+
+            // If found and it's a folder, return it
+            const doc = data.data || data.document || data;
+            if (doc && doc.type === "folder") {
+              resolve([
+                {
+                  value: doc._id ?? doc.id,
+                  label: doc.title,
+                  folder: doc,
+                },
+              ]);
             } else {
               resolve([]);
             }
-            return;
-          }
+          } else {
+            // Search by keyword for folders only
+            data = await apiService.request(DOCUMENTS_ENDPOINT, {
+              method: "GET",
+              params: {
+                keyword: inputValue,
+                type: "folder",
+                limit: 10,
+              },
+            });
 
-          try {
-            let data;
-            if (idMatch) {
-              // Search by ID
-              const searchId = idMatch[1].trim();
-              data = await apiService.request(
-                `${DOCUMENTS_ENDPOINT}/${searchId}`,
-                {
-                  method: "GET",
-                }
-              );
-
-              // Check if still the latest request
-              if (currentRequestId !== requestIdRef.current) {
-                resolve([]);
-                return;
-              }
-
-              // If found and it's a folder, return it
-              const doc = data.data || data.document || data;
-              if (doc && doc.type === "folder") {
-                resolve([
-                  {
-                    value: doc.id,
-                    label: doc.title,
-                    folder: doc,
-                  },
-                ]);
-              } else {
-                resolve([]);
-              }
-            } else {
-              // Search by keyword for folders only
-              data = await apiService.request(DOCUMENTS_ENDPOINT, {
-                method: "GET",
-                params: {
-                  keyword: inputValue,
-                  type: "folder",
-                  limit: 10,
-                },
-              });
-
-              // Check if still the latest request
-              if (currentRequestId !== requestIdRef.current) {
-                resolve([]);
-                return;
-              }
-
-              const documents = data.data?.documents || data.documents || [];
-              resolve(
-                documents
-                  .filter((doc) => doc.type === "folder")
-                  .map((folder) => ({
-                    value: folder.id,
-                    label: folder.title,
-                    folder: folder,
-                  }))
-              );
+            // Check if still the latest request
+            if (currentRequestId !== requestIdRef.current) {
+              resolve([]);
+              return;
             }
-          } catch (error) {
-            console.error("Failed to fetch folders:", error);
-            resolve([]);
+
+            const documents = data.data?.documents || data.documents || [];
+            resolve(
+              documents
+                .filter((doc) => doc.type === "folder")
+                .map((folder) => ({
+                  value: folder._id ?? folder.id,
+                  label: folder.title,
+                  folder: folder,
+                })),
+            );
           }
-        }, 500); // 500ms debounce delay
-      });
-    },
-    []
-  );
+        } catch (error) {
+          console.error("Failed to fetch folders:", error);
+          resolve([]);
+        }
+      }, 500); // 500ms debounce delay
+    });
+  }, []);
 
   const handleChange = (selectedOption) => {
     const folder = selectedOption
@@ -195,7 +194,7 @@ const FolderAsyncSelect = ({
 
   const handleFolderCreated = (folder) => {
     onChange({
-      id: folder.id,
+      id: folder._id ?? folder.id,
       title: folder.title,
     });
     onCreateFolderClose(); // Close modal after creating folder
@@ -203,7 +202,7 @@ const FolderAsyncSelect = ({
 
   const selectedValue = value
     ? {
-        value: value.id,
+        value: value._id ?? value.id,
         label: value.title,
         folder: value,
       }
