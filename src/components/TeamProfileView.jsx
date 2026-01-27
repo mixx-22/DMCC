@@ -17,8 +17,6 @@ import {
   Td,
   Link,
   Badge,
-  OrderedList,
-  ListItem,
   Tabs,
   TabList,
   TabPanels,
@@ -26,6 +24,7 @@ import {
   TabPanel,
   Button,
   Center,
+  Stack,
 } from "@chakra-ui/react";
 import { FiUsers, FiTarget } from "react-icons/fi";
 import Timestamp from "./Timestamp";
@@ -287,11 +286,9 @@ const TeamProfileView = ({ team, isValidDate, onManageObjectives }) => {
                             Manage Objectives
                           </Button>
                         </Flex>
-                        <OrderedList spacing={4}>
+                        <Stack spacing={4}>
                           {team.objectives.map((objective, index) => (
-                            <ListItem
-                              key={objective.id || `objective-${index}`}
-                            >
+                            <Box key={objective.id || `objective-${index}`}>
                               <Box
                                 p={4}
                                 borderWidth={1}
@@ -320,9 +317,9 @@ const TeamProfileView = ({ team, isValidDate, onManageObjectives }) => {
                                   {objective.description}
                                 </Text>
                               </Box>
-                            </ListItem>
+                            </Box>
                           ))}
-                        </OrderedList>
+                        </Stack>
                       </>
                     ) : (
                       <Center flexDir="column" gap={2} minH="xs">
