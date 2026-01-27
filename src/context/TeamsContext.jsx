@@ -36,6 +36,20 @@ const MOCK_TEAMS = [
         employeeId: "EMP003",
       },
     ],
+    objectives: [
+      {
+        id: "obj-1",
+        title: "Improve code quality",
+        description: "Reduce technical debt and improve test coverage",
+        weight: "high",
+      },
+      {
+        id: "obj-2",
+        title: "Launch new feature",
+        description: "Complete and deploy the new dashboard by Q2",
+        weight: "medium",
+      },
+    ],
   },
   {
     _id: "team-2",
@@ -57,6 +71,14 @@ const MOCK_TEAMS = [
         lastName: "Doe",
         email: "jane@example.com",
         employeeId: "EMP001",
+      },
+    ],
+    objectives: [
+      {
+        id: "obj-3",
+        title: "Redesign user interface",
+        description: "Create a modern, accessible UI design system",
+        weight: "high",
       },
     ],
   },
