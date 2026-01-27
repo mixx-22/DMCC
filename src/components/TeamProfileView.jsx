@@ -29,6 +29,7 @@ import {
 import { FiUsers, FiTarget } from "react-icons/fi";
 import Timestamp from "./Timestamp";
 import { Link as RouterLink } from "react-router-dom";
+import Can from "./Can";
 
 const TeamProfileView = ({ team, isValidDate, onManageObjectives }) => {
   const borderColor = useColorModeValue("white", "gray.700");
@@ -275,17 +276,19 @@ const TeamProfileView = ({ team, isValidDate, onManageObjectives }) => {
                   <VStack align="stretch" spacing={4}>
                     {team.objectives && team.objectives.length > 0 ? (
                       <>
-                        <Flex justify="flex-end">
-                          <Button
-                            leftIcon={<FiTarget />}
-                            variant="outline"
-                            colorScheme="brandPrimary"
-                            onClick={onManageObjectives}
-                            size="sm"
-                          >
-                            Manage Objectives
-                          </Button>
-                        </Flex>
+                        <Can to="teams.objective.c">
+                          <Flex justify="flex-end">
+                            <Button
+                              leftIcon={<FiTarget />}
+                              variant="outline"
+                              colorScheme="brandPrimary"
+                              onClick={onManageObjectives}
+                              size="sm"
+                            >
+                              Manage Objectives
+                            </Button>
+                          </Flex>
+                        </Can>
                         <Stack spacing={4}>
                           {team.objectives.map((objective, index) => (
                             <Box key={objective.id || `objective-${index}`}>
@@ -326,15 +329,17 @@ const TeamProfileView = ({ team, isValidDate, onManageObjectives }) => {
                         <Text color="gray.500" textAlign="center">
                           No objectives defined
                         </Text>
-                        <Button
-                          leftIcon={<FiTarget />}
-                          variant="outline"
-                          colorScheme="brandPrimary"
-                          onClick={onManageObjectives}
-                          size="sm"
-                        >
-                          Manage Objectives
-                        </Button>
+                        <Can to="teams.objective.c">
+                          <Button
+                            leftIcon={<FiTarget />}
+                            variant="outline"
+                            colorScheme="brandPrimary"
+                            onClick={onManageObjectives}
+                            size="sm"
+                          >
+                            Manage Objectives
+                          </Button>
+                        </Can>
                       </Center>
                     )}
                   </VStack>
