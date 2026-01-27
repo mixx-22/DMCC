@@ -38,6 +38,7 @@ import Can from "./Can";
 import { useDocuments } from "../context/_useContext";
 import { getDocumentIcon } from "./Document/DocumentIcon";
 import { formatFileSize } from "../utils/fileUpload";
+import { DocumentHoverPopover } from "./Document/DocumentHoverPopover";
 
 const TeamProfileView = ({ team, isValidDate, onManageObjectives }) => {
   const borderColor = useColorModeValue("white", "gray.700");
@@ -440,7 +441,9 @@ const TeamProfileView = ({ team, isValidDate, onManageObjectives }) => {
                                       spacing={3}
                                       _hover={{ opacity: 0.8 }}
                                     >
-                                      {getDocumentIcon(doc, 18)}
+                                      <DocumentHoverPopover document={doc}>
+                                        {getDocumentIcon(doc, 18)}
+                                      </DocumentHoverPopover>
                                       <VStack align="start" spacing={0}>
                                         <Text fontSize="sm" fontWeight="medium">
                                           {doc.title}
