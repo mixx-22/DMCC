@@ -1,14 +1,13 @@
 import { useState, useEffect, useCallback } from "react";
 import {
   Box,
-  Spinner,
-  Center,
   Stack,
   Text,
   Flex,
   Button,
   Hide,
   useDisclosure,
+  Center,
 } from "@chakra-ui/react";
 import { FiPlus } from "react-icons/fi";
 import { toast } from "sonner";
@@ -18,6 +17,7 @@ import SearchInput from "../components/SearchInput";
 import DocumentDrawer from "../components/Document/DocumentDrawer";
 import QualityDocumentUploadModal from "../components/Document/modals/QualityDocumentUploadModal";
 import { ListView } from "../components/Document/ListView";
+import DocumentsListSkeleton from "../components/Document/DocumentsListSkeleton";
 import Pagination from "../components/Pagination";
 import apiService from "../services/api";
 
@@ -116,9 +116,7 @@ const QualityDocuments = () => {
 
       <Stack spacing={{ base: 4, lg: 6 }}>
         {loading ? (
-          <Center py={12}>
-            <Spinner size="xl" color="brandPrimary.500" />
-          </Center>
+          <DocumentsListSkeleton rows={ITEMS_PER_PAGE} />
         ) : documents.length === 0 ? (
           <Center py={12}>
             <Text color="gray.500" fontSize="lg">
