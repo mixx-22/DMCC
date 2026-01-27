@@ -38,13 +38,6 @@ const MODULES = [
     path: "teams",
   },
   {
-    key: "roles",
-    label: "Roles",
-    description: "Manage roles and permissions",
-    level: 0,
-    path: "roles",
-  },
-  {
     key: "document",
     label: "Document",
     description: "Manage documents",
@@ -136,6 +129,55 @@ const MODULES = [
     description: "View audit logs and history",
     level: 0,
     path: "audit",
+  },
+  {
+    key: "settings",
+    label: "Settings",
+    description: "Manage application settings",
+    level: 0,
+    path: "settings",
+  },
+  {
+    key: "settings.permissions.roles",
+    label: "Roles",
+    description: "Manage roles and permissions",
+    level: 1,
+    parentLabel: (action) => {
+      switch (action) {
+        case "c":
+          return "Create Roles";
+        case "r":
+          return "View Roles";
+        case "u":
+          return "Update Roles";
+        case "d":
+          return "Delete Roles";
+        default:
+          return `${PERMISSION_LABELS[action]} Roles`;
+      }
+    },
+    path: "settings.roles",
+  },
+  {
+    key: "settings.permissions.fileType",
+    label: "File Type",
+    description: "Manage file types",
+    level: 1,
+    parentLabel: (action) => {
+      switch (action) {
+        case "c":
+          return "Create File Types";
+        case "r":
+          return "View File Types";
+        case "u":
+          return "Update File Types";
+        case "d":
+          return "Delete File Types";
+        default:
+          return `${PERMISSION_LABELS[action]} File Types`;
+      }
+    },
+    path: "settings.fileType",
   },
 ];
 

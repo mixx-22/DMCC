@@ -55,7 +55,6 @@ const RolePage = () => {
     permissions: {
       users: { c: 0, r: 0, u: 0, d: 0 },
       teams: { c: 0, r: 0, u: 0, d: 0 },
-      roles: { c: 0, r: 0, u: 0, d: 0 },
       document: {
         c: 0,
         r: 0,
@@ -77,6 +76,16 @@ const RolePage = () => {
         },
       },
       audit: { c: 0, r: 0, u: 0, d: 0 },
+      settings: {
+        c: 0,
+        r: 0,
+        u: 0,
+        d: 0,
+        permission: {
+          roles: { c: 0, r: 0, u: 0, d: 0 },
+          fileType: { c: 0, r: 0, u: 0, d: 0 },
+        },
+      },
     },
     isSystemRole: false,
   });
@@ -331,7 +340,7 @@ const RolePage = () => {
         setFormData({
           title: role.title || "",
           description: role.description || "",
-          permissions: role.permissions || {},
+          permissions: normalizePermissions(role.permissions || {}),
           isSystemRole: role.isSystemRole || false,
         });
       }
