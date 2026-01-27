@@ -269,6 +269,7 @@ const TeamProfileView = ({ team, isValidDate, onManageObjectives }) => {
                   <Flex justify="flex-end">
                     <Button
                       leftIcon={<FiTarget />}
+                      variant="outline"
                       colorScheme="brandPrimary"
                       onClick={onManageObjectives}
                       size="sm"
