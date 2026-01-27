@@ -83,9 +83,13 @@ export const ScheduleProfileProvider = ({ children }) => {
     }
 
     try {
-      const schedule = await apiService.get(
+      const data = await apiService.request(
         `${SCHEDULES_ENDPOINT}/${scheduleId}`,
+        {
+          method: "GET",
+        },
       );
+      const schedule = data.schedule || data.data || data;
       dispatch({ type: ACTIONS.FETCH_SUCCESS, payload: schedule });
     } catch (error) {
       dispatch({ type: ACTIONS.FETCH_ERROR, payload: error.message });
@@ -110,7 +114,11 @@ export const ScheduleProfileProvider = ({ children }) => {
     }
 
     try {
-      const schedule = await apiService.post(SCHEDULES_ENDPOINT, scheduleData);
+      const data = await apiService.request(SCHEDULES_ENDPOINT, {
+        method: "POST",
+        body: JSON.stringify(scheduleData),
+      });
+      const schedule = data.schedule || data.data || data;
       dispatch({ type: ACTIONS.SAVE_SUCCESS, payload: schedule });
       return schedule;
     } catch (error) {
@@ -135,10 +143,14 @@ export const ScheduleProfileProvider = ({ children }) => {
     }
 
     try {
-      const schedule = await apiService.put(
+      const data = await apiService.request(
         `${SCHEDULES_ENDPOINT}/${scheduleId}`,
-        scheduleData,
+        {
+          method: "PUT",
+          body: JSON.stringify(scheduleData),
+        },
       );
+      const schedule = data.schedule || data.data || data;
       dispatch({ type: ACTIONS.SAVE_SUCCESS, payload: schedule });
       return schedule;
     } catch (error) {
@@ -158,7 +170,9 @@ export const ScheduleProfileProvider = ({ children }) => {
     }
 
     try {
-      await apiService.delete(`${SCHEDULES_ENDPOINT}/${scheduleId}`);
+      await apiService.request(`${SCHEDULES_ENDPOINT}/${scheduleId}`, {
+        method: "DELETE",
+      });
       dispatch({ type: ACTIONS.SAVE_SUCCESS, payload: null });
     } catch (error) {
       dispatch({ type: ACTIONS.SAVE_ERROR, payload: error.message });
