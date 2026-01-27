@@ -5,13 +5,12 @@ import {
   HStack,
   VStack,
   Text,
-  IconButton,
   Button,
   useDisclosure,
 } from "@chakra-ui/react";
 import { AsyncSelect } from "chakra-react-select";
-import { FiFolder, FiPlus, FiX } from "react-icons/fi";
-import { useCallback, useState, useRef } from "react";
+import { FiFolder, FiPlus } from "react-icons/fi";
+import { useCallback, useState, useRef, useEffect } from "react";
 import apiService from "../services/api";
 import CreateFolderModal from "./Document/modals/CreateFolderModal";
 
@@ -44,18 +43,28 @@ const FolderAsyncSelect = ({
   const [newFolderTitle, setNewFolderTitle] = useState("");
   const debounceTimerRef = useRef(null);
 
+  // Cleanup debounce timer on unmount
+  useEffect(() => {
+    return () => {
+      if (debounceTimerRef.current) {
+        clearTimeout(debounceTimerRef.current);
+      }
+    };
+  }, []);
+
   const loadOptions = useCallback(
-    async (inputValue) => {
+    (inputValue) => {
       if (!inputValue || inputValue.length < 2) {
-        return [];
+        return Promise.resolve([]);
       }
 
-      // Debounce the search
-      return new Promise((resolve) => {
-        if (debounceTimerRef.current) {
-          clearTimeout(debounceTimerRef.current);
-        }
+      // Clear previous timeout
+      if (debounceTimerRef.current) {
+        clearTimeout(debounceTimerRef.current);
+      }
 
+      // Return a new promise that will be resolved after debounce
+      return new Promise((resolve) => {
         debounceTimerRef.current = setTimeout(async () => {
           // Check if the input is in the format id:<id>
           const idMatch = inputValue.match(/^id:(.+)$/i);
@@ -162,10 +171,6 @@ const FolderAsyncSelect = ({
       title: folder.title,
     });
     onCreateFolderClose(); // Close modal after creating folder
-  };
-
-  const handleRemove = () => {
-    onChange(null);
   };
 
   const selectedValue = value
