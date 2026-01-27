@@ -22,6 +22,7 @@ import { useSearchParams, Link as RouterLink } from "react-router-dom";
 import { useSchedules } from "../../context/_useContext";
 import Pagination from "../../components/Pagination";
 import { FiSearch, FiCalendar } from "react-icons/fi";
+import { getAuditTypeLabel } from "../../utils/auditHelpers";
 
 const MotionBox = motion(Box);
 
@@ -72,17 +73,6 @@ const SchedulesList = () => {
   const handleSearchChange = (e) => {
     const value = e.target.value;
     setSearch(value);
-  };
-
-  const getAuditTypeLabel = (type) => {
-    const types = {
-      internal: "Internal Audit",
-      external: "External Audit",
-      compliance: "Compliance Audit",
-      financial: "Financial Audit",
-      operational: "Operational Audit",
-    };
-    return types[type] || type;
   };
 
   const getStatusBadge = (status) => {

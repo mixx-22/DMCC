@@ -82,8 +82,7 @@ function InitialFetch({ children }) {
 
   useEffect(() => {
     fetchSchedules();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [fetchSchedules]);
 
   return children;
 }

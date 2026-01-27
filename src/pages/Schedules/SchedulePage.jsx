@@ -45,6 +45,7 @@ import Swal from "sweetalert2";
 import PageHeader from "../../components/PageHeader";
 import PageFooter from "../../components/PageFooter";
 import { useScheduleProfile } from "../../context/_useContext";
+import { getAuditTypeLabel } from "../../utils/auditHelpers";
 
 const SchedulePage = () => {
   const navigate = useNavigate();
@@ -71,6 +72,12 @@ const SchedulePage = () => {
     { number: 2, title: "Audit Details", fields: ["auditCode", "auditType"] },
     { number: 3, title: "Standards & Status", fields: ["standard", "status"] },
   ];
+
+  const getStepBackgroundColor = (currentStep, stepNumber) => {
+    if (currentStep > stepNumber) return "green.500";
+    if (currentStep === stepNumber) return "brandPrimary.500";
+    return "gray.300";
+  };
 
   useEffect(() => {
     if (schedule && !isNewSchedule) {
@@ -262,13 +269,7 @@ const SchedulePage = () => {
                   w="32px"
                   h="32px"
                   borderRadius="full"
-                  bg={
-                    currentStep > step.number
-                      ? "green.500"
-                      : currentStep === step.number
-                        ? "brandPrimary.500"
-                        : "gray.300"
-                  }
+                  bg={getStepBackgroundColor(currentStep, step.number)}
                   color="white"
                   align="center"
                   justify="center"
@@ -469,8 +470,7 @@ const SchedulePage = () => {
                       </Text>
                       <Text>
                         {formData.auditType
-                          ? formData.auditType.charAt(0).toUpperCase() +
-                            formData.auditType.slice(1)
+                          ? getAuditTypeLabel(formData.auditType)
                           : "-"}
                       </Text>
                     </HStack>
