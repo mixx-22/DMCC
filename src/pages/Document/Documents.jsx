@@ -6,8 +6,6 @@ import {
   IconButton,
   Flex,
   useDisclosure,
-  Spinner,
-  Center,
   Stack,
   List,
   ListItem,
@@ -30,6 +28,8 @@ import { ListView } from "../../components/Document/ListView";
 import { EmptyState } from "../../components/Document/EmptyState";
 import { ActionButton } from "../../components/Document/ActionButton";
 import Breadcrumbs from "../../components/Document/Breadcrumbs";
+import DocumentsGridSkeleton from "../../components/Document/DocumentsGridSkeleton";
+import DocumentsListSkeleton from "../../components/Document/DocumentsListSkeleton";
 import { useDocuments, useLayout } from "../../context/_useContext";
 
 const Documents = () => {
@@ -236,9 +236,11 @@ const Documents = () => {
           }
         />
         {loading ? (
-          <Center py={12}>
-            <Spinner size="xl" color="brandPrimary.500" />
-          </Center>
+          viewMode === "grid" ? (
+            <DocumentsGridSkeleton count={8} />
+          ) : (
+            <DocumentsListSkeleton rows={5} />
+          )
         ) : documents.length === 0 ? (
           <EmptyState
             currentFolderId={currentFolderId}
