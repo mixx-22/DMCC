@@ -39,6 +39,7 @@ import Swal from "sweetalert2";
 import PageHeader from "../../components/PageHeader";
 import PageFooter from "../../components/PageFooter";
 import UserAsyncSelect from "../../components/UserAsyncSelect";
+import FolderAsyncSelect from "../../components/FolderAsyncSelect";
 import TeamProfileView from "../../components/TeamProfileView";
 import ObjectivesModal from "../../components/ObjectivesModal";
 import { useTeamProfile } from "../../context/_useContext";
@@ -378,6 +379,30 @@ const TeamPage = () => {
                   displayMode="table"
                   sx={{ px: 5 }}
                   tableProps={{ sx: { td: { px: 5 } } }}
+                />
+              </CardBody>
+            </Card>
+
+            <Card>
+              <CardHeader pb={0}>
+                <Heading size="md">Documents Folder</Heading>
+              </CardHeader>
+              <CardBody>
+                <FolderAsyncSelect
+                  label=""
+                  value={
+                    formData.folderId
+                      ? {
+                          id: formData.folderId,
+                          title: formData.folderTitle || "Selected Folder",
+                        }
+                      : null
+                  }
+                  onChange={(folder) => {
+                    handleFieldChange("folderId", folder?.id || null);
+                    handleFieldChange("folderTitle", folder?.title || null);
+                  }}
+                  teamName={formData.name}
                 />
               </CardBody>
             </Card>
