@@ -15,7 +15,6 @@ import {
   LinkBox,
   LinkOverlay,
   Badge,
-  useColorModeValue,
 } from "@chakra-ui/react";
 import { motion } from "framer-motion";
 import { useEffect } from "react";

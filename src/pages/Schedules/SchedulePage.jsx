@@ -59,6 +59,7 @@ const SchedulePage = () => {
     deleteSchedule,
   } = useScheduleProfile();
   const errorColor = useColorModeValue("error.600", "error.400");
+  const summaryCardBg = useColorModeValue("gray.50", "gray.700");
 
   const isNewSchedule = id === "new";
   const [currentStep, setCurrentStep] = useState(1);
@@ -444,7 +445,7 @@ const SchedulePage = () => {
                   p={4}
                   borderWidth="1px"
                   borderRadius="md"
-                  bg={useColorModeValue("gray.50", "gray.700")}
+                  bg={summaryCardBg}
                 >
                   <Text fontWeight="bold" mb={3}>
                     Review Your Schedule
