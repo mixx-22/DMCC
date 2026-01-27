@@ -34,6 +34,9 @@ import { ListView } from "../../components/Document/ListView";
 import PageHeader from "../../components/PageHeader";
 import DocumentDrawer from "../../components/Document/DocumentDrawer";
 import Can from "../../components/Can";
+import DocumentsFolderSkeleton from "../../components/Document/DocumentsFolderSkeleton";
+import DocumentsGridSkeleton from "../../components/Document/DocumentsGridSkeleton";
+import DocumentsListSkeleton from "../../components/Document/DocumentsListSkeleton";
 
 const MotionBox = motion(Box);
 
@@ -54,6 +57,8 @@ const Layout = () => {
   const [totalDocuments, setTotalDocuments] = useState(0);
   const [recentFolders, setRecentFolders] = useState([]);
   const [recentFiles, setRecentFiles] = useState([]);
+  const [foldersLoading, setFoldersLoading] = useState(true);
+  const [filesLoading, setFilesLoading] = useState(true);
 
   const foldersLoadedRef = useRef(false);
   const filesLoadedRef = useRef(false);
@@ -109,6 +114,7 @@ const Layout = () => {
     const fetchRecentFolders = async () => {
       if (!folderLimit || foldersLoadedRef.current) return;
       foldersLoadedRef.current = true;
+      setFoldersLoading(true);
 
       try {
         const response = await apiService.request("/recent-documents", {
@@ -183,6 +189,8 @@ const Layout = () => {
           },
         ].slice(0, folderLimit);
         setRecentFolders(mockFolders);
+      } finally {
+        setFoldersLoading(false);
       }
     };
 
@@ -193,6 +201,7 @@ const Layout = () => {
     const fetchRecentFiles = async () => {
       if (!fileLimit || filesLoadedRef.current) return;
       filesLoadedRef.current = true;
+      setFilesLoading(true);
 
       try {
         const response = await apiService.request("/recent-documents", {
@@ -215,6 +224,8 @@ const Layout = () => {
           type: doc.type || "file",
         }));
         setRecentFiles(mockFiles);
+      } finally {
+        setFilesLoading(false);
       }
     };
 
@@ -356,19 +367,23 @@ const Layout = () => {
           <Text fontSize="xl" fontWeight="500" mb={4} color={headingColor}>
             Recent Folders
           </Text>
-          <GridView
-            foldersOnly
-            documents={recentFolders}
-            selectedDocument={selectedDocument}
-            onDocumentClick={(doc) => {
-              const result = handleDocumentClick(doc);
-              if (result.isDoubleClick) {
-                if (doc.type === "folder" || doc.type === "auditSchedule") {
-                  navigate(`/documents/folders/${doc.id}`);
+          {foldersLoading ? (
+            <DocumentsFolderSkeleton count={folderLimit || 8} />
+          ) : (
+            <GridView
+              foldersOnly
+              documents={recentFolders}
+              selectedDocument={selectedDocument}
+              onDocumentClick={(doc) => {
+                const result = handleDocumentClick(doc);
+                if (result.isDoubleClick) {
+                  if (doc.type === "folder" || doc.type === "auditSchedule") {
+                    navigate(`/documents/folders/${doc.id}`);
+                  }
                 }
-              }
-            }}
-          />
+              }}
+            />
+          )}
         </Box>
 
         <Box>
@@ -384,7 +399,13 @@ const Layout = () => {
               variant="ghost"
             />
           </HStack>
-          {viewMode === "grid" ? (
+          {filesLoading ? (
+            viewMode === "grid" ? (
+              <DocumentsGridSkeleton count={fileLimit || 12} />
+            ) : (
+              <DocumentsListSkeleton rows={Math.min(fileLimit || 12, 5)} />
+            )
+          ) : viewMode === "grid" ? (
             <GridView
               filesOnly
               documents={recentFiles}
