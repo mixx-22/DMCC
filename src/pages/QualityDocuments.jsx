@@ -1,8 +1,24 @@
 import { useState, useEffect, useCallback } from "react";
-import { Box, Spinner, Center, Stack, Heading, Text } from "@chakra-ui/react";
+import {
+  Box,
+  Spinner,
+  Center,
+  Stack,
+  Heading,
+  Text,
+  Flex,
+  Button,
+  Hide,
+  Spacer,
+  useDisclosure,
+} from "@chakra-ui/react";
+import { FiPlus } from "react-icons/fi";
 import { toast } from "sonner";
 import PageHeader from "../components/PageHeader";
+import PageFooter from "../components/PageFooter";
+import SearchInput from "../components/SearchInput";
 import DocumentDrawer from "../components/Document/DocumentDrawer";
+import QualityDocumentUploadModal from "../components/Document/modals/QualityDocumentUploadModal";
 import { ListView } from "../components/Document/ListView";
 import Pagination from "../components/Pagination";
 import apiService from "../services/api";
@@ -15,6 +31,18 @@ const QualityDocuments = () => {
   const [loading, setLoading] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalCount, setTotalCount] = useState(0);
+
+  const {
+    isOpen: isQualityDocumentModalOpen,
+    onOpen: onQualityDocumentModalOpen,
+    onClose: onQualityDocumentModalClose,
+  } = useDisclosure();
+
+  const handleQualityDocumentModalClose = () => {
+    onQualityDocumentModalClose();
+    // Refresh the documents list after modal closes
+    fetchQualityDocuments(currentPage);
+  };
 
   // Fetch quality documents
   const fetchQualityDocuments = useCallback(async (page = 1) => {
@@ -69,8 +97,28 @@ const QualityDocuments = () => {
   return (
     <Box>
       <PageHeader>
-        <Heading variant="pageTitle">Quality Documents</Heading>
+        <Flex justify="center" align="center" w="full" gap={4}>
+          <Heading variant="pageTitle">Quality Documents</Heading>
+          <Spacer />
+          <Hide below="md">
+            <Box w="full" maxW="xl" mr={-2}>
+              <SearchInput placeholder="Search quality documents..." header />
+            </Box>
+          </Hide>
+        </Flex>
       </PageHeader>
+
+      <PageFooter>
+        <Flex gap={4} justifyContent="flex-end">
+          <Button
+            leftIcon={<FiPlus />}
+            colorScheme="brandPrimary"
+            onClick={onQualityDocumentModalOpen}
+          >
+            New Quality Document
+          </Button>
+        </Flex>
+      </PageFooter>
 
       <Stack spacing={{ base: 4, lg: 6 }}>
         {loading ? (
@@ -103,6 +151,12 @@ const QualityDocuments = () => {
         )}
       </Stack>
 
+      <QualityDocumentUploadModal
+        isOpen={isQualityDocumentModalOpen}
+        onClose={handleQualityDocumentModalClose}
+        parentId={null}
+        path={`/`}
+      />
       <DocumentDrawer
         document={selectedDocument}
         isOpen={!!selectedDocument}
