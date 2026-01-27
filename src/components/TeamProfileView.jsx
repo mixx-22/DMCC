@@ -19,12 +19,18 @@ import {
   Badge,
   OrderedList,
   ListItem,
+  Tabs,
+  TabList,
+  TabPanels,
+  Tab,
+  TabPanel,
+  Button,
 } from "@chakra-ui/react";
-import { FiUsers } from "react-icons/fi";
+import { FiUsers, FiTarget } from "react-icons/fi";
 import Timestamp from "./Timestamp";
 import { Link as RouterLink } from "react-router-dom";
 
-const TeamProfileView = ({ team, isValidDate }) => {
+const TeamProfileView = ({ team, isValidDate, onManageObjectives }) => {
   const borderColor = useColorModeValue("white", "gray.700");
   const bg = useColorModeValue("brandPrimary.600", "brandPrimary.800");
   const headerBg = useColorModeValue("brandPrimary.50", "brandPrimary.900");
@@ -184,30 +190,51 @@ const TeamProfileView = ({ team, isValidDate }) => {
           </Card>
         </Flex>
 
-        <Flex gap={6} flexDir="column" w="full">
-          <Card>
-            <CardHeader pb={0}>
-              <Heading size="md">Members</Heading>
-            </CardHeader>
-            <CardBody px={0}>
-              {team.members && team.members.length > 0 ? (
-                <Table variant="simple" size="sm" border="none">
-                  <Tbody>
-                    {team.members.map((member, memberIndex) => {
-                      const memberId = member.id || member._id || member.userId;
-                      const fullName = `${member.firstName || ""} ${
-                        member.lastName || ""
-                      }`.trim();
-                      return (
-                        <Tr key={`member-${memberIndex}-${memberId}`}>
-                          <Td>
-                            {memberId ? (
-                              <Link
-                                as={RouterLink}
-                                to={`/users/${memberId}`}
-                                _hover={{ textDecoration: "none" }}
-                              >
-                                <HStack spacing={3} _hover={{ opacity: 0.8 }}>
+        <Card w="full">
+          <Tabs>
+            <TabList>
+              <Tab>Members</Tab>
+              <Tab>Objectives</Tab>
+              <Tab>Documents</Tab>
+            </TabList>
+
+            <TabPanels>
+              <TabPanel px={0}>
+                {team.members && team.members.length > 0 ? (
+                  <Table variant="simple" size="sm" border="none">
+                    <Tbody>
+                      {team.members.map((member, memberIndex) => {
+                        const memberId = member.id || member._id || member.userId;
+                        const fullName = `${member.firstName || ""} ${
+                          member.lastName || ""
+                        }`.trim();
+                        return (
+                          <Tr key={`member-${memberIndex}-${memberId}`}>
+                            <Td>
+                              {memberId ? (
+                                <Link
+                                  as={RouterLink}
+                                  to={`/users/${memberId}`}
+                                  _hover={{ textDecoration: "none" }}
+                                >
+                                  <HStack spacing={3} _hover={{ opacity: 0.8 }}>
+                                    <Avatar
+                                      size="sm"
+                                      name={fullName}
+                                      src={member.profilePicture}
+                                    />
+                                    <VStack align="start" spacing={0}>
+                                      <Text fontSize="sm" fontWeight="medium">
+                                        {fullName || "Member"}
+                                      </Text>
+                                      <Text fontSize="xs" color="gray.500">
+                                        {member.employeeId || "-"}
+                                      </Text>
+                                    </VStack>
+                                  </HStack>
+                                </Link>
+                              ) : (
+                                <HStack spacing={3}>
                                   <Avatar
                                     size="sm"
                                     name={fullName}
@@ -222,80 +249,78 @@ const TeamProfileView = ({ team, isValidDate }) => {
                                     </Text>
                                   </VStack>
                                 </HStack>
-                              </Link>
-                            ) : (
-                              <HStack spacing={3}>
-                                <Avatar
-                                  size="sm"
-                                  name={fullName}
-                                  src={member.profilePicture}
-                                />
-                                <VStack align="start" spacing={0}>
-                                  <Text fontSize="sm" fontWeight="medium">
-                                    {fullName || "Member"}
-                                  </Text>
-                                  <Text fontSize="xs" color="gray.500">
-                                    {member.employeeId || "-"}
-                                  </Text>
-                                </VStack>
-                              </HStack>
-                            )}
-                          </Td>
-                          <Td></Td>
-                        </Tr>
-                      );
-                    })}
-                  </Tbody>
-                </Table>
-              ) : (
-                <Text color="gray.500" py={4} textAlign="center">
-                  No members assigned
-                </Text>
-              )}
-            </CardBody>
-          </Card>
-          <Card w="full" flex={1}>
-            <CardHeader pb={0}>
-              <Heading size="md">Objectives</Heading>
-            </CardHeader>
-            <CardBody>
-              {team.objectives && team.objectives.length > 0 ? (
-                <OrderedList spacing={4}>
-                  {team.objectives.map((objective, index) => (
-                    <ListItem key={objective.id || `objective-${index}`}>
-                      <Box
-                        p={4}
-                        borderWidth={1}
-                        borderRadius="md"
-                        borderColor={borderColor}
-                        bg={objectiveBg}
-                      >
-                        <Flex justify="space-between" align="start" mb={2}>
-                          <Text fontWeight="bold" fontSize="md">
-                            {objective.title}
-                          </Text>
-                          <Badge
-                            colorScheme={WEIGHT_COLORS[objective.weight]}
-                            ml={2}
+                              )}
+                            </Td>
+                            <Td></Td>
+                          </Tr>
+                        );
+                      })}
+                    </Tbody>
+                  </Table>
+                ) : (
+                  <Text color="gray.500" py={4} textAlign="center">
+                    No members assigned
+                  </Text>
+                )}
+              </TabPanel>
+
+              <TabPanel>
+                <VStack align="stretch" spacing={4}>
+                  <Flex justify="flex-end">
+                    <Button
+                      leftIcon={<FiTarget />}
+                      colorScheme="brandPrimary"
+                      onClick={onManageObjectives}
+                      size="sm"
+                    >
+                      Manage Objectives
+                    </Button>
+                  </Flex>
+                  {team.objectives && team.objectives.length > 0 ? (
+                    <OrderedList spacing={4}>
+                      {team.objectives.map((objective, index) => (
+                        <ListItem key={objective.id || `objective-${index}`}>
+                          <Box
+                            p={4}
+                            borderWidth={1}
+                            borderRadius="md"
+                            borderColor={borderColor}
+                            bg={objectiveBg}
                           >
-                            {objective.weight}
-                          </Badge>
-                        </Flex>
-                        <Text fontSize="sm" color="gray.600">
-                          {objective.description}
-                        </Text>
-                      </Box>
-                    </ListItem>
-                  ))}
-                </OrderedList>
-              ) : (
-                <Text color="gray.500" textAlign="center">
-                  No objectives defined
+                            <Flex justify="space-between" align="start" mb={2}>
+                              <Text fontWeight="bold" fontSize="md">
+                                {objective.title}
+                              </Text>
+                              <Badge
+                                colorScheme={WEIGHT_COLORS[objective.weight]}
+                                ml={2}
+                              >
+                                {objective.weight}
+                              </Badge>
+                            </Flex>
+                            <Text fontSize="sm" color="gray.600">
+                              {objective.description}
+                            </Text>
+                          </Box>
+                        </ListItem>
+                      ))}
+                    </OrderedList>
+                  ) : (
+                    <Text color="gray.500" textAlign="center">
+                      No objectives defined
+                    </Text>
+                  )}
+                </VStack>
+              </TabPanel>
+
+              <TabPanel>
+                <Text color="gray.500" textAlign="center" py={8}>
+                  Documents section coming soon
                 </Text>
-              )}
-            </CardBody>
-          </Card>
-        </Flex>
+              </TabPanel>
+            </TabPanels>
+          </Tabs>
+        </Card>
       </Flex>
     </Box>
   );

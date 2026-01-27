@@ -31,7 +31,6 @@ import {
   FiX,
   FiMoreVertical,
   FiTrash2,
-  FiTarget,
 } from "react-icons/fi";
 import { useNavigate, useParams } from "react-router-dom";
 import { toast } from "sonner";
@@ -285,13 +284,6 @@ const TeamPage = () => {
               </Menu>
               <Spacer />
               <Button
-                leftIcon={<FiTarget />}
-                variant="outline"
-                onClick={onObjectivesModalOpen}
-              >
-                Manage Objectives
-              </Button>
-              <Button
                 leftIcon={<FiEdit />}
                 colorScheme="brandPrimary"
                 onClick={handleEdit}
@@ -326,7 +318,11 @@ const TeamPage = () => {
       </PageFooter>
 
       {!isEditMode && !isNewTeam && team && (
-        <TeamProfileView team={team} isValidDate={isValidDate} />
+        <TeamProfileView 
+          team={team} 
+          isValidDate={isValidDate}
+          onManageObjectives={onObjectivesModalOpen}
+        />
       )}
 
       {(isEditMode || isNewTeam) && (
