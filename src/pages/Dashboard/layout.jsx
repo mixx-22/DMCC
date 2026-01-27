@@ -19,7 +19,12 @@ import { Link as RouterLink, useNavigate } from "react-router-dom";
 import { useState, useEffect, useMemo, useRef } from "react";
 import { format } from "date-fns";
 import { FiGrid, FiList } from "react-icons/fi";
-import { useApp, useUser, useLayout } from "../../context/_useContext";
+import {
+  useApp,
+  useUser,
+  useLayout,
+  usePermissions,
+} from "../../context/_useContext";
 import { motion } from "framer-motion";
 import SearchInput from "../../components/SearchInput";
 import apiService from "../../services/api";
@@ -270,6 +275,32 @@ const Layout = () => {
     [selectedTeam, userTeams],
   );
 
+  const { isAllowedTo } = usePermissions();
+  const [isTeamsAllowed, setIsTeamsAllowed] = useState(1);
+
+  useEffect(() => {
+    async function init() {
+      const val = await isAllowedTo("teams.c");
+      setIsTeamsAllowed(val);
+    }
+    init();
+  }, [isAllowedTo]);
+
+  const testArray = useMemo(() => {
+    const arr = [];
+    arr.push(JSON.stringify({ isTeamsAllowed }));
+    if (isTeamsAllowed) {
+      arr.push("TELL");
+    }
+    if (isTeamsAllowed) {
+      arr.push("ME");
+    }
+    arr.push("WHAT");
+    arr.push("TO");
+    arr.push("DO");
+    return arr;
+  }, [isTeamsAllowed]);
+
   return (
     <>
       <PageHeader>
@@ -392,6 +423,9 @@ const Layout = () => {
           <Can to="audit.c">
             <Box>Audit</Box>
           </Can>
+          {testArray.map((a, index) => (
+            <Box key={`${index}-a`}>{a}</Box>
+          ))}
         </Box>
 
         <Box>
