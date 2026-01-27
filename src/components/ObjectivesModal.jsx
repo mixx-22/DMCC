@@ -91,9 +91,9 @@ const ObjectivesModal = ({ isOpen, onClose, objectives = [], onSave }) => {
   };
 
   const handleSave = () => {
-    // Filter out empty objectives
+    // Filter out invalid objectives (title and description are required)
     const validObjectives = localObjectives.filter(
-      (obj) => obj.title.trim() !== ""
+      (obj) => obj.title.trim() !== "" && obj.description.trim() !== ""
     );
     onSave(validObjectives);
     onClose();
