@@ -42,6 +42,7 @@ const FolderAsyncSelect = ({
   } = useDisclosure();
   const [newFolderTitle, setNewFolderTitle] = useState("");
   const debounceTimerRef = useRef(null);
+  const requestIdRef = useRef(0);
 
   // Cleanup debounce timer on unmount
   useEffect(() => {
@@ -63,9 +64,18 @@ const FolderAsyncSelect = ({
         clearTimeout(debounceTimerRef.current);
       }
 
+      // Increment request ID for this search
+      const currentRequestId = ++requestIdRef.current;
+
       // Return a new promise that will be resolved after debounce
       return new Promise((resolve) => {
         debounceTimerRef.current = setTimeout(async () => {
+          // Check if this is still the latest request
+          if (currentRequestId !== requestIdRef.current) {
+            resolve([]); // Stale request, return empty
+            return;
+          }
+
           // Check if the input is in the format id:<id>
           const idMatch = inputValue.match(/^id:(.+)$/i);
 
@@ -83,13 +93,19 @@ const FolderAsyncSelect = ({
                 folder.title.toLowerCase().includes(inputValue.toLowerCase())
               );
             }
-            resolve(
-              filtered.map((folder) => ({
-                value: folder.id,
-                label: folder.title,
-                folder: folder,
-              }))
-            );
+            
+            // Check again if still the latest request before resolving
+            if (currentRequestId === requestIdRef.current) {
+              resolve(
+                filtered.map((folder) => ({
+                  value: folder.id,
+                  label: folder.title,
+                  folder: folder,
+                }))
+              );
+            } else {
+              resolve([]);
+            }
             return;
           }
 
@@ -104,6 +120,12 @@ const FolderAsyncSelect = ({
                   method: "GET",
                 }
               );
+
+              // Check if still the latest request
+              if (currentRequestId !== requestIdRef.current) {
+                resolve([]);
+                return;
+              }
 
               // If found and it's a folder, return it
               const doc = data.data || data.document || data;
@@ -128,6 +150,12 @@ const FolderAsyncSelect = ({
                   limit: 10,
                 },
               });
+
+              // Check if still the latest request
+              if (currentRequestId !== requestIdRef.current) {
+                resolve([]);
+                return;
+              }
 
               const documents = data.data?.documents || data.documents || [];
               resolve(
