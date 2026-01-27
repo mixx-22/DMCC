@@ -44,7 +44,7 @@ import PageFooter from "../../components/PageFooter";
 import { useScheduleProfile } from "../../context/_useContext";
 import { getAuditTypeLabel } from "../../utils/auditHelpers";
 
-const SchedulePage = () => {
+const ScheduleForm = () => {
   const navigate = useNavigate();
   const { id } = useParams();
   const {
@@ -66,8 +66,8 @@ const SchedulePage = () => {
 
   const steps = [
     { number: 1, title: "Basic Information", fields: ["title", "description"] },
-    { number: 2, title: "Audit Details", fields: ["auditCode", "auditType"] },
-    { number: 3, title: "Standards & Status", fields: ["standard", "status"] },
+    { number: 2, title: "Audit Details", fields: ["auditCode", "auditType", "standard"] },
+    { number: 3, title: "Review", fields: [] },
   ];
 
   const getStepBackgroundColor = (currentStep, stepNumber) => {
@@ -386,15 +386,7 @@ const SchedulePage = () => {
                     {validationErrors.auditType}
                   </FormErrorMessage>
                 </FormControl>
-              </>
-            )}
 
-            {/* Step 3: Standards & Status */}
-            {currentStep === 3 && (
-              <>
-                <Heading size="md" mb={2}>
-                  Standards & Status
-                </Heading>
                 <FormControl>
                   <FormLabel>Standard</FormLabel>
                   <Input
@@ -408,58 +400,54 @@ const SchedulePage = () => {
                     The audit standard or framework being followed (optional)
                   </FormHelperText>
                 </FormControl>
+              </>
+            )}
 
-                {/* Summary Card */}
-                <Box
-                  p={4}
-                  borderWidth="1px"
-                  borderRadius="md"
-                  bg={summaryCardBg}
-                >
-                  <Text fontWeight="bold" mb={3}>
-                    Review Your Schedule
-                  </Text>
-                  <VStack align="stretch" spacing={2} fontSize="sm">
-                    <HStack>
-                      <Text fontWeight="semibold" minW="120px">
-                        Title:
-                      </Text>
-                      <Text>{formData.title || "-"}</Text>
-                    </HStack>
-                    <HStack>
-                      <Text fontWeight="semibold" minW="120px">
-                        Audit Code:
-                      </Text>
-                      <Text>{formData.auditCode || "-"}</Text>
-                    </HStack>
-                    <HStack>
-                      <Text fontWeight="semibold" minW="120px">
-                        Type:
-                      </Text>
-                      <Text>
-                        {formData.auditType
-                          ? getAuditTypeLabel(formData.auditType)
-                          : "-"}
-                      </Text>
-                    </HStack>
-                    <HStack>
-                      <Text fontWeight="semibold" minW="120px">
-                        Standard:
-                      </Text>
-                      <Text>{formData.standard || "-"}</Text>
-                    </HStack>
-                    <HStack>
-                      <Text fontWeight="semibold" minW="120px">
-                        Status:
-                      </Text>
-                      {formData.status === 1 ? (
-                        <Badge colorScheme="green">Closed</Badge>
-                      ) : (
-                        <Badge colorScheme="blue">Ongoing</Badge>
-                      )}
-                    </HStack>
-                  </VStack>
-                </Box>
+            {/* Step 3: Review */}
+            {currentStep === 3 && (
+              <>
+                <Heading size="md" mb={2}>
+                  Review Your Schedule
+                </Heading>
+                <Text fontSize="sm" color="gray.600" mb={4}>
+                  Please review the information below before submitting
+                </Text>
+                <VStack align="stretch" spacing={3}>
+                  <Box>
+                    <Text fontSize="sm" fontWeight="semibold" color="gray.600">
+                      Title
+                    </Text>
+                    <Text fontSize="md">{formData.title || "-"}</Text>
+                  </Box>
+                  <Box>
+                    <Text fontSize="sm" fontWeight="semibold" color="gray.600">
+                      Description
+                    </Text>
+                    <Text fontSize="md">{formData.description || "-"}</Text>
+                  </Box>
+                  <Box>
+                    <Text fontSize="sm" fontWeight="semibold" color="gray.600">
+                      Audit Code
+                    </Text>
+                    <Text fontSize="md">{formData.auditCode || "-"}</Text>
+                  </Box>
+                  <Box>
+                    <Text fontSize="sm" fontWeight="semibold" color="gray.600">
+                      Audit Type
+                    </Text>
+                    <Text fontSize="md">
+                      {formData.auditType
+                        ? getAuditTypeLabel(formData.auditType)
+                        : "-"}
+                    </Text>
+                  </Box>
+                  <Box>
+                    <Text fontSize="sm" fontWeight="semibold" color="gray.600">
+                      Standard
+                    </Text>
+                    <Text fontSize="md">{formData.standard || "-"}</Text>
+                  </Box>
+                </VStack>
               </>
             )}
           </VStack>
@@ -506,4 +494,4 @@ const SchedulePage = () => {
   );
 };
 
-export default SchedulePage;
+export default ScheduleForm;

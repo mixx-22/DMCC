@@ -26,7 +26,6 @@ const initialScheduleData = {
   auditCode: "",
   auditType: "",
   standard: "",
-  status: 0,
 };
 
 // Action types
