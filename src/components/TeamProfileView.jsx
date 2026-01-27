@@ -26,13 +26,18 @@ import {
   Center,
   Stack,
   Spinner,
+  IconButton,
+  Spacer,
+  Tooltip,
 } from "@chakra-ui/react";
-import { FiUsers, FiTarget, FiFolder, FiFile } from "react-icons/fi";
+import { FiUsers, FiTarget, FiFolder, FiExternalLink } from "react-icons/fi";
 import { useState, useEffect } from "react";
 import Timestamp from "./Timestamp";
 import { Link as RouterLink } from "react-router-dom";
 import Can from "./Can";
 import { useDocuments } from "../context/_useContext";
+import { getDocumentIcon } from "./Document/DocumentIcon";
+import { formatFileSize } from "../utils/fileUpload";
 
 const TeamProfileView = ({ team, isValidDate, onManageObjectives }) => {
   const borderColor = useColorModeValue("white", "gray.700");
@@ -40,12 +45,22 @@ const TeamProfileView = ({ team, isValidDate, onManageObjectives }) => {
   const headerBg = useColorModeValue("brandPrimary.50", "brandPrimary.900");
   const objectiveBg = useColorModeValue("gray.50", "gray.700");
 
-  const { fetchDocuments, documents, loading: loadingDocuments } = useDocuments();
+  const [tabIndex, setTabIndex] = useState(0);
+  const handleTabsChange = (index) => {
+    setTabIndex(index);
+  };
+
+  const {
+    fetchDocuments,
+    folder,
+    documents,
+    loading: loadingDocuments,
+  } = useDocuments();
   const [loadingFolder, setLoadingFolder] = useState(false);
 
   useEffect(() => {
     const loadFolderContents = async () => {
-      if (team?.folderId) {
+      if (team?.folderId && tabIndex === 2) {
         setLoadingFolder(true);
         try {
           await fetchDocuments(team.folderId);
@@ -58,7 +73,7 @@ const TeamProfileView = ({ team, isValidDate, onManageObjectives }) => {
     };
 
     loadFolderContents();
-  }, [team?.folderId, fetchDocuments]);
+  }, [team.folderId, fetchDocuments, tabIndex]);
 
   const WEIGHT_COLORS = {
     low: "green",
@@ -218,7 +233,11 @@ const TeamProfileView = ({ team, isValidDate, onManageObjectives }) => {
 
         <Box flex={1}>
           <Card w="full">
-            <Tabs colorScheme="brandPrimary">
+            <Tabs
+              colorScheme="brandPrimary"
+              index={tabIndex}
+              onChange={handleTabsChange}
+            >
               <TabList>
                 <Tab>Members</Tab>
                 <Tab>Objectives</Tab>
@@ -368,7 +387,28 @@ const TeamProfileView = ({ team, isValidDate, onManageObjectives }) => {
                   </VStack>
                 </TabPanel>
 
-                <TabPanel>
+                <TabPanel px={0} pt={0}>
+                  {team.folderId && (
+                    <HStack px={4} pt={4} pb={2} alignItems="center">
+                      <Text fontSize="sm" color="gray.500">
+                        {loadingDocuments
+                          ? `Loading Team Documents`
+                          : (folder?.title ?? `${team?.title}'s Documents`)}
+                      </Text>
+                      <Spacer />
+                      <Tooltip label="Open Folder in New Tab">
+                        <IconButton
+                          isRound
+                          size="xs"
+                          variant="ghost"
+                          colorScheme="brandPrimary"
+                          as={RouterLink}
+                          icon={<FiExternalLink />}
+                          to={`/documents/folders/${team.folderId}`}
+                        />
+                      </Tooltip>
+                    </HStack>
+                  )}
                   {team.folderId ? (
                     loadingFolder || loadingDocuments ? (
                       <Center minH="xs">
@@ -381,38 +421,38 @@ const TeamProfileView = ({ team, isValidDate, onManageObjectives }) => {
                       <Table variant="simple" size="sm" border="none">
                         <Tbody>
                           {documents.map((doc, index) => {
+                            const docId = doc?._id ?? doc?.id;
                             const isFolder = doc.type === "folder";
-                            const docIcon = isFolder ? FiFolder : FiFile;
                             return (
-                              <Tr key={doc.id || `doc-${index}`}>
+                              <Tr key={docId || `doc-${index}`}>
                                 <Td>
                                   <Link
                                     as={RouterLink}
                                     to={
                                       isFolder
-                                        ? `/documents/folders/${doc.id}`
-                                        : `/documents/${doc.id}`
+                                        ? `/documents/folders/${docId}`
+                                        : `/document/${docId}`
                                     }
                                     _hover={{ textDecoration: "none" }}
+                                    target="_blank"
                                   >
-                                    <HStack spacing={3} _hover={{ opacity: 0.8 }}>
-                                      <Icon as={docIcon} boxSize={5} />
+                                    <HStack
+                                      spacing={3}
+                                      _hover={{ opacity: 0.8 }}
+                                    >
+                                      {getDocumentIcon(doc, 18)}
                                       <VStack align="start" spacing={0}>
                                         <Text fontSize="sm" fontWeight="medium">
                                           {doc.title}
                                         </Text>
-                                        {doc.description && (
-                                          <Text
-                                            fontSize="xs"
-                                            color="gray.500"
-                                            noOfLines={1}
-                                          >
-                                            {doc.description}
-                                          </Text>
-                                        )}
                                       </VStack>
                                     </HStack>
                                   </Link>
+                                </Td>
+                                <Td textAlign="right">
+                                  <Text fontSize="xs" color="gray.500">
+                                    {formatFileSize(doc.metadata.size)}
+                                  </Text>
                                 </Td>
                               </Tr>
                             );
@@ -426,8 +466,13 @@ const TeamProfileView = ({ team, isValidDate, onManageObjectives }) => {
                           <Text color="gray.500" textAlign="center">
                             This folder is empty
                           </Text>
-                          <Text fontSize="sm" color="gray.400" textAlign="center">
-                            Documents will appear here when added to the team folder
+                          <Text
+                            fontSize="sm"
+                            color="gray.400"
+                            textAlign="center"
+                          >
+                            Documents will appear here when added to the team
+                            folder
                           </Text>
                         </VStack>
                       </Center>

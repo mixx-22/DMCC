@@ -293,13 +293,13 @@ const TeamPage = () => {
               </Button>
             </Flex>
           ) : (
-            <Flex gap={2} w={{ base: "full", sm: "auto" }}>
+            <Flex gap={2} w="full">
+              <Spacer />
               <Button
                 leftIcon={<FiX />}
                 variant="outline"
                 onClick={handleCancel}
                 isDisabled={saving}
-                flex={{ base: 1, sm: "auto" }}
               >
                 Cancel
               </Button>
@@ -309,7 +309,6 @@ const TeamPage = () => {
                 onClick={handleSave}
                 isLoading={saving}
                 loadingText="Saving..."
-                flex={{ base: 1, sm: "auto" }}
               >
                 {isNewTeam ? "Create Team" : "Save Changes"}
               </Button>
@@ -319,8 +318,8 @@ const TeamPage = () => {
       </PageFooter>
 
       {!isEditMode && !isNewTeam && team && (
-        <TeamProfileView 
-          team={team} 
+        <TeamProfileView
+          team={team}
           isValidDate={isValidDate}
           onManageObjectives={onObjectivesModalOpen}
         />
@@ -382,7 +381,25 @@ const TeamPage = () => {
                 />
               </CardBody>
             </Card>
-
+          </Stack>
+          <Stack gap={6} w="full">
+            <Card>
+              <CardHeader pb={0}>
+                <Heading size="md">Team Members</Heading>
+              </CardHeader>
+              <CardBody px={0}>
+                <UserAsyncSelect
+                  label=""
+                  placeholder="Search for users..."
+                  value={formData.members || []}
+                  onChange={(members) => handleFieldChange("members", members)}
+                  limit={10}
+                  displayMode="table"
+                  sx={{ px: 5 }}
+                  tableProps={{ sx: { td: { px: 5 } } }}
+                />
+              </CardBody>
+            </Card>
             <Card>
               <CardHeader pb={0}>
                 <Heading size="md">Documents Folder</Heading>
@@ -403,25 +420,6 @@ const TeamPage = () => {
                     handleFieldChange("folderTitle", folder?.title || null);
                   }}
                   teamName={formData.name}
-                />
-              </CardBody>
-            </Card>
-          </Stack>
-          <Stack gap={6} w="full">
-            <Card>
-              <CardHeader pb={0}>
-                <Heading size="md">Team Members</Heading>
-              </CardHeader>
-              <CardBody px={0}>
-                <UserAsyncSelect
-                  label=""
-                  placeholder="Search for users..."
-                  value={formData.members || []}
-                  onChange={(members) => handleFieldChange("members", members)}
-                  limit={10}
-                  displayMode="table"
-                  sx={{ px: 5 }}
-                  tableProps={{ sx: { td: { px: 5 } } }}
                 />
               </CardBody>
             </Card>
