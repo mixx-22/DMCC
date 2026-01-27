@@ -22,6 +22,7 @@ import {
   Stack,
   CardHeader,
   useDisclosure,
+  Spacer,
 } from "@chakra-ui/react";
 import {
   FiEdit,
@@ -260,20 +261,18 @@ const TeamPage = () => {
         </Heading>
       </PageHeader>
       <PageFooter>
-        <Flex
-          gap={4}
-          flexWrap="wrap"
-          justifyContent={{ base: "stretch", sm: "flex-end" }}
-        >
+        <Flex w="full" gap={4}>
           {!isEditMode && !isNewTeam ? (
-            <Flex gap={2} w={{ base: "full", sm: "auto" }}>
+            <Flex gap={2} w="full">
               <Menu>
                 <MenuButton
-                  as={IconButton}
-                  icon={<FiMoreVertical />}
+                  as={Button}
+                  leftIcon={<FiMoreVertical />}
                   variant="outline"
                   aria-label="More options"
-                />
+                >
+                  More Options
+                </MenuButton>
                 <MenuList>
                   <MenuItem
                     icon={<FiTrash2 />}
@@ -284,11 +283,11 @@ const TeamPage = () => {
                   </MenuItem>
                 </MenuList>
               </Menu>
+              <Spacer />
               <Button
                 leftIcon={<FiTarget />}
                 variant="outline"
                 onClick={onObjectivesModalOpen}
-                flex={{ base: 1, sm: "auto" }}
               >
                 Manage Objectives
               </Button>
@@ -296,7 +295,6 @@ const TeamPage = () => {
                 leftIcon={<FiEdit />}
                 colorScheme="brandPrimary"
                 onClick={handleEdit}
-                flex={{ base: 1, sm: "auto" }}
               >
                 Edit Team
               </Button>
