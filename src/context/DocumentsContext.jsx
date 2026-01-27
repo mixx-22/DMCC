@@ -141,18 +141,6 @@ export const DocumentsProvider = ({ children }) => {
       newDocument.metadata = {
         allowInheritance: documentData.allowInheritance ?? 0,
       };
-    } else if (
-      documentData.type === "auditSchedule" &&
-      !documentData.metadata
-    ) {
-      newDocument.metadata = {
-        code: documentData.code || "",
-        type: documentData.auditType || "",
-        standard: documentData.standard || "",
-        status: -1,
-        auditors: [],
-        organization: {},
-      };
     }
 
     if (!USE_API) {

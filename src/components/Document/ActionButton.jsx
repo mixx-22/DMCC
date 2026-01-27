@@ -12,7 +12,6 @@ import {
 import {
   FiPlus,
   FiFolder,
-  FiCalendar,
   FiChevronDown,
   FiUpload,
   FiFileText,
@@ -23,7 +22,6 @@ import { usePermissions } from "../../context/_useContext";
 export const ActionButton = ({
   onFileSelect,
   onFolderModalOpen,
-  onAuditModalOpen,
   onFormTemplateModalOpen,
   onQualityDocumentModalOpen,
 }) => {
@@ -42,14 +40,10 @@ export const ActionButton = ({
   };
 
   const { isAllowedTo } = usePermissions();
-  const [isAuditScheduleAllowed, setIsAuditScheduleAllowed] = useState(1);
   const [isTemplateAllowed, setIsTemplateAllowed] = useState(1);
 
   useEffect(() => {
     async function init() {
-      const val = await isAllowedTo("audit.c");
-      setIsAuditScheduleAllowed(val);
-
       const val2 = await isAllowedTo("audit.c");
       setIsTemplateAllowed(val2);
     }
@@ -85,11 +79,6 @@ export const ActionButton = ({
             <MenuItem icon={<FiFolder />} onClick={onFolderModalOpen}>
               New Folder
             </MenuItem>
-            {isAuditScheduleAllowed && (
-              <MenuItem icon={<FiCalendar />} onClick={onAuditModalOpen}>
-                New Audit Schedule
-              </MenuItem>
-            )}
             {isTemplateAllowed && (
               <MenuItem icon={<FiFileText />} onClick={onFormTemplateModalOpen}>
                 New Form Template

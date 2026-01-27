@@ -12,28 +12,24 @@ const DocumentBadges = ({ data = {}, isValid }) => {
         colorScheme={
           type === "folder"
             ? "brandPrimary"
-            : type === "auditSchedule"
-              ? "purple"
-              : ["formTemplate", "formResponse"].includes(type)
-                ? "green"
-                : type === "file"
-                  ? "brandPrimary"
-                  : "gray"
+            : ["formTemplate", "formResponse"].includes(type)
+              ? "green"
+              : type === "file"
+                ? "brandPrimary"
+                : "gray"
         }
       >
-        {type === "auditSchedule"
-          ? "Audit Schedule"
-          : type === "formTemplate"
-            ? "Form Template"
-            : type === "formResponse"
-              ? "Form Response"
-              : type === "file"
-                ? fileType.trackVersioning
-                  ? version
-                  : "File"
-                : type
-                  ? type.charAt(0).toUpperCase() + type.slice(1)
-                  : "Unknown"}
+        {type === "formTemplate"
+          ? "Form Template"
+          : type === "formResponse"
+            ? "Form Response"
+            : type === "file"
+              ? fileType.trackVersioning
+                ? version
+                : "File"
+              : type
+                ? type.charAt(0).toUpperCase() + type.slice(1)
+                : "Unknown"}
       </Badge>
       {readOnly && <Badge colorScheme="orange">Read Only</Badge>}
       {restricted && <Badge colorScheme="red">Restricted</Badge>}

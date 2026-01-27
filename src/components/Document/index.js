@@ -4,7 +4,6 @@ export { default as DocumentDrawer } from "./DocumentDrawer";
 export { default as DownloadButton } from "./DownloadButton";
 export { default as PreviewButton } from "./PreviewButton";
 export { default as CreateFolderModal } from "./modals/CreateFolderModal";
-export { default as CreateAuditScheduleModal } from "./modals/CreateAuditScheduleModal";
 export { default as UploadFileModal } from "./modals/UploadFileModal";
 export { default as EditDocumentModal } from "./modals/EditDocumentModal";
 export { default as MoveDocumentModal } from "./modals/MoveDocumentModal";

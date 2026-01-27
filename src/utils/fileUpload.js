@@ -78,7 +78,7 @@ export const createDocumentFormData = async (documentData) => {
       }),
     );
   } else {
-    // For folders and audit schedules, add metadata as JSON
+    // For folders, add metadata as JSON
     formData.append("metadata", JSON.stringify(documentData.metadata || {}));
   }
 

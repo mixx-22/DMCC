@@ -34,6 +34,7 @@ import {
   FiSearch,
 } from "react-icons/fi";
 import { HiOutlineUser, HiOutlineUserGroup } from "react-icons/hi2";
+import { IoCalendarOutline } from "react-icons/io5";
 import logoDefault from "../images/auptilyze.png";
 import logoWhite from "../images/auptilyze-white.png";
 import logoIconDefault from "../images/auptilyze-icon.svg";
@@ -179,6 +180,7 @@ const Sidebar = () => {
   const { isAllowedTo } = usePermissions();
   const [isTeamsAllowed, setIsTeamsAllowed] = useState(1);
   const [isUsersAllowed, setIsUsersAllowed] = useState(1);
+  const [isSchedulesAllowed, setIsSchedulesAllowed] = useState(1);
   const [isSettingsAllowed, setIsSettingsAllowed] = useState(1);
   const [isSettingsRolesAllowed, setIsSettingsRolesAllowed] = useState(1);
   const [isSettingsfileTypeAllowed, setIsSettingsfileTypeAllowed] = useState(1);
@@ -191,14 +193,17 @@ const Sidebar = () => {
       const val2 = await isAllowedTo("users.r");
       setIsUsersAllowed(val2);
 
-      const val3 = await isAllowedTo("settings.r");
-      setIsSettingsAllowed(val3);
+      const val3 = await isAllowedTo("audit.r");
+      setIsSchedulesAllowed(val3);
 
-      const val4 = await isAllowedTo("settings.roles.r");
-      setIsSettingsRolesAllowed(val4);
+      const val4 = await isAllowedTo("settings.r");
+      setIsSettingsAllowed(val4);
 
-      const val5 = await isAllowedTo("settings.fileType.r");
-      setIsSettingsfileTypeAllowed(val5);
+      const val5 = await isAllowedTo("settings.roles.r");
+      setIsSettingsRolesAllowed(val5);
+
+      const val6 = await isAllowedTo("settings.fileType.r");
+      setIsSettingsfileTypeAllowed(val6);
     }
     init();
   }, [isAllowedTo]);
@@ -244,6 +249,15 @@ const Sidebar = () => {
         iconProps: { strokeWidth: "2px" },
       });
     }
+    if (isSchedulesAllowed) {
+      items.push({
+        id: "schedules",
+        path: "/schedules",
+        label: "Audit Schedules",
+        icon: IoCalendarOutline,
+        iconProps: { strokeWidth: "2px" },
+      });
+    }
     if (isSettingsAllowed) {
       const children = [];
       children.push({ path: "/allSettings", label: "All Settings" });
@@ -266,6 +280,7 @@ const Sidebar = () => {
     isAdmin,
     isUsersAllowed,
     isTeamsAllowed,
+    isSchedulesAllowed,
     isSettingsAllowed,
     isSettingsRolesAllowed,
     isSettingsfileTypeAllowed,

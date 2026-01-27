@@ -1,6 +1,5 @@
 import {
   IoDocument,
-  IoCalendar,
   IoAlertCircle,
   IoDocumentText,
   IoImage,
@@ -151,15 +150,6 @@ export const getDocumentIcon = (doc, size = 24) => {
   switch (type) {
     case "folder":
       return <AuptilyzeFolder boxSize={`${size}px`} />;
-    case "auditSchedule":
-      return (
-        <Icon
-          as={IoCalendar}
-          boxSize={`${size}px`}
-          color="purple.600"
-          _dark={{ color: "purple.200" }}
-        />
-      );
     case "formTemplate":
       return (
         <Icon
