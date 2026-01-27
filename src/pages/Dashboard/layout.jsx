@@ -275,32 +275,6 @@ const Layout = () => {
     [selectedTeam, userTeams],
   );
 
-  const { isAllowedTo } = usePermissions();
-  const [isTeamsAllowed, setIsTeamsAllowed] = useState(1);
-
-  useEffect(() => {
-    async function init() {
-      const val = await isAllowedTo("teams.c");
-      setIsTeamsAllowed(val);
-    }
-    init();
-  }, [isAllowedTo]);
-
-  const testArray = useMemo(() => {
-    const arr = [];
-    arr.push(JSON.stringify({ isTeamsAllowed }));
-    if (isTeamsAllowed) {
-      arr.push("TELL");
-    }
-    if (isTeamsAllowed) {
-      arr.push("ME");
-    }
-    arr.push("WHAT");
-    arr.push("TO");
-    arr.push("DO");
-    return arr;
-  }, [isTeamsAllowed]);
-
   return (
     <>
       <PageHeader>
@@ -395,37 +369,6 @@ const Layout = () => {
               }
             }}
           />
-        </Box>
-
-        {/* TODO: Testing for Permissions */}
-        <Box>
-          Test:
-          <Can to="users.c">
-            <Box>Users</Box>
-          </Can>
-          <Can to="teams.c">
-            <Box>Teams</Box>
-          </Can>
-          <Can to="roles.c">
-            <Box>Roles</Box>
-          </Can>
-          <Can to="document.c">
-            <>
-              <Box>Documents</Box>
-              <Can to="document.archive.c">
-                <Box>Archive Documents</Box>
-              </Can>
-              <Can to="document.download.c">
-                <Box>Download Documents</Box>
-              </Can>
-            </>
-          </Can>
-          <Can to="audit.c">
-            <Box>Audit</Box>
-          </Can>
-          {testArray.map((a, index) => (
-            <Box key={`${index}-a`}>{a}</Box>
-          ))}
         </Box>
 
         <Box>
