@@ -9,19 +9,22 @@ import { DocumentsProvider } from "./context/DocumentsContext";
 import "./index.css";
 import Fonts from "./components/Fonts";
 import { LayoutProvider } from "./context/Layout";
+import { PermissionProvider } from "./context/Permission";
 
 ReactDOM.createRoot(document.getElementById("root")).render(
   <React.StrictMode>
     <ChakraProvider theme={theme}>
       <UserProvider>
-        <AppProvider>
-          <DocumentsProvider>
-            <LayoutProvider>
-              <Fonts />
-              <App />
-            </LayoutProvider>
-          </DocumentsProvider>
-        </AppProvider>
+        <PermissionProvider>
+          <AppProvider>
+            <DocumentsProvider>
+              <LayoutProvider>
+                <Fonts />
+                <App />
+              </LayoutProvider>
+            </DocumentsProvider>
+          </AppProvider>
+        </PermissionProvider>
       </UserProvider>
     </ChakraProvider>
   </React.StrictMode>,

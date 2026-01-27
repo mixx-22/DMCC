@@ -67,10 +67,15 @@ import Breadcrumbs from "../../components/Document/Breadcrumbs";
 import PrivacyDisplay from "../../components/Document/PrivacyDisplay";
 import QualityDocumentBadges from "../../components/Document/QualityDocumentBadges";
 import QualityDocumentActions from "../../components/Document/QualityDocumentActions";
-import { useDocuments, useUser } from "../../context/_useContext";
+import {
+  useDocuments,
+  usePermissions,
+  useUser,
+} from "../../context/_useContext";
 import { toast } from "sonner";
 import DocumentBadges from "./Badges";
 import moment from "moment";
+import Can from "../../components/Can";
 import { canEditDocument } from "../../utils/qualityDocumentUtils";
 
 const DocumentDetail = () => {
@@ -323,6 +328,17 @@ const DocumentDetail = () => {
     if (!document || !currentUser) return false;
     return document?.owner?._id === currentUser?.id;
   }, [currentUser, document]);
+
+  const { isAllowedTo } = usePermissions();
+  const [isDeleteAllowed, setIsDeleteAllowed] = useState(1);
+
+  useEffect(() => {
+    async function init() {
+      const val = await isAllowedTo("document.d");
+      setIsDeleteAllowed(val);
+    }
+    init();
+  }, [isAllowedTo]);
 
   const renderEditableQuestion = (question, index) => {
     const value =
@@ -1324,23 +1340,25 @@ const DocumentDetail = () => {
                         : "Unknown"}
               </MenuItem>
               <Divider />
-              <MenuItem
-                icon={<FiTrash2 />}
-                onClick={onDeleteOpen}
-                color={errorColor}
-              >
-                Delete{" "}
-                {document?.type === "auditSchedule"
-                  ? "Audit Schedule"
-                  : document?.type === "formTemplate"
-                    ? "Form Template"
-                    : document?.type === "formResponse"
-                      ? "Form Response"
-                      : document?.type
-                        ? document?.type.charAt(0).toUpperCase() +
-                          document?.type.slice(1)
-                        : "Unknown"}
-              </MenuItem>
+              {isDeleteAllowed && (
+                <MenuItem
+                  icon={<FiTrash2 />}
+                  onClick={onDeleteOpen}
+                  color={errorColor}
+                >
+                  Delete{" "}
+                  {document?.type === "auditSchedule"
+                    ? "Audit Schedule"
+                    : document?.type === "formTemplate"
+                      ? "Form Template"
+                      : document?.type === "formResponse"
+                        ? "Form Response"
+                        : document?.type
+                          ? document?.type.charAt(0).toUpperCase() +
+                            document?.type.slice(1)
+                          : "Unknown"}
+                </MenuItem>
+              )}
             </MenuList>
           </Menu>
           <Spacer />
@@ -1356,15 +1374,17 @@ const DocumentDetail = () => {
           )}
           {document?.type === "file" && document?.metadata?.key && (
             <>
-              <Tooltip label="Download this file">
-                <Box>
-                  <DownloadButton
-                    document={document}
-                    size="md"
-                    isDisabled={!isValid}
-                  />
-                </Box>
-              </Tooltip>
+              <Can to="document.download.c">
+                <Tooltip label="Download this file">
+                  <Box>
+                    <DownloadButton
+                      document={document}
+                      size="md"
+                      isDisabled={!isValid}
+                    />
+                  </Box>
+                </Tooltip>
+              </Can>
               <Box>
                 <PreviewButton
                   document={{ ...document, id }}

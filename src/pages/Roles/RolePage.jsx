@@ -33,7 +33,7 @@ import {
 import { useNavigate, useParams } from "react-router-dom";
 import { toast } from "sonner";
 import Swal from "sweetalert2";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import PermissionsCheckboxGroup from "../../components/PermissionsCheckboxGroup";
 import PageHeader from "../../components/PageHeader";
 import PageFooter from "../../components/PageFooter";
@@ -55,33 +55,81 @@ const RolePage = () => {
     permissions: {
       users: { c: 0, r: 0, u: 0, d: 0 },
       teams: { c: 0, r: 0, u: 0, d: 0 },
-      roles: { c: 0, r: 0, u: 0, d: 0 },
       document: {
         c: 0,
         r: 0,
         u: 0,
         d: 0,
-        permissions: {
+        permission: {
           archive: { c: 0, r: 0, u: 0, d: 0 },
           download: { c: 0, r: 0, u: 0, d: 0 },
+          preview: { c: 0, r: 0, u: 0, d: 0 },
+        },
+      },
+      request: {
+        c: 0,
+        r: 0,
+        u: 0,
+        d: 0,
+        permission: {
+          publish: { c: 0, r: 0, u: 0, d: 0 },
         },
       },
       audit: { c: 0, r: 0, u: 0, d: 0 },
+      settings: {
+        c: 0,
+        r: 0,
+        u: 0,
+        d: 0,
+        permission: {
+          roles: { c: 0, r: 0, u: 0, d: 0 },
+          fileType: { c: 0, r: 0, u: 0, d: 0 },
+        },
+      },
     },
     isSystemRole: false,
   });
   const [validationErrors, setValidationErrors] = useState({});
+
+  // Helper function to normalize permissions structure (convert "permissions" to "permission")
+  const normalizePermissions = useCallback((perms) => {
+    if (!perms || typeof perms !== "object") return perms;
+
+    const normalized = { ...perms };
+
+    Object.keys(normalized).forEach((key) => {
+      if (typeof normalized[key] === "object" && normalized[key] !== null) {
+        // If this object has both "permissions" and "permission", remove "permissions"
+        if (normalized[key].permissions && normalized[key].permission) {
+          delete normalized[key].permissions;
+        }
+        // If it has "permissions" but not "permission", rename it
+        else if (normalized[key].permissions && !normalized[key].permission) {
+          normalized[key].permission = normalized[key].permissions;
+          delete normalized[key].permissions;
+        }
+        // Recursively normalize nested structures
+        if (normalized[key].permission) {
+          normalized[key].permission = normalizePermissions(
+            normalized[key].permission,
+          );
+        }
+      }
+    });
+
+    return normalized;
+  }, []);
 
   useEffect(() => {
     if (role && !isNewRole) {
       setFormData({
         title: role.title || "",
         description: role.description || "",
-        permissions: role.permissions || {},
+        permissions: normalizePermissions(role.permissions || {}),
         isSystemRole: role.isSystemRole || false,
       });
     }
-  }, [role, isNewRole]);
+  }, [role, isNewRole, normalizePermissions]);
 
   const handleFieldChange = (field, value) => {
     setFormData((prev) => ({
@@ -292,7 +340,7 @@ const RolePage = () => {
         setFormData({
           title: role.title || "",
           description: role.description || "",
-          permissions: role.permissions || {},
+          permissions: normalizePermissions(role.permissions || {}),
           isSystemRole: role.isSystemRole || false,
         });
       }

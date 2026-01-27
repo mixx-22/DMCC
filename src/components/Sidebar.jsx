@@ -17,7 +17,6 @@ import {
   MenuItem,
   Portal,
   MenuGroup,
-  Badge,
   Avatar,
 } from "@chakra-ui/react";
 import { NavLink, useLocation, useNavigate } from "react-router-dom";
@@ -39,7 +38,7 @@ import logoDefault from "../images/auptilyze.png";
 import logoWhite from "../images/auptilyze-white.png";
 import logoIconDefault from "../images/auptilyze-icon.svg";
 import logoIconWhite from "../images/auptilyze-icon-white.svg";
-import { useApp, useUser } from "../context/_useContext";
+import { usePermissions, useUser } from "../context/_useContext";
 
 const isRouteMatch = (location, target) => {
   const [targetPath, targetQuery] = target.split("?");
@@ -157,8 +156,6 @@ const Sidebar = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const { user: currentUser } = useUser();
-  const { getExpiringCertifications } = useApp();
-  const expiringCerts = getExpiringCertifications();
 
   const logoSrc = useColorModeValue(logoDefault, logoWhite);
   const logoIconSrc = useColorModeValue(logoIconDefault, logoIconWhite);
@@ -177,7 +174,32 @@ const Sidebar = () => {
   const [isBottomNavVisible, setIsBottomNavVisible] = useState(true);
   const [lastScrollY, setLastScrollY] = useState(0);
 
-  const isAdmin = true;
+  const { isAllowedTo } = usePermissions();
+  const [isTeamsAllowed, setIsTeamsAllowed] = useState(1);
+  const [isUsersAllowed, setIsUsersAllowed] = useState(1);
+  const [isSettingsAllowed, setIsSettingsAllowed] = useState(1);
+  const [isSettingsRolesAllowed, setIsSettingsRolesAllowed] = useState(1);
+  const [isSettingsfileTypeAllowed, setIsSettingsfileTypeAllowed] = useState(1);
+
+  useEffect(() => {
+    async function init() {
+      const val = await isAllowedTo("teams.r");
+      setIsTeamsAllowed(val);
+
+      const val2 = await isAllowedTo("users.r");
+      setIsUsersAllowed(val2);
+
+      const val3 = await isAllowedTo("settings.r");
+      setIsSettingsAllowed(val3);
+
+      const val4 = await isAllowedTo("settings.roles.r");
+      setIsSettingsRolesAllowed(val4);
+
+      const val5 = await isAllowedTo("settings.fileType.r");
+      setIsSettingsfileTypeAllowed(val5);
+    }
+    init();
+  }, [isAllowedTo]);
 
   const navItems = useMemo(() => {
     const items = [
@@ -201,7 +223,8 @@ const Sidebar = () => {
       //   icon: FiShield,
       // },
     ];
-    if (isAdmin) {
+
+    if (isUsersAllowed) {
       items.push({
         id: "users",
         path: "/users",
@@ -209,6 +232,8 @@ const Sidebar = () => {
         icon: HiOutlineUser,
         iconProps: { strokeWidth: "2px" },
       });
+    }
+    if (isTeamsAllowed) {
       items.push({
         id: "teams",
         path: "/teams",
@@ -216,20 +241,32 @@ const Sidebar = () => {
         icon: HiOutlineUserGroup,
         iconProps: { strokeWidth: "2px" },
       });
+    }
+    if (isSettingsAllowed) {
+      const children = [];
+      children.push({ path: "/allSettings", label: "All Settings" });
+      if (isSettingsRolesAllowed) {
+        children.push({ path: "/roles", label: "Roles & Permissions" });
+      }
+      if (isSettingsfileTypeAllowed) {
+        children.push({ path: "/file-types", label: "File Types" });
+      }
       items.push({
         id: "settings",
         path: "/settings",
         label: "Settings",
         icon: FiSettings,
-        children: [
-          { path: "/settings", label: "All Settings" },
-          { path: "/roles", label: "Roles & Permissions" },
-          { path: "/file-types", label: "File Types" },
-        ],
+        children,
       });
     }
     return items;
-  }, [isAdmin]);
+  }, [
+    isUsersAllowed,
+    isTeamsAllowed,
+    isSettingsAllowed,
+    isSettingsRolesAllowed,
+    isSettingsfileTypeAllowed,
+  ]);
 
   useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth < 768);
@@ -497,20 +534,7 @@ const Sidebar = () => {
               }
               _hover={{ bg: hoverBg }}
               borderRadius="md"
-            >
-              {expiringCerts.length > 0 && (
-                <Badge
-                  position="absolute"
-                  top={0}
-                  right={0}
-                  colorScheme="red"
-                  borderRadius="full"
-                  fontSize="xs"
-                >
-                  {expiringCerts.length}
-                </Badge>
-              )}
-            </IconButton>
+            ></IconButton>
 
             {/* User Menu Button */}
             <IconButton

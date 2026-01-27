@@ -25,6 +25,7 @@ import RoleSingleSelect from "../components/RoleSingleSelect";
 import apiService from "../services/api";
 import { FaRegCircleQuestion } from "react-icons/fa6";
 import { useUser } from "../context/_useContext";
+import Can from "../components/Can";
 
 const SETTINGS_ENDPOINT =
   import.meta.env.VITE_API_PACKAGE_SETTINGS || "/settings";
@@ -132,19 +133,20 @@ const Settings = () => {
       <PageHeader>
         <Heading variant="pageTitle">Settings</Heading>
       </PageHeader>
-
-      <PageFooter>
-        <Flex gap={4} justifyContent="flex-end">
-          <Button
-            colorScheme="brandPrimary"
-            onClick={handleSave}
-            isLoading={saving}
-            isDisabled={!hasChanges}
-          >
-            Save Changes
-          </Button>
-        </Flex>
-      </PageFooter>
+      <Can to="settings.u">
+        <PageFooter>
+          <Flex gap={4} justifyContent="flex-end">
+            <Button
+              colorScheme="brandPrimary"
+              onClick={handleSave}
+              isLoading={saving}
+              isDisabled={!hasChanges}
+            >
+              Save Changes
+            </Button>
+          </Flex>
+        </PageFooter>
+      </Can>
 
       <VStack spacing={6} align="stretch">
         <Card>
