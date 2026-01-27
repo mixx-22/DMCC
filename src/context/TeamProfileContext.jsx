@@ -39,6 +39,20 @@ const MOCK_TEAM = {
       employeeId: "EMP003",
     },
   ],
+  objectives: [
+    {
+      id: "obj-1",
+      title: "Improve code quality",
+      description: "Reduce technical debt and improve test coverage",
+      weight: "high",
+    },
+    {
+      id: "obj-2",
+      title: "Launch new feature",
+      description: "Complete and deploy the new dashboard by Q2",
+      weight: "medium",
+    },
+  ],
   createdAt: "2024-01-15T10:00:00.000Z",
   updatedAt: "2024-01-15T10:00:00.000Z",
 };
@@ -97,6 +111,7 @@ const initialTeamData = {
   description: "",
   leaders: [],
   members: [],
+  objectives: [],
   createdAt: null,
   updatedAt: null,
 };
