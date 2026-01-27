@@ -16,6 +16,9 @@ import {
   Tr,
   Td,
   Link,
+  Badge,
+  OrderedList,
+  ListItem,
 } from "@chakra-ui/react";
 import { FiUsers } from "react-icons/fi";
 import Timestamp from "./Timestamp";
@@ -25,6 +28,13 @@ const TeamProfileView = ({ team, isValidDate }) => {
   const borderColor = useColorModeValue("white", "gray.700");
   const bg = useColorModeValue("brandPrimary.600", "brandPrimary.800");
   const headerBg = useColorModeValue("brandPrimary.50", "brandPrimary.900");
+  const objectiveBg = useColorModeValue("gray.50", "gray.700");
+
+  const WEIGHT_COLORS = {
+    low: "green",
+    medium: "yellow",
+    high: "red",
+  };
 
   return (
     <Box>
@@ -70,6 +80,47 @@ const TeamProfileView = ({ team, isValidDate }) => {
           w={{ base: "full", lg: "lg" }}
           flexDir={{ base: "column-reverse", lg: "column" }}
         >
+          <Card w="full" flex={1}>
+            <CardHeader pb={0}>
+              <Heading size="md">Team Objectives</Heading>
+            </CardHeader>
+            <CardBody>
+              {team.objectives && team.objectives.length > 0 ? (
+                <OrderedList spacing={4}>
+                  {team.objectives.map((objective, index) => (
+                    <ListItem key={objective.id || `objective-${index}`}>
+                      <Box
+                        p={4}
+                        borderWidth={1}
+                        borderRadius="md"
+                        borderColor={borderColor}
+                        bg={objectiveBg}
+                      >
+                        <Flex justify="space-between" align="start" mb={2}>
+                          <Text fontWeight="bold" fontSize="md">
+                            {objective.title}
+                          </Text>
+                          <Badge
+                            colorScheme={WEIGHT_COLORS[objective.weight]}
+                            ml={2}
+                          >
+                            {objective.weight}
+                          </Badge>
+                        </Flex>
+                        <Text fontSize="sm" color="gray.600">
+                          {objective.description}
+                        </Text>
+                      </Box>
+                    </ListItem>
+                  ))}
+                </OrderedList>
+              ) : (
+                <Text color="gray.500" textAlign="center">
+                  No objectives defined
+                </Text>
+              )}
+            </CardBody>
+          </Card>
           <Card w="full" flex={1}>
             <CardHeader pb={0}>
               <Heading size="md">

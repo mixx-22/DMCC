@@ -21,6 +21,7 @@ import {
   Textarea,
   Stack,
   CardHeader,
+  useDisclosure,
 } from "@chakra-ui/react";
 import {
   FiEdit,
@@ -29,6 +30,7 @@ import {
   FiX,
   FiMoreVertical,
   FiTrash2,
+  FiTarget,
 } from "react-icons/fi";
 import { useNavigate, useParams } from "react-router-dom";
 import { toast } from "sonner";
@@ -38,6 +40,7 @@ import PageHeader from "../../components/PageHeader";
 import PageFooter from "../../components/PageFooter";
 import UserAsyncSelect from "../../components/UserAsyncSelect";
 import TeamProfileView from "../../components/TeamProfileView";
+import ObjectivesModal from "../../components/ObjectivesModal";
 import { useTeamProfile } from "../../context/_useContext";
 
 const isValidDate = (dateString) => {
@@ -65,6 +68,11 @@ const TeamPage = () => {
   const [isEditMode, setIsEditMode] = useState(isNewTeam);
   const [formData, setFormData] = useState(initialTeamData);
   const [validationErrors, setValidationErrors] = useState({});
+  const {
+    isOpen: isObjectivesModalOpen,
+    onOpen: onObjectivesModalOpen,
+    onClose: onObjectivesModalClose,
+  } = useDisclosure();
 
   useEffect(() => {
     if (team && !isNewTeam) {
@@ -73,6 +81,7 @@ const TeamPage = () => {
         ...team,
         leaders: normalizeUsers(team.leaders || []),
         members: normalizeUsers(team.members || []),
+        objectives: team.objectives || [],
       });
     }
   }, [team, isNewTeam, initialTeamData, normalizeUsers]);
@@ -102,6 +111,32 @@ const TeamPage = () => {
 
     setValidationErrors(errors);
     return Object.keys(errors).length === 0;
+  };
+
+  const handleObjectivesSave = async (objectives) => {
+    const updatedData = {
+      ...formData,
+      objectives,
+    };
+
+    setFormData(updatedData);
+
+    // If not in new mode, save directly
+    if (!isNewTeam) {
+      const result = await updateTeam(team._id || team.id, {
+        objectives,
+      });
+
+      if (result.success) {
+        toast.success("Objectives Updated", {
+          description: "Team objectives have been updated successfully",
+        });
+      } else {
+        toast.error("Update Failed", {
+          description: result.error || "Failed to update objectives",
+        });
+      }
+    }
   };
 
   const handleSave = async () => {
@@ -157,6 +192,7 @@ const TeamPage = () => {
           ...team,
           leaders: normalizeUsers(team.leaders || []),
           members: normalizeUsers(team.members || []),
+          objectives: team.objectives || [],
         });
       }
       setIsEditMode(false);
@@ -248,6 +284,14 @@ const TeamPage = () => {
                   </MenuItem>
                 </MenuList>
               </Menu>
+              <Button
+                leftIcon={<FiTarget />}
+                variant="outline"
+                onClick={onObjectivesModalOpen}
+                flex={{ base: 1, sm: "auto" }}
+              >
+                Manage Objectives
+              </Button>
               <Button
                 leftIcon={<FiEdit />}
                 colorScheme="brandPrimary"
@@ -365,6 +409,13 @@ const TeamPage = () => {
           </Stack>
         </Flex>
       )}
+
+      <ObjectivesModal
+        isOpen={isObjectivesModalOpen}
+        onClose={onObjectivesModalClose}
+        objectives={formData.objectives || []}
+        onSave={handleObjectivesSave}
+      />
     </Box>
   );
 };
