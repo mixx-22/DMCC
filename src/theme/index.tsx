@@ -11,6 +11,7 @@ import { cardTheme } from "./card";
 import { avatarTheme } from "./avatar";
 import { inputTheme } from "./input";
 import { buttonTheme } from "./button";
+import { tabsTheme } from "./tabs";
 
 export const transition = {
   smooth: "200ms ease-out",
@@ -31,6 +32,7 @@ export const theme = extendTheme({
     Avatar: avatarTheme,
     Input: inputTheme,
     Button: buttonTheme,
+    Tabs: tabsTheme,
   },
   styles,
 });
