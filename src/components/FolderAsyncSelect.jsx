@@ -11,7 +11,7 @@ import {
 } from "@chakra-ui/react";
 import { AsyncSelect } from "chakra-react-select";
 import { FiFolder, FiPlus, FiX } from "react-icons/fi";
-import { useCallback, useState } from "react";
+import { useCallback, useState, useRef } from "react";
 import apiService from "../services/api";
 import CreateFolderModal from "./Document/modals/CreateFolderModal";
 
@@ -42,6 +42,7 @@ const FolderAsyncSelect = ({
     onClose: onCreateFolderClose,
   } = useDisclosure();
   const [newFolderTitle, setNewFolderTitle] = useState("");
+  const debounceTimerRef = useRef(null);
 
   const loadOptions = useCallback(
     async (inputValue) => {
@@ -49,12 +50,17 @@ const FolderAsyncSelect = ({
         return [];
       }
 
-      // Check if the input is in the format id:<id>
-      const idMatch = inputValue.match(/^id:(.+)$/i);
+      // Debounce the search
+      return new Promise((resolve) => {
+        if (debounceTimerRef.current) {
+          clearTimeout(debounceTimerRef.current);
+        }
 
-      if (!USE_API) {
-        return new Promise((resolve) => {
-          setTimeout(() => {
+        debounceTimerRef.current = setTimeout(async () => {
+          // Check if the input is in the format id:<id>
+          const idMatch = inputValue.match(/^id:(.+)$/i);
+
+          if (!USE_API) {
             let filtered;
             if (idMatch) {
               // Search by ID
@@ -75,55 +81,62 @@ const FolderAsyncSelect = ({
                 folder: folder,
               }))
             );
-          }, 300);
-        });
-      }
-
-      try {
-        let data;
-        if (idMatch) {
-          // Search by ID
-          const searchId = idMatch[1].trim();
-          data = await apiService.request(`${DOCUMENTS_ENDPOINT}/${searchId}`, {
-            method: "GET",
-          });
-
-          // If found and it's a folder, return it
-          const doc = data.data || data.document || data;
-          if (doc && doc.type === "folder") {
-            return [
-              {
-                value: doc.id,
-                label: doc.title,
-                folder: doc,
-              },
-            ];
+            return;
           }
-          return [];
-        } else {
-          // Search by keyword for folders only
-          data = await apiService.request(DOCUMENTS_ENDPOINT, {
-            method: "GET",
-            params: {
-              keyword: inputValue,
-              type: "folder",
-              limit: 10,
-            },
-          });
 
-          const documents = data.data?.documents || data.documents || [];
-          return documents
-            .filter((doc) => doc.type === "folder")
-            .map((folder) => ({
-              value: folder.id,
-              label: folder.title,
-              folder: folder,
-            }));
-        }
-      } catch (error) {
-        console.error("Failed to fetch folders:", error);
-        return [];
-      }
+          try {
+            let data;
+            if (idMatch) {
+              // Search by ID
+              const searchId = idMatch[1].trim();
+              data = await apiService.request(
+                `${DOCUMENTS_ENDPOINT}/${searchId}`,
+                {
+                  method: "GET",
+                }
+              );
+
+              // If found and it's a folder, return it
+              const doc = data.data || data.document || data;
+              if (doc && doc.type === "folder") {
+                resolve([
+                  {
+                    value: doc.id,
+                    label: doc.title,
+                    folder: doc,
+                  },
+                ]);
+              } else {
+                resolve([]);
+              }
+            } else {
+              // Search by keyword for folders only
+              data = await apiService.request(DOCUMENTS_ENDPOINT, {
+                method: "GET",
+                params: {
+                  keyword: inputValue,
+                  type: "folder",
+                  limit: 10,
+                },
+              });
+
+              const documents = data.data?.documents || data.documents || [];
+              resolve(
+                documents
+                  .filter((doc) => doc.type === "folder")
+                  .map((folder) => ({
+                    value: folder.id,
+                    label: folder.title,
+                    folder: folder,
+                  }))
+              );
+            }
+          } catch (error) {
+            console.error("Failed to fetch folders:", error);
+            resolve([]);
+          }
+        }, 500); // 500ms debounce delay
+      });
     },
     []
   );
@@ -148,6 +161,7 @@ const FolderAsyncSelect = ({
       id: folder.id,
       title: folder.title,
     });
+    onCreateFolderClose(); // Close modal after creating folder
   };
 
   const handleRemove = () => {
@@ -207,61 +221,39 @@ const FolderAsyncSelect = ({
       <FormControl isInvalid={isInvalid} {...props}>
         <FormLabel>{label}</FormLabel>
         <Box>
-          {value && (
-            <HStack spacing={2} mb={2} p={2} borderWidth={1} borderRadius="md">
-              <FiFolder />
-              <VStack align="start" spacing={0} flex={1}>
-                <Text fontSize="sm" fontWeight="medium">
-                  {value.title}
-                </Text>
-              </VStack>
-              <IconButton
-                size="sm"
-                variant="ghost"
-                colorScheme="error"
-                icon={<FiX />}
-                aria-label="Remove folder"
-                onClick={handleRemove}
-              />
-            </HStack>
-          )}
-          {!value && (
-            <>
-              <AsyncSelect
-                value={selectedValue}
-                onChange={handleChange}
-                loadOptions={loadOptions}
-                placeholder={placeholder}
-                noOptionsMessage={({ inputValue }) => {
-                  if (!inputValue || inputValue.length < 2) {
-                    return "Type at least 2 characters to search";
-                  }
-                  return "No folders found";
-                }}
-                formatOptionLabel={formatOptionLabel}
-                isClearable
-                cacheOptions
-                defaultOptions={false}
-                loadingMessage={() => "Loading folders..."}
-                colorScheme="green"
-                useBasicStyles
-              />
-              <HStack mt={2} spacing={2}>
-                <Text fontSize="xs" color="gray.500" flex={1}>
-                  Search by name or type id:&lt;folder-id&gt;
-                </Text>
-                <Button
-                  size="xs"
-                  leftIcon={<FiPlus />}
-                  colorScheme="brandPrimary"
-                  variant="outline"
-                  onClick={handleCreateFolder}
-                >
-                  Create New Folder
-                </Button>
-              </HStack>
-            </>
-          )}
+          <AsyncSelect
+            value={selectedValue}
+            onChange={handleChange}
+            loadOptions={loadOptions}
+            placeholder={placeholder}
+            noOptionsMessage={({ inputValue }) => {
+              if (!inputValue || inputValue.length < 2) {
+                return "Type at least 2 characters to search";
+              }
+              return "No folders found";
+            }}
+            formatOptionLabel={formatOptionLabel}
+            isClearable
+            cacheOptions
+            defaultOptions={false}
+            loadingMessage={() => "Loading folders..."}
+            colorScheme="green"
+            useBasicStyles
+          />
+          <HStack mt={2} spacing={2}>
+            <Text fontSize="xs" color="gray.500" flex={1}>
+              Search by name or type id:&lt;folder-id&gt;
+            </Text>
+            <Button
+              size="xs"
+              leftIcon={<FiPlus />}
+              colorScheme="brandPrimary"
+              variant="outline"
+              onClick={handleCreateFolder}
+            >
+              Create New Folder
+            </Button>
+          </HStack>
         </Box>
       </FormControl>
 
