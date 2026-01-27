@@ -12,7 +12,6 @@ const TeamsContext = createContext();
 const TeamProfileContext = createContext();
 const SchedulesContext = createContext();
 const ScheduleProfileContext = createContext();
-const OrganizationsContext = createContext();
 const DocumentsContext = createContext();
 const FileTypesContext = createContext();
 const FileTypeContext = createContext();
@@ -30,7 +29,6 @@ export {
   TeamProfileContext,
   SchedulesContext,
   ScheduleProfileContext,
-  OrganizationsContext,
   DocumentsContext,
   FileTypesContext,
   FileTypeContext,

@@ -11,7 +11,6 @@ import {
   RoleContext,
   SchedulesContext,
   ScheduleProfileContext,
-  OrganizationsContext,
   DocumentsContext,
   FileTypesContext,
   FileTypeContext,
@@ -100,15 +99,6 @@ export const useScheduleProfile = () => {
       "useScheduleProfile must be used within ScheduleProfileProvider",
     );
   }
-  return context;
-};
-
-export const useOrganizations = () => {
-  const context = useContext(OrganizationsContext);
-  if (!context)
-    throw new Error(
-      "useOrganizations must be used within OrganizationsProvider",
-    );
   return context;
 };
 

@@ -26,6 +26,7 @@ const initialScheduleData = {
   auditCode: "",
   auditType: "",
   standard: "",
+  status: 0,
 };
 
 // Action types
@@ -83,13 +84,9 @@ export const ScheduleProfileProvider = ({ children }) => {
     }
 
     try {
-      const data = await apiService.request(
+      const schedule = await apiService.get(
         `${SCHEDULES_ENDPOINT}/${scheduleId}`,
-        {
-          method: "GET",
-        },
       );
-      const schedule = data.schedule || data.data || data;
       dispatch({ type: ACTIONS.FETCH_SUCCESS, payload: schedule });
     } catch (error) {
       dispatch({ type: ACTIONS.FETCH_ERROR, payload: error.message });
@@ -114,11 +111,7 @@ export const ScheduleProfileProvider = ({ children }) => {
     }
 
     try {
-      const data = await apiService.request(SCHEDULES_ENDPOINT, {
-        method: "POST",
-        body: JSON.stringify(scheduleData),
-      });
-      const schedule = data.schedule || data.data || data;
+      const schedule = await apiService.post(SCHEDULES_ENDPOINT, scheduleData);
       dispatch({ type: ACTIONS.SAVE_SUCCESS, payload: schedule });
       return schedule;
     } catch (error) {
@@ -143,14 +136,10 @@ export const ScheduleProfileProvider = ({ children }) => {
     }
 
     try {
-      const data = await apiService.request(
+      const schedule = await apiService.put(
         `${SCHEDULES_ENDPOINT}/${scheduleId}`,
-        {
-          method: "PUT",
-          body: JSON.stringify(scheduleData),
-        },
+        scheduleData,
       );
-      const schedule = data.schedule || data.data || data;
       dispatch({ type: ACTIONS.SAVE_SUCCESS, payload: schedule });
       return schedule;
     } catch (error) {
@@ -170,9 +159,7 @@ export const ScheduleProfileProvider = ({ children }) => {
     }
 
     try {
-      await apiService.request(`${SCHEDULES_ENDPOINT}/${scheduleId}`, {
-        method: "DELETE",
-      });
+      await apiService.delete(`${SCHEDULES_ENDPOINT}/${scheduleId}`);
       dispatch({ type: ACTIONS.SAVE_SUCCESS, payload: null });
     } catch (error) {
       dispatch({ type: ACTIONS.SAVE_ERROR, payload: error.message });

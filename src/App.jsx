@@ -20,8 +20,7 @@ import TeamPage from "./pages/Teams/TeamPage";
 import { TeamsProvider } from "./context/TeamsContext";
 import { TeamProfileProvider } from "./context/TeamProfileContext";
 import Schedules from "./pages/Schedules";
-import ScheduleForm from "./pages/Schedules/ScheduleForm";
-import ScheduleView from "./pages/Schedules/ScheduleView";
+import SchedulePage from "./pages/Schedules/SchedulePage";
 import { SchedulesProvider } from "./context/SchedulesContext";
 import { ScheduleProfileProvider } from "./context/ScheduleProfileContext";
 import Archive from "./pages/Archive";
@@ -163,26 +162,10 @@ function App() {
                       }
                     />
                     <Route
-                      path="/schedules/new"
-                      element={
-                        <ScheduleProfileProvider>
-                          <ScheduleForm />
-                        </ScheduleProfileProvider>
-                      }
-                    />
-                    <Route
-                      path="/schedules/:id/edit"
-                      element={
-                        <ScheduleProfileProvider>
-                          <ScheduleForm />
-                        </ScheduleProfileProvider>
-                      }
-                    />
-                    <Route
                       path="/schedules/:id"
                       element={
                         <ScheduleProfileProvider>
-                          <ScheduleView />
+                          <SchedulePage />
                         </ScheduleProfileProvider>
                       }
                     />
