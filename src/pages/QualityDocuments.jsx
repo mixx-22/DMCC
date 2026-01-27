@@ -4,12 +4,10 @@ import {
   Spinner,
   Center,
   Stack,
-  Heading,
   Text,
   Flex,
   Button,
   Hide,
-  Spacer,
   useDisclosure,
 } from "@chakra-ui/react";
 import { FiPlus } from "react-icons/fi";
@@ -96,17 +94,13 @@ const QualityDocuments = () => {
 
   return (
     <Box>
-      <PageHeader>
-        <Flex align="center" w="full" gap={4}>
-          <Heading variant="pageTitle">Quality Documents</Heading>
-          <Spacer />
-          <Hide below="md">
-            <Box w="full" maxW="xl" mr={-2}>
-              <SearchInput placeholder="Search quality documents..." header />
-            </Box>
-          </Hide>
-        </Flex>
-      </PageHeader>
+      <Hide below="md">
+        <PageHeader>
+          <Box w="full" maxW="xl" ml={-2}>
+            <SearchInput placeholder="Search documents..." header />
+          </Box>
+        </PageHeader>
+      </Hide>
 
       <PageFooter>
         <Flex gap={4} justifyContent="flex-end">
@@ -137,7 +131,10 @@ const QualityDocuments = () => {
               documents={documents}
               selectedDocument={selectedDocument}
               onDocumentClick={handleDocumentClick}
-              sourcePage={{ path: "/quality-documents", label: "Quality Documents" }}
+              sourcePage={{
+                path: "/quality-documents",
+                label: "Quality Documents",
+              }}
             />
             {totalCount > ITEMS_PER_PAGE && (
               <Pagination
