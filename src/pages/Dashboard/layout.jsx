@@ -363,7 +363,7 @@ const Layout = () => {
             onDocumentClick={(doc) => {
               const result = handleDocumentClick(doc);
               if (result.isDoubleClick) {
-                if (doc.type === "folder" || doc.type === "auditSchedule") {
+                if (doc.type === "folder") {
                   navigate(`/documents/folders/${doc.id}`);
                 }
               }

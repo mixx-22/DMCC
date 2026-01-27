@@ -463,10 +463,6 @@ const Search = () => {
                             options={[
                               { value: "file", label: "File" },
                               { value: "folder", label: "Folder" },
-                              {
-                                value: "auditSchedule",
-                                label: "Audit Schedule",
-                              },
                               { value: "formTemplate", label: "Form Template" },
                               { value: "formResponse", label: "Form Response" },
                               {
@@ -607,7 +603,7 @@ const Search = () => {
               const result = handleDocumentClick(doc);
               if (result.isDoubleClick) {
                 // Navigate on double-click
-                if (doc.type === "folder" || doc.type === "auditSchedule") {
+                if (doc.type === "folder") {
                   navigate(`/documents/folders/${doc.id}`);
                 } else if (doc.type === "file" || doc.type === "formTemplate") {
                   navigate(`/document/${doc.id}`, {
@@ -627,7 +623,7 @@ const Search = () => {
               const result = handleDocumentClick(doc);
               if (result.isDoubleClick) {
                 // Navigate on double-click
-                if (doc.type === "folder" || doc.type === "auditSchedule") {
+                if (doc.type === "folder") {
                   navigate(`/documents/folders/${doc.id}`);
                 } else if (doc.type === "file" || doc.type === "formTemplate") {
                   navigate(`/document/${doc.id}`, {
