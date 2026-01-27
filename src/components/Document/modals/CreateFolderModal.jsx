@@ -34,10 +34,16 @@ const CreateFolderModal = ({
     allowInheritance: false,
   });
 
-  // Set initial title when modal opens
+  // Set initial title when modal opens, reset when it closes
   useEffect(() => {
     if (isOpen && initialTitle) {
       setFormData((prev) => ({ ...prev, title: initialTitle }));
+    } else if (!isOpen) {
+      setFormData({
+        title: "",
+        description: "",
+        allowInheritance: false,
+      });
     }
   }, [isOpen, initialTitle]);
 
