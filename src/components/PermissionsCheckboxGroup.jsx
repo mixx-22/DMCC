@@ -38,6 +38,27 @@ const MODULES = [
     path: "teams",
   },
   {
+    key: "teams.permissions.objective",
+    label: "Objective",
+    description: "Manage team objectives",
+    level: 1,
+    parentLabel: (action) => {
+      switch (action) {
+        case "c":
+          return "Create Objectives";
+        case "r":
+          return "View Objectives";
+        case "u":
+          return "Update Objectives";
+        case "d":
+          return "Delete Objectives";
+        default:
+          return `${PERMISSION_LABELS[action]} Objectives`;
+      }
+    },
+    path: "teams.objective",
+  },
+  {
     key: "document",
     label: "Document",
     description: "Manage documents",

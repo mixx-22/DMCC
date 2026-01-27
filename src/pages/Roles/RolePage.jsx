@@ -54,7 +54,15 @@ const RolePage = () => {
     description: "",
     permissions: {
       users: { c: 0, r: 0, u: 0, d: 0 },
-      teams: { c: 0, r: 0, u: 0, d: 0 },
+      teams: {
+        c: 0,
+        r: 0,
+        u: 0,
+        d: 0,
+        permission: {
+          objective: { c: 0, r: 0, u: 0, d: 0 },
+        },
+      },
       document: {
         c: 0,
         r: 0,
