@@ -36,6 +36,7 @@ import { toast } from "sonner";
 import { useEffect, useRef, useState } from "react";
 import { Link as RouterLink } from "react-router-dom";
 import { getDocumentIcon } from "./DocumentIcon";
+import Can from "../Can";
 
 const DocumentDrawer = ({ document, isOpen, onClose }) => {
   const { updateDocument } = useDocuments();
@@ -280,14 +281,16 @@ const DocumentDrawer = ({ document, isOpen, onClose }) => {
 
               {/* Action Buttons */}
               <VStack spacing={2} align="stretch">
-                {document?.type === "file" && document?.metadata?.key && (
-                  <DownloadButton
-                    document={document}
-                    variant="outline"
-                    fullWidth={true}
-                    isDisabled={!isValid}
-                  />
-                )}
+                <Can to="documents.download.c">
+                  {document?.type === "file" && document?.metadata?.key && (
+                    <DownloadButton
+                      document={document}
+                      variant="outline"
+                      fullWidth={true}
+                      isDisabled={!isValid}
+                    />
+                  )}
+                </Can>
                 <Button
                   leftIcon={<FiMove />}
                   colorScheme="gray"
@@ -306,13 +309,15 @@ const DocumentDrawer = ({ document, isOpen, onClose }) => {
                     More Options
                   </MenuButton>
                   <MenuList>
-                    <MenuItem
-                      icon={<FiTrash2 />}
-                      color="red.500"
-                      onClick={onDeleteOpen}
-                    >
-                      Delete
-                    </MenuItem>
+                    <Can to="documents.d">
+                      <MenuItem
+                        icon={<FiTrash2 />}
+                        color="red.500"
+                        onClick={onDeleteOpen}
+                      >
+                        Delete
+                      </MenuItem>
+                    </Can>
                   </MenuList>
                 </Menu>
               </VStack>
