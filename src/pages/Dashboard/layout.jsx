@@ -19,7 +19,12 @@ import { Link as RouterLink, useNavigate } from "react-router-dom";
 import { useState, useEffect, useMemo, useRef } from "react";
 import { format } from "date-fns";
 import { FiGrid, FiList } from "react-icons/fi";
-import { useApp, useUser, useLayout } from "../../context/_useContext";
+import {
+  useApp,
+  useUser,
+  useLayout,
+  usePermissions,
+} from "../../context/_useContext";
 import { motion } from "framer-motion";
 import SearchInput from "../../components/SearchInput";
 import apiService from "../../services/api";
@@ -28,6 +33,7 @@ import { GridView } from "../../components/Document/GridView";
 import { ListView } from "../../components/Document/ListView";
 import PageHeader from "../../components/PageHeader";
 import DocumentDrawer from "../../components/Document/DocumentDrawer";
+import Can from "../../components/Can";
 
 const MotionBox = motion(Box);
 
