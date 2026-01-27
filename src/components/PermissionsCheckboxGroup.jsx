@@ -39,7 +39,7 @@ const MODULES = [
   },
   {
     key: "teams.permissions.objective",
-    label: "Objective",
+    label: "Objectives",
     description: "Manage team objectives",
     level: 1,
     parentLabel: (action) => {
