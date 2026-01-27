@@ -28,6 +28,7 @@ import { GridView } from "../../components/Document/GridView";
 import { ListView } from "../../components/Document/ListView";
 import PageHeader from "../../components/PageHeader";
 import DocumentDrawer from "../../components/Document/DocumentDrawer";
+import Can from "../../components/Can";
 
 const MotionBox = motion(Box);
 
@@ -363,6 +364,34 @@ const Layout = () => {
               }
             }}
           />
+        </Box>
+
+        {/* TODO: Testing for Permissions */}
+        <Box>
+          Test:
+          <Can to="users.c">
+            <Box>Users</Box>
+          </Can>
+          <Can to="teams.c">
+            <Box>Teams</Box>
+          </Can>
+          <Can to="roles.c">
+            <Box>Roles</Box>
+          </Can>
+          <Can to="document.c">
+            <>
+              <Box>Documents</Box>
+              <Can to="document.archive.c">
+                <Box>Archive Documents</Box>
+              </Can>
+              <Can to="document.download.c">
+                <Box>Download Documents</Box>
+              </Can>
+            </>
+          </Can>
+          <Can to="audit.c">
+            <Box>Audit</Box>
+          </Can>
         </Box>
 
         <Box>

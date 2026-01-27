@@ -12,6 +12,7 @@ import {
   DocumentsContext,
   FileTypesContext,
   FileTypeContext,
+  PermissionContext,
 } from "./_contexts";
 
 export const useApp = () => {
@@ -26,6 +27,14 @@ export const useLayout = () => {
   const context = useContext(LayoutContext);
   if (!context) {
     throw new Error("useLayout must be used within LayoutProvider");
+  }
+  return context;
+};
+
+export const usePermissions = () => {
+  const context = useContext(PermissionContext);
+  if (!context) {
+    throw new Error("usePermissions must be used within PermissionProvider");
   }
   return context;
 };
