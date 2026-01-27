@@ -82,47 +82,6 @@ const TeamProfileView = ({ team, isValidDate }) => {
         >
           <Card w="full" flex={1}>
             <CardHeader pb={0}>
-              <Heading size="md">Team Objectives</Heading>
-            </CardHeader>
-            <CardBody>
-              {team.objectives && team.objectives.length > 0 ? (
-                <OrderedList spacing={4}>
-                  {team.objectives.map((objective, index) => (
-                    <ListItem key={objective.id || `objective-${index}`}>
-                      <Box
-                        p={4}
-                        borderWidth={1}
-                        borderRadius="md"
-                        borderColor={borderColor}
-                        bg={objectiveBg}
-                      >
-                        <Flex justify="space-between" align="start" mb={2}>
-                          <Text fontWeight="bold" fontSize="md">
-                            {objective.title}
-                          </Text>
-                          <Badge
-                            colorScheme={WEIGHT_COLORS[objective.weight]}
-                            ml={2}
-                          >
-                            {objective.weight}
-                          </Badge>
-                        </Flex>
-                        <Text fontSize="sm" color="gray.600">
-                          {objective.description}
-                        </Text>
-                      </Box>
-                    </ListItem>
-                  ))}
-                </OrderedList>
-              ) : (
-                <Text color="gray.500" textAlign="center">
-                  No objectives defined
-                </Text>
-              )}
-            </CardBody>
-          </Card>
-          <Card w="full" flex={1}>
-            <CardHeader pb={0}>
               <Heading size="md">
                 <Text>Leaders</Text>
               </Heading>
@@ -142,9 +101,7 @@ const TeamProfileView = ({ team, isValidDate }) => {
                         leader.lastName || ""
                       }`.trim();
                       return (
-                        <Tr
-                          key={`leader-${leaderIndex}-${leaderId}`}
-                        >
+                        <Tr key={`leader-${leaderIndex}-${leaderId}`}>
                           <Td>
                             {leaderId ? (
                               <Link
@@ -227,7 +184,7 @@ const TeamProfileView = ({ team, isValidDate }) => {
           </Card>
         </Flex>
 
-        <Box w="full">
+        <Flex gap={6} flexDir="column" w="full">
           <Card>
             <CardHeader pb={0}>
               <Heading size="md">Members</Heading>
@@ -242,9 +199,7 @@ const TeamProfileView = ({ team, isValidDate }) => {
                         member.lastName || ""
                       }`.trim();
                       return (
-                        <Tr
-                          key={`member-${memberIndex}-${memberId}`}
-                        >
+                        <Tr key={`member-${memberIndex}-${memberId}`}>
                           <Td>
                             {memberId ? (
                               <Link
@@ -299,7 +254,48 @@ const TeamProfileView = ({ team, isValidDate }) => {
               )}
             </CardBody>
           </Card>
-        </Box>
+          <Card w="full" flex={1}>
+            <CardHeader pb={0}>
+              <Heading size="md">Objectives</Heading>
+            </CardHeader>
+            <CardBody>
+              {team.objectives && team.objectives.length > 0 ? (
+                <OrderedList spacing={4}>
+                  {team.objectives.map((objective, index) => (
+                    <ListItem key={objective.id || `objective-${index}`}>
+                      <Box
+                        p={4}
+                        borderWidth={1}
+                        borderRadius="md"
+                        borderColor={borderColor}
+                        bg={objectiveBg}
+                      >
+                        <Flex justify="space-between" align="start" mb={2}>
+                          <Text fontWeight="bold" fontSize="md">
+                            {objective.title}
+                          </Text>
+                          <Badge
+                            colorScheme={WEIGHT_COLORS[objective.weight]}
+                            ml={2}
+                          >
+                            {objective.weight}
+                          </Badge>
+                        </Flex>
+                        <Text fontSize="sm" color="gray.600">
+                          {objective.description}
+                        </Text>
+                      </Box>
+                    </ListItem>
+                  ))}
+                </OrderedList>
+              ) : (
+                <Text color="gray.500" textAlign="center">
+                  No objectives defined
+                </Text>
+              )}
+            </CardBody>
+          </Card>
+        </Flex>
       </Flex>
     </Box>
   );

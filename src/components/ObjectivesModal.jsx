@@ -84,8 +84,8 @@ const ObjectivesModal = ({ isOpen, onClose, objectives = [], onSave }) => {
   const handleObjectiveChange = (id, field, value) => {
     setLocalObjectives(
       localObjectives.map((obj) =>
-        obj.id === id ? { ...obj, [field]: value } : obj
-      )
+        obj.id === id ? { ...obj, [field]: value } : obj,
+      ),
     );
     setHasChanges(true);
   };
@@ -93,7 +93,7 @@ const ObjectivesModal = ({ isOpen, onClose, objectives = [], onSave }) => {
   const handleSave = () => {
     // Filter out invalid objectives (title and description are required)
     const validObjectives = localObjectives.filter(
-      (obj) => obj.title.trim() !== "" && obj.description.trim() !== ""
+      (obj) => obj.title.trim() !== "" && obj.description.trim() !== "",
     );
     onSave(validObjectives);
     onClose();
@@ -105,7 +105,12 @@ const ObjectivesModal = ({ isOpen, onClose, objectives = [], onSave }) => {
   };
 
   return (
-    <Modal isOpen={isOpen} onClose={handleCancel} size="3xl" scrollBehavior="inside">
+    <Modal
+      isOpen={isOpen}
+      onClose={handleCancel}
+      size="xl"
+      scrollBehavior="inside"
+    >
       <ModalOverlay />
       <ModalContent>
         <ModalHeader>Manage Team Objectives</ModalHeader>
@@ -114,7 +119,8 @@ const ObjectivesModal = ({ isOpen, onClose, objectives = [], onSave }) => {
           <VStack align="stretch" spacing={4}>
             {localObjectives.length === 0 && (
               <Text color="gray.500" textAlign="center" py={4}>
-                No objectives yet. Click &quot;Add Objective&quot; to create one.
+                No objectives yet. Click &quot;Add Objective&quot; to create
+                one.
               </Text>
             )}
             {localObjectives.map((objective, index) => (
@@ -153,7 +159,7 @@ const ObjectivesModal = ({ isOpen, onClose, objectives = [], onSave }) => {
                         handleObjectiveChange(
                           objective.id,
                           "title",
-                          e.target.value
+                          e.target.value,
                         )
                       }
                       placeholder="Enter objective title"
@@ -167,7 +173,7 @@ const ObjectivesModal = ({ isOpen, onClose, objectives = [], onSave }) => {
                         handleObjectiveChange(
                           objective.id,
                           "description",
-                          e.target.value
+                          e.target.value,
                         )
                       }
                       placeholder="Enter objective description"
@@ -178,17 +184,21 @@ const ObjectivesModal = ({ isOpen, onClose, objectives = [], onSave }) => {
                     <FormLabel fontSize="sm">Priority Weight</FormLabel>
                     <Select
                       value={WEIGHT_OPTIONS.find(
-                        (opt) => opt.value === objective.weight
+                        (opt) => opt.value === objective.weight,
                       )}
                       onChange={(option) =>
                         handleObjectiveChange(
                           objective.id,
                           "weight",
-                          option.value
+                          option.value,
                         )
                       }
                       options={WEIGHT_OPTIONS}
                       placeholder="Select weight"
+                      menuPortalTarget={document.body}
+                      styles={{
+                        menuPortal: (base) => ({ ...base, zIndex: 9999 }),
+                      }}
                     />
                   </FormControl>
                 </VStack>
