@@ -50,7 +50,6 @@ import {
   FiEdit,
 } from "react-icons/fi";
 import { useNavigate, useParams } from "react-router-dom";
-import { toast } from "sonner";
 import { useState, useEffect, useRef } from "react";
 import Swal from "sweetalert2";
 import PageHeader from "../../components/PageHeader";
@@ -67,7 +66,6 @@ const SchedulePage = () => {
     schedule,
     initialScheduleData,
     loading,
-    saving,
     updateSchedule,
     createSchedule,
     deleteSchedule,
@@ -170,10 +168,6 @@ const SchedulePage = () => {
     try {
       if (isNewSchedule) {
         const result = await createSchedule(formData);
-        toast.success("Schedule Created", {
-          description: `"${formData.title}" has been successfully created`,
-          duration: 3000,
-        });
         if (result?.id || result?._id) {
           navigate(`/audit-schedule/${result.id || result._id}`, {
             replace: true,
@@ -183,17 +177,11 @@ const SchedulePage = () => {
         }
       } else {
         await updateSchedule(id, formData);
-        toast.success("Schedule Updated", {
-          description: `"${formData.title}" has been successfully updated`,
-          duration: 3000,
-        });
         navigate("/audit-schedules");
       }
     } catch (error) {
-      toast.error(`Failed to ${isNewSchedule ? `Create` : `Update`} Schedule`, {
-        description: error.message || "An error occurred. Please try again.",
-        duration: 3000,
-      });
+      // Error toast is handled by context
+      console.error("Failed to save schedule:", error);
     }
   };
 
@@ -211,17 +199,11 @@ const SchedulePage = () => {
 
     if (result.isConfirmed) {
       try {
-        await deleteSchedule(id);
-        toast.success("Schedule Deleted", {
-          description: `"${formData.title}" has been deleted`,
-          duration: 3000,
-        });
+        await deleteSchedule(id, formData.title);
         navigate("/audit-schedules");
       } catch (error) {
-        toast.error("Delete Failed", {
-          description: error.message || "Failed to delete schedule",
-          duration: 3000,
-        });
+        // Error toast is handled by context
+        console.error("Failed to delete schedule:", error);
       }
     }
   };
@@ -247,10 +229,6 @@ const SchedulePage = () => {
     const trimmedTitle = newTitle?.trim();
 
     if (!trimmedTitle) {
-      toast.error("Validation Error", {
-        description: "Title cannot be empty. Reverted to previous value.",
-        duration: 3000,
-      });
       // Force re-render to revert the editable field
       setEditableKey((prev) => prev + 1);
       return;
@@ -269,15 +247,9 @@ const SchedulePage = () => {
       const updatePayload = buildUpdatePayload({ title: trimmedTitle });
       const updatedSchedule = await updateSchedule(id, updatePayload);
       setFormData((prev) => ({ ...prev, ...updatedSchedule }));
-      toast.success("Title Updated", {
-        description: "Schedule title has been updated",
-        duration: 2000,
-      });
     } catch (error) {
-      toast.error("Update Failed", {
-        description: "Failed to update title",
-        duration: 3000,
-      });
+      // Error toast is handled by context
+      console.error("Failed to update title:", error);
       // Force re-render to revert the editable field
       setEditableKey((prev) => prev + 1);
     }
@@ -299,15 +271,9 @@ const SchedulePage = () => {
       const updatePayload = buildUpdatePayload({ description: trimmedDescription });
       const updatedSchedule = await updateSchedule(id, updatePayload);
       setFormData((prev) => ({ ...prev, ...updatedSchedule }));
-      toast.success("Description Updated", {
-        description: "Schedule description has been updated",
-        duration: 2000,
-      });
     } catch (error) {
-      toast.error("Update Failed", {
-        description: "Failed to update description",
-        duration: 3000,
-      });
+      // Error toast is handled by context
+      console.error("Failed to update description:", error);
       // Force re-render to revert the editable field
       setEditableKey((prev) => prev + 1);
     }
@@ -322,16 +288,10 @@ const SchedulePage = () => {
       });
       const updatedSchedule = await updateSchedule(id, updatePayload);
       setFormData((prev) => ({ ...prev, ...updatedSchedule }));
-      toast.success("Audit Details Updated", {
-        description: "Audit details have been updated successfully",
-        duration: 2000,
-      });
       onEditDetailsClose();
     } catch (error) {
-      toast.error("Update Failed", {
-        description: "Failed to update audit details",
-        duration: 3000,
-      });
+      // Error toast is handled by context
+      console.error("Failed to update audit details:", error);
       // Don't close modal on error so user can retry
     }
   };
@@ -584,7 +544,7 @@ const SchedulePage = () => {
                 <Button
                   colorScheme="brandPrimary"
                   onClick={handleSubmit}
-                  isLoading={saving}
+                  isLoading={loading}
                   leftIcon={<FiSave />}
                 >
                   Create Audit Schedule
@@ -826,7 +786,7 @@ const SchedulePage = () => {
         onClose={onEditDetailsClose}
         auditData={formData}
         onSave={handleSaveAuditDetails}
-        isSaving={saving}
+        isSaving={loading}
       />
     </>
   );
