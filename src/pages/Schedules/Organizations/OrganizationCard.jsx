@@ -79,14 +79,15 @@ const OrganizationCard = ({
 
     if (result.isConfirmed) {
       try {
-        await deleteOrganization(organization._id);
+        const orgId = organization?._id || organization?.id;
+        await deleteOrganization(orgId);
 
         // Update local schedule data to remove the organization ID
         if (schedule) {
           const updatedSchedule = {
             ...schedule,
             organizations: (schedule.organizations || []).filter(
-              (orgId) => orgId !== organization._id,
+              (orgId) => orgId !== orgId,
             ),
           };
           setScheduleFormData((prev) => ({ ...prev, ...updatedSchedule }));
