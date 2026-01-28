@@ -10,17 +10,14 @@ import {
   Stack,
 } from "@chakra-ui/react";
 import { useOrganizations } from "../../../context/_useContext";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import TeamSingleAsyncSelect from "../../../components/TeamSingleAsyncSelect";
 import { FiSave } from "react-icons/fi";
 import UserAsyncSelect from "../../../components/UserAsyncSelect";
 import VisitManager from "./VisitManager";
 
-const OrganizationForm = ({
-  schedule = {},
-  setFormData: setScheduleFormData = () => {},
-}) => {
-  const { scheduleId, organizations, createOrganization, updateOrganization } =
+const OrganizationForm = ({ schedule = {} }) => {
+  const { dispatch, scheduleId, organizations, createOrganization } =
     useOrganizations();
 
   const existingTeamIds = organizations.map((org) => org.teamId);
@@ -33,13 +30,17 @@ const OrganizationForm = ({
 
   const [validationErrors, setValidationErrors] = useState({});
 
-  useEffect(() => {
+  const clearForm = () => {
     setFormData({
       team: null,
       auditors: [],
       visits: [],
     });
     setValidationErrors({});
+  };
+
+  useEffect(() => {
+    clearForm();
   }, []);
 
   const handleFieldChange = (field, value) => {
@@ -75,32 +76,21 @@ const OrganizationForm = ({
     return Object.keys(errors).length === 0;
   };
 
-  const [selectedOrganization, setSelectedOrganization] = useState(null);
-
-  const handleSaveOrganization = async (organizationData, newOrgData) => {
-    try {
-      let result;
-      if (selectedOrganization) {
-        result = await updateOrganization(
-          selectedOrganization._id,
-          organizationData,
-        );
-      } else {
-        result = await createOrganization(organizationData);
+  const handleSaveOrganization = useCallback(
+    async (organizationData, newOrgData) => {
+      try {
+        let result = await createOrganization(organizationData);
 
         if (result && result._id && schedule) {
-          const updatedSchedule = {
-            ...schedule,
-            organizations: [...(schedule.organizations || []), newOrgData],
-          };
-          setScheduleFormData((prev) => ({ ...prev, ...updatedSchedule }));
+          dispatch({ type: "ADD_ORGANIZATION", payload: newOrgData });
+          clearForm();
         }
+      } catch (error) {
+        console.error("Failed to save organization:", error);
       }
-      setSelectedOrganization(null);
-    } catch (error) {
-      console.error("Failed to save organization:", error);
-    }
-  };
+    },
+    [createOrganization, dispatch, schedule],
+  );
 
   const handleSubmit = () => {
     if (validateForm()) {
@@ -111,13 +101,13 @@ const OrganizationForm = ({
 
       const payload = {
         ...base,
-        teamId: formData.team._id ?? formData.team.id,
+        team: formData.team._id ?? formData.team.id,
         auditors: formData.auditors.map((a) => a._id ?? a.id),
       };
 
       const newOrgData = {
         ...base,
-        teamId: formData.team,
+        team: formData.team,
         auditors: formData.auditors,
       };
 

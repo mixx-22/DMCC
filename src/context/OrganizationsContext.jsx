@@ -11,7 +11,7 @@ const MOCK_ORGANIZATIONS = [
   {
     _id: "org-1",
     auditScheduleId: "schedule-mock-1",
-    teamId: "team-1",
+    team: "team-1",
     status: 0,
     documents: [],
     auditors: ["user-1", "user-2"],
@@ -172,7 +172,6 @@ export const OrganizationsProvider = ({ children, scheduleId }) => {
 
       const { success = false, organization: data } = response;
       if (success && data) {
-        dispatch({ type: "ADD_ORGANIZATION", payload: data });
         toast.success("Organization Added", {
           description: "Organization has been successfully added",
           duration: 2000,
@@ -297,6 +296,7 @@ export const OrganizationsProvider = ({ children, scheduleId }) => {
   }, [scheduleId, fetchOrganizations]);
 
   const value = {
+    dispatch,
     scheduleId,
     organizations: state.organizations,
     currentOrganization: state.currentOrganization,
