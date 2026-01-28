@@ -78,8 +78,10 @@ const SchedulePage = () => {
   const isNewSchedule = id === "new";
   const [formData, setFormData] = useState(initialScheduleData);
   const [validationErrors, setValidationErrors] = useState({});
+  const [editableKey, setEditableKey] = useState(0);
   const titleTextareaRef = useRef(null);
   const descriptionTextareaRef = useRef(null);
+  const updateTimeoutRef = useRef(null);
 
   // Modal state for editing audit details
   const {
@@ -234,7 +236,8 @@ const SchedulePage = () => {
         description: "Title cannot be empty. Reverted to previous value.",
         duration: 3000,
       });
-      setFormData((prev) => ({ ...prev }));
+      // Force re-render to revert the editable field
+      setEditableKey((prev) => prev + 1);
       return;
     }
 
@@ -242,9 +245,14 @@ const SchedulePage = () => {
       return;
     }
 
+    // Cancel any pending updates
+    if (updateTimeoutRef.current) {
+      clearTimeout(updateTimeoutRef.current);
+    }
+
     try {
-      await updateSchedule(id, { ...formData, title: trimmedTitle });
-      setFormData((prev) => ({ ...prev, title: trimmedTitle }));
+      const updatedSchedule = await updateSchedule(id, { ...formData, title: trimmedTitle });
+      setFormData((prev) => ({ ...prev, title: trimmedTitle, ...updatedSchedule }));
       toast.success("Title Updated", {
         description: "Schedule title has been updated",
         duration: 2000,
@@ -254,18 +262,26 @@ const SchedulePage = () => {
         description: "Failed to update title",
         duration: 3000,
       });
-      setFormData((prev) => ({ ...prev }));
+      // Force re-render to revert the editable field
+      setEditableKey((prev) => prev + 1);
     }
   };
 
   const handleDescriptionBlur = async (newDescription) => {
-    if (newDescription === formData?.description) {
+    const trimmedDescription = newDescription?.trim();
+
+    if (trimmedDescription === formData?.description?.trim()) {
       return;
     }
 
+    // Cancel any pending updates
+    if (updateTimeoutRef.current) {
+      clearTimeout(updateTimeoutRef.current);
+    }
+
     try {
-      await updateSchedule(id, { ...formData, description: newDescription });
-      setFormData((prev) => ({ ...prev, description: newDescription }));
+      const updatedSchedule = await updateSchedule(id, { ...formData, description: trimmedDescription });
+      setFormData((prev) => ({ ...prev, description: trimmedDescription, ...updatedSchedule }));
       toast.success("Description Updated", {
         description: "Schedule description has been updated",
         duration: 2000,
@@ -275,14 +291,15 @@ const SchedulePage = () => {
         description: "Failed to update description",
         duration: 3000,
       });
-      setFormData((prev) => ({ ...prev }));
+      // Force re-render to revert the editable field
+      setEditableKey((prev) => prev + 1);
     }
   };
 
   const handleSaveAuditDetails = async (detailsData) => {
     try {
-      await updateSchedule(id, { ...formData, ...detailsData });
-      setFormData((prev) => ({ ...prev, ...detailsData }));
+      const updatedSchedule = await updateSchedule(id, { ...formData, ...detailsData });
+      setFormData((prev) => ({ ...prev, ...detailsData, ...updatedSchedule }));
       toast.success("Audit Details Updated", {
         description: "Audit details have been updated successfully",
         duration: 2000,
@@ -293,6 +310,7 @@ const SchedulePage = () => {
         description: "Failed to update audit details",
         duration: 3000,
       });
+      // Don't close modal on error so user can retry
     }
   };
 
@@ -605,7 +623,7 @@ const SchedulePage = () => {
                 <VStack align="stretch" spacing={4}>
                   {/* Editable Title */}
                   <Editable
-                    key={`title-${formData?.id || id}`}
+                    key={`title-${editableKey}`}
                     defaultValue={formData?.title || "Untitled"}
                     onSubmit={handleTitleBlur}
                     fontSize="2xl"
@@ -631,6 +649,7 @@ const SchedulePage = () => {
                       resize="vertical"
                       minH="auto"
                       rows={1}
+                      aria-label="Schedule title"
                       onFocus={(e) => {
                         e.target.style.height = "auto";
                         e.target.style.height = `${e.target.scrollHeight}px`;
@@ -647,7 +666,7 @@ const SchedulePage = () => {
                   {/* Editable Description */}
                   <Editable
                     w="full"
-                    key={`description-${formData?.id || id}`}
+                    key={`description-${editableKey}`}
                     defaultValue={formData?.description || ""}
                     onSubmit={handleDescriptionBlur}
                     placeholder="Add a description..."
@@ -671,6 +690,7 @@ const SchedulePage = () => {
                       px={2}
                       minH="60px"
                       resize="vertical"
+                      aria-label="Schedule description"
                       onFocus={(e) => {
                         e.target.style.height = "auto";
                         e.target.style.height = `${e.target.scrollHeight}px`;

@@ -79,6 +79,14 @@ const EditAuditDetailsModal = ({
 
   const handleCancel = () => {
     setValidationErrors({});
+    // Reset form data to original values
+    if (auditData) {
+      setFormData({
+        auditCode: auditData.auditCode || "",
+        auditType: auditData.auditType || "",
+        standard: auditData.standard || "",
+      });
+    }
     onClose();
   };
 
