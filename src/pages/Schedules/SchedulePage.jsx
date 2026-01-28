@@ -592,10 +592,9 @@ const SchedulePage = () => {
             <Card>
               <CardBody>
                 <VStack align="stretch" spacing={4}>
-                  {/* Editable Title */}
                   <Editable
-                    key={`title-${editableKey}`}
-                    defaultValue={formData?.title || "Untitled"}
+                    key={`title-${schedule?.id || schedule?._id}`}
+                    defaultValue={schedule?.title || "Untitled"}
                     onSubmit={handleTitleBlur}
                     fontSize="2xl"
                     fontWeight="bold"
@@ -607,7 +606,6 @@ const SchedulePage = () => {
                     <EditablePreview
                       w="full"
                       borderRadius="md"
-                      py={2}
                       _hover={{
                         background: "gray.100",
                         cursor: "pointer",
@@ -620,12 +618,13 @@ const SchedulePage = () => {
                       resize="vertical"
                       minH="auto"
                       rows={1}
-                      aria-label="Schedule title"
                       onFocus={(e) => {
+                        // Auto-resize on focus
                         e.target.style.height = "auto";
                         e.target.style.height = `${e.target.scrollHeight}px`;
                       }}
                       onInput={(e) => {
+                        // Continue resizing as user types
                         e.target.style.height = "auto";
                         e.target.style.height = `${e.target.scrollHeight}px`;
                       }}
@@ -645,8 +644,8 @@ const SchedulePage = () => {
                   {/* Editable Description */}
                   <Editable
                     w="full"
-                    key={`description-${editableKey}`}
-                    defaultValue={formData?.description || ""}
+                    key={`description-${schedule?.id || schedule?._id}`}
+                    defaultValue={schedule?.description || ""}
                     onSubmit={handleDescriptionBlur}
                     placeholder="Add a description..."
                     isPreviewFocusable={true}
@@ -657,7 +656,7 @@ const SchedulePage = () => {
                       py={2}
                       w="full"
                       borderRadius="md"
-                      color={formData?.description ? "gray.700" : "gray.400"}
+                      color={schedule?.description ? "gray.700" : "gray.400"}
                       _hover={{
                         background: "gray.100",
                         cursor: "pointer",
@@ -669,12 +668,13 @@ const SchedulePage = () => {
                       px={2}
                       minH="60px"
                       resize="vertical"
-                      aria-label="Schedule description"
                       onFocus={(e) => {
+                        // Auto-resize on focus
                         e.target.style.height = "auto";
                         e.target.style.height = `${e.target.scrollHeight}px`;
                       }}
                       onInput={(e) => {
+                        // Continue resizing as user types
                         e.target.style.height = "auto";
                         e.target.style.height = `${e.target.scrollHeight}px`;
                       }}
