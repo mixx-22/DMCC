@@ -12,7 +12,8 @@ const Layout = ({ children }) => {
   const xsmallMaxContent = useMemo(() => {
     const pathSegments = location.pathname.split("/").filter(Boolean);
     return (
-      (["schedules"].includes(pathSegments[0]) && pathSegments.length === 2) ||
+      (["audit-schedule"].includes(pathSegments[0]) &&
+        pathSegments.length === 2) ||
       (["form"].includes(pathSegments[1]) && pathSegments.length === 3)
     );
   }, [location.pathname]);
