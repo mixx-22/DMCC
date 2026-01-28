@@ -20,7 +20,15 @@ import {
   Flex,
   Collapse,
 } from "@chakra-ui/react";
-import { FiMoreVertical, FiEdit, FiTrash2, FiCalendar, FiUsers, FiChevronDown, FiChevronUp } from "react-icons/fi";
+import {
+  FiMoreVertical,
+  FiEdit,
+  FiTrash2,
+  FiCalendar,
+  FiUsers,
+  FiChevronDown,
+  FiChevronUp,
+} from "react-icons/fi";
 import { useState } from "react";
 import Swal from "sweetalert2";
 import { useOrganizations } from "../../../context/_useContext";
@@ -40,18 +48,18 @@ const OrganizationCard = ({
   const borderColor = useColorModeValue("gray.200", "gray.600");
   const hoverBg = useColorModeValue("gray.50", "gray.600");
   const headerHoverBg = useColorModeValue("gray.100", "gray.650");
-  
+
   // Helper function to format date
   const formatDate = (dateString) => {
     if (!dateString) return "N/A";
     const date = new Date(dateString);
-    return date.toLocaleDateString("en-US", { 
-      month: "short", 
-      day: "numeric", 
-      year: "numeric" 
+    return date.toLocaleDateString("en-US", {
+      month: "short",
+      day: "numeric",
+      year: "numeric",
     });
   };
-  
+
   // Helper function to check if visit is same day
   const isSameDay = (visit) => {
     return visit.date?.start === visit.date?.end;
@@ -101,7 +109,6 @@ const OrganizationCard = ({
             cursor="pointer"
             onClick={() => setIsExpanded(!isExpanded)}
             _hover={{ bg: headerHoverBg }}
-            borderRadius="md"
             transition="background 0.2s"
           >
             <HStack spacing={3} flex={1}>
@@ -116,22 +123,9 @@ const OrganizationCard = ({
                 }}
               />
               <VStack align="start" spacing={0} flex={1}>
-                <Text fontWeight="bold" fontSize="lg" color="blue.600">
+                <Text fontWeight="bold" fontSize="lg" color="brandPrimary.600">
                   {team?.name || "Unknown Team"}
                 </Text>
-                {/* Summary info when collapsed */}
-                {!isExpanded && (
-                  <HStack spacing={3} mt={1}>
-                    <Badge colorScheme="purple" fontSize="xs">
-                      {auditors.length} Auditor{auditors.length !== 1 ? "s" : ""}
-                    </Badge>
-                    {organization.visits && organization.visits.length > 0 && (
-                      <Badge colorScheme="green" fontSize="xs">
-                        {organization.visits.length} Visit{organization.visits.length !== 1 ? "s" : ""}
-                      </Badge>
-                    )}
-                  </HStack>
-                )}
               </VStack>
             </HStack>
             <Menu>
@@ -257,7 +251,11 @@ const OrganizationCard = ({
                   <Box>
                     <HStack mb={3} spacing={2}>
                       <FiCalendar />
-                      <Text fontSize="sm" fontWeight="semibold" color="gray.700">
+                      <Text
+                        fontSize="sm"
+                        fontWeight="semibold"
+                        color="gray.700"
+                      >
                         Scheduled Visits ({organization.visits.length})
                       </Text>
                     </HStack>
@@ -269,7 +267,6 @@ const OrganizationCard = ({
                           borderRadius="md"
                           borderWidth="1px"
                           borderColor={borderColor}
-                          bg={useColorModeValue("gray.50", "gray.700")}
                           align="center"
                           justify="space-between"
                         >
