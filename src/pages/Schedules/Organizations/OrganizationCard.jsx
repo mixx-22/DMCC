@@ -28,7 +28,6 @@ import {
   Center,
   Stack,
   Icon,
-  Link,
 } from "@chakra-ui/react";
 import {
   FiMoreVertical,
@@ -39,7 +38,6 @@ import {
   FiChevronDown,
   FiChevronUp,
   FiExternalLink,
-  FiTarget,
   FiFolder,
 } from "react-icons/fi";
 import { useState, useEffect } from "react";
@@ -47,7 +45,7 @@ import { Link as RouterLink } from "react-router-dom";
 import Swal from "sweetalert2";
 import { useOrganizations, useDocuments } from "../../../context/_useContext";
 import Timestamp from "../../../components/Timestamp";
-import { GridView, ListView } from "../../../components/Document";
+import { GridView } from "../../../components/Document/GridView";
 
 const OrganizationCard = ({
   schedule,
@@ -58,7 +56,11 @@ const OrganizationCard = ({
   onEdit,
 }) => {
   const { deleteOrganization } = useOrganizations();
-  const { documents, loading: documentsLoading, fetchDocuments } = useDocuments();
+  const {
+    documents,
+    loading: documentsLoading,
+    fetchDocuments,
+  } = useDocuments();
   const [isExpanded, setIsExpanded] = useState(true);
   const cardBg = useColorModeValue("white", "gray.700");
   const errorColor = useColorModeValue("error.600", "error.400");
@@ -396,12 +398,18 @@ const OrganizationCard = ({
                                 borderColor={borderColor}
                                 bg={objectiveBg}
                               >
-                                <Flex justify="space-between" align="start" mb={2}>
+                                <Flex
+                                  justify="space-between"
+                                  align="start"
+                                  mb={2}
+                                >
                                   <Text fontWeight="bold" fontSize="sm">
                                     {objective.title}
                                   </Text>
                                   <Badge
-                                    colorScheme={WEIGHT_COLORS[objective.weight]}
+                                    colorScheme={
+                                      WEIGHT_COLORS[objective.weight]
+                                    }
                                     fontSize="xs"
                                   >
                                     {objective.weight}
@@ -444,7 +452,7 @@ const OrganizationCard = ({
                           <Text color="gray.500">Loading documents...</Text>
                         </Center>
                       ) : documents && documents.length > 0 ? (
-                        <GridView 
+                        <GridView
                           documents={documents}
                           onDocumentClick={() => {}}
                           readOnly={true}
