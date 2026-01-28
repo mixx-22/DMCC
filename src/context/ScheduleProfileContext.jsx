@@ -159,7 +159,9 @@ export const ScheduleProfileProvider = ({ children }) => {
     }
 
     try {
-      await apiService.delete(`${SCHEDULES_ENDPOINT}/${scheduleId}`);
+      await apiService.request(`${SCHEDULES_ENDPOINT}/${scheduleId}`, {
+        method: "DELETE",
+      });
       dispatch({ type: "SAVE_SUCCESS", payload: null });
     } catch (error) {
       dispatch({ type: "SAVE_ERROR", payload: error.message });
