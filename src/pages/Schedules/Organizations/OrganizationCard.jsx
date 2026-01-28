@@ -19,6 +19,16 @@ import {
   WrapItem,
   Flex,
   Collapse,
+  Tabs,
+  TabList,
+  TabPanels,
+  Tab,
+  TabPanel,
+  Button,
+  Center,
+  Stack,
+  Icon,
+  Link,
 } from "@chakra-ui/react";
 import {
   FiMoreVertical,
@@ -28,10 +38,16 @@ import {
   FiUsers,
   FiChevronDown,
   FiChevronUp,
+  FiExternalLink,
+  FiTarget,
+  FiFolder,
 } from "react-icons/fi";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { Link as RouterLink } from "react-router-dom";
 import Swal from "sweetalert2";
-import { useOrganizations } from "../../../context/_useContext";
+import { useOrganizations, useDocuments } from "../../../context/_useContext";
+import Timestamp from "../../../components/Timestamp";
+import { GridView, ListView } from "../../../components/Document";
 
 const OrganizationCard = ({
   schedule,
@@ -42,12 +58,27 @@ const OrganizationCard = ({
   onEdit,
 }) => {
   const { deleteOrganization } = useOrganizations();
+  const { documents, loading: documentsLoading, fetchDocuments } = useDocuments();
   const [isExpanded, setIsExpanded] = useState(true);
   const cardBg = useColorModeValue("white", "gray.700");
   const errorColor = useColorModeValue("error.600", "error.400");
   const borderColor = useColorModeValue("gray.200", "gray.600");
   const hoverBg = useColorModeValue("gray.50", "gray.600");
   const headerHoverBg = useColorModeValue("gray.100", "gray.650");
+  const objectiveBg = useColorModeValue("gray.50", "gray.700");
+
+  const WEIGHT_COLORS = {
+    low: "green",
+    medium: "yellow",
+    high: "red",
+  };
+
+  // Fetch documents when folderId is available
+  useEffect(() => {
+    if (organization?.folderId && isExpanded) {
+      fetchDocuments(organization.folderId);
+    }
+  }, [organization?.folderId, isExpanded, fetchDocuments]);
 
   // Helper function to format date
   const formatDate = (dateString) => {
@@ -163,19 +194,9 @@ const OrganizationCard = ({
 
           {/* Collapsible Content */}
           <Collapse in={isExpanded} animateOpacity>
-            <VStack align="stretch" spacing={4} p={4} pt={0}>
-              {/* Team Description */}
-              {team?.description && (
-                <>
-                  <Text fontSize="sm" color="gray.600">
-                    {team.description}
-                  </Text>
-                  <Divider />
-                </>
-              )}
-
-              {/* Auditors Section */}
-              <Box>
+            <Box p={4} pt={0}>
+              {/* Auditors Section - Always Visible */}
+              <Box mb={4}>
                 <HStack mb={3} spacing={2}>
                   <FiUsers />
                   <Text fontSize="sm" fontWeight="semibold" color="gray.700">
@@ -244,62 +265,207 @@ const OrganizationCard = ({
                 )}
               </Box>
 
-              {/* Visits Section */}
-              {organization.visits && organization.visits.length > 0 && (
-                <>
-                  <Divider />
-                  <Box>
-                    <HStack mb={3} spacing={2}>
-                      <FiCalendar />
-                      <Text
-                        fontSize="sm"
-                        fontWeight="semibold"
-                        color="gray.700"
-                      >
-                        Scheduled Visits ({organization.visits.length})
-                      </Text>
+              <Divider mb={4} />
+
+              {/* Tabs Section */}
+              <Tabs colorScheme="brandPrimary" size="sm">
+                <TabList>
+                  <Tab>
+                    <HStack spacing={1}>
+                      <Icon as={FiCalendar} />
+                      <Text>Visits</Text>
                     </HStack>
-                    <VStack align="stretch" spacing={2}>
-                      {organization.visits.map((visit, index) => (
-                        <Flex
-                          key={index}
-                          p={2}
-                          borderRadius="md"
-                          borderWidth="1px"
-                          borderColor={borderColor}
-                          align="center"
-                          justify="space-between"
-                        >
-                          {isSameDay(visit) ? (
-                            <HStack spacing={2}>
-                              <Badge colorScheme="green" fontSize="xs">
-                                Single Day
-                              </Badge>
-                              <Text fontSize="sm" fontWeight="medium">
-                                {formatDate(visit.date?.start)}
-                              </Text>
-                            </HStack>
-                          ) : (
-                            <HStack spacing={2} fontSize="sm">
-                              <Text fontWeight="medium">
-                                {formatDate(visit.date?.start)}
-                              </Text>
-                              <Text color="gray.500">→</Text>
-                              <Text fontWeight="medium">
-                                {formatDate(visit.date?.end)}
-                              </Text>
-                              <Badge colorScheme="blue" fontSize="xs">
-                                Multi-day
-                              </Badge>
-                            </HStack>
-                          )}
-                        </Flex>
-                      ))}
+                  </Tab>
+                  <Tab>
+                    <HStack spacing={1}>
+                      <Icon as={FiUsers} />
+                      <Text>Team Details</Text>
+                    </HStack>
+                  </Tab>
+                  <Tab>
+                    <HStack spacing={1}>
+                      <Icon as={FiFolder} />
+                      <Text>Documents</Text>
+                    </HStack>
+                  </Tab>
+                </TabList>
+
+                <TabPanels>
+                  {/* Visit Details Tab */}
+                  <TabPanel px={0}>
+                    {organization.visits && organization.visits.length > 0 ? (
+                      <VStack align="stretch" spacing={2}>
+                        {organization.visits.map((visit, index) => (
+                          <Flex
+                            key={index}
+                            p={3}
+                            borderRadius="md"
+                            borderWidth="1px"
+                            borderColor={borderColor}
+                            align="center"
+                            justify="space-between"
+                          >
+                            {isSameDay(visit) ? (
+                              <HStack spacing={2}>
+                                <Badge colorScheme="green" fontSize="xs">
+                                  Single Day
+                                </Badge>
+                                <Text fontSize="sm" fontWeight="medium">
+                                  {formatDate(visit.date?.start)}
+                                </Text>
+                              </HStack>
+                            ) : (
+                              <HStack spacing={2} fontSize="sm">
+                                <Text fontWeight="medium">
+                                  {formatDate(visit.date?.start)}
+                                </Text>
+                                <Text color="gray.500">→</Text>
+                                <Text fontWeight="medium">
+                                  {formatDate(visit.date?.end)}
+                                </Text>
+                                <Badge colorScheme="blue" fontSize="xs">
+                                  Multi-day
+                                </Badge>
+                              </HStack>
+                            )}
+                          </Flex>
+                        ))}
+                      </VStack>
+                    ) : (
+                      <Center minH="xs">
+                        <Text color="gray.500" textAlign="center">
+                          No visits scheduled
+                        </Text>
+                      </Center>
+                    )}
+                  </TabPanel>
+
+                  {/* Team Details Tab */}
+                  <TabPanel>
+                    <VStack align="stretch" spacing={4}>
+                      {/* Team Description */}
+                      {team?.description && (
+                        <Box>
+                          <Text fontSize="sm" fontWeight="semibold" mb={2}>
+                            Description
+                          </Text>
+                          <Text fontSize="sm" color="gray.600">
+                            {team.description}
+                          </Text>
+                        </Box>
+                      )}
+
+                      {/* Team Timestamps */}
+                      <Flex gap={6} flexWrap="wrap">
+                        {team?.createdAt && (
+                          <Box>
+                            <Text fontSize="sm" color="gray.500" mb={1}>
+                              Team Created
+                            </Text>
+                            <Text fontWeight="medium" fontSize="sm">
+                              <Timestamp date={team.createdAt} />
+                            </Text>
+                          </Box>
+                        )}
+                        {team?.updatedAt && (
+                          <Box>
+                            <Text fontSize="sm" color="gray.500" mb={1}>
+                              Last Updated
+                            </Text>
+                            <Text fontWeight="medium" fontSize="sm">
+                              <Timestamp date={team.updatedAt} />
+                            </Text>
+                          </Box>
+                        )}
+                      </Flex>
+
+                      {/* Team Objectives */}
+                      {team?.objectives && team.objectives.length > 0 && (
+                        <Box>
+                          <Text fontSize="sm" fontWeight="semibold" mb={2}>
+                            Objectives
+                          </Text>
+                          <Stack spacing={3}>
+                            {team.objectives.map((objective, index) => (
+                              <Box
+                                key={objective.id || `objective-${index}`}
+                                p={3}
+                                borderWidth={1}
+                                borderRadius="md"
+                                borderColor={borderColor}
+                                bg={objectiveBg}
+                              >
+                                <Flex justify="space-between" align="start" mb={2}>
+                                  <Text fontWeight="bold" fontSize="sm">
+                                    {objective.title}
+                                  </Text>
+                                  <Badge
+                                    colorScheme={WEIGHT_COLORS[objective.weight]}
+                                    fontSize="xs"
+                                  >
+                                    {objective.weight}
+                                  </Badge>
+                                </Flex>
+                                <Text fontSize="sm" color="gray.600">
+                                  {objective.description}
+                                </Text>
+                              </Box>
+                            ))}
+                          </Stack>
+                        </Box>
+                      )}
+
+                      {/* View Team Button */}
+                      {team?._id && (
+                        <Box>
+                          <Button
+                            as={RouterLink}
+                            to={`/teams/${team._id}`}
+                            target="_blank"
+                            rightIcon={<FiExternalLink />}
+                            variant="outline"
+                            colorScheme="brandPrimary"
+                            size="sm"
+                            width="full"
+                          >
+                            View Team in New Tab
+                          </Button>
+                        </Box>
+                      )}
                     </VStack>
-                  </Box>
-                </>
-              )}
-            </VStack>
+                  </TabPanel>
+
+                  {/* Documents Tab */}
+                  <TabPanel px={0}>
+                    {organization?.folderId ? (
+                      documentsLoading ? (
+                        <Center minH="xs">
+                          <Text color="gray.500">Loading documents...</Text>
+                        </Center>
+                      ) : documents && documents.length > 0 ? (
+                        <GridView 
+                          documents={documents}
+                          onDocumentClick={() => {}}
+                          readOnly={true}
+                        />
+                      ) : (
+                        <Center minH="xs">
+                          <Text color="gray.500" textAlign="center">
+                            No documents found
+                          </Text>
+                        </Center>
+                      )
+                    ) : (
+                      <Center minH="xs">
+                        <Text color="gray.500" textAlign="center">
+                          No folder assigned to this organization
+                        </Text>
+                      </Center>
+                    )}
+                  </TabPanel>
+                </TabPanels>
+              </Tabs>
+            </Box>
           </Collapse>
         </VStack>
       </CardBody>
