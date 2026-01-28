@@ -5,8 +5,6 @@ import {
   Text,
   VStack,
   IconButton,
-  Card,
-  CardBody,
   Flex,
   Menu,
   MenuButton,
@@ -43,6 +41,8 @@ const ScheduleViewPage = () => {
   const errorColor = useColorModeValue("error.600", "error.400");
   const labelColor = useColorModeValue("gray.600", "gray.400");
   const dividerColor = useColorModeValue("gray.200", "gray.600");
+  const bgColor = useColorModeValue("white", "gray.800");
+  const borderColor = useColorModeValue("gray.100", "gray.700");
 
   const handleEdit = () => {
     navigate(`/audit-schedule/${id}/edit`);
@@ -140,8 +140,16 @@ const ScheduleViewPage = () => {
         </Flex>
       </PageHeader>
 
-      <Card>
-        <CardBody>
+      <Flex justify="center" w="full">
+        <Box
+          maxW="900px"
+          w="full"
+          bg={bgColor}
+          borderWidth="1px"
+          borderColor={borderColor}
+          p={8}
+          mx={4}
+        >
           <VStack spacing={6} align="stretch">
             {/* Basic Information Section */}
             <Box>
@@ -222,8 +230,8 @@ const ScheduleViewPage = () => {
               </Box>
             </Box>
           </VStack>
-        </CardBody>
-      </Card>
+        </Box>
+      </Flex>
     </Box>
   );
 };
