@@ -168,6 +168,15 @@ export const ScheduleProfileProvider = ({ children }) => {
           duration: 2000,
         });
         return updatedSchedule;
+      } else {
+        // Handle case where success is false
+        const error = new Error("Update operation was not successful");
+        dispatch({ type: "ERROR", payload: error.message });
+        toast.error("Update Failed", {
+          description: "Failed to update schedule",
+          duration: 3000,
+        });
+        throw error;
       }
     } catch (error) {
       dispatch({ type: "ERROR", payload: error.message });
