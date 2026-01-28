@@ -14,6 +14,7 @@ import {
   HStack,
   Badge,
   Divider,
+  useDisclosure,
 } from "@chakra-ui/react";
 import {
   FiEdit,
@@ -28,6 +29,7 @@ import PageHeader from "../../components/PageHeader";
 import ScheduleSkeleton from "../../components/ScheduleSkeleton";
 import { useScheduleProfile } from "../../context/_useContext";
 import { getAuditTypeLabel } from "../../utils/auditHelpers";
+import EditScheduleModal from "./EditScheduleModal";
 
 const ScheduleViewPage = () => {
   const navigate = useNavigate();
@@ -35,8 +37,17 @@ const ScheduleViewPage = () => {
   const {
     schedule,
     loading,
+    fetchSchedule,
+    updateSchedule,
     deleteSchedule,
+    saving,
   } = useScheduleProfile();
+
+  const {
+    isOpen: isEditOpen,
+    onOpen: onEditOpen,
+    onClose: onEditClose,
+  } = useDisclosure();
 
   const errorColor = useColorModeValue("error.600", "error.400");
   const labelColor = useColorModeValue("gray.600", "gray.400");
@@ -45,7 +56,25 @@ const ScheduleViewPage = () => {
   const borderColor = useColorModeValue("gray.100", "gray.700");
 
   const handleEdit = () => {
-    navigate(`/audit-schedule/${id}/edit`);
+    onEditOpen();
+  };
+
+  const handleSave = async (formData) => {
+    try {
+      await updateSchedule(id, formData);
+      toast.success("Audit Schedule Updated", {
+        description: `"${formData.title}" has been successfully updated`,
+        duration: 3000,
+      });
+      // Refresh the schedule data
+      await fetchSchedule(id);
+    } catch (error) {
+      toast.error("Update Failed", {
+        description: error.message || "An error occurred. Please try again.",
+        duration: 3000,
+      });
+      throw error;
+    }
   };
 
   const handleDelete = async () => {
@@ -232,6 +261,14 @@ const ScheduleViewPage = () => {
           </VStack>
         </Box>
       </Flex>
+
+      <EditScheduleModal
+        isOpen={isEditOpen}
+        onClose={onEditClose}
+        schedule={schedule}
+        onSave={handleSave}
+        isSaving={saving}
+      />
     </Box>
   );
 };
