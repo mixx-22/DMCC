@@ -296,7 +296,9 @@ const SchedulePage = () => {
     }
 
     try {
-      const updatePayload = buildUpdatePayload({ description: trimmedDescription });
+      const updatePayload = buildUpdatePayload({
+        description: trimmedDescription,
+      });
       const updatedSchedule = await updateSchedule(id, updatePayload);
       setFormData((prev) => ({ ...prev, ...updatedSchedule }));
       toast.success("Description Updated", {
@@ -402,10 +404,14 @@ const SchedulePage = () => {
                     <FormLabel>Title</FormLabel>
                     <Input
                       value={formData.title}
-                      onChange={(e) => handleFieldChange("title", e.target.value)}
+                      onChange={(e) =>
+                        handleFieldChange("title", e.target.value)
+                      }
                       placeholder="e.g., Annual Financial Audit 2024"
                     />
-                    <FormErrorMessage>{validationErrors.title}</FormErrorMessage>
+                    <FormErrorMessage>
+                      {validationErrors.title}
+                    </FormErrorMessage>
                   </FormControl>
 
                   <FormControl
@@ -683,6 +689,14 @@ const SchedulePage = () => {
                     />
                   </Editable>
 
+                  <HStack mt={-4}>
+                    {formData.status === 1 ? (
+                      <Badge colorScheme="green">Closed</Badge>
+                    ) : (
+                      <Badge colorScheme="blue">Ongoing</Badge>
+                    )}
+                  </HStack>
+
                   <Divider />
 
                   {/* Editable Description */}
@@ -795,18 +809,6 @@ const SchedulePage = () => {
                     <Text fontSize="sm" mt={1} fontWeight="medium">
                       {formData.standard || "-"}
                     </Text>
-                  </Box>
-                  <Box>
-                    <Text fontSize="sm" color="gray.600">
-                      Status
-                    </Text>
-                    <Box mt={1}>
-                      {formData.status === 1 ? (
-                        <Badge colorScheme="green">Closed</Badge>
-                      ) : (
-                        <Badge colorScheme="blue">Ongoing</Badge>
-                      )}
-                    </Box>
                   </Box>
                 </VStack>
               </CardBody>
