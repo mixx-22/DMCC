@@ -230,6 +230,19 @@ const SchedulePage = () => {
     navigate("/audit-schedules");
   };
 
+  // Helper function to build update payload with only business fields
+  const buildUpdatePayload = (overrides = {}) => {
+    return {
+      title: formData.title,
+      description: formData.description,
+      auditCode: formData.auditCode,
+      auditType: formData.auditType,
+      standard: formData.standard,
+      status: formData.status,
+      ...overrides,
+    };
+  };
+
   const handleTitleBlur = async (newTitle) => {
     const trimmedTitle = newTitle?.trim();
 
@@ -253,15 +266,7 @@ const SchedulePage = () => {
     }
 
     try {
-      // Send only the updatable fields, not metadata like _id, createdAt, updatedAt
-      const updatePayload = {
-        title: trimmedTitle,
-        description: formData.description,
-        auditCode: formData.auditCode,
-        auditType: formData.auditType,
-        standard: formData.standard,
-        status: formData.status,
-      };
+      const updatePayload = buildUpdatePayload({ title: trimmedTitle });
       const updatedSchedule = await updateSchedule(id, updatePayload);
       setFormData((prev) => ({ ...prev, ...updatedSchedule }));
       toast.success("Title Updated", {
@@ -279,9 +284,9 @@ const SchedulePage = () => {
   };
 
   const handleDescriptionBlur = async (newDescription) => {
-    const trimmedDescription = newDescription?.trim();
+    const trimmedDescription = newDescription?.trim() || "";
 
-    if (trimmedDescription === formData?.description?.trim()) {
+    if (trimmedDescription === (formData?.description?.trim() || "")) {
       return;
     }
 
@@ -291,15 +296,7 @@ const SchedulePage = () => {
     }
 
     try {
-      // Send only the updatable fields, not metadata like _id, createdAt, updatedAt
-      const updatePayload = {
-        title: formData.title,
-        description: trimmedDescription,
-        auditCode: formData.auditCode,
-        auditType: formData.auditType,
-        standard: formData.standard,
-        status: formData.status,
-      };
+      const updatePayload = buildUpdatePayload({ description: trimmedDescription });
       const updatedSchedule = await updateSchedule(id, updatePayload);
       setFormData((prev) => ({ ...prev, ...updatedSchedule }));
       toast.success("Description Updated", {
@@ -318,15 +315,11 @@ const SchedulePage = () => {
 
   const handleSaveAuditDetails = async (detailsData) => {
     try {
-      // Send only the updatable fields, not metadata like _id, createdAt, updatedAt
-      const updatePayload = {
-        title: formData.title,
-        description: formData.description,
+      const updatePayload = buildUpdatePayload({
         auditCode: detailsData.auditCode,
         auditType: detailsData.auditType,
         standard: detailsData.standard,
-        status: formData.status,
-      };
+      });
       const updatedSchedule = await updateSchedule(id, updatePayload);
       setFormData((prev) => ({ ...prev, ...updatedSchedule }));
       toast.success("Audit Details Updated", {
