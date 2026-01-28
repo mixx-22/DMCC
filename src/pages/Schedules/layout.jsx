@@ -21,8 +21,10 @@ import { useEffect } from "react";
 import { useSearchParams, Link as RouterLink } from "react-router-dom";
 import { useSchedules } from "../../context/_useContext";
 import Pagination from "../../components/Pagination";
-import { FiSearch, FiCalendar } from "react-icons/fi";
+import { FiSearch } from "react-icons/fi";
 import { getAuditTypeLabel } from "../../utils/auditHelpers";
+import { getDocumentIcon } from "../../components/Document/DocumentIcon";
+import { DocumentHoverPopover } from "../../components/Document/DocumentHoverPopover";
 
 const MotionBox = motion(Box);
 
@@ -183,6 +185,13 @@ const SchedulesList = () => {
               ) : (
                 schedules.map((schedule, scheduleIndex) => {
                   const scheduleId = schedule._id || schedule.id;
+                  console.log({ schedule });
+                  const auditDoc = {
+                    title: schedule?.title,
+                    type: "auditSchedule",
+                    owner: schedule?.owner,
+                    metadata: { fileName: schedule.auditCode },
+                  };
                   return (
                     <LinkBox
                       as={Tr}
@@ -193,8 +202,10 @@ const SchedulesList = () => {
                           as={RouterLink}
                           to={`/audit-schedule/${scheduleId}`}
                         >
-                          <HStack w="fit-content">
-                            <FiCalendar />
+                          <HStack w="fit-content" alignItems="center">
+                            <DocumentHoverPopover document={auditDoc}>
+                              {getDocumentIcon(auditDoc)}
+                            </DocumentHoverPopover>
                             <Text as="span" fontWeight="medium">
                               {schedule.auditCode || "-"}
                             </Text>
