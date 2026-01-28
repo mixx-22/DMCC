@@ -1,5 +1,6 @@
 import { useEffect, useCallback, useReducer, useRef } from "react";
 import { useParams } from "react-router-dom";
+import { toast } from "sonner";
 import apiService from "../services/api";
 import { ScheduleProfileContext } from "./_contexts";
 
@@ -29,26 +30,20 @@ const initialScheduleData = {
   status: 0,
 };
 
-// Reducer
+// Reducer with uniform FETCHING/FETCHED pattern
 function scheduleReducer(state, action) {
   switch (action.type) {
-    case "FETCH_START":
+    case "FETCHING":
       return { ...state, loading: true, error: null };
-    case "FETCH_SUCCESS":
+    case "FETCHED":
       return {
         ...state,
         loading: false,
         schedule: action.payload,
         error: null,
       };
-    case "FETCH_ERROR":
+    case "ERROR":
       return { ...state, loading: false, error: action.payload };
-    case "SAVE_START":
-      return { ...state, saving: true, error: null };
-    case "SAVE_SUCCESS":
-      return { ...state, saving: false, schedule: action.payload, error: null };
-    case "SAVE_ERROR":
-      return { ...state, saving: false, error: action.payload };
     default:
       return state;
   }
@@ -59,7 +54,6 @@ export const ScheduleProfileProvider = ({ children }) => {
   const [state, dispatch] = useReducer(scheduleReducer, {
     schedule: null,
     loading: false,
-    saving: false,
     error: null,
   });
   const fetchedRef = useRef(false);
@@ -69,12 +63,12 @@ export const ScheduleProfileProvider = ({ children }) => {
       return;
     }
 
-    dispatch({ type: "FETCH_START" });
+    dispatch({ type: "FETCHING" });
 
     if (!USE_API) {
       // Mock mode
       await new Promise((resolve) => setTimeout(resolve, 500));
-      dispatch({ type: "FETCH_SUCCESS", payload: MOCK_SCHEDULE });
+      dispatch({ type: "FETCHED", payload: MOCK_SCHEDULE });
       return;
     }
 
@@ -84,15 +78,19 @@ export const ScheduleProfileProvider = ({ children }) => {
         { method: "GET" },
       );
       console.log({ response });
-      dispatch({ type: "FETCH_SUCCESS", payload: response.data });
+      dispatch({ type: "FETCHED", payload: response.data });
     } catch (error) {
-      dispatch({ type: "FETCH_ERROR", payload: error.message });
+      dispatch({ type: "ERROR", payload: error.message });
+      toast.error("Failed to Load Schedule", {
+        description: error.message || "Could not load schedule details",
+        duration: 3000,
+      });
       throw error;
     }
   }, []);
 
   const createSchedule = useCallback(async (scheduleData) => {
-    dispatch({ type: "SAVE_START" });
+    dispatch({ type: "FETCHING" });
 
     if (!USE_API) {
       // Mock mode
@@ -103,7 +101,11 @@ export const ScheduleProfileProvider = ({ children }) => {
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       };
-      dispatch({ type: "SAVE_SUCCESS", payload: newSchedule });
+      dispatch({ type: "FETCHED", payload: newSchedule });
+      toast.success("Schedule Created", {
+        description: `"${scheduleData.title}" has been successfully created`,
+        duration: 3000,
+      });
       return newSchedule;
     }
 
@@ -112,26 +114,39 @@ export const ScheduleProfileProvider = ({ children }) => {
         method: "POST",
         body: JSON.stringify(scheduleData),
       });
-      dispatch({ type: "SAVE_SUCCESS", payload: schedule });
+      dispatch({ type: "FETCHED", payload: schedule });
+      toast.success("Schedule Created", {
+        description: `"${scheduleData.title}" has been successfully created`,
+        duration: 3000,
+      });
       return schedule;
     } catch (error) {
-      dispatch({ type: "SAVE_ERROR", payload: error.message });
+      dispatch({ type: "ERROR", payload: error.message });
+      toast.error("Failed to Create Schedule", {
+        description: error.message || "An error occurred. Please try again.",
+        duration: 3000,
+      });
       throw error;
     }
   }, []);
 
   const updateSchedule = useCallback(async (scheduleId, scheduleData) => {
-    dispatch({ type: "SAVE_START" });
+    dispatch({ type: "FETCHING" });
 
     if (!USE_API) {
       // Mock mode
       await new Promise((resolve) => setTimeout(resolve, 800));
       const updatedSchedule = {
+        ...state.schedule,
         ...scheduleData,
         _id: scheduleId,
         updatedAt: new Date().toISOString(),
       };
-      dispatch({ type: "SAVE_SUCCESS", payload: updatedSchedule });
+      dispatch({ type: "FETCHED", payload: updatedSchedule });
+      toast.success("Schedule Updated", {
+        description: "Schedule has been successfully updated",
+        duration: 2000,
+      });
       return updatedSchedule;
     }
 
@@ -142,23 +157,50 @@ export const ScheduleProfileProvider = ({ children }) => {
       );
       const { success = false } = response;
       if (success) {
-        const newData = { ...scheduleData, updatedAt: new Date() };
-        dispatch({ type: "SAVE_SUCCESS", payload: newData });
-        return newData;
+        const updatedSchedule = { 
+          ...state.schedule, 
+          ...scheduleData, 
+          updatedAt: new Date().toISOString() 
+        };
+        dispatch({ type: "FETCHED", payload: updatedSchedule });
+        toast.success("Schedule Updated", {
+          description: "Schedule has been successfully updated",
+          duration: 2000,
+        });
+        return updatedSchedule;
+      } else {
+        // Handle case where success is false
+        const error = new Error("Update operation was not successful");
+        dispatch({ type: "ERROR", payload: error.message });
+        toast.error("Update Failed", {
+          description: "Failed to update schedule",
+          duration: 3000,
+        });
+        throw error;
       }
     } catch (error) {
-      dispatch({ type: "SAVE_ERROR", payload: error.message });
+      dispatch({ type: "ERROR", payload: error.message });
+      toast.error("Update Failed", {
+        description: error.message || "Failed to update schedule",
+        duration: 3000,
+      });
       throw error;
     }
-  }, []);
+  }, [state.schedule]);
 
-  const deleteSchedule = useCallback(async (scheduleId) => {
-    dispatch({ type: "SAVE_START" });
+  const deleteSchedule = useCallback(async (scheduleId, scheduleTitle) => {
+    dispatch({ type: "FETCHING" });
 
     if (!USE_API) {
       // Mock mode
       await new Promise((resolve) => setTimeout(resolve, 500));
-      dispatch({ type: "SAVE_SUCCESS", payload: null });
+      dispatch({ type: "FETCHED", payload: null });
+      toast.success("Schedule Deleted", {
+        description: scheduleTitle 
+          ? `"${scheduleTitle}" has been deleted`
+          : "Schedule has been deleted",
+        duration: 3000,
+      });
       return;
     }
 
@@ -166,9 +208,19 @@ export const ScheduleProfileProvider = ({ children }) => {
       await apiService.request(`${SCHEDULES_ENDPOINT}/${scheduleId}`, {
         method: "DELETE",
       });
-      dispatch({ type: "SAVE_SUCCESS", payload: null });
+      dispatch({ type: "FETCHED", payload: null });
+      toast.success("Schedule Deleted", {
+        description: scheduleTitle 
+          ? `"${scheduleTitle}" has been deleted`
+          : "Schedule has been deleted",
+        duration: 3000,
+      });
     } catch (error) {
-      dispatch({ type: "SAVE_ERROR", payload: error.message });
+      dispatch({ type: "ERROR", payload: error.message });
+      toast.error("Delete Failed", {
+        description: error.message || "Failed to delete schedule",
+        duration: 3000,
+      });
       throw error;
     }
   }, []);
@@ -184,7 +236,6 @@ export const ScheduleProfileProvider = ({ children }) => {
     schedule: state.schedule,
     initialScheduleData,
     loading: state.loading,
-    saving: state.saving,
     error: state.error,
     fetchSchedule,
     createSchedule,
