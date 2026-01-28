@@ -12,6 +12,7 @@ import {
   FormHelperText,
   FormControl,
   FormLabel,
+  Divider,
 } from "@chakra-ui/react";
 import { useState, useEffect } from "react";
 import { FiSave } from "react-icons/fi";
@@ -41,7 +42,10 @@ const OrganizationModal = ({
   useEffect(() => {
     if (organization && isOpen) {
       setFormData({
-        team: organization.team || { _id: organization.teamId, name: "Loading..." },
+        team: organization.team || {
+          _id: organization.teamId,
+          name: "Loading...",
+        },
         auditors: organization.auditors || [],
         visits: organization.visits || [],
       });
@@ -75,7 +79,10 @@ const OrganizationModal = ({
 
     if (!formData.team) {
       errors.team = "Team is required";
-    } else if (!isEdit && existingTeamIds.includes(formData.team._id || formData.team.id)) {
+    } else if (
+      !isEdit &&
+      existingTeamIds.includes(formData.team._id || formData.team.id)
+    ) {
       errors.team = "This team is already added to this schedule";
     }
 
@@ -93,7 +100,7 @@ const OrganizationModal = ({
       const payload = {
         auditScheduleId: scheduleId,
         teamId: formData.team._id || formData.team.id,
-        auditors: formData.auditors.map(a => a._id || a.id), // Extract user IDs
+        auditors: formData.auditors.map((a) => a._id || a.id), // Extract user IDs
         visits: formData.visits,
       };
       onSave(payload);
@@ -135,6 +142,8 @@ const OrganizationModal = ({
               </FormControl>
             )}
 
+            <Divider my={4} />
+
             {/* Auditors Selection */}
             <FormControl isRequired isInvalid={!!validationErrors.auditors}>
               <FormLabel>Auditors</FormLabel>
@@ -143,7 +152,7 @@ const OrganizationModal = ({
                 onChange={(users) => handleFieldChange("auditors", users)}
                 placeholder="Type at least 2 characters to search users..."
                 label=""
-                displayMode="badges"
+                displayMode="none"
               />
               <FormHelperText>
                 Select one or more users as auditors for this organization
@@ -152,6 +161,8 @@ const OrganizationModal = ({
                 <FormErrorMessage>{validationErrors.auditors}</FormErrorMessage>
               )}
             </FormControl>
+
+            <Divider my={4} />
 
             {/* Visits Section */}
             <VisitManager

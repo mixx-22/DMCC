@@ -48,14 +48,16 @@ import {
   FiChevronRight,
   FiChevronLeft,
   FiEdit,
-  FiPlus,
 } from "react-icons/fi";
 import { useNavigate, useParams } from "react-router-dom";
 import { useState, useEffect, useRef } from "react";
 import Swal from "sweetalert2";
 import PageHeader from "../../components/PageHeader";
 import PageFooter from "../../components/PageFooter";
-import { useScheduleProfile, useOrganizations } from "../../context/_useContext";
+import {
+  useScheduleProfile,
+  useOrganizations,
+} from "../../context/_useContext";
 import { getAuditTypeLabel } from "../../utils/auditHelpers";
 import EditAuditDetailsModal from "./EditAuditDetailsModal";
 import OrganizationModal from "./OrganizationModal";
@@ -75,7 +77,7 @@ const SchedulePageContent = () => {
     createSchedule,
     deleteSchedule,
   } = useScheduleProfile();
-  
+
   // Organizations context
   const {
     organizations,
@@ -334,11 +336,14 @@ const SchedulePageContent = () => {
       let result;
       if (selectedOrganization) {
         // Update existing organization
-        result = await updateOrganization(selectedOrganization._id, organizationData);
+        result = await updateOrganization(
+          selectedOrganization._id,
+          organizationData,
+        );
       } else {
         // Create new organization - backend will add its ID to schedule.organizations
         result = await createOrganization(organizationData);
-        
+
         // Update local schedule data to include the new organization ID
         if (result && result._id && schedule) {
           const updatedSchedule = {
@@ -371,13 +376,13 @@ const SchedulePageContent = () => {
     if (result.isConfirmed) {
       try {
         await deleteOrganization(organization._id);
-        
+
         // Update local schedule data to remove the organization ID
         if (schedule) {
           const updatedSchedule = {
             ...schedule,
             organizations: (schedule.organizations || []).filter(
-              (orgId) => orgId !== organization._id
+              (orgId) => orgId !== organization._id,
             ),
           };
           setFormData((prev) => ({ ...prev, ...updatedSchedule }));
@@ -915,7 +920,7 @@ const SchedulePageContent = () => {
 // Wrapper component with OrganizationsProvider
 const SchedulePage = () => {
   const { id } = useParams();
-  
+
   return (
     <OrganizationsProvider scheduleId={id}>
       <SchedulePageContent />
