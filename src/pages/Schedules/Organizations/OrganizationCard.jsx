@@ -26,22 +26,25 @@ import {
   Button,
   Center,
   Stack,
+  cssVar,
+  useToken,
+  Hide,
 } from "@chakra-ui/react";
 import {
   FiMoreVertical,
   FiEdit,
   FiTrash2,
-  FiUsers,
   FiChevronDown,
   FiChevronUp,
   FiExternalLink,
 } from "react-icons/fi";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { Link as RouterLink } from "react-router-dom";
 import Swal from "sweetalert2";
 import { useOrganizations, useDocuments } from "../../../context/_useContext";
 import Timestamp from "../../../components/Timestamp";
 import { GridView } from "../../../components/Document/GridView";
+import { formatDateRange } from "../../../utils/helpers";
 
 const OrganizationCard = ({
   schedule,
@@ -64,6 +67,8 @@ const OrganizationCard = ({
   const hoverBg = useColorModeValue("gray.50", "gray.600");
   const headerHoverBg = useColorModeValue("gray.100", "gray.650");
   const objectiveBg = useColorModeValue("gray.50", "gray.700");
+  const [tabColor] = useToken("colors", ["gray.500"]);
+  const $tabColor = cssVar("tabs-color");
 
   const WEIGHT_COLORS = {
     low: "green",
@@ -71,28 +76,11 @@ const OrganizationCard = ({
     high: "red",
   };
 
-  // Fetch documents when folderId is available
   useEffect(() => {
     if (organization?.folderId && isExpanded) {
       fetchDocuments(organization.folderId);
     }
   }, [organization?.folderId, isExpanded, fetchDocuments]);
-
-  // Helper function to format date
-  const formatDate = (dateString) => {
-    if (!dateString) return "N/A";
-    const date = new Date(dateString);
-    return date.toLocaleDateString("en-US", {
-      month: "short",
-      day: "numeric",
-      year: "numeric",
-    });
-  };
-
-  // Helper function to check if visit is same day
-  const isSameDay = (visit) => {
-    return visit.date?.start === visit.date?.end;
-  };
 
   const handleDeleteOrganization = async (organization) => {
     const result = await Swal.fire({
@@ -127,21 +115,45 @@ const OrganizationCard = ({
     }
   };
 
+  const latestVisitDate = useMemo(() => {
+    const { visits = [] } = organization;
+    if (!visits?.length) return "";
+
+    const latestVisit = visits[visits.length - 1];
+    const { start, end } = latestVisit.date;
+
+    const isOngoing = latestVisit.compliance === null;
+
+    const formatted = formatDateRange(start, isOngoing ? new Date() : end);
+
+    return isOngoing ? `${formatted} (Ongoing)` : formatted;
+  }, [organization]);
+
   return (
     <Card bg={cardBg} borderWidth="1px" borderColor={borderColor} shadow="sm">
       <CardBody p={0}>
         <VStack align="stretch" spacing={0}>
           {/* Collapsible Header */}
           <HStack
-            justify="space-between"
-            align="center"
             p={4}
+            spacing={4}
+            align="center"
             cursor="pointer"
+            justify="space-between"
             onClick={() => setIsExpanded(!isExpanded)}
             _hover={{ bg: headerHoverBg }}
             transition="background 0.2s"
           >
-            <HStack spacing={3} flex={1}>
+            <HStack align="center" spacing={2}>
+              <Avatar size="sm" name={team.name} />
+              <Text fontWeight="bold" fontSize="lg">
+                {team?.name || "Unknown Team"}
+              </Text>
+            </HStack>
+            <HStack align="center" spacing={0}>
+              <Hide below="md">
+                <Badge>{latestVisitDate}</Badge>
+              </Hide>
               <IconButton
                 icon={isExpanded ? <FiChevronUp /> : <FiChevronDown />}
                 size="sm"
@@ -152,67 +164,79 @@ const OrganizationCard = ({
                   setIsExpanded(!isExpanded);
                 }}
               />
-              <VStack align="start" spacing={0} flex={1}>
-                <Text fontWeight="bold" fontSize="lg" color="brandPrimary.600">
-                  {team?.name || "Unknown Team"}
-                </Text>
-              </VStack>
+              <Menu>
+                <MenuButton
+                  as={IconButton}
+                  icon={<FiMoreVertical />}
+                  variant="ghost"
+                  size="sm"
+                  aria-label="More options"
+                  onClick={(e) => e.stopPropagation()}
+                />
+                <MenuList>
+                  <MenuItem
+                    icon={<FiEdit />}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onEdit(organization);
+                    }}
+                  >
+                    Edit
+                  </MenuItem>
+                  <MenuItem
+                    icon={<FiTrash2 />}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleDeleteOrganization(organization);
+                    }}
+                    color={errorColor}
+                  >
+                    Delete
+                  </MenuItem>
+                </MenuList>
+              </Menu>{" "}
             </HStack>
-            <Menu>
-              <MenuButton
-                as={IconButton}
-                icon={<FiMoreVertical />}
-                variant="ghost"
-                size="sm"
-                aria-label="More options"
-                onClick={(e) => e.stopPropagation()}
-              />
-              <MenuList>
-                <MenuItem
-                  icon={<FiEdit />}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onEdit(organization);
-                  }}
-                >
-                  Edit
-                </MenuItem>
-                <MenuItem
-                  icon={<FiTrash2 />}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleDeleteOrganization(organization);
-                  }}
-                  color={errorColor}
-                >
-                  Delete
-                </MenuItem>
-              </MenuList>
-            </Menu>
           </HStack>
 
           {/* Collapsible Content */}
           <Collapse in={isExpanded} animateOpacity>
-            <Box p={4} pt={0}>
+            <Box pt={0}>
               {/* Tabs Section */}
               <Tabs colorScheme="brandPrimary">
                 <TabList>
-                  <Tab>
+                  <Tab
+                    sx={{ [$tabColor.variable]: tabColor }}
+                    fontWeight={"normal"}
+                  >
                     <HStack spacing={1}>
                       <Text>Visits</Text>
                     </HStack>
                   </Tab>
-                  <Tab>
+                  <Tab
+                    sx={{ [$tabColor.variable]: tabColor }}
+                    fontWeight={"normal"}
+                  >
                     <HStack spacing={1}>
                       <Text>Auditors</Text>
                     </HStack>
                   </Tab>
-                  <Tab>
+                  <Tab
+                    sx={{ [$tabColor.variable]: tabColor }}
+                    fontWeight={"normal"}
+                  >
                     <HStack spacing={1}>
-                      <Text>Team Details</Text>
+                      <Hide below="md">
+                        <Text>Team Details</Text>
+                      </Hide>
+                      <Hide above="sm">
+                        <Text>Details</Text>
+                      </Hide>
                     </HStack>
                   </Tab>
-                  <Tab>
+                  <Tab
+                    sx={{ [$tabColor.variable]: tabColor }}
+                    fontWeight={"normal"}
+                  >
                     <HStack spacing={1}>
                       <Text>Documents</Text>
                     </HStack>
@@ -221,7 +245,7 @@ const OrganizationCard = ({
 
                 <TabPanels>
                   {/* Visit Details Tab */}
-                  <TabPanel px={0}>
+                  <TabPanel px={4}>
                     {organization.visits && organization.visits.length > 0 ? (
                       <VStack align="stretch" spacing={2}>
                         {organization.visits.map((visit, index) => (
@@ -234,29 +258,17 @@ const OrganizationCard = ({
                             align="center"
                             justify="space-between"
                           >
-                            {isSameDay(visit) ? (
-                              <HStack spacing={2}>
-                                <Badge colorScheme="green" fontSize="xs">
-                                  Single Day
-                                </Badge>
-                                <Text fontSize="sm" fontWeight="medium">
-                                  {formatDate(visit.date?.start)}
-                                </Text>
-                              </HStack>
-                            ) : (
-                              <HStack spacing={2} fontSize="sm">
-                                <Text fontWeight="medium">
-                                  {formatDate(visit.date?.start)}
-                                </Text>
-                                <Text color="gray.500">→</Text>
-                                <Text fontWeight="medium">
-                                  {formatDate(visit.date?.end)}
-                                </Text>
-                                <Badge colorScheme="blue" fontSize="xs">
-                                  Multi-day
-                                </Badge>
-                              </HStack>
-                            )}
+                            <Box>
+                              <Text fontSize="sm" color="gray.500" mb={1}>
+                                Visit Date/s
+                              </Text>
+                              <Text fontSize="sm">
+                                {formatDateRange(
+                                  visit?.date?.start,
+                                  visit?.date?.end,
+                                )}
+                              </Text>
+                            </Box>
                           </Flex>
                         ))}
                       </VStack>
@@ -272,18 +284,11 @@ const OrganizationCard = ({
                   <TabPanel>
                     {/* Auditors Section - Always Visible */}
                     <Box mb={4}>
-                      <HStack mb={3} spacing={2}>
-                        <FiUsers />
-                        <Text
-                          fontSize="sm"
-                          fontWeight="semibold"
-                          color="gray.700"
-                        >
-                          Auditors ({auditors.length})
-                        </Text>
-                      </HStack>
+                      <Text fontSize="sm" color="gray.500" mb={2}>
+                        Auditors ({auditors.length})
+                      </Text>
                       {auditors && auditors.length > 0 ? (
-                        <Wrap spacing={2}>
+                        <Wrap>
                           {auditors.map((auditor, index) => {
                             const userId = auditor._id || auditor.id || auditor;
                             const fullName =
@@ -303,9 +308,7 @@ const OrganizationCard = ({
                                         <Text fontSize="xs">{email}</Text>
                                       )}
                                       {employeeId && (
-                                        <Text fontSize="xs">
-                                          ID: {employeeId}
-                                        </Text>
+                                        <Text fontSize="xs">{employeeId}</Text>
                                       )}
                                     </VStack>
                                   }
@@ -330,7 +333,7 @@ const OrganizationCard = ({
                                         </Text>
                                         {employeeId && (
                                           <Text fontSize="xs" color="gray.500">
-                                            ID: {employeeId}
+                                            {employeeId}
                                           </Text>
                                         )}
                                       </VStack>
@@ -354,43 +357,17 @@ const OrganizationCard = ({
                       {/* Team Description */}
                       {team?.description && (
                         <Box>
-                          <Text fontSize="sm" fontWeight="semibold" mb={2}>
+                          <Text fontSize="sm" color="gray.500" mb={1}>
                             Description
                           </Text>
-                          <Text fontSize="sm" color="gray.600">
-                            {team.description}
-                          </Text>
+                          <Text fontSize="sm">{team.description}</Text>
                         </Box>
                       )}
-
-                      {/* Team Timestamps */}
-                      <Flex gap={6} flexWrap="wrap">
-                        {team?.createdAt && (
-                          <Box>
-                            <Text fontSize="sm" color="gray.500" mb={1}>
-                              Team Created
-                            </Text>
-                            <Text fontWeight="medium" fontSize="sm">
-                              <Timestamp date={team.createdAt} />
-                            </Text>
-                          </Box>
-                        )}
-                        {team?.updatedAt && (
-                          <Box>
-                            <Text fontSize="sm" color="gray.500" mb={1}>
-                              Last Updated
-                            </Text>
-                            <Text fontWeight="medium" fontSize="sm">
-                              <Timestamp date={team.updatedAt} />
-                            </Text>
-                          </Box>
-                        )}
-                      </Flex>
 
                       {/* Team Objectives */}
                       {team?.objectives && team.objectives.length > 0 && (
                         <Box>
-                          <Text fontSize="sm" fontWeight="semibold" mb={2}>
+                          <Text fontSize="sm" color="gray.500" mb={2}>
                             Objectives
                           </Text>
                           <Stack spacing={3}>
@@ -428,6 +405,30 @@ const OrganizationCard = ({
                           </Stack>
                         </Box>
                       )}
+
+                      {/* Team Timestamps */}
+                      <Flex gap={6} flexWrap="wrap">
+                        {team?.createdAt && (
+                          <Box>
+                            <Text fontSize="sm" color="gray.500" mb={1}>
+                              Team Created
+                            </Text>
+                            <Text fontSize="sm">
+                              <Timestamp date={team.createdAt} />
+                            </Text>
+                          </Box>
+                        )}
+                        {team?.updatedAt && (
+                          <Box>
+                            <Text fontSize="sm" color="gray.500" mb={1}>
+                              Last Updated
+                            </Text>
+                            <Text fontSize="sm">
+                              <Timestamp date={team.updatedAt} />
+                            </Text>
+                          </Box>
+                        )}
+                      </Flex>
 
                       {/* View Team Button */}
                       {team?._id && (
