@@ -1,29 +1,29 @@
 /**
  * Quality Document Lifecycle Utilities
- * 
+ *
  * This module provides utilities for managing the lifecycle of quality documents.
  * Quality documents are identified by: document.type === "file" && document.metadata.fileType.isQualityDocument === true
  */
 
 // Lifecycle Status Constants
 export const LIFECYCLE_STATUS = {
-  WORKING: -1,        // Working draft
-  UNDER_REVIEW: 0,    // Under review
-  APPROVED: 1,        // Reserved - not actively used
-  PUBLISHED: 2,       // Published (final state)
+  WORKING: -1, // Working draft
+  UNDER_REVIEW: 0, // Under review
+  APPROVED: 1, // Reserved - not actively used
+  PUBLISHED: 2, // Published (final state)
 };
 
 // Check-out Status Constants
 export const CHECKOUT_STATUS = {
-  CHECKED_IN: 0,      // Read-only
-  CHECKED_OUT: 1,     // Editable
+  CHECKED_IN: 0, // Read-only
+  CHECKED_OUT: 1, // Editable
 };
 
 // Workflow Mode Constants
 export const WORKFLOW_MODE = {
-  TEAM: "TEAM",           // Document owner / submitting team
+  TEAM: "TEAM", // Document owner / submitting team
   CONTROLLER: "CONTROLLER", // Reviewer / approver
-  NONE: null,             // No active workflow
+  NONE: null, // No active workflow
 };
 
 /**
@@ -33,7 +33,7 @@ export const WORKFLOW_MODE = {
  */
 export const isQualityDocument = (document) => {
   if (!document) return false;
-  
+
   return (
     document.type === "file" &&
     document.metadata?.fileType?.isQualityDocument === true
@@ -60,9 +60,9 @@ export const canEditDocument = (document) => {
   if (!isQualityDocument(document)) {
     return true; // Non-quality documents follow normal editing rules
   }
-  
+
   // Quality documents can only be edited when checked out
-  return document.checkedOut === CHECKOUT_STATUS.CHECKED_OUT;
+  return document.metadata?.checkedOut === CHECKOUT_STATUS.CHECKED_OUT;
 };
 
 /**
@@ -74,7 +74,7 @@ export const canCreateVersion = (document) => {
   if (!isQualityDocument(document)) {
     return true; // Non-quality documents follow normal versioning rules
   }
-  
+
   // Version creation allowed only when:
   // - status === -1 (WORKING)
   // - checkedOut === 1 (CHECKED_OUT)
@@ -103,7 +103,10 @@ export const validateTransition = (document, action) => {
       // REJECTED: (status: -1, checkedOut: 0, requestId: !== null, mode: TEAM) - Submit allowed
       // Both states share status: -1, so we only check that condition
       if (status !== LIFECYCLE_STATUS.WORKING) {
-        return { valid: false, message: "Document must be in working status to submit" };
+        return {
+          valid: false,
+          message: "Document must be in working status to submit",
+        };
       }
       // Valid from both uploaded (checkedOut: 1, requestId: null) and rejected (checkedOut: 0, requestId: !== null)
       return { valid: true, message: "" };
@@ -111,10 +114,16 @@ export const validateTransition = (document, action) => {
     case "discard":
       // REJECTED: (status: -1, checkedOut: 0, requestId: !== null, mode: TEAM) - Discard allowed
       if (status !== LIFECYCLE_STATUS.WORKING) {
-        return { valid: false, message: "Document must be in working status to discard" };
+        return {
+          valid: false,
+          message: "Document must be in working status to discard",
+        };
       }
       if (checkedOut !== CHECKOUT_STATUS.CHECKED_IN) {
-        return { valid: false, message: "Document must be checked in to discard" };
+        return {
+          valid: false,
+          message: "Document must be checked in to discard",
+        };
       }
       if (requestId === null) {
         return { valid: false, message: "No active request to discard" };
@@ -127,10 +136,16 @@ export const validateTransition = (document, action) => {
     case "endorse":
       // SUBMITTED: (status: 0, checkedOut: 0, requestId: !== null, mode: TEAM) - Endorse (Approve) allowed
       if (status !== LIFECYCLE_STATUS.UNDER_REVIEW) {
-        return { valid: false, message: "Document must be under review to endorse" };
+        return {
+          valid: false,
+          message: "Document must be under review to endorse",
+        };
       }
       if (checkedOut !== CHECKOUT_STATUS.CHECKED_IN) {
-        return { valid: false, message: "Document must be checked in to endorse" };
+        return {
+          valid: false,
+          message: "Document must be checked in to endorse",
+        };
       }
       if (requestId === null) {
         return { valid: false, message: "No active request to endorse" };
@@ -143,10 +158,16 @@ export const validateTransition = (document, action) => {
     case "reject":
       // SUBMITTED: (status: 0, checkedOut: 0, requestId: !== null, mode: TEAM) - Reject allowed
       if (status !== LIFECYCLE_STATUS.UNDER_REVIEW) {
-        return { valid: false, message: "Document must be under review to reject" };
+        return {
+          valid: false,
+          message: "Document must be under review to reject",
+        };
       }
       if (checkedOut !== CHECKOUT_STATUS.CHECKED_IN) {
-        return { valid: false, message: "Document must be checked in to reject" };
+        return {
+          valid: false,
+          message: "Document must be checked in to reject",
+        };
       }
       if (requestId === null) {
         return { valid: false, message: "No active request to reject" };
@@ -159,10 +180,16 @@ export const validateTransition = (document, action) => {
     case "publish":
       // ENDORSED: (status: 0, checkedOut: 0, requestId: !== null, mode: CONTROLLER) - Publish allowed
       if (status !== LIFECYCLE_STATUS.UNDER_REVIEW) {
-        return { valid: false, message: "Document must be under review to publish" };
+        return {
+          valid: false,
+          message: "Document must be under review to publish",
+        };
       }
       if (checkedOut !== CHECKOUT_STATUS.CHECKED_IN) {
-        return { valid: false, message: "Document must be checked in to publish" };
+        return {
+          valid: false,
+          message: "Document must be checked in to publish",
+        };
       }
       if (requestId === null) {
         return { valid: false, message: "No active request to publish" };
@@ -175,13 +202,19 @@ export const validateTransition = (document, action) => {
     case "checkout":
       // PUBLISHED: (status: 2, checkedOut: 0, requestId: null) - Check Out allowed
       if (status !== LIFECYCLE_STATUS.PUBLISHED) {
-        return { valid: false, message: "Only published documents can be checked out" };
+        return {
+          valid: false,
+          message: "Only published documents can be checked out",
+        };
       }
       if (checkedOut !== CHECKOUT_STATUS.CHECKED_IN) {
         return { valid: false, message: "Document is already checked out" };
       }
       if (requestId !== null) {
-        return { valid: false, message: "Cannot checkout document with active request" };
+        return {
+          valid: false,
+          message: "Cannot checkout document with active request",
+        };
       }
       return { valid: true, message: "" };
 
