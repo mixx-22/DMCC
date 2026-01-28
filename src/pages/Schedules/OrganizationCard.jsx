@@ -79,15 +79,29 @@ const OrganizationCard = ({
             <Text fontSize="sm" color="gray.600" mb={2}>
               Auditors
             </Text>
-            <AvatarGroup size="sm" max={5}>
-              {auditors.map((auditor) => (
-                <Avatar
-                  key={auditor._id || auditor.id}
-                  name={`${auditor.firstName || ""} ${auditor.lastName || ""}`}
-                  title={`${auditor.firstName || ""} ${auditor.lastName || ""}`}
-                />
-              ))}
-            </AvatarGroup>
+            {auditors && auditors.length > 0 ? (
+              <AvatarGroup size="sm" max={5}>
+                {auditors.map((auditor, index) => {
+                  // Handle both user objects and IDs
+                  const userId = auditor._id || auditor.id || auditor;
+                  const userName = auditor.firstName && auditor.lastName
+                    ? `${auditor.firstName} ${auditor.lastName}`
+                    : auditor.name || `User ${index + 1}`;
+                  
+                  return (
+                    <Avatar
+                      key={userId || index}
+                      name={userName}
+                      title={userName}
+                    />
+                  );
+                })}
+              </AvatarGroup>
+            ) : (
+              <Text fontSize="sm" color="gray.500">
+                No auditors assigned
+              </Text>
+            )}
           </Box>
 
           {/* Visits */}

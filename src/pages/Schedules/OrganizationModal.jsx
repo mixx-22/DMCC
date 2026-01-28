@@ -7,21 +7,17 @@ import {
   ModalFooter,
   ModalCloseButton,
   Button,
-  FormControl,
-  FormLabel,
   VStack,
   FormErrorMessage,
   FormHelperText,
-  HStack,
-  IconButton,
-  Badge,
-  Box,
-  Text,
+  FormControl,
+  FormLabel,
 } from "@chakra-ui/react";
-import { Select as ChakraSelect } from "chakra-react-select";
 import { useState, useEffect } from "react";
-import { FiSave, FiPlus, FiX, FiCalendar } from "react-icons/fi";
-import { SingleDatepicker } from "chakra-dayzed-datepicker";
+import { FiSave } from "react-icons/fi";
+import TeamSingleAsyncSelect from "../../components/TeamSingleAsyncSelect";
+import UserAsyncSelect from "../../components/UserAsyncSelect";
+import VisitManager from "./components/VisitManager";
 
 const OrganizationModal = ({
   isOpen,
@@ -29,38 +25,34 @@ const OrganizationModal = ({
   onSave,
   organization = null,
   scheduleId,
-  teams = [],
-  users = [],
   existingTeamIds = [],
   isSaving,
 }) => {
   const isEdit = !!organization;
 
   const [formData, setFormData] = useState({
-    teamId: "",
+    team: null,
     auditors: [],
     visits: [],
   });
 
   const [validationErrors, setValidationErrors] = useState({});
-  const [visitDates, setVisitDates] = useState({ start: new Date(), end: new Date() });
 
   useEffect(() => {
     if (organization && isOpen) {
       setFormData({
-        teamId: organization.teamId || "",
+        team: organization.team || { _id: organization.teamId, name: "Loading..." },
         auditors: organization.auditors || [],
         visits: organization.visits || [],
       });
       setValidationErrors({});
     } else if (isOpen) {
       setFormData({
-        teamId: "",
+        team: null,
         auditors: [],
         visits: [],
       });
       setValidationErrors({});
-      setVisitDates({ start: new Date(), end: new Date() });
     }
   }, [organization, isOpen]);
 
@@ -78,37 +70,13 @@ const OrganizationModal = ({
     }
   };
 
-  const handleAddVisit = () => {
-    const newVisit = {
-      date: {
-        start: visitDates.start.toISOString().split("T")[0],
-        end: visitDates.end.toISOString().split("T")[0],
-      },
-    };
-
-    setFormData((prev) => ({
-      ...prev,
-      visits: [...prev.visits, newVisit],
-    }));
-
-    // Reset dates
-    setVisitDates({ start: new Date(), end: new Date() });
-  };
-
-  const handleRemoveVisit = (index) => {
-    setFormData((prev) => ({
-      ...prev,
-      visits: prev.visits.filter((_, i) => i !== index),
-    }));
-  };
-
   const validateForm = () => {
     const errors = {};
 
-    if (!formData.teamId) {
-      errors.teamId = "Team is required";
-    } else if (!isEdit && existingTeamIds.includes(formData.teamId)) {
-      errors.teamId = "This team is already added to this schedule";
+    if (!formData.team) {
+      errors.team = "Team is required";
+    } else if (!isEdit && existingTeamIds.includes(formData.team._id || formData.team.id)) {
+      errors.team = "This team is already added to this schedule";
     }
 
     if (!formData.auditors || formData.auditors.length === 0) {
@@ -124,8 +92,8 @@ const OrganizationModal = ({
       // Prepare data for API - only include IDs
       const payload = {
         auditScheduleId: scheduleId,
-        teamId: formData.teamId,
-        auditors: formData.auditors, // Already array of IDs
+        teamId: formData.team._id || formData.team.id,
+        auditors: formData.auditors.map(a => a._id || a.id), // Extract user IDs
         visits: formData.visits,
       };
       onSave(payload);
@@ -136,24 +104,6 @@ const OrganizationModal = ({
     setValidationErrors({});
     onClose();
   };
-
-  // Prepare team options
-  const teamOptions = teams
-    .filter((team) => {
-      // If editing, allow current team, otherwise filter out existing teams
-      if (isEdit && team._id === organization?.teamId) return true;
-      return !existingTeamIds.includes(team._id);
-    })
-    .map((team) => ({
-      label: team.name,
-      value: team._id,
-    }));
-
-  // Prepare user options
-  const userOptions = users.map((user) => ({
-    label: `${user.firstName || ""} ${user.lastName || ""} (${user.email || ""})`,
-    value: user._id || user.id,
-  }));
 
   return (
     <Modal isOpen={isOpen} onClose={handleCancel} size="xl">
@@ -166,131 +116,48 @@ const OrganizationModal = ({
         <ModalBody>
           <VStack spacing={4}>
             {/* Team Selection */}
-            <FormControl isRequired isInvalid={!!validationErrors.teamId}>
-              <FormLabel>Team</FormLabel>
-              <ChakraSelect
-                value={teamOptions.find((opt) => opt.value === formData.teamId)}
-                onChange={(option) => handleFieldChange("teamId", option?.value || "")}
-                options={teamOptions}
-                placeholder="Select team"
-                isDisabled={isEdit} // Can't change team when editing
-              />
-              <FormHelperText>
-                {isEdit
+            <TeamSingleAsyncSelect
+              value={formData.team}
+              onChange={(team) => handleFieldChange("team", team)}
+              isInvalid={!!validationErrors.team}
+              isDisabled={isEdit} // Can't change team when editing
+              label="Team"
+              placeholder="Type at least 2 characters to search teams..."
+              helperText={
+                isEdit
                   ? "Team cannot be changed after creation"
-                  : "Select a team to add to this audit schedule"}
-              </FormHelperText>
-              <FormErrorMessage>{validationErrors.teamId}</FormErrorMessage>
-            </FormControl>
+                  : "Select a team to add to this audit schedule"
+              }
+            />
+            {validationErrors.team && (
+              <FormControl isInvalid>
+                <FormErrorMessage>{validationErrors.team}</FormErrorMessage>
+              </FormControl>
+            )}
 
             {/* Auditors Selection */}
             <FormControl isRequired isInvalid={!!validationErrors.auditors}>
               <FormLabel>Auditors</FormLabel>
-              <ChakraSelect
-                isMulti
-                value={userOptions.filter((opt) =>
-                  formData.auditors.includes(opt.value)
-                )}
-                onChange={(options) =>
-                  handleFieldChange(
-                    "auditors",
-                    options ? options.map((opt) => opt.value) : []
-                  )
-                }
-                options={userOptions}
-                placeholder="Select auditors"
+              <UserAsyncSelect
+                value={formData.auditors}
+                onChange={(users) => handleFieldChange("auditors", users)}
+                placeholder="Type at least 2 characters to search users..."
+                label=""
+                displayMode="badges"
               />
               <FormHelperText>
                 Select one or more users as auditors for this organization
               </FormHelperText>
-              <FormErrorMessage>{validationErrors.auditors}</FormErrorMessage>
+              {validationErrors.auditors && (
+                <FormErrorMessage>{validationErrors.auditors}</FormErrorMessage>
+              )}
             </FormControl>
 
             {/* Visits Section */}
-            <FormControl>
-              <FormLabel>Visits</FormLabel>
-              <VStack align="stretch" spacing={3}>
-                {/* Add Visit Form */}
-                <Box p={3} borderWidth={1} borderRadius="md">
-                  <VStack align="stretch" spacing={3}>
-                    <HStack>
-                      <Box flex={1}>
-                        <FormLabel fontSize="sm">Start Date</FormLabel>
-                        <SingleDatepicker
-                          date={visitDates.start}
-                          onDateChange={(date) =>
-                            setVisitDates((prev) => ({ ...prev, start: date }))
-                          }
-                          propsConfigs={{
-                            inputProps: {
-                              size: "sm",
-                            },
-                          }}
-                        />
-                      </Box>
-                      <Box flex={1}>
-                        <FormLabel fontSize="sm">End Date</FormLabel>
-                        <SingleDatepicker
-                          date={visitDates.end}
-                          onDateChange={(date) =>
-                            setVisitDates((prev) => ({ ...prev, end: date }))
-                          }
-                          propsConfigs={{
-                            inputProps: {
-                              size: "sm",
-                            },
-                          }}
-                        />
-                      </Box>
-                      <IconButton
-                        icon={<FiPlus />}
-                        onClick={handleAddVisit}
-                        colorScheme="blue"
-                        size="sm"
-                        mt={6}
-                        aria-label="Add visit"
-                      />
-                    </HStack>
-                  </VStack>
-                </Box>
-
-                {/* List of Added Visits */}
-                {formData.visits.length > 0 && (
-                  <VStack align="stretch" spacing={2}>
-                    <Text fontSize="sm" fontWeight="medium">
-                      Added Visits:
-                    </Text>
-                    {formData.visits.map((visit, index) => (
-                      <HStack
-                        key={index}
-                        p={2}
-                        borderWidth={1}
-                        borderRadius="md"
-                        justify="space-between"
-                      >
-                        <HStack spacing={2}>
-                          <FiCalendar />
-                          <Badge colorScheme="green">{visit.date.start}</Badge>
-                          <Text fontSize="sm">to</Text>
-                          <Badge colorScheme="green">{visit.date.end}</Badge>
-                        </HStack>
-                        <IconButton
-                          icon={<FiX />}
-                          onClick={() => handleRemoveVisit(index)}
-                          size="sm"
-                          variant="ghost"
-                          colorScheme="red"
-                          aria-label="Remove visit"
-                        />
-                      </HStack>
-                    ))}
-                  </VStack>
-                )}
-              </VStack>
-              <FormHelperText>
-                Add one or more visit date ranges for this organization
-              </FormHelperText>
-            </FormControl>
+            <VisitManager
+              visits={formData.visits}
+              onChange={(visits) => handleFieldChange("visits", visits)}
+            />
           </VStack>
         </ModalBody>
         <ModalFooter>

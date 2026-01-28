@@ -55,11 +55,11 @@ import { useState, useEffect, useRef } from "react";
 import Swal from "sweetalert2";
 import PageHeader from "../../components/PageHeader";
 import PageFooter from "../../components/PageFooter";
-import { useScheduleProfile, useOrganizations, useTeams, useUsers } from "../../context/_useContext";
+import { useScheduleProfile, useOrganizations } from "../../context/_useContext";
 import { getAuditTypeLabel } from "../../utils/auditHelpers";
 import EditAuditDetailsModal from "./EditAuditDetailsModal";
 import OrganizationModal from "./OrganizationModal";
-import OrganizationCard from "./OrganizationCard";
+import OrganizationsList from "./components/OrganizationsList";
 import { OrganizationsProvider } from "../../context/OrganizationsContext";
 import Timestamp from "../../components/Timestamp";
 
@@ -84,10 +84,6 @@ const SchedulePageContent = () => {
     updateOrganization,
     deleteOrganization,
   } = useOrganizations();
-
-  // Teams and users for organization modal
-  const { teams, fetchTeams } = useTeams();
-  const { users, fetchUsers } = useUsers();
 
   const errorColor = useColorModeValue("error.600", "error.400");
   const summaryCardBg = useColorModeValue("gray.50", "gray.700");
@@ -114,14 +110,6 @@ const SchedulePageContent = () => {
   } = useDisclosure();
 
   const [selectedOrganization, setSelectedOrganization] = useState(null);
-
-  // Fetch teams and users when component mounts
-  useEffect(() => {
-    if (!isNewSchedule) {
-      fetchTeams();
-      fetchUsers();
-    }
-  }, [isNewSchedule, fetchTeams, fetchUsers]);
 
   const steps = [
     { title: "Basic Information", fields: ["title", "description"] },
@@ -403,16 +391,6 @@ const SchedulePageContent = () => {
 
   // Get existing team IDs to prevent duplicates
   const existingTeamIds = organizations.map((org) => org.teamId);
-
-  // Helper to get team by ID
-  const getTeamById = (teamId) => {
-    return teams.find((team) => team._id === teamId);
-  };
-
-  // Helper to get users by IDs
-  const getUsersByIds = (userIds) => {
-    return userIds.map((userId) => users.find((user) => user._id === userId || user.id === userId)).filter(Boolean);
-  };
 
   if (loading) {
     return (
@@ -876,51 +854,13 @@ const SchedulePageContent = () => {
 
           {/* Right Column - Organizations */}
           <Stack spacing={4} flex={1}>
-            <Card>
-              <CardBody>
-                <VStack align="stretch" spacing={4}>
-                  <Flex justify="space-between" align="center">
-                    <Heading size="md">Organizations</Heading>
-                    <Button
-                      leftIcon={<FiPlus />}
-                      size="sm"
-                      colorScheme="brandPrimary"
-                      onClick={handleAddOrganization}
-                    >
-                      Add Organization
-                    </Button>
-                  </Flex>
-
-                  {orgLoading ? (
-                    <Flex justify="center" py={8}>
-                      <Spinner size="md" />
-                    </Flex>
-                  ) : organizations.length === 0 ? (
-                    <Box textAlign="center" py={8}>
-                      <Text color="gray.500" mb={4}>
-                        No organizations added yet
-                      </Text>
-                      <Text fontSize="sm" color="gray.400">
-                        Add teams to this audit schedule to get started
-                      </Text>
-                    </Box>
-                  ) : (
-                    <VStack align="stretch" spacing={3}>
-                      {organizations.map((org) => (
-                        <OrganizationCard
-                          key={org._id}
-                          organization={org}
-                          team={getTeamById(org.teamId)}
-                          auditors={getUsersByIds(org.auditors || [])}
-                          onEdit={handleEditOrganization}
-                          onDelete={handleDeleteOrganization}
-                        />
-                      ))}
-                    </VStack>
-                  )}
-                </VStack>
-              </CardBody>
-            </Card>
+            <OrganizationsList
+              organizations={organizations}
+              loading={orgLoading}
+              onAdd={handleAddOrganization}
+              onEdit={handleEditOrganization}
+              onDelete={handleDeleteOrganization}
+            />
           </Stack>
         </Flex>
       </Box>
@@ -964,8 +904,6 @@ const SchedulePageContent = () => {
         onClose={onOrgModalClose}
         organization={selectedOrganization}
         scheduleId={id}
-        teams={teams}
-        users={users}
         existingTeamIds={existingTeamIds}
         onSave={handleSaveOrganization}
         isSaving={orgLoading}
