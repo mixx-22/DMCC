@@ -95,7 +95,8 @@ export const validateTransition = (document, action) => {
     return { valid: false, message: "Not a quality document" };
   }
 
-  const { status, checkedOut, requestId, mode } = document;
+  const { status, requestId, mode, metadata } = document;
+  const checkedOut = metadata?.checkedOut;
 
   switch (action) {
     case "submit":

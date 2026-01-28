@@ -162,7 +162,7 @@ export const apiService = {
   async downloadDocument(fileName, key) {
     if (!USE_API) {
       const mockContent = `Mock file: ${fileName}\nKey: ${key}\nDownloaded at: ${new Date().toISOString()}`;
-      return new Blob([mockContent], { type: 'text/plain' });
+      return new Blob([mockContent], { type: "text/plain" });
     }
 
     const token = cookieService.getToken();
@@ -191,20 +191,22 @@ export const apiService = {
     }
 
     const contentType = response.headers.get("content-type");
-    
+
     if (contentType && contentType.includes("application/json")) {
       // Response is JSON, might contain a URL
       const data = await response.json();
       if (data.url) {
         const fileResponse = await fetch(data.url);
         if (!fileResponse.ok) {
-          throw new Error(`Failed to download file from URL: HTTP ${fileResponse.status}`);
+          throw new Error(
+            `Failed to download file from URL: HTTP ${fileResponse.status}`,
+          );
         }
         return await fileResponse.blob();
       }
       throw new Error("Invalid response format: expected file or URL");
     }
-    
+
     // Response is the file itself
     return await response.blob();
   },
@@ -215,29 +217,29 @@ export const apiService = {
    * @param {string} fileName - (Optional) The name of the file for mock mode only
    * @returns {Promise<Blob>} - The file blob for preview
    */
-  async previewDocument(id, fileName = '') {
+  async previewDocument(id, fileName = "") {
     if (!USE_API) {
-      const extension = fileName.split('.').pop().toLowerCase();
-      let mimeType = 'application/octet-stream';
+      const extension = fileName.split(".").pop().toLowerCase();
+      let mimeType = "application/octet-stream";
       let mockContent = `Mock preview: ${fileName}\nID: ${id}`;
-      
-      if (['jpg', 'jpeg', 'png', 'gif', 'webp'].includes(extension)) {
-        mimeType = `image/${extension === 'jpg' ? 'jpeg' : extension}`;
-        const canvas = document.createElement('canvas');
+
+      if (["jpg", "jpeg", "png", "gif", "webp"].includes(extension)) {
+        mimeType = `image/${extension === "jpg" ? "jpeg" : extension}`;
+        const canvas = document.createElement("canvas");
         canvas.width = 1;
         canvas.height = 1;
-        const ctx = canvas.getContext('2d');
-        ctx.fillStyle = '#3182CE';
+        const ctx = canvas.getContext("2d");
+        ctx.fillStyle = "#3182CE";
         ctx.fillRect(0, 0, 1, 1);
         return new Promise((resolve) => {
           canvas.toBlob((blob) => resolve(blob), mimeType);
         });
-      } else if (['mp4', 'webm', 'ogg'].includes(extension)) {
+      } else if (["mp4", "webm", "ogg"].includes(extension)) {
         mimeType = `video/${extension}`;
-      } else if (extension === 'pdf') {
-        mimeType = 'application/pdf';
+      } else if (extension === "pdf") {
+        mimeType = "application/pdf";
       }
-      
+
       return new Blob([mockContent], { type: mimeType });
     }
 
@@ -264,20 +266,22 @@ export const apiService = {
     }
 
     const contentType = response.headers.get("content-type");
-    
+
     if (contentType && contentType.includes("application/json")) {
       // Response is JSON, might contain a URL
       const data = await response.json();
       if (data.url) {
         const fileResponse = await fetch(data.url);
         if (!fileResponse.ok) {
-          throw new Error(`Failed to preview file from URL: HTTP ${fileResponse.status}`);
+          throw new Error(
+            `Failed to preview file from URL: HTTP ${fileResponse.status}`,
+          );
         }
         return await fileResponse.blob();
       }
       throw new Error("Invalid response format: expected file or URL");
     }
-    
+
     // Response is the file itself
     return await response.blob();
   },
@@ -302,7 +306,7 @@ export const apiService = {
       };
     }
 
-    const response = await this.request("/documents/request", {
+    const response = await this.request("/request", {
       method: "POST",
       body: JSON.stringify({ documentId }),
     });
@@ -321,12 +325,9 @@ export const apiService = {
       return { success: true };
     }
 
-    const response = await this.request(
-      `/documents/request/${requestId}?type=discard`,
-      {
-        method: "PUT",
-      },
-    );
+    const response = await this.request(`/request/${requestId}?type=discard`, {
+      method: "PUT",
+    });
 
     return response;
   },
@@ -343,7 +344,7 @@ export const apiService = {
     }
 
     const response = await this.request(
-      `/documents/request/${requestId}?type=endorse&mode=CONTROLLER`,
+      `/request/${requestId}?type=endorse&mode=CONTROLLER`,
       {
         method: "PUT",
       },
@@ -363,12 +364,9 @@ export const apiService = {
       return { success: true };
     }
 
-    const response = await this.request(
-      `/documents/request/${requestId}?type=reject`,
-      {
-        method: "PUT",
-      },
-    );
+    const response = await this.request(`/request/${requestId}?type=reject`, {
+      method: "PUT",
+    });
 
     return response;
   },
@@ -384,12 +382,9 @@ export const apiService = {
       return { success: true };
     }
 
-    const response = await this.request(
-      `/documents/request/${requestId}?type=publish`,
-      {
-        method: "PUT",
-      },
-    );
+    const response = await this.request(`/request/${requestId}?type=publish`, {
+      method: "PUT",
+    });
 
     return response;
   },
@@ -405,12 +400,9 @@ export const apiService = {
       return { success: true };
     }
 
-    const response = await this.request(
-      `/documents/${documentId}/checkout`,
-      {
-        method: "PUT",
-      },
-    );
+    const response = await this.request(`/documents/${documentId}/checkout`, {
+      method: "PUT",
+    });
 
     return response;
   },

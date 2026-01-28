@@ -37,6 +37,7 @@ import { UserProfileProvider } from "./context/UserProfileContext";
 import FormTemplateBuilder from "./pages/FormTemplateBuilder";
 import FormResponse from "./pages/Document/FormResponse";
 import QualityDocuments from "./pages/QualityDocuments";
+import Request from "./pages/Request";
 
 const ProtectedRoute = ({ children }) => {
   const { currentUser } = useApp();
@@ -95,6 +96,7 @@ function App() {
                       path="/quality-documents"
                       element={<QualityDocuments />}
                     />
+                    <Route path="/request" element={<Request />} />
                     <Route
                       path="/documents/form/:id"
                       element={<FormResponse />}

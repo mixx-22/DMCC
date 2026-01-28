@@ -32,6 +32,7 @@ import {
   FiBell,
   FiFolder,
   FiSearch,
+  FiClock,
 } from "react-icons/fi";
 import { HiOutlineUser, HiOutlineUserGroup } from "react-icons/hi2";
 import logoDefault from "../images/auptilyze.png";
@@ -215,6 +216,7 @@ const Sidebar = () => {
           // { path: "/documents?status=pending", label: "Pending Approval" },
         ],
       },
+      { id: "request", path: "/request", label: "Request", icon: FiClock },
       // { id: "archive", path: "/archive", label: "Archive", icon: FiArchive },
       // {
       //   id: "certifications",
