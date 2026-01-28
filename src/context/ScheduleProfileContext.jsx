@@ -77,7 +77,6 @@ export const ScheduleProfileProvider = ({ children }) => {
         `${SCHEDULES_ENDPOINT}/${scheduleId}`,
         { method: "GET" },
       );
-      console.log({ response });
       dispatch({ type: "FETCHED", payload: response.data });
     } catch (error) {
       dispatch({ type: "ERROR", payload: error.message });
@@ -130,37 +129,18 @@ export const ScheduleProfileProvider = ({ children }) => {
     }
   }, []);
 
-  const updateSchedule = useCallback(async (scheduleId, scheduleData) => {
-    dispatch({ type: "FETCHING" });
+  const updateSchedule = useCallback(
+    async (scheduleId, scheduleData) => {
+      dispatch({ type: "FETCHING" });
 
-    if (!USE_API) {
-      // Mock mode
-      await new Promise((resolve) => setTimeout(resolve, 800));
-      const updatedSchedule = {
-        ...state.schedule,
-        ...scheduleData,
-        _id: scheduleId,
-        updatedAt: new Date().toISOString(),
-      };
-      dispatch({ type: "FETCHED", payload: updatedSchedule });
-      toast.success("Schedule Updated", {
-        description: "Schedule has been successfully updated",
-        duration: 2000,
-      });
-      return updatedSchedule;
-    }
-
-    try {
-      const response = await apiService.request(
-        `${SCHEDULES_ENDPOINT}/${scheduleId}`,
-        { method: "PUT", body: JSON.stringify(scheduleData) },
-      );
-      const { success = false } = response;
-      if (success) {
-        const updatedSchedule = { 
-          ...state.schedule, 
-          ...scheduleData, 
-          updatedAt: new Date().toISOString() 
+      if (!USE_API) {
+        // Mock mode
+        await new Promise((resolve) => setTimeout(resolve, 800));
+        const updatedSchedule = {
+          ...state.schedule,
+          ...scheduleData,
+          _id: scheduleId,
+          updatedAt: new Date().toISOString(),
         };
         dispatch({ type: "FETCHED", payload: updatedSchedule });
         toast.success("Schedule Updated", {
@@ -168,25 +148,47 @@ export const ScheduleProfileProvider = ({ children }) => {
           duration: 2000,
         });
         return updatedSchedule;
-      } else {
-        // Handle case where success is false
-        const error = new Error("Update operation was not successful");
+      }
+
+      try {
+        const response = await apiService.request(
+          `${SCHEDULES_ENDPOINT}/${scheduleId}`,
+          { method: "PUT", body: JSON.stringify(scheduleData) },
+        );
+        const { success = false } = response;
+        if (success) {
+          const updatedSchedule = {
+            ...state.schedule,
+            ...scheduleData,
+            updatedAt: new Date().toISOString(),
+          };
+          dispatch({ type: "FETCHED", payload: updatedSchedule });
+          toast.success("Schedule Updated", {
+            description: "Schedule has been successfully updated",
+            duration: 2000,
+          });
+          return updatedSchedule;
+        } else {
+          // Handle case where success is false
+          const error = new Error("Update operation was not successful");
+          dispatch({ type: "ERROR", payload: error.message });
+          toast.error("Update Failed", {
+            description: "Failed to update schedule",
+            duration: 3000,
+          });
+          throw error;
+        }
+      } catch (error) {
         dispatch({ type: "ERROR", payload: error.message });
         toast.error("Update Failed", {
-          description: "Failed to update schedule",
+          description: error.message || "Failed to update schedule",
           duration: 3000,
         });
         throw error;
       }
-    } catch (error) {
-      dispatch({ type: "ERROR", payload: error.message });
-      toast.error("Update Failed", {
-        description: error.message || "Failed to update schedule",
-        duration: 3000,
-      });
-      throw error;
-    }
-  }, [state.schedule]);
+    },
+    [state.schedule],
+  );
 
   const deleteSchedule = useCallback(async (scheduleId, scheduleTitle) => {
     dispatch({ type: "FETCHING" });
@@ -196,7 +198,7 @@ export const ScheduleProfileProvider = ({ children }) => {
       await new Promise((resolve) => setTimeout(resolve, 500));
       dispatch({ type: "FETCHED", payload: null });
       toast.success("Schedule Deleted", {
-        description: scheduleTitle 
+        description: scheduleTitle
           ? `"${scheduleTitle}" has been deleted`
           : "Schedule has been deleted",
         duration: 3000,
@@ -210,7 +212,7 @@ export const ScheduleProfileProvider = ({ children }) => {
       });
       dispatch({ type: "FETCHED", payload: null });
       toast.success("Schedule Deleted", {
-        description: scheduleTitle 
+        description: scheduleTitle
           ? `"${scheduleTitle}" has been deleted`
           : "Schedule has been deleted",
         duration: 3000,
