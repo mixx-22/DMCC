@@ -76,7 +76,6 @@ const SchedulePage = () => {
   const isNewSchedule = id === "new";
   const [formData, setFormData] = useState(initialScheduleData);
   const [validationErrors, setValidationErrors] = useState({});
-  const [editableKey, setEditableKey] = useState(0);
   const titleTextareaRef = useRef(null);
   const descriptionTextareaRef = useRef(null);
   const updateTimeoutRef = useRef(null);
@@ -229,8 +228,7 @@ const SchedulePage = () => {
     const trimmedTitle = newTitle?.trim();
 
     if (!trimmedTitle) {
-      // Force re-render to revert the editable field
-      setEditableKey((prev) => prev + 1);
+      // Title cannot be empty - will revert via schedule key
       return;
     }
 
@@ -250,8 +248,7 @@ const SchedulePage = () => {
     } catch (error) {
       // Error toast is handled by context
       console.error("Failed to update title:", error);
-      // Force re-render to revert the editable field
-      setEditableKey((prev) => prev + 1);
+      // Editable will revert via schedule key
     }
   };
 
@@ -276,8 +273,7 @@ const SchedulePage = () => {
     } catch (error) {
       // Error toast is handled by context
       console.error("Failed to update description:", error);
-      // Force re-render to revert the editable field
-      setEditableKey((prev) => prev + 1);
+      // Editable will revert via schedule key
     }
   };
 
