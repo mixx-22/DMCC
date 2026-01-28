@@ -227,30 +227,30 @@ const ScheduleFormPage = () => {
         </Flex>
       </PageHeader>
 
-      {isNewSchedule && (
-        <Stepper index={activeStep} colorScheme="brandPrimary" mb={6}>
-          {steps.map((step, index) => (
-            <Step key={index}>
-              <StepIndicator>
-                <StepStatus
-                  complete={<StepIcon />}
-                  incomplete={<StepNumber />}
-                  active={<StepNumber />}
-                />
-              </StepIndicator>
-
-              <Box flexShrink="0">
-                <StepTitle>{step.title}</StepTitle>
-              </Box>
-
-              <StepSeparator />
-            </Step>
-          ))}
-        </Stepper>
-      )}
-
       <Card>
         <CardBody>
+          {isNewSchedule && (
+            <Stepper index={activeStep} colorScheme="brandPrimary" mb={8}>
+              {steps.map((step, index) => (
+                <Step key={index}>
+                  <StepIndicator>
+                    <StepStatus
+                      complete={<StepIcon />}
+                      incomplete={<StepNumber />}
+                      active={<StepNumber />}
+                    />
+                  </StepIndicator>
+
+                  <Box flexShrink="0">
+                    <StepTitle>{step.title}</StepTitle>
+                  </Box>
+
+                  <StepSeparator />
+                </Step>
+              ))}
+            </Stepper>
+          )}
+
           <VStack spacing={6} align="stretch">
             {/* For edit mode, show all fields at once */}
             {isEditMode && (
