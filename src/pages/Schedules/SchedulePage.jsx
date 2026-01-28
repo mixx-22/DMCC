@@ -177,7 +177,7 @@ const SchedulePage = () => {
         }
       } else {
         await updateSchedule(id, formData);
-        navigate("/audit-schedules");
+        // Stay on current page - context is already updated
       }
     } catch (error) {
       // Error toast is handled by context
@@ -577,23 +577,6 @@ const SchedulePage = () => {
             />
             <Heading variant="pageTitle">{formData.title}</Heading>
           </HStack>
-          <Menu>
-            <MenuButton
-              as={IconButton}
-              icon={<FiMoreVertical />}
-              variant="ghost"
-              aria-label="More options"
-            />
-            <MenuList>
-              <MenuItem
-                icon={<FiTrash2 />}
-                onClick={handleDelete}
-                color={errorColor}
-              >
-                Delete Schedule
-              </MenuItem>
-            </MenuList>
-          </Menu>
         </Flex>
       </PageHeader>
 
@@ -781,6 +764,30 @@ const SchedulePage = () => {
           </Stack>
         </Flex>
       </Box>
+
+      {/* PageFooter with More Options */}
+      <PageFooter>
+        <HStack spacing={3} w="full">
+          <Menu>
+            <MenuButton
+              as={Button}
+              leftIcon={<FiMoreVertical />}
+              variant="ghost"
+            >
+              More Options
+            </MenuButton>
+            <MenuList>
+              <MenuItem
+                icon={<FiTrash2 />}
+                onClick={handleDelete}
+                color={errorColor}
+              >
+                Delete Schedule
+              </MenuItem>
+            </MenuList>
+          </Menu>
+        </HStack>
+      </PageFooter>
 
       {/* Edit Audit Details Modal */}
       <EditAuditDetailsModal
