@@ -1,3 +1,4 @@
+import { useState, useEffect, useRef } from "react";
 import {
   Box,
   Button,
@@ -14,13 +15,23 @@ import {
   HStack,
   Badge,
   Divider,
-  useDisclosure,
+  Editable,
+  EditableTextarea,
+  EditablePreview,
+  FormControl,
+  FormLabel,
+  Select,
+  Input,
+  Card,
+  CardBody,
 } from "@chakra-ui/react";
 import {
-  FiEdit,
   FiArrowLeft,
   FiMoreVertical,
   FiTrash2,
+  FiEdit,
+  FiSave,
+  FiX,
 } from "react-icons/fi";
 import { useNavigate, useParams } from "react-router-dom";
 import { toast } from "sonner";
@@ -29,7 +40,6 @@ import PageHeader from "../../components/PageHeader";
 import ScheduleSkeleton from "../../components/ScheduleSkeleton";
 import { useScheduleProfile } from "../../context/_useContext";
 import { getAuditTypeLabel } from "../../utils/auditHelpers";
-import EditScheduleModal from "./EditScheduleModal";
 
 const ScheduleViewPage = () => {
   const navigate = useNavigate();
@@ -43,37 +53,139 @@ const ScheduleViewPage = () => {
     saving,
   } = useScheduleProfile();
 
-  const {
-    isOpen: isEditOpen,
-    onOpen: onEditOpen,
-    onClose: onEditClose,
-  } = useDisclosure();
+  const [isEditing, setIsEditing] = useState(false);
+  const [editedData, setEditedData] = useState({});
+  
+  const titleTextareaRef = useRef(null);
+  const descriptionTextareaRef = useRef(null);
 
   const errorColor = useColorModeValue("error.600", "error.400");
   const labelColor = useColorModeValue("gray.600", "gray.400");
   const dividerColor = useColorModeValue("gray.200", "gray.600");
   const bgColor = useColorModeValue("white", "gray.800");
   const borderColor = useColorModeValue("gray.100", "gray.700");
+  const cardBg = useColorModeValue("gray.50", "gray.700");
 
-  const handleEdit = () => {
-    onEditOpen();
-  };
+  // Fetch schedule data on mount
+  useEffect(() => {
+    if (id && id !== "new") {
+      fetchSchedule(id);
+    }
+  }, [id, fetchSchedule]);
 
-  const handleSave = async (formData) => {
-    try {
-      await updateSchedule(id, formData);
-      toast.success("Audit Schedule Updated", {
-        description: `"${formData.title}" has been successfully updated`,
+  // Initialize edited data when schedule loads or editing starts
+  useEffect(() => {
+    if (schedule && isEditing) {
+      setEditedData({
+        auditCode: schedule.auditCode || "",
+        auditType: schedule.auditType || "",
+        standard: schedule.standard || "",
+      });
+    }
+  }, [schedule, isEditing]);
+
+  const handleTitleBlur = async (newTitle) => {
+    const trimmedTitle = newTitle.trim();
+
+    if (!trimmedTitle) {
+      toast.error("Validation Error", {
+        description: "Title cannot be empty. Reverted to previous value.",
         duration: 3000,
       });
-      // Refresh the schedule data
+      return;
+    }
+
+    if (trimmedTitle === schedule?.title) {
+      return;
+    }
+
+    try {
+      await updateSchedule(id, { ...schedule, title: trimmedTitle });
       await fetchSchedule(id);
+      toast.success("Title Updated", {
+        description: "Schedule title has been updated",
+        duration: 2000,
+      });
     } catch (error) {
       toast.error("Update Failed", {
-        description: error.message || "An error occurred. Please try again.",
+        description: "Failed to update title",
         duration: 3000,
       });
-      throw error;
+    }
+  };
+
+  const handleDescriptionBlur = async (newDescription) => {
+    if (newDescription === schedule?.description) {
+      return;
+    }
+
+    try {
+      await updateSchedule(id, { ...schedule, description: newDescription });
+      await fetchSchedule(id);
+      toast.success("Description Updated", {
+        description: "Schedule description has been updated",
+        duration: 2000,
+      });
+    } catch (error) {
+      toast.error("Update Failed", {
+        description: "Failed to update description",
+        duration: 3000,
+      });
+    }
+  };
+
+  const handleEditToggle = () => {
+    if (!isEditing) {
+      // Start editing
+      setEditedData({
+        auditCode: schedule?.auditCode || "",
+        auditType: schedule?.auditType || "",
+        standard: schedule?.standard || "",
+      });
+    } else {
+      // Cancel editing
+      setEditedData({});
+    }
+    setIsEditing(!isEditing);
+  };
+
+  const handleSaveEdits = async () => {
+    // Validate required fields
+    if (!editedData.auditCode?.trim()) {
+      toast.error("Validation Error", {
+        description: "Audit code is required",
+        duration: 3000,
+      });
+      return;
+    }
+
+    if (!editedData.auditType) {
+      toast.error("Validation Error", {
+        description: "Audit type is required",
+        duration: 3000,
+      });
+      return;
+    }
+
+    try {
+      await updateSchedule(id, {
+        ...schedule,
+        auditCode: editedData.auditCode,
+        auditType: editedData.auditType,
+        standard: editedData.standard,
+      });
+      await fetchSchedule(id);
+      setIsEditing(false);
+      setEditedData({});
+      toast.success("Audit Details Updated", {
+        description: "Audit details have been updated successfully",
+        duration: 2000,
+      });
+    } catch (error) {
+      toast.error("Update Failed", {
+        description: error.message || "Failed to update audit details",
+        duration: 3000,
+      });
     }
   };
 
@@ -141,13 +253,33 @@ const ScheduleViewPage = () => {
             </Heading>
           </HStack>
           <HStack>
-            <Button
-              leftIcon={<FiEdit />}
-              onClick={handleEdit}
-              colorScheme="brandPrimary"
-            >
-              Edit
-            </Button>
+            {isEditing ? (
+              <>
+                <Button
+                  leftIcon={<FiX />}
+                  onClick={handleEditToggle}
+                  variant="ghost"
+                >
+                  Cancel
+                </Button>
+                <Button
+                  leftIcon={<FiSave />}
+                  onClick={handleSaveEdits}
+                  colorScheme="brandPrimary"
+                  isLoading={saving}
+                >
+                  Save
+                </Button>
+              </>
+            ) : (
+              <Button
+                leftIcon={<FiEdit />}
+                onClick={handleEditToggle}
+                colorScheme="brandPrimary"
+              >
+                Edit
+              </Button>
+            )}
             <Menu>
               <MenuButton
                 as={IconButton}
@@ -181,94 +313,217 @@ const ScheduleViewPage = () => {
         >
           <VStack spacing={6} align="stretch">
             {/* Basic Information Section */}
-            <Box>
-              <Heading size="md" mb={4}>
-                Basic Information
-              </Heading>
-              <VStack spacing={4} align="stretch">
-                <Box>
-                  <Text fontSize="sm" fontWeight="semibold" color={labelColor} mb={1}>
-                    Title
-                  </Text>
-                  <Text fontSize="md">{schedule.title}</Text>
-                </Box>
-                <Box>
-                  <Text fontSize="sm" fontWeight="semibold" color={labelColor} mb={1}>
-                    Description
-                  </Text>
-                  <Text fontSize="md" whiteSpace="pre-wrap">
-                    {schedule.description}
-                  </Text>
-                </Box>
-              </VStack>
-            </Box>
-
-            <Divider borderColor={dividerColor} />
-
-            {/* Audit Details Section */}
-            <Box>
-              <Heading size="md" mb={4}>
-                Audit Details
-              </Heading>
-              <VStack spacing={4} align="stretch">
-                <Box>
-                  <Text fontSize="sm" fontWeight="semibold" color={labelColor} mb={1}>
-                    Audit Code
-                  </Text>
-                  <Text fontSize="md">{schedule.auditCode}</Text>
-                </Box>
-                <Box>
-                  <Text fontSize="sm" fontWeight="semibold" color={labelColor} mb={1}>
-                    Audit Type
-                  </Text>
-                  <Text fontSize="md">
-                    {schedule.auditType ? getAuditTypeLabel(schedule.auditType) : "-"}
-                  </Text>
-                </Box>
-                {schedule.standard && (
+            <Card>
+              <CardBody>
+                <Heading size="md" mb={4}>
+                  Basic Information
+                </Heading>
+                <VStack spacing={4} align="stretch">
                   <Box>
                     <Text fontSize="sm" fontWeight="semibold" color={labelColor} mb={1}>
-                      Standard
+                      Title
                     </Text>
-                    <Text fontSize="md">{schedule.standard}</Text>
+                    <Editable
+                      key={`title-${schedule?._id || schedule?.id}`}
+                      defaultValue={schedule?.title || "Untitled"}
+                      onSubmit={handleTitleBlur}
+                      fontSize="lg"
+                      fontWeight="medium"
+                      w="full"
+                      isPreviewFocusable={true}
+                      submitOnBlur={true}
+                      selectAllOnFocus={false}
+                    >
+                      <EditablePreview
+                        w="full"
+                        py={2}
+                        px={2}
+                        borderRadius="md"
+                        _hover={{
+                          background: "gray.100",
+                          cursor: "pointer",
+                        }}
+                      />
+                      <EditableTextarea
+                        ref={titleTextareaRef}
+                        py={2}
+                        px={2}
+                        resize="vertical"
+                        minH="auto"
+                        rows={1}
+                        onFocus={(e) => {
+                          e.target.style.height = "auto";
+                          e.target.style.height = `${e.target.scrollHeight}px`;
+                        }}
+                        onInput={(e) => {
+                          e.target.style.height = "auto";
+                          e.target.style.height = `${e.target.scrollHeight}px`;
+                        }}
+                      />
+                    </Editable>
                   </Box>
-                )}
-              </VStack>
-            </Box>
+                  <Box>
+                    <Text fontSize="sm" fontWeight="semibold" color={labelColor} mb={1}>
+                      Description
+                    </Text>
+                    <Editable
+                      key={`description-${schedule?._id || schedule?.id}`}
+                      defaultValue={schedule?.description || ""}
+                      onSubmit={handleDescriptionBlur}
+                      placeholder="Add a description..."
+                      fontSize="md"
+                      w="full"
+                      isPreviewFocusable={true}
+                      submitOnBlur={true}
+                      selectAllOnFocus={false}
+                    >
+                      <EditablePreview
+                        py={2}
+                        px={2}
+                        w="full"
+                        borderRadius="md"
+                        color={schedule?.description ? "inherit" : "gray.400"}
+                        whiteSpace="pre-wrap"
+                        _hover={{
+                          background: "gray.100",
+                          cursor: "pointer",
+                        }}
+                      />
+                      <EditableTextarea
+                        ref={descriptionTextareaRef}
+                        py={2}
+                        px={2}
+                        minH="60px"
+                        resize="vertical"
+                        onFocus={(e) => {
+                          e.target.style.height = "auto";
+                          e.target.style.height = `${e.target.scrollHeight}px`;
+                        }}
+                        onInput={(e) => {
+                          e.target.style.height = "auto";
+                          e.target.style.height = `${e.target.scrollHeight}px`;
+                        }}
+                      />
+                    </Editable>
+                  </Box>
+                </VStack>
+              </CardBody>
+            </Card>
 
-            <Divider borderColor={dividerColor} />
+            {/* Audit Details Section */}
+            <Card>
+              <CardBody>
+                <Heading size="md" mb={4}>
+                  Audit Details
+                </Heading>
+                {isEditing ? (
+                  <VStack spacing={4} align="stretch">
+                    <FormControl isRequired>
+                      <FormLabel fontSize="sm" fontWeight="semibold" color={labelColor}>
+                        Audit Code
+                      </FormLabel>
+                      <Input
+                        value={editedData.auditCode || ""}
+                        onChange={(e) =>
+                          setEditedData((prev) => ({
+                            ...prev,
+                            auditCode: e.target.value,
+                          }))
+                        }
+                        placeholder="Enter audit code"
+                      />
+                    </FormControl>
+                    <FormControl isRequired>
+                      <FormLabel fontSize="sm" fontWeight="semibold" color={labelColor}>
+                        Audit Type
+                      </FormLabel>
+                      <Select
+                        value={editedData.auditType || ""}
+                        onChange={(e) =>
+                          setEditedData((prev) => ({
+                            ...prev,
+                            auditType: e.target.value,
+                          }))
+                        }
+                        placeholder="Select audit type"
+                      >
+                        <option value="internal">Internal Audit</option>
+                        <option value="external">External Audit</option>
+                        <option value="compliance">Compliance Audit</option>
+                        <option value="financial">Financial Audit</option>
+                        <option value="operational">Operational Audit</option>
+                      </Select>
+                    </FormControl>
+                    <FormControl>
+                      <FormLabel fontSize="sm" fontWeight="semibold" color={labelColor}>
+                        Standard
+                      </FormLabel>
+                      <Input
+                        value={editedData.standard || ""}
+                        onChange={(e) =>
+                          setEditedData((prev) => ({
+                            ...prev,
+                            standard: e.target.value,
+                          }))
+                        }
+                        placeholder="Enter standard (optional)"
+                      />
+                    </FormControl>
+                  </VStack>
+                ) : (
+                  <VStack spacing={4} align="stretch">
+                    <Box>
+                      <Text fontSize="sm" fontWeight="semibold" color={labelColor} mb={1}>
+                        Audit Code
+                      </Text>
+                      <Text fontSize="md">{schedule.auditCode}</Text>
+                    </Box>
+                    <Box>
+                      <Text fontSize="sm" fontWeight="semibold" color={labelColor} mb={1}>
+                        Audit Type
+                      </Text>
+                      <Text fontSize="md">
+                        {schedule.auditType ? getAuditTypeLabel(schedule.auditType) : "-"}
+                      </Text>
+                    </Box>
+                    {schedule.standard && (
+                      <Box>
+                        <Text fontSize="sm" fontWeight="semibold" color={labelColor} mb={1}>
+                          Standard
+                        </Text>
+                        <Text fontSize="md">{schedule.standard}</Text>
+                      </Box>
+                    )}
+                  </VStack>
+                )}
+              </CardBody>
+            </Card>
 
             {/* Status Section */}
-            <Box>
-              <Heading size="md" mb={4}>
-                Status
-              </Heading>
-              <Box>
-                <Text fontSize="sm" fontWeight="semibold" color={labelColor} mb={2}>
-                  Current Status
-                </Text>
-                {schedule.status === 1 ? (
-                  <Badge colorScheme="green" fontSize="sm" px={3} py={1}>
-                    Closed
-                  </Badge>
-                ) : (
-                  <Badge colorScheme="blue" fontSize="sm" px={3} py={1}>
-                    Ongoing
-                  </Badge>
-                )}
-              </Box>
-            </Box>
+            <Card>
+              <CardBody>
+                <Heading size="md" mb={4}>
+                  Status
+                </Heading>
+                <Box>
+                  <Text fontSize="sm" fontWeight="semibold" color={labelColor} mb={2}>
+                    Current Status
+                  </Text>
+                  {schedule.status === 1 ? (
+                    <Badge colorScheme="green" fontSize="sm" px={3} py={1}>
+                      Closed
+                    </Badge>
+                  ) : (
+                    <Badge colorScheme="blue" fontSize="sm" px={3} py={1}>
+                      Ongoing
+                    </Badge>
+                  )}
+                </Box>
+              </CardBody>
+            </Card>
           </VStack>
         </Box>
       </Flex>
-
-      <EditScheduleModal
-        isOpen={isEditOpen}
-        onClose={onEditClose}
-        schedule={schedule}
-        onSave={handleSave}
-        isSaving={saving}
-      />
     </Box>
   );
 };

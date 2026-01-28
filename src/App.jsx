@@ -179,14 +179,6 @@ function App() {
                       }
                     />
                     <Route
-                      path="/audit-schedule/:id/edit"
-                      element={
-                        <ScheduleProfileProvider>
-                          <ScheduleFormPage />
-                        </ScheduleProfileProvider>
-                      }
-                    />
-                    <Route
                       path="/roles"
                       element={
                         <RolesProvider>
