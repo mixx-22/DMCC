@@ -108,8 +108,8 @@ const SchedulePage = () => {
         ...initialScheduleData,
         ...schedule,
       });
-      // Force editable components to re-render with new data
-      setEditableKey((prev) => prev + 1);
+      // Don't force re-render on every update - only on initial load
+      // Editable components will update naturally via formData changes
     }
   }, [schedule, isNewSchedule, initialScheduleData]);
 
