@@ -39,7 +39,7 @@ import logoDefault from "../images/auptilyze.png";
 import logoWhite from "../images/auptilyze-white.png";
 import logoIconDefault from "../images/auptilyze-icon.svg";
 import logoIconWhite from "../images/auptilyze-icon-white.svg";
-import { useApp, usePermissions, useUser } from "../context/_useContext";
+import { usePermissions, useUser } from "../context/_useContext";
 
 const isRouteMatch = (location, target) => {
   const [targetPath, targetQuery] = target.split("?");
@@ -175,8 +175,6 @@ const Sidebar = () => {
   const [isBottomNavVisible, setIsBottomNavVisible] = useState(true);
   const [lastScrollY, setLastScrollY] = useState(0);
 
-  const isAdmin = true;
-
   const { isAllowedTo } = usePermissions();
   const [isTeamsAllowed, setIsTeamsAllowed] = useState(1);
   const [isUsersAllowed, setIsUsersAllowed] = useState(1);
@@ -252,7 +250,7 @@ const Sidebar = () => {
     if (isSchedulesAllowed) {
       items.push({
         id: "schedules",
-        path: "/schedules",
+        path: "/audit-schedules",
         label: "Audit Schedules",
         icon: IoCalendarOutline,
         iconProps: { strokeWidth: "2px" },
@@ -277,7 +275,6 @@ const Sidebar = () => {
     }
     return items;
   }, [
-    isAdmin,
     isUsersAllowed,
     isTeamsAllowed,
     isSchedulesAllowed,

@@ -154,7 +154,7 @@ function App() {
                       }
                     />
                     <Route
-                      path="/schedules"
+                      path="/audit-schedules"
                       element={
                         <SchedulesProvider>
                           <Schedules />
@@ -162,7 +162,7 @@ function App() {
                       }
                     />
                     <Route
-                      path="/schedules/:id"
+                      path="/audit-schedule/:id"
                       element={
                         <ScheduleProfileProvider>
                           <SchedulePage />
