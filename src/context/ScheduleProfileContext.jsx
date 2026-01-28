@@ -136,12 +136,16 @@ export const ScheduleProfileProvider = ({ children }) => {
     }
 
     try {
-      const schedule = await apiService.request(
+      const response = await apiService.request(
         `${SCHEDULES_ENDPOINT}/${scheduleId}`,
         { method: "PUT", body: JSON.stringify(scheduleData) },
       );
-      dispatch({ type: "SAVE_SUCCESS", payload: schedule });
-      return schedule;
+      const { success = false } = response;
+      if (success) {
+        const newData = { ...scheduleData, updatedAt: new Date() };
+        dispatch({ type: "SAVE_SUCCESS", payload: newData });
+        return newData;
+      }
     } catch (error) {
       dispatch({ type: "SAVE_ERROR", payload: error.message });
       throw error;
