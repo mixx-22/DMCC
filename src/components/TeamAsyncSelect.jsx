@@ -46,6 +46,8 @@ const TeamAsyncSelect = ({
   displayMode = "badges",
   readonly = false,
   tableProps = {},
+  isMulti = true,
+  max,
   ...props
 }) => {
   const loadOptions = useCallback(
@@ -95,12 +97,32 @@ const TeamAsyncSelect = ({
   );
 
   const handleChange = (selectedOptions) => {
-    const teams = (selectedOptions || []).map((option) => ({
-      id: option.value,
-      _id: option.value,
-      name: option.team.name,
-    }));
-    onChange(teams);
+    if (isMulti) {
+      const teams = (selectedOptions || []).map((option) => ({
+        id: option.value,
+        _id: option.value,
+        name: option.team.name,
+      }));
+      
+      // Check max limit if specified
+      if (max && teams.length > max) {
+        return; // Don't allow selection beyond max
+      }
+      
+      onChange(teams);
+    } else {
+      // Single select mode
+      if (selectedOptions) {
+        const team = {
+          id: selectedOptions.value,
+          _id: selectedOptions.value,
+          name: selectedOptions.team.name,
+        };
+        onChange(team);
+      } else {
+        onChange(null);
+      }
+    }
   };
 
   const handleRemoveTeam = (teamToRemove) => {
@@ -109,11 +131,19 @@ const TeamAsyncSelect = ({
     );
   };
 
-  const selectedValues = value.map((team) => ({
-    value: getTeamId(team),
-    label: team.name || "",
-    team: team,
-  }));
+  const selectedValues = isMulti
+    ? value.map((team) => ({
+        value: getTeamId(team),
+        label: team.name || "",
+        team: team,
+      }))
+    : value
+      ? {
+          value: getTeamId(value),
+          label: value.name || "",
+          team: value,
+        }
+      : null;
 
   const formatOptionLabel = ({ team }) => {
     return (
@@ -129,10 +159,11 @@ const TeamAsyncSelect = ({
   };
 
   if (readonly) {
+    const teams = isMulti ? value : value ? [value] : [];
     return (
       <FormControl {...props}>
         <FormLabel>{label}</FormLabel>
-        {value.length > 0 ? (
+        {teams.length > 0 ? (
           displayMode === "table" ? (
             <Table variant="simple" size="sm">
               <Thead>
@@ -141,7 +172,7 @@ const TeamAsyncSelect = ({
                 </Tr>
               </Thead>
               <Tbody>
-                {value.map((team) => {
+                {teams.map((team) => {
                   const teamId = getTeamId(team);
                   return (
                     <Tr key={getTeamId(team)}>
@@ -172,7 +203,7 @@ const TeamAsyncSelect = ({
             </Table>
           ) : (
             <HStack spacing={2} wrap="wrap">
-              {value.map((team) => {
+              {teams.map((team) => {
                 const teamId = getTeamId(team);
                 return (
                   <Link
@@ -217,7 +248,7 @@ const TeamAsyncSelect = ({
       <FormControl isInvalid={isInvalid} {...props}>
         <FormLabel>{label}</FormLabel>
         <Box>
-          {displayMode === "badges" && value.length > 0 && (
+          {displayMode === "badges" && isMulti && value.length > 0 && (
             <HStack spacing={2} wrap="wrap" mb={2}>
               {value.map((team) => {
                 const teamId = getTeamId(team);
@@ -251,7 +282,7 @@ const TeamAsyncSelect = ({
             </HStack>
           )}
           <AsyncSelect
-            isMulti
+            isMulti={isMulti}
             value={selectedValues}
             onChange={handleChange}
             loadOptions={loadOptions}
@@ -268,15 +299,17 @@ const TeamAsyncSelect = ({
             loadingMessage={() => "Loading teams..."}
             colorScheme="green"
             useBasicStyles
+            isOptionDisabled={() => isMulti && max && value.length >= max}
           />
         </Box>
         {!readonly && (
           <Text fontSize="xs" color="gray.500" mt={1}>
             Type at least 2 characters to search for teams
+            {max && ` (max ${max} team${max > 1 ? 's' : ''})`}
           </Text>
         )}
       </FormControl>
-      {displayMode === "table" && value.length > 0 && (
+      {displayMode === "table" && isMulti && value.length > 0 && (
         <Table variant="simple" size="sm" border="none" mt={6} {...tableProps}>
           <Tbody>
             {value.map((team) => {
