@@ -48,11 +48,13 @@ function organizationsReducer(state, action) {
     case "ADD_ORGANIZATION":
       return {
         ...state,
+        loading: false,
         organizations: [action.payload, ...state.organizations],
       };
     case "UPDATE_ORGANIZATION":
       return {
         ...state,
+        loading: false,
         organizations: state.organizations.map((org) =>
           org._id === action.payload._id ? action.payload : org,
         ),
@@ -64,6 +66,7 @@ function organizationsReducer(state, action) {
     case "DELETE_ORGANIZATION":
       return {
         ...state,
+        loading: false,
         organizations: state.organizations.filter(
           (org) => org._id !== action.payload,
         ),
@@ -154,7 +157,6 @@ export const OrganizationsProvider = ({ children, scheduleId }) => {
         documents: [],
       };
       dispatch({ type: "ADD_ORGANIZATION", payload: newOrg });
-      dispatch({ type: "FETCHING", payload: false });
       toast.success("Organization Added", {
         description: "Organization has been successfully added",
         duration: 2000,
@@ -171,7 +173,6 @@ export const OrganizationsProvider = ({ children, scheduleId }) => {
       const { success = false, organization: data } = response;
       if (success && data) {
         dispatch({ type: "ADD_ORGANIZATION", payload: data });
-        dispatch({ type: "FETCHING", payload: false });
         toast.success("Organization Added", {
           description: "Organization has been successfully added",
           duration: 2000,
@@ -210,7 +211,6 @@ export const OrganizationsProvider = ({ children, scheduleId }) => {
           _id: organizationId,
         };
         dispatch({ type: "UPDATE_ORGANIZATION", payload: updated });
-        dispatch({ type: "FETCHING", payload: false });
         toast.success("Organization Updated", {
           description: "Organization has been successfully updated",
           duration: 2000,
@@ -230,7 +230,6 @@ export const OrganizationsProvider = ({ children, scheduleId }) => {
         const { success = false, data } = response;
         if (success && data) {
           dispatch({ type: "UPDATE_ORGANIZATION", payload: data });
-          dispatch({ type: "FETCHING", payload: false });
           toast.success("Organization Updated", {
             description: "Organization has been successfully updated",
             duration: 2000,
@@ -264,7 +263,6 @@ export const OrganizationsProvider = ({ children, scheduleId }) => {
     if (!USE_API) {
       await new Promise((resolve) => setTimeout(resolve, 500));
       dispatch({ type: "DELETE_ORGANIZATION", payload: organizationId });
-      dispatch({ type: "FETCHING", payload: false });
       toast.success("Organization Deleted", {
         description: "Organization has been deleted",
         duration: 2000,
@@ -277,7 +275,6 @@ export const OrganizationsProvider = ({ children, scheduleId }) => {
         method: "DELETE",
       });
       dispatch({ type: "DELETE_ORGANIZATION", payload: organizationId });
-      dispatch({ type: "FETCHING", payload: false });
       toast.success("Organization Deleted", {
         description: "Organization has been deleted",
         duration: 2000,
