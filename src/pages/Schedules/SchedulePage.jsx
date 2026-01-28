@@ -400,12 +400,6 @@ const SchedulePageContent = () => {
       }
     }
   };
-      } catch (error) {
-        console.error("Failed to delete organization:", error);
-        // Toast is handled by context
-      }
-    }
-  };
 
   // Get existing team IDs to prevent duplicates
   const existingTeamIds = organizations.map((org) => org.teamId);
