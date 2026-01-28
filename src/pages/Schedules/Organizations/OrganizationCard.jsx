@@ -77,10 +77,10 @@ const OrganizationCard = ({
   };
 
   useEffect(() => {
-    if (organization?.folderId && isExpanded) {
-      fetchDocuments(organization.folderId);
+    if (organization?.team?.folderId && isExpanded) {
+      fetchDocuments(organization?.team?.folderId);
     }
-  }, [organization?.folderId, isExpanded, fetchDocuments]);
+  }, [organization, isExpanded, fetchDocuments]);
 
   const handleDeleteOrganization = async (organization) => {
     const result = await Swal.fire({
@@ -451,14 +451,15 @@ const OrganizationCard = ({
                   </TabPanel>
 
                   {/* Documents Tab */}
-                  <TabPanel px={0}>
-                    {organization?.folderId ? (
+                  <TabPanel px={4}>
+                    {organization?.team?.folderId ? (
                       documentsLoading ? (
                         <Center minH="xs">
                           <Text color="gray.500">Loading documents...</Text>
                         </Center>
                       ) : documents && documents.length > 0 ? (
                         <GridView
+                          // TODO: smaller view; drawer
                           documents={documents}
                           onDocumentClick={() => {}}
                           readOnly={true}
