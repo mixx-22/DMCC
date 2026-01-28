@@ -29,35 +29,25 @@ const initialScheduleData = {
   status: 0,
 };
 
-// Action types
-const ACTIONS = {
-  FETCH_START: "FETCH_START",
-  FETCH_SUCCESS: "FETCH_SUCCESS",
-  FETCH_ERROR: "FETCH_ERROR",
-  SAVE_START: "SAVE_START",
-  SAVE_SUCCESS: "SAVE_SUCCESS",
-  SAVE_ERROR: "SAVE_ERROR",
-};
-
 // Reducer
 function scheduleReducer(state, action) {
   switch (action.type) {
-    case ACTIONS.FETCH_START:
+    case "FETCH_START":
       return { ...state, loading: true, error: null };
-    case ACTIONS.FETCH_SUCCESS:
+    case "FETCH_SUCCESS":
       return {
         ...state,
         loading: false,
         schedule: action.payload,
         error: null,
       };
-    case ACTIONS.FETCH_ERROR:
+    case "FETCH_ERROR":
       return { ...state, loading: false, error: action.payload };
-    case ACTIONS.SAVE_START:
+    case "SAVE_START":
       return { ...state, saving: true, error: null };
-    case ACTIONS.SAVE_SUCCESS:
+    case "SAVE_SUCCESS":
       return { ...state, saving: false, schedule: action.payload, error: null };
-    case ACTIONS.SAVE_ERROR:
+    case "SAVE_ERROR":
       return { ...state, saving: false, error: action.payload };
     default:
       return state;
@@ -79,29 +69,30 @@ export const ScheduleProfileProvider = ({ children }) => {
       return;
     }
 
-    dispatch({ type: ACTIONS.FETCH_START });
+    dispatch({ type: "FETCH_START" });
 
     if (!USE_API) {
       // Mock mode
       await new Promise((resolve) => setTimeout(resolve, 500));
-      dispatch({ type: ACTIONS.FETCH_SUCCESS, payload: MOCK_SCHEDULE });
+      dispatch({ type: "FETCH_SUCCESS", payload: MOCK_SCHEDULE });
       return;
     }
 
     try {
-      const schedule = await apiService.request(
+      const response = await apiService.request(
         `${SCHEDULES_ENDPOINT}/${scheduleId}`,
         { method: "GET" },
       );
-      dispatch({ type: ACTIONS.FETCH_SUCCESS, payload: schedule });
+      console.log({ response });
+      dispatch({ type: "FETCH_SUCCESS", payload: response.data });
     } catch (error) {
-      dispatch({ type: ACTIONS.FETCH_ERROR, payload: error.message });
+      dispatch({ type: "FETCH_ERROR", payload: error.message });
       throw error;
     }
   }, []);
 
   const createSchedule = useCallback(async (scheduleData) => {
-    dispatch({ type: ACTIONS.SAVE_START });
+    dispatch({ type: "SAVE_START" });
 
     if (!USE_API) {
       // Mock mode
@@ -112,7 +103,7 @@ export const ScheduleProfileProvider = ({ children }) => {
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       };
-      dispatch({ type: ACTIONS.SAVE_SUCCESS, payload: newSchedule });
+      dispatch({ type: "SAVE_SUCCESS", payload: newSchedule });
       return newSchedule;
     }
 
@@ -121,16 +112,16 @@ export const ScheduleProfileProvider = ({ children }) => {
         method: "POST",
         body: JSON.stringify(scheduleData),
       });
-      dispatch({ type: ACTIONS.SAVE_SUCCESS, payload: schedule });
+      dispatch({ type: "SAVE_SUCCESS", payload: schedule });
       return schedule;
     } catch (error) {
-      dispatch({ type: ACTIONS.SAVE_ERROR, payload: error.message });
+      dispatch({ type: "SAVE_ERROR", payload: error.message });
       throw error;
     }
   }, []);
 
   const updateSchedule = useCallback(async (scheduleId, scheduleData) => {
-    dispatch({ type: ACTIONS.SAVE_START });
+    dispatch({ type: "SAVE_START" });
 
     if (!USE_API) {
       // Mock mode
@@ -140,7 +131,7 @@ export const ScheduleProfileProvider = ({ children }) => {
         _id: scheduleId,
         updatedAt: new Date().toISOString(),
       };
-      dispatch({ type: ACTIONS.SAVE_SUCCESS, payload: updatedSchedule });
+      dispatch({ type: "SAVE_SUCCESS", payload: updatedSchedule });
       return updatedSchedule;
     }
 
@@ -149,29 +140,29 @@ export const ScheduleProfileProvider = ({ children }) => {
         `${SCHEDULES_ENDPOINT}/${scheduleId}`,
         { method: "PUT", body: JSON.stringify(scheduleData) },
       );
-      dispatch({ type: ACTIONS.SAVE_SUCCESS, payload: schedule });
+      dispatch({ type: "SAVE_SUCCESS", payload: schedule });
       return schedule;
     } catch (error) {
-      dispatch({ type: ACTIONS.SAVE_ERROR, payload: error.message });
+      dispatch({ type: "SAVE_ERROR", payload: error.message });
       throw error;
     }
   }, []);
 
   const deleteSchedule = useCallback(async (scheduleId) => {
-    dispatch({ type: ACTIONS.SAVE_START });
+    dispatch({ type: "SAVE_START" });
 
     if (!USE_API) {
       // Mock mode
       await new Promise((resolve) => setTimeout(resolve, 500));
-      dispatch({ type: ACTIONS.SAVE_SUCCESS, payload: null });
+      dispatch({ type: "SAVE_SUCCESS", payload: null });
       return;
     }
 
     try {
       await apiService.delete(`${SCHEDULES_ENDPOINT}/${scheduleId}`);
-      dispatch({ type: ACTIONS.SAVE_SUCCESS, payload: null });
+      dispatch({ type: "SAVE_SUCCESS", payload: null });
     } catch (error) {
-      dispatch({ type: ACTIONS.SAVE_ERROR, payload: error.message });
+      dispatch({ type: "SAVE_ERROR", payload: error.message });
       throw error;
     }
   }, []);
