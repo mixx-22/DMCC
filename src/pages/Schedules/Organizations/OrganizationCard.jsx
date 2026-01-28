@@ -17,16 +17,52 @@ import {
   useColorModeValue,
 } from "@chakra-ui/react";
 import { FiMoreVertical, FiEdit, FiTrash2, FiCalendar } from "react-icons/fi";
+import Swal from "sweetalert2";
+import { useOrganizations } from "../../../context/_useContext";
 
 const OrganizationCard = ({
+  schedule,
+  setFormData: setScheduleFormData = () => {},
   organization,
   team,
   auditors = [],
   onEdit,
-  onDelete,
 }) => {
+  const { deleteOrganization } = useOrganizations();
   const cardBg = useColorModeValue("white", "gray.700");
   const errorColor = useColorModeValue("error.600", "error.400");
+
+  const handleDeleteOrganization = async (organization) => {
+    const result = await Swal.fire({
+      title: "Delete Organization?",
+      text: `Are you sure you want to remove this team from the audit schedule? This action cannot be undone.`,
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#d33",
+      cancelButtonColor: "#3085d6",
+      confirmButtonText: "Yes, delete it",
+      cancelButtonText: "Cancel",
+    });
+
+    if (result.isConfirmed) {
+      try {
+        await deleteOrganization(organization._id);
+
+        // Update local schedule data to remove the organization ID
+        if (schedule) {
+          const updatedSchedule = {
+            ...schedule,
+            organizations: (schedule.organizations || []).filter(
+              (orgId) => orgId !== organization._id,
+            ),
+          };
+          setScheduleFormData((prev) => ({ ...prev, ...updatedSchedule }));
+        }
+      } catch (error) {
+        console.error("Failed to delete organization:", error);
+      }
+    }
+  };
 
   return (
     <Card bg={cardBg}>
@@ -51,12 +87,15 @@ const OrganizationCard = ({
                 aria-label="More options"
               />
               <MenuList>
-                <MenuItem icon={<FiEdit />} onClick={() => onEdit(organization)}>
+                <MenuItem
+                  icon={<FiEdit />}
+                  onClick={() => onEdit(organization)}
+                >
                   Edit
                 </MenuItem>
                 <MenuItem
                   icon={<FiTrash2 />}
-                  onClick={() => onDelete(organization)}
+                  onClick={() => handleDeleteOrganization(organization)}
                   color={errorColor}
                 >
                   Delete
@@ -84,10 +123,11 @@ const OrganizationCard = ({
                 {auditors.map((auditor, index) => {
                   // Handle both user objects and IDs
                   const userId = auditor._id || auditor.id || auditor;
-                  const userName = auditor.firstName && auditor.lastName
-                    ? `${auditor.firstName} ${auditor.lastName}`
-                    : auditor.name || `User ${index + 1}`;
-                  
+                  const userName =
+                    auditor.firstName && auditor.lastName
+                      ? `${auditor.firstName} ${auditor.lastName}`
+                      : auditor.name || `User ${index + 1}`;
+
                   return (
                     <Avatar
                       key={userId || index}

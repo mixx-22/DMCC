@@ -168,7 +168,7 @@ export const OrganizationsProvider = ({ children, scheduleId }) => {
         body: JSON.stringify(organizationData),
       });
 
-      const { success = false, data } = response;
+      const { success = false, organization: data } = response;
       if (success && data) {
         dispatch({ type: "ADD_ORGANIZATION", payload: data });
         dispatch({ type: "FETCHING", payload: false });
@@ -181,7 +181,7 @@ export const OrganizationsProvider = ({ children, scheduleId }) => {
         const error = new Error("Failed to create organization");
         dispatch({ type: "ERROR", payload: error.message });
         toast.error("Failed to Add Organization", {
-          description: "Could not add organization",
+          description: "Try again later or contact your System Administrator",
           duration: 3000,
         });
         throw error;
@@ -189,7 +189,9 @@ export const OrganizationsProvider = ({ children, scheduleId }) => {
     } catch (error) {
       dispatch({ type: "ERROR", payload: error.message });
       toast.error("Failed to Add Organization", {
-        description: error.message || "Could not add organization",
+        description:
+          error.message ||
+          "Try again later or contact your System Administrator",
         duration: 3000,
       });
       throw error;

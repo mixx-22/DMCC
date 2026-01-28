@@ -16,8 +16,12 @@ import { FiSave } from "react-icons/fi";
 import UserAsyncSelect from "../../../components/UserAsyncSelect";
 import VisitManager from "./VisitManager";
 
-const OrganizationForm = () => {
-  const { scheduleId, organizations } = useOrganizations();
+const OrganizationForm = ({
+  schedule = {},
+  setFormData: setScheduleFormData = () => {},
+}) => {
+  const { scheduleId, organizations, createOrganization, updateOrganization } =
+    useOrganizations();
 
   const existingTeamIds = organizations.map((org) => org.teamId);
 
@@ -71,15 +75,53 @@ const OrganizationForm = () => {
     return Object.keys(errors).length === 0;
   };
 
+  const [selectedOrganization, setSelectedOrganization] = useState(null);
+
+  const handleSaveOrganization = async (organizationData, newOrgData) => {
+    try {
+      let result;
+      if (selectedOrganization) {
+        result = await updateOrganization(
+          selectedOrganization._id,
+          organizationData,
+        );
+      } else {
+        result = await createOrganization(organizationData);
+
+        if (result && result._id && schedule) {
+          const updatedSchedule = {
+            ...schedule,
+            organizations: [...(schedule.organizations || []), newOrgData],
+          };
+          setScheduleFormData((prev) => ({ ...prev, ...updatedSchedule }));
+        }
+      }
+      setSelectedOrganization(null);
+    } catch (error) {
+      console.error("Failed to save organization:", error);
+    }
+  };
+
   const handleSubmit = () => {
     if (validateForm()) {
-      const payload = {
+      const base = {
         auditScheduleId: scheduleId,
-        teamId: formData.team._id || formData.team.id,
-        auditors: formData.auditors.map((a) => a._id || a.id), // Extract user IDs
         visits: formData.visits,
       };
-      console.log(payload);
+
+      const payload = {
+        ...base,
+        teamId: formData.team._id ?? formData.team.id,
+        auditors: formData.auditors.map((a) => a._id ?? a.id),
+      };
+
+      const newOrgData = {
+        ...base,
+        teamId: formData.team,
+        auditors: formData.auditors,
+      };
+
+      handleSaveOrganization(payload, newOrgData);
     }
   };
 
