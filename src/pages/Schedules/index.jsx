@@ -20,7 +20,7 @@ const Schedules = () => {
             <Button
               leftIcon={<FiPlus />}
               colorScheme="brandPrimary"
-              onClick={() => navigate("/schedules/new")}
+              onClick={() => navigate("/audit-schedule/new")}
             >
               Create New Schedule
             </Button>

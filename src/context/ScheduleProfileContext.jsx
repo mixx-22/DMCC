@@ -45,7 +45,12 @@ function scheduleReducer(state, action) {
     case ACTIONS.FETCH_START:
       return { ...state, loading: true, error: null };
     case ACTIONS.FETCH_SUCCESS:
-      return { ...state, loading: false, schedule: action.payload, error: null };
+      return {
+        ...state,
+        loading: false,
+        schedule: action.payload,
+        error: null,
+      };
     case ACTIONS.FETCH_ERROR:
       return { ...state, loading: false, error: action.payload };
     case ACTIONS.SAVE_START:
@@ -84,8 +89,9 @@ export const ScheduleProfileProvider = ({ children }) => {
     }
 
     try {
-      const schedule = await apiService.get(
+      const schedule = await apiService.request(
         `${SCHEDULES_ENDPOINT}/${scheduleId}`,
+        { method: "GET" },
       );
       dispatch({ type: ACTIONS.FETCH_SUCCESS, payload: schedule });
     } catch (error) {
@@ -111,7 +117,10 @@ export const ScheduleProfileProvider = ({ children }) => {
     }
 
     try {
-      const schedule = await apiService.post(SCHEDULES_ENDPOINT, scheduleData);
+      const schedule = await apiService.request(SCHEDULES_ENDPOINT, {
+        method: "POST",
+        body: JSON.stringify(scheduleData),
+      });
       dispatch({ type: ACTIONS.SAVE_SUCCESS, payload: schedule });
       return schedule;
     } catch (error) {
@@ -136,9 +145,9 @@ export const ScheduleProfileProvider = ({ children }) => {
     }
 
     try {
-      const schedule = await apiService.put(
+      const schedule = await apiService.request(
         `${SCHEDULES_ENDPOINT}/${scheduleId}`,
-        scheduleData,
+        { method: "PUT", body: JSON.stringify(scheduleData) },
       );
       dispatch({ type: ACTIONS.SAVE_SUCCESS, payload: schedule });
       return schedule;

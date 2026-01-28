@@ -153,9 +153,11 @@ const SchedulePage = () => {
           duration: 3000,
         });
         if (result?.id || result?._id) {
-          navigate(`/schedules/${result.id || result._id}`, { replace: true });
+          navigate(`/audit-schedule/${result.id || result._id}`, {
+            replace: true,
+          });
         } else {
-          navigate("/schedules");
+          navigate("/audit-schedules");
         }
       } else {
         await updateSchedule(id, formData);
@@ -163,10 +165,10 @@ const SchedulePage = () => {
           description: `"${formData.title}" has been successfully updated`,
           duration: 3000,
         });
-        navigate("/schedules");
+        navigate("/audit-schedules");
       }
     } catch (error) {
-      toast.error("Operation Failed", {
+      toast.error(`Failed to ${isNewSchedule ? `Create` : `Update`} Schedule`, {
         description: error.message || "An error occurred. Please try again.",
         duration: 3000,
       });
@@ -192,7 +194,7 @@ const SchedulePage = () => {
           description: `"${formData.title}" has been deleted`,
           duration: 3000,
         });
-        navigate("/schedules");
+        navigate("/audit-schedules");
       } catch (error) {
         toast.error("Delete Failed", {
           description: error.message || "Failed to delete schedule",
@@ -203,7 +205,7 @@ const SchedulePage = () => {
   };
 
   const handleCancel = () => {
-    navigate("/schedules");
+    navigate("/audit-schedules");
   };
 
   if (loading) {
@@ -211,7 +213,7 @@ const SchedulePage = () => {
       <Box>
         <PageHeader>
           <Heading variant="pageTitle">
-            {isNewSchedule ? "Create Schedule" : "Schedule Details"}
+            {isNewSchedule ? "Create Audit Schedule" : "Schedule Details"}
           </Heading>
         </PageHeader>
         <Flex justify="center" align="center" minH="400px">
@@ -478,7 +480,7 @@ const SchedulePage = () => {
                 isLoading={saving}
                 leftIcon={<FiSave />}
               >
-                {isNewSchedule ? "Create Schedule" : "Save Changes"}
+                {isNewSchedule ? "Create Audit Schedule" : "Save Changes"}
               </Button>
             )}
           </HStack>

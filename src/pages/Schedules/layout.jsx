@@ -191,7 +191,7 @@ const SchedulesList = () => {
                       <Td>
                         <LinkOverlay
                           as={RouterLink}
-                          to={`/schedules/${scheduleId}`}
+                          to={`/audit-schedule/${scheduleId}`}
                         >
                           <HStack w="fit-content">
                             <FiCalendar />
@@ -216,7 +216,9 @@ const SchedulesList = () => {
                       <Td>
                         <Text fontSize="sm">{schedule.standard || "-"}</Text>
                       </Td>
-                      <Td textAlign="right">{getStatusBadge(schedule.status)}</Td>
+                      <Td textAlign="right">
+                        {getStatusBadge(schedule.status)}
+                      </Td>
                     </LinkBox>
                   );
                 })
