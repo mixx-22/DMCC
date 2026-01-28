@@ -21,7 +21,6 @@ import {
   Textarea,
   Select,
   HStack,
-  Progress,
   FormHelperText,
   Badge,
 } from "@chakra-ui/react";
@@ -66,8 +65,12 @@ const SchedulePage = () => {
 
   const steps = [
     { number: 1, title: "Basic Information", fields: ["title", "description"] },
-    { number: 2, title: "Audit Details", fields: ["auditCode", "auditType"] },
-    { number: 3, title: "Standards & Status", fields: ["standard", "status"] },
+    {
+      number: 2,
+      title: "Audit Details",
+      fields: ["auditCode", "auditType", "standard"],
+    },
+    { number: 3, title: "Review", fields: [] },
   ];
 
   const getStepBackgroundColor = (currentStep, stepNumber) => {
@@ -213,8 +216,6 @@ const SchedulePage = () => {
     );
   }
 
-  const progressPercentage = (currentStep / steps.length) * 100;
-
   return (
     <Box>
       <PageHeader>
@@ -290,12 +291,6 @@ const SchedulePage = () => {
               </HStack>
             ))}
           </HStack>
-          <Progress
-            value={progressPercentage}
-            size="sm"
-            colorScheme="brandPrimary"
-            borderRadius="full"
-          />
         </Box>
       )}
 
@@ -386,15 +381,7 @@ const SchedulePage = () => {
                     {validationErrors.auditType}
                   </FormErrorMessage>
                 </FormControl>
-              </>
-            )}
 
-            {/* Step 3: Standards & Status */}
-            {currentStep === 3 && (
-              <>
-                <Heading size="md" mb={2}>
-                  Standards & Status
-                </Heading>
                 <FormControl>
                   <FormLabel>Standard</FormLabel>
                   <Input
@@ -408,6 +395,15 @@ const SchedulePage = () => {
                     The audit standard or framework being followed (optional)
                   </FormHelperText>
                 </FormControl>
+              </>
+            )}
+
+            {/* Step 3: Review */}
+            {currentStep === 3 && (
+              <>
+                <Heading size="md" mb={2}>
+                  Review
+                </Heading>
 
                 {/* Summary Card */}
                 <Box
