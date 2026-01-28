@@ -23,6 +23,15 @@ import {
   HStack,
   FormHelperText,
   Badge,
+  Stepper,
+  Step,
+  StepIndicator,
+  StepStatus,
+  StepIcon,
+  StepNumber,
+  StepTitle,
+  StepSeparator,
+  useSteps,
 } from "@chakra-ui/react";
 import {
   FiArrowLeft,
@@ -32,7 +41,6 @@ import {
   FiTrash2,
   FiChevronRight,
   FiChevronLeft,
-  FiCheck,
 } from "react-icons/fi";
 import { useNavigate, useParams } from "react-router-dom";
 import { toast } from "sonner";
@@ -59,25 +67,22 @@ const SchedulePage = () => {
   const summaryCardBg = useColorModeValue("gray.50", "gray.700");
 
   const isNewSchedule = id === "new";
-  const [currentStep, setCurrentStep] = useState(1);
   const [formData, setFormData] = useState(initialScheduleData);
   const [validationErrors, setValidationErrors] = useState({});
 
   const steps = [
-    { number: 1, title: "Basic Information", fields: ["title", "description"] },
+    { title: "Basic Information", fields: ["title", "description"] },
     {
-      number: 2,
       title: "Audit Details",
       fields: ["auditCode", "auditType", "standard"],
     },
-    { number: 3, title: "Review", fields: [] },
+    { title: "Review", fields: [] },
   ];
 
-  const getStepBackgroundColor = (currentStep, stepNumber) => {
-    if (currentStep > stepNumber) return "green.500";
-    if (currentStep === stepNumber) return "brandPrimary.500";
-    return "gray.300";
-  };
+  const { activeStep, setActiveStep } = useSteps({
+    index: 0,
+    count: steps.length,
+  });
 
   useEffect(() => {
     if (schedule && !isNewSchedule) {
@@ -104,7 +109,7 @@ const SchedulePage = () => {
 
   const validateStep = (step) => {
     const errors = {};
-    const currentFields = steps.find((s) => s.number === step)?.fields || [];
+    const currentFields = steps[step]?.fields || [];
 
     currentFields.forEach((field) => {
       if (field === "title" && !formData.title.trim()) {
@@ -126,17 +131,17 @@ const SchedulePage = () => {
   };
 
   const handleNext = () => {
-    if (validateStep(currentStep)) {
-      setCurrentStep((prev) => Math.min(prev + 1, steps.length));
+    if (validateStep(activeStep)) {
+      setActiveStep((prev) => Math.min(prev + 1, steps.length - 1));
     }
   };
 
   const handlePrevious = () => {
-    setCurrentStep((prev) => Math.max(prev - 1, 1));
+    setActiveStep((prev) => Math.max(prev - 1, 0));
   };
 
   const handleSubmit = async () => {
-    if (!validateStep(currentStep)) {
+    if (!validateStep(activeStep)) {
       return;
     }
 
@@ -254,51 +259,32 @@ const SchedulePage = () => {
       </PageHeader>
 
       {isNewSchedule && (
-        <Box mb={6}>
-          <HStack justify="space-between" mb={2}>
-            {steps.map((step, idx) => (
-              <HStack
-                key={step.number}
-                flex="1"
-                justify="center"
-                opacity={currentStep >= step.number ? 1 : 0.5}
-              >
-                <Flex
-                  w="32px"
-                  h="32px"
-                  borderRadius="full"
-                  bg={getStepBackgroundColor(currentStep, step.number)}
-                  color="white"
-                  align="center"
-                  justify="center"
-                  fontWeight="bold"
-                >
-                  {currentStep > step.number ? (
-                    <FiCheck />
-                  ) : (
-                    <Text fontSize="sm">{step.number}</Text>
-                  )}
-                </Flex>
-                <Text
-                  fontSize="sm"
-                  fontWeight={currentStep === step.number ? "bold" : "normal"}
-                >
-                  {step.title}
-                </Text>
-                {idx < steps.length - 1 && (
-                  <Box flex="1" h="2px" bg="gray.300" ml={2} />
-                )}
-              </HStack>
-            ))}
-          </HStack>
-        </Box>
+        <Stepper index={activeStep} colorScheme="brandPrimary" mb={6}>
+          {steps.map((step, index) => (
+            <Step key={index}>
+              <StepIndicator>
+                <StepStatus
+                  complete={<StepIcon />}
+                  incomplete={<StepNumber />}
+                  active={<StepNumber />}
+                />
+              </StepIndicator>
+
+              <Box flexShrink="0">
+                <StepTitle>{step.title}</StepTitle>
+              </Box>
+
+              <StepSeparator />
+            </Step>
+          ))}
+        </Stepper>
       )}
 
       <Card>
         <CardBody>
           <VStack spacing={6} align="stretch">
             {/* Step 1: Basic Information */}
-            {currentStep === 1 && (
+            {activeStep === 0 && (
               <>
                 <Heading size="md" mb={2}>
                   Basic Information
@@ -334,7 +320,7 @@ const SchedulePage = () => {
             )}
 
             {/* Step 2: Audit Details */}
-            {currentStep === 2 && (
+            {activeStep === 1 && (
               <>
                 <Heading size="md" mb={2}>
                   Audit Details
@@ -399,7 +385,7 @@ const SchedulePage = () => {
             )}
 
             {/* Step 3: Review */}
-            {currentStep === 3 && (
+            {activeStep === 2 && (
               <>
                 <Heading size="md" mb={2}>
                   Review
@@ -468,7 +454,7 @@ const SchedulePage = () => {
             Cancel
           </Button>
           <HStack>
-            {isNewSchedule && currentStep > 1 && (
+            {isNewSchedule && activeStep > 0 && (
               <Button
                 variant="outline"
                 onClick={handlePrevious}
@@ -477,7 +463,7 @@ const SchedulePage = () => {
                 Previous
               </Button>
             )}
-            {isNewSchedule && currentStep < steps.length ? (
+            {isNewSchedule && activeStep < steps.length - 1 ? (
               <Button
                 colorScheme="brandPrimary"
                 onClick={handleNext}
