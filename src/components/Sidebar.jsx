@@ -244,23 +244,24 @@ const Sidebar = () => {
         iconProps: { strokeWidth: "2px" },
       });
     }
-    if (isSettingsAllowed) {
-      const children = [];
-      children.push({ path: "/allSettings", label: "All Settings" });
-      if (isSettingsRolesAllowed) {
-        children.push({ path: "/roles", label: "Roles & Permissions" });
-      }
-      if (isSettingsfileTypeAllowed) {
-        children.push({ path: "/file-types", label: "File Types" });
-      }
-      items.push({
-        id: "settings",
-        path: "/settings",
-        label: "Settings",
-        icon: FiSettings,
-        children,
-      });
+    const children = [];
+    if (isSettingsRolesAllowed) {
+      children.push({ path: "/settings", label: "All Settings" });
     }
+    if (isSettingsRolesAllowed) {
+      children.push({ path: "/roles", label: "Roles & Permissions" });
+    }
+    if (isSettingsfileTypeAllowed) {
+      children.push({ path: "/file-types", label: "File Types" });
+    }
+    items.push({
+      id: "settings",
+      path: "/settings",
+      label: "Settings",
+      icon: FiSettings,
+      children,
+    });
+
     return items;
   }, [
     isAdmin,
