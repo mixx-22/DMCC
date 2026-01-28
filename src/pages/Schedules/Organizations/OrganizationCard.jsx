@@ -11,7 +11,6 @@ import {
   MenuList,
   MenuItem,
   Avatar,
-  Divider,
   Box,
   useColorModeValue,
   Tooltip,
@@ -27,18 +26,15 @@ import {
   Button,
   Center,
   Stack,
-  Icon,
 } from "@chakra-ui/react";
 import {
   FiMoreVertical,
   FiEdit,
   FiTrash2,
-  FiCalendar,
   FiUsers,
   FiChevronDown,
   FiChevronUp,
   FiExternalLink,
-  FiFolder,
 } from "react-icons/fi";
 import { useState, useEffect } from "react";
 import { Link as RouterLink } from "react-router-dom";
@@ -198,96 +194,26 @@ const OrganizationCard = ({
           {/* Collapsible Content */}
           <Collapse in={isExpanded} animateOpacity>
             <Box p={4} pt={0}>
-              {/* Auditors Section - Always Visible */}
-              <Box mb={4}>
-                <HStack mb={3} spacing={2}>
-                  <FiUsers />
-                  <Text fontSize="sm" fontWeight="semibold" color="gray.700">
-                    Auditors ({auditors.length})
-                  </Text>
-                </HStack>
-                {auditors && auditors.length > 0 ? (
-                  <Wrap spacing={2}>
-                    {auditors.map((auditor, index) => {
-                      const userId = auditor._id || auditor.id || auditor;
-                      const fullName =
-                        auditor.firstName && auditor.lastName
-                          ? `${auditor.firstName} ${auditor.lastName}`
-                          : auditor.name || `User ${index + 1}`;
-                      const employeeId = auditor.employeeId;
-                      const email = auditor.email;
-
-                      return (
-                        <WrapItem key={userId || index}>
-                          <Tooltip
-                            label={
-                              <VStack align="start" spacing={0}>
-                                <Text fontWeight="bold">{fullName}</Text>
-                                {email && <Text fontSize="xs">{email}</Text>}
-                                {employeeId && (
-                                  <Text fontSize="xs">ID: {employeeId}</Text>
-                                )}
-                              </VStack>
-                            }
-                            hasArrow
-                            placement="top"
-                          >
-                            <Box
-                              px={3}
-                              py={2}
-                              borderRadius="md"
-                              borderWidth="1px"
-                              borderColor={borderColor}
-                              _hover={{ bg: hoverBg }}
-                              cursor="pointer"
-                              transition="all 0.2s"
-                            >
-                              <HStack spacing={2}>
-                                <Avatar name={fullName} size="xs" />
-                                <VStack align="start" spacing={0}>
-                                  <Text fontSize="sm" fontWeight="medium">
-                                    {fullName}
-                                  </Text>
-                                  {employeeId && (
-                                    <Text fontSize="xs" color="gray.500">
-                                      ID: {employeeId}
-                                    </Text>
-                                  )}
-                                </VStack>
-                              </HStack>
-                            </Box>
-                          </Tooltip>
-                        </WrapItem>
-                      );
-                    })}
-                  </Wrap>
-                ) : (
-                  <Text fontSize="sm" color="gray.500" fontStyle="italic">
-                    No auditors assigned
-                  </Text>
-                )}
-              </Box>
-
-              <Divider mb={4} />
-
               {/* Tabs Section */}
-              <Tabs colorScheme="brandPrimary" size="sm">
+              <Tabs colorScheme="brandPrimary">
                 <TabList>
                   <Tab>
                     <HStack spacing={1}>
-                      <Icon as={FiCalendar} />
                       <Text>Visits</Text>
                     </HStack>
                   </Tab>
                   <Tab>
                     <HStack spacing={1}>
-                      <Icon as={FiUsers} />
+                      <Text>Auditors</Text>
+                    </HStack>
+                  </Tab>
+                  <Tab>
+                    <HStack spacing={1}>
                       <Text>Team Details</Text>
                     </HStack>
                   </Tab>
                   <Tab>
                     <HStack spacing={1}>
-                      <Icon as={FiFolder} />
                       <Text>Documents</Text>
                     </HStack>
                   </Tab>
@@ -342,7 +268,86 @@ const OrganizationCard = ({
                       </Center>
                     )}
                   </TabPanel>
+                  {/* Team Details Tab */}
+                  <TabPanel>
+                    {/* Auditors Section - Always Visible */}
+                    <Box mb={4}>
+                      <HStack mb={3} spacing={2}>
+                        <FiUsers />
+                        <Text
+                          fontSize="sm"
+                          fontWeight="semibold"
+                          color="gray.700"
+                        >
+                          Auditors ({auditors.length})
+                        </Text>
+                      </HStack>
+                      {auditors && auditors.length > 0 ? (
+                        <Wrap spacing={2}>
+                          {auditors.map((auditor, index) => {
+                            const userId = auditor._id || auditor.id || auditor;
+                            const fullName =
+                              auditor.firstName && auditor.lastName
+                                ? `${auditor.firstName} ${auditor.lastName}`
+                                : auditor.name || `User ${index + 1}`;
+                            const employeeId = auditor.employeeId;
+                            const email = auditor.email;
 
+                            return (
+                              <WrapItem key={userId || index}>
+                                <Tooltip
+                                  label={
+                                    <VStack align="start" spacing={0}>
+                                      <Text fontWeight="bold">{fullName}</Text>
+                                      {email && (
+                                        <Text fontSize="xs">{email}</Text>
+                                      )}
+                                      {employeeId && (
+                                        <Text fontSize="xs">
+                                          ID: {employeeId}
+                                        </Text>
+                                      )}
+                                    </VStack>
+                                  }
+                                  hasArrow
+                                  placement="top"
+                                >
+                                  <Box
+                                    px={3}
+                                    py={2}
+                                    borderRadius="md"
+                                    borderWidth="1px"
+                                    borderColor={borderColor}
+                                    _hover={{ bg: hoverBg }}
+                                    cursor="pointer"
+                                    transition="all 0.2s"
+                                  >
+                                    <HStack spacing={2}>
+                                      <Avatar name={fullName} size="xs" />
+                                      <VStack align="start" spacing={0}>
+                                        <Text fontSize="sm" fontWeight="medium">
+                                          {fullName}
+                                        </Text>
+                                        {employeeId && (
+                                          <Text fontSize="xs" color="gray.500">
+                                            ID: {employeeId}
+                                          </Text>
+                                        )}
+                                      </VStack>
+                                    </HStack>
+                                  </Box>
+                                </Tooltip>
+                              </WrapItem>
+                            );
+                          })}
+                        </Wrap>
+                      ) : (
+                        <Text fontSize="sm" color="gray.500" fontStyle="italic">
+                          No auditors assigned
+                        </Text>
+                      )}
+                    </Box>
+                  </TabPanel>
                   {/* Team Details Tab */}
                   <TabPanel>
                     <VStack align="stretch" spacing={4}>
