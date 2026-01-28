@@ -54,16 +54,12 @@ import { useState, useEffect, useRef } from "react";
 import Swal from "sweetalert2";
 import PageHeader from "../../components/PageHeader";
 import PageFooter from "../../components/PageFooter";
-import {
-  useScheduleProfile,
-  useOrganizations,
-} from "../../context/_useContext";
+import { useScheduleProfile } from "../../context/_useContext";
 import { getAuditTypeLabel } from "../../utils/auditHelpers";
 import EditAuditDetailsModal from "./EditAuditDetailsModal";
-import OrganizationModal from "./OrganizationModal";
-import OrganizationsList from "./components/OrganizationsList";
 import { OrganizationsProvider } from "../../context/OrganizationsContext";
 import Timestamp from "../../components/Timestamp";
+import Organizations from "./Organizations";
 
 // Inner component that uses organizations context
 const SchedulePageContent = () => {
@@ -77,15 +73,6 @@ const SchedulePageContent = () => {
     createSchedule,
     deleteSchedule,
   } = useScheduleProfile();
-
-  // Organizations context
-  const {
-    organizations,
-    loading: orgLoading,
-    createOrganization,
-    updateOrganization,
-    deleteOrganization,
-  } = useOrganizations();
 
   const errorColor = useColorModeValue("error.600", "error.400");
   const summaryCardBg = useColorModeValue("gray.50", "gray.700");
@@ -103,15 +90,6 @@ const SchedulePageContent = () => {
     onOpen: onEditDetailsOpen,
     onClose: onEditDetailsClose,
   } = useDisclosure();
-
-  // Modal state for organizations
-  const {
-    isOpen: isOrgModalOpen,
-    onOpen: onOrgModalOpen,
-    onClose: onOrgModalClose,
-  } = useDisclosure();
-
-  const [selectedOrganization, setSelectedOrganization] = useState(null);
 
   const steps = [
     { title: "Basic Information", fields: ["title", "description"] },
@@ -319,83 +297,6 @@ const SchedulePageContent = () => {
       // Don't close modal on error so user can retry
     }
   };
-
-  // Organization handlers
-  const handleAddOrganization = () => {
-    setSelectedOrganization(null);
-    onOrgModalOpen();
-  };
-
-  const handleEditOrganization = (organization) => {
-    setSelectedOrganization(organization);
-    onOrgModalOpen();
-  };
-
-  const handleSaveOrganization = async (organizationData) => {
-    try {
-      let result;
-      if (selectedOrganization) {
-        // Update existing organization
-        result = await updateOrganization(
-          selectedOrganization._id,
-          organizationData,
-        );
-      } else {
-        // Create new organization - backend will add its ID to schedule.organizations
-        result = await createOrganization(organizationData);
-
-        // Update local schedule data to include the new organization ID
-        if (result && result._id && schedule) {
-          const updatedSchedule = {
-            ...schedule,
-            organizations: [...(schedule.organizations || []), result._id],
-          };
-          setFormData((prev) => ({ ...prev, ...updatedSchedule }));
-        }
-      }
-      onOrgModalClose();
-      setSelectedOrganization(null);
-    } catch (error) {
-      console.error("Failed to save organization:", error);
-      // Toast is handled by context
-    }
-  };
-
-  const handleDeleteOrganization = async (organization) => {
-    const result = await Swal.fire({
-      title: "Delete Organization?",
-      text: `Are you sure you want to remove this team from the audit schedule? This action cannot be undone.`,
-      icon: "warning",
-      showCancelButton: true,
-      confirmButtonColor: "#d33",
-      cancelButtonColor: "#3085d6",
-      confirmButtonText: "Yes, delete it",
-      cancelButtonText: "Cancel",
-    });
-
-    if (result.isConfirmed) {
-      try {
-        await deleteOrganization(organization._id);
-
-        // Update local schedule data to remove the organization ID
-        if (schedule) {
-          const updatedSchedule = {
-            ...schedule,
-            organizations: (schedule.organizations || []).filter(
-              (orgId) => orgId !== organization._id,
-            ),
-          };
-          setFormData((prev) => ({ ...prev, ...updatedSchedule }));
-        }
-      } catch (error) {
-        console.error("Failed to delete organization:", error);
-        // Toast is handled by context
-      }
-    }
-  };
-
-  // Get existing team IDs to prevent duplicates
-  const existingTeamIds = organizations.map((org) => org.teamId);
 
   if (loading) {
     return (
@@ -859,13 +760,7 @@ const SchedulePageContent = () => {
 
           {/* Right Column - Organizations */}
           <Stack spacing={4} flex={1}>
-            <OrganizationsList
-              organizations={organizations}
-              loading={orgLoading}
-              onAdd={handleAddOrganization}
-              onEdit={handleEditOrganization}
-              onDelete={handleDeleteOrganization}
-            />
+            <Organizations schedule={schedule ?? {}} {...{ setFormData }} />
           </Stack>
         </Flex>
       </Box>
@@ -901,17 +796,6 @@ const SchedulePageContent = () => {
         auditData={formData}
         onSave={handleSaveAuditDetails}
         isSaving={loading}
-      />
-
-      {/* Organization Modal */}
-      <OrganizationModal
-        isOpen={isOrgModalOpen}
-        onClose={onOrgModalClose}
-        organization={selectedOrganization}
-        scheduleId={id}
-        existingTeamIds={existingTeamIds}
-        onSave={handleSaveOrganization}
-        isSaving={orgLoading}
       />
     </>
   );

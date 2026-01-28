@@ -54,7 +54,7 @@ function organizationsReducer(state, action) {
       return {
         ...state,
         organizations: state.organizations.map((org) =>
-          org._id === action.payload._id ? action.payload : org
+          org._id === action.payload._id ? action.payload : org,
         ),
         currentOrganization:
           state.currentOrganization?._id === action.payload._id
@@ -65,7 +65,7 @@ function organizationsReducer(state, action) {
       return {
         ...state,
         organizations: state.organizations.filter(
-          (org) => org._id !== action.payload
+          (org) => org._id !== action.payload,
         ),
       };
     case "ERROR":
@@ -84,37 +84,34 @@ export const OrganizationsProvider = ({ children, scheduleId }) => {
   });
 
   // Fetch organizations for a schedule
-  const fetchOrganizations = useCallback(
-    async (auditScheduleId) => {
-      dispatch({ type: "FETCHING" });
+  const fetchOrganizations = useCallback(async (auditScheduleId) => {
+    dispatch({ type: "FETCHING" });
 
-      if (!USE_API) {
-        // Mock mode - filter by scheduleId
-        await new Promise((resolve) => setTimeout(resolve, 500));
-        const filtered = MOCK_ORGANIZATIONS.filter(
-          (org) => org.auditScheduleId === auditScheduleId
-        );
-        dispatch({ type: "FETCHED", payload: filtered });
-        return;
-      }
+    if (!USE_API) {
+      // Mock mode - filter by scheduleId
+      await new Promise((resolve) => setTimeout(resolve, 500));
+      const filtered = MOCK_ORGANIZATIONS.filter(
+        (org) => org.auditScheduleId === auditScheduleId,
+      );
+      dispatch({ type: "FETCHED", payload: filtered });
+      return;
+    }
 
-      try {
-        const response = await apiService.request(
-          `${ORGANIZATIONS_ENDPOINT}?auditScheduleId=${auditScheduleId}`,
-          { method: "GET" }
-        );
-        dispatch({ type: "FETCHED", payload: response.data || [] });
-      } catch (error) {
-        dispatch({ type: "ERROR", payload: error.message });
-        toast.error("Failed to Load Organizations", {
-          description: error.message || "Could not load organizations",
-          duration: 3000,
-        });
-        throw error;
-      }
-    },
-    []
-  );
+    try {
+      const response = await apiService.request(
+        `${ORGANIZATIONS_ENDPOINT}?auditScheduleId=${auditScheduleId}`,
+        { method: "GET" },
+      );
+      dispatch({ type: "FETCHED", payload: response.data || [] });
+    } catch (error) {
+      dispatch({ type: "ERROR", payload: error.message });
+      toast.error("Failed to Load Organizations", {
+        description: error.message || "Could not load organizations",
+        duration: 3000,
+      });
+      throw error;
+    }
+  }, []);
 
   // Fetch single organization
   const fetchOrganization = useCallback(async (organizationId) => {
@@ -130,7 +127,7 @@ export const OrganizationsProvider = ({ children, scheduleId }) => {
     try {
       const response = await apiService.request(
         `${ORGANIZATIONS_ENDPOINT}/${organizationId}`,
-        { method: "GET" }
+        { method: "GET" },
       );
       dispatch({ type: "ORGANIZATION_FETCHED", payload: response.data });
       return response.data;
@@ -170,7 +167,7 @@ export const OrganizationsProvider = ({ children, scheduleId }) => {
         method: "POST",
         body: JSON.stringify(organizationData),
       });
-      
+
       const { success = false, data } = response;
       if (success && data) {
         dispatch({ type: "ADD_ORGANIZATION", payload: data });
@@ -225,7 +222,7 @@ export const OrganizationsProvider = ({ children, scheduleId }) => {
           {
             method: "PUT",
             body: JSON.stringify(organizationData),
-          }
+          },
         );
 
         const { success = false, data } = response;
@@ -255,7 +252,7 @@ export const OrganizationsProvider = ({ children, scheduleId }) => {
         throw error;
       }
     },
-    []
+    [],
   );
 
   // Delete organization
@@ -301,6 +298,7 @@ export const OrganizationsProvider = ({ children, scheduleId }) => {
   }, [scheduleId, fetchOrganizations]);
 
   const value = {
+    scheduleId,
     organizations: state.organizations,
     currentOrganization: state.currentOrganization,
     loading: state.loading,

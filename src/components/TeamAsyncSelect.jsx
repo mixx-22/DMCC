@@ -60,14 +60,14 @@ const TeamAsyncSelect = ({
         return new Promise((resolve) => {
           setTimeout(() => {
             const filtered = MOCK_TEAMS.filter((team) =>
-              team.name.toLowerCase().includes(inputValue.toLowerCase())
+              team.name.toLowerCase().includes(inputValue.toLowerCase()),
             );
             resolve(
               filtered.slice(0, limit).map((team) => ({
                 value: getTeamId(team),
                 label: team.name,
                 team: team,
-              }))
+              })),
             );
           }, 300);
         });
@@ -103,12 +103,12 @@ const TeamAsyncSelect = ({
         _id: option.value,
         name: option.team.name,
       }));
-      
+
       // Check max limit if specified
       if (max && teams.length > max) {
         return; // Don't allow selection beyond max
       }
-      
+
       onChange(teams);
     } else {
       // Single select mode
@@ -305,7 +305,7 @@ const TeamAsyncSelect = ({
         {!readonly && (
           <Text fontSize="xs" color="gray.500" mt={1}>
             Type at least 2 characters to search for teams
-            {max && ` (max ${max} team${max > 1 ? 's' : ''})`}
+            {max && ` (max ${max} team${max > 1 ? "s" : ""})`}
           </Text>
         )}
       </FormControl>
