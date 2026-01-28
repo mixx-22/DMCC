@@ -110,6 +110,8 @@ const SchedulePage = () => {
         ...initialScheduleData,
         ...schedule,
       });
+      // Force editable components to re-render with new data
+      setEditableKey((prev) => prev + 1);
     }
   }, [schedule, isNewSchedule, initialScheduleData]);
 
@@ -251,8 +253,17 @@ const SchedulePage = () => {
     }
 
     try {
-      const updatedSchedule = await updateSchedule(id, { ...formData, title: trimmedTitle });
-      setFormData((prev) => ({ ...prev, title: trimmedTitle, ...updatedSchedule }));
+      // Send only the updatable fields, not metadata like _id, createdAt, updatedAt
+      const updatePayload = {
+        title: trimmedTitle,
+        description: formData.description,
+        auditCode: formData.auditCode,
+        auditType: formData.auditType,
+        standard: formData.standard,
+        status: formData.status,
+      };
+      const updatedSchedule = await updateSchedule(id, updatePayload);
+      setFormData((prev) => ({ ...prev, ...updatedSchedule }));
       toast.success("Title Updated", {
         description: "Schedule title has been updated",
         duration: 2000,
@@ -280,8 +291,17 @@ const SchedulePage = () => {
     }
 
     try {
-      const updatedSchedule = await updateSchedule(id, { ...formData, description: trimmedDescription });
-      setFormData((prev) => ({ ...prev, description: trimmedDescription, ...updatedSchedule }));
+      // Send only the updatable fields, not metadata like _id, createdAt, updatedAt
+      const updatePayload = {
+        title: formData.title,
+        description: trimmedDescription,
+        auditCode: formData.auditCode,
+        auditType: formData.auditType,
+        standard: formData.standard,
+        status: formData.status,
+      };
+      const updatedSchedule = await updateSchedule(id, updatePayload);
+      setFormData((prev) => ({ ...prev, ...updatedSchedule }));
       toast.success("Description Updated", {
         description: "Schedule description has been updated",
         duration: 2000,
@@ -298,8 +318,17 @@ const SchedulePage = () => {
 
   const handleSaveAuditDetails = async (detailsData) => {
     try {
-      const updatedSchedule = await updateSchedule(id, { ...formData, ...detailsData });
-      setFormData((prev) => ({ ...prev, ...detailsData, ...updatedSchedule }));
+      // Send only the updatable fields, not metadata like _id, createdAt, updatedAt
+      const updatePayload = {
+        title: formData.title,
+        description: formData.description,
+        auditCode: detailsData.auditCode,
+        auditType: detailsData.auditType,
+        standard: detailsData.standard,
+        status: formData.status,
+      };
+      const updatedSchedule = await updateSchedule(id, updatePayload);
+      setFormData((prev) => ({ ...prev, ...updatedSchedule }));
       toast.success("Audit Details Updated", {
         description: "Audit details have been updated successfully",
         duration: 2000,
