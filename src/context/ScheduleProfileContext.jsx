@@ -155,7 +155,7 @@ export const ScheduleProfileProvider = ({ children }) => {
         `${SCHEDULES_ENDPOINT}/${scheduleId}`,
         { method: "PUT", body: JSON.stringify(scheduleData) },
       );
-      const { success = false, data } = response;
+      const { success = false } = response;
       if (success) {
         const updatedSchedule = { 
           ...state.schedule, 
