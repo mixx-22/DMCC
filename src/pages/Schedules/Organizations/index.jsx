@@ -15,7 +15,7 @@ const Organizations = ({ schedule = {}, setFormData = () => {} }) => {
         <Spacer />
         <Text fontSize="xs" color="gray.500">
           {organizations?.length > 0
-            ? `${organizations?.length} Organization${organizations?.length === 1 && `s`}`
+            ? `${organizations?.length} Organization${organizations?.length === 1 ? `` : `s`}`
             : `No Organizations Yet`}
         </Text>
       </Flex>
