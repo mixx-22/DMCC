@@ -133,6 +133,7 @@ const OrganizationCard = ({
       type: "UPDATE_ORGANIZATION",
       payload: {
         ...organization,
+        teamId: organization.teamId || team,
         visits: updatedVisits,
       },
     });
@@ -141,6 +142,7 @@ const OrganizationCard = ({
       // Persist to server
       await updateOrganization(organization._id, {
         ...organization,
+        teamId: organization.teamId || team,
         visits: updatedVisits,
       });
     } catch (error) {
@@ -350,6 +352,7 @@ const OrganizationCard = ({
                                     type: "UPDATE_ORGANIZATION",
                                     payload: {
                                       ...organization,
+                                      teamId: organization.teamId || team,
                                       visits: updatedVisits,
                                     },
                                   });
@@ -358,6 +361,7 @@ const OrganizationCard = ({
                                     // Persist to server
                                     await updateOrganization(organization._id, {
                                       ...organization,
+                                      teamId: organization.teamId || team,
                                       visits: updatedVisits,
                                     });
                                   } catch (error) {
