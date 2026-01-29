@@ -1,4 +1,4 @@
-import { VStack, Flex, Heading, Spinner, Spacer, Text, Button } from "@chakra-ui/react";
+import { VStack, Flex, Heading, Spacer, Text, Button } from "@chakra-ui/react";
 import { useState, useCallback } from "react";
 import { FiPlus } from "react-icons/fi";
 import OrganizationCard from "./OrganizationCard";
@@ -12,7 +12,7 @@ const Organizations = ({ schedule = {}, setFormData = () => {} }) => {
   // Track which organization cards are expanded (by ID)
   // This preserves expanded state across re-renders when organizations update
   const [expandedOrgIds, setExpandedOrgIds] = useState(new Set());
-  
+
   // Track whether to show the organization form
   const [showOrgForm, setShowOrgForm] = useState(false);
 
@@ -30,10 +30,10 @@ const Organizations = ({ schedule = {}, setFormData = () => {} }) => {
   }, []);
 
   if (!schedule?._id) return "";
-  
+
   // Show form if no organizations exist or if user clicked "Add Organization"
   const shouldShowForm = organizations?.length === 0 || showOrgForm;
-  
+
   return (
     <VStack align="stretch" spacing={4}>
       <Flex justify="space-between" align="center">
@@ -46,11 +46,6 @@ const Organizations = ({ schedule = {}, setFormData = () => {} }) => {
         </Text>
       </Flex>
 
-      {loading && organizations?.length < 1 && (
-        <Flex justify="center" py={8}>
-          <Spinner size="md" />
-        </Flex>
-      )}
       {organizations?.length > 0 && (
         <VStack align="stretch" spacing={3}>
           {organizations.map((org) => (
@@ -66,11 +61,11 @@ const Organizations = ({ schedule = {}, setFormData = () => {} }) => {
           ))}
         </VStack>
       )}
-      
+
       {/* Show form or Add Organization button */}
       {shouldShowForm ? (
-        <OrganizationForm 
-          {...{ schedule, setFormData }} 
+        <OrganizationForm
+          {...{ schedule, setFormData }}
           onCancel={() => setShowOrgForm(false)}
           onSuccess={() => setShowOrgForm(false)}
         />
