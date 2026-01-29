@@ -60,6 +60,8 @@ const OrganizationCard = ({
   team,
   auditors = [],
   onEdit,
+  isExpanded = false,
+  onToggleExpanded = () => {},
 }) => {
   const { deleteOrganization, updateOrganization } = useOrganizations();
   const {
@@ -69,9 +71,8 @@ const OrganizationCard = ({
   } = useDocuments();
   const { selectedDocument, closeDocumentDrawer, handleDocumentClick } =
     useLayout();
-  const [isExpanded, setIsExpanded] = useState(false);
   
-  // Local state for optimistic updates - prevents card collapse and shows changes immediately
+  // Local state for optimistic updates - shows changes immediately without waiting for server
   const [localOrganization, setLocalOrganization] = useState(organization);
   
   // Sync local state when organization prop changes (from context updates)
@@ -148,7 +149,7 @@ const OrganizationCard = ({
               align="center"
               cursor="pointer"
               justify="space-between"
-              onClick={() => setIsExpanded(!isExpanded)}
+              onClick={onToggleExpanded}
               _hover={{ bg: headerHoverBg }}
               transition="background 0.2s"
             >
@@ -169,7 +170,7 @@ const OrganizationCard = ({
                   aria-label={isExpanded ? "Collapse" : "Expand"}
                   onClick={(e) => {
                     e.stopPropagation();
-                    setIsExpanded(!isExpanded);
+                    onToggleExpanded();
                   }}
                 />
                 <Menu>

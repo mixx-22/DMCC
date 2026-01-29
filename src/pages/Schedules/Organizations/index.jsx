@@ -1,4 +1,5 @@
 import { VStack, Flex, Heading, Spinner, Spacer, Text } from "@chakra-ui/react";
+import { useState, useCallback } from "react";
 import OrganizationCard from "./OrganizationCard";
 import { useOrganizations } from "../../../context/_useContext";
 import PropTypes from "prop-types";
@@ -6,6 +7,23 @@ import OrganizationForm from "./OrganizationForm";
 
 const Organizations = ({ schedule = {}, setFormData = () => {} }) => {
   const { loading, organizations } = useOrganizations();
+  
+  // Track which organization cards are expanded (by ID)
+  // This preserves expanded state across re-renders when organizations update
+  const [expandedOrgIds, setExpandedOrgIds] = useState(new Set());
+  
+  // Toggle expanded state for an organization
+  const toggleExpanded = useCallback((orgId) => {
+    setExpandedOrgIds((prev) => {
+      const newSet = new Set(prev);
+      if (newSet.has(orgId)) {
+        newSet.delete(orgId);
+      } else {
+        newSet.add(orgId);
+      }
+      return newSet;
+    });
+  }, []);
 
   if (!schedule?._id) return "";
   return (
@@ -32,6 +50,8 @@ const Organizations = ({ schedule = {}, setFormData = () => {} }) => {
               organization={org}
               team={org.team || { name: org.teamName || "Unknown Team" }}
               auditors={org.auditors || []}
+              isExpanded={expandedOrgIds.has(org._id)}
+              onToggleExpanded={() => toggleExpanded(org._id)}
             />
           ))}
         </VStack>
