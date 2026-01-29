@@ -11,12 +11,11 @@ import {
   FormHelperText,
   useColorModeValue,
   Divider,
-  Collapse,
   IconButton,
 } from "@chakra-ui/react";
 import { Select } from "chakra-react-select";
-import { useState, useEffect } from "react";
-import { FiChevronDown, FiChevronUp, FiSave, FiX } from "react-icons/fi";
+import { useState } from "react";
+import { FiSave, FiX } from "react-icons/fi";
 import { SingleDatepicker } from "chakra-dayzed-datepicker";
 import UserAsyncSelect from "../../../components/UserAsyncSelect";
 import { useLayout } from "../../../context/_useContext";
@@ -57,7 +56,6 @@ const COMPLIANCE_OPTIONS = [
 const FindingsForm = ({ teamObjectives = [], onAddFinding, onCancel }) => {
   const bg = useColorModeValue("brandPrimary.50", "brandPrimary.900");
   const borderColor = useColorModeValue("brandPrimary.200", "brandPrimary.700");
-  const [showReportSection, setShowReportSection] = useState(false);
   const { pageRef } = useLayout();
 
   const [formData, setFormData] = useState({
@@ -75,13 +73,6 @@ const FindingsForm = ({ teamObjectives = [], onAddFinding, onCancel }) => {
   });
 
   const [errors, setErrors] = useState({});
-
-  // Auto-show report section when Non-Conformity compliance type is selected
-  useEffect(() => {
-    if (isNonConformity(formData.compliance)) {
-      setShowReportSection(true);
-    }
-  }, [formData.compliance]);
 
   const handleChange = (field, value) => {
     setFormData((prev) => ({
@@ -124,9 +115,8 @@ const FindingsForm = ({ teamObjectives = [], onAddFinding, onCancel }) => {
       newErrors.compliance = "Compliance type is required";
     }
 
-    // Validate report section if it's required for Non-Conformity OR if it's shown
-    const isNCType = isNonConformity(formData.compliance);
-    if (isNCType || showReportSection) {
+    // Validate report section only for Non-Conformity types
+    if (isNonConformity(formData.compliance)) {
       if (!formData.report.reportNo.trim()) {
         newErrors["report.reportNo"] = "Report number is required";
       }
@@ -149,7 +139,7 @@ const FindingsForm = ({ teamObjectives = [], onAddFinding, onCancel }) => {
     if (validateForm()) {
       const findingData = {
         ...formData,
-        report: showReportSection
+        report: isNonConformity(formData.compliance)
           ? {
               ...formData.report,
               date: formData.report.date.toISOString().split("T")[0],
@@ -191,7 +181,6 @@ const FindingsForm = ({ teamObjectives = [], onAddFinding, onCancel }) => {
           auditor: null,
         },
       });
-      setShowReportSection(false);
       setErrors({});
     }
   };
@@ -315,135 +304,119 @@ const FindingsForm = ({ teamObjectives = [], onAddFinding, onCancel }) => {
           )}
         </FormControl>
 
-        <Divider />
+        {/* Report Section - Only shown for Non-Conformity types */}
+        {isNonConformity(formData.compliance) && (
+          <>
+            <Divider />
+            <VStack align="stretch" spacing={4}>
+              <Text fontSize="sm" fontWeight="semibold" color="gray.700">
+                Report Details (Required for Non-Conformity)
+              </Text>
 
-        {/* Report Section Toggle */}
-        <HStack justify="space-between">
-          <Button
-            size="sm"
-            variant="ghost"
-            onClick={() => {
-              // Prevent hiding if it's a Non-Conformity type (required)
-              if (!isNonConformity(formData.compliance)) {
-                setShowReportSection(!showReportSection);
-              }
-            }}
-            rightIcon={showReportSection ? <FiChevronUp /> : <FiChevronDown />}
-            isDisabled={
-              isNonConformity(formData.compliance) && showReportSection
-            }
-          >
-            {showReportSection ? "Hide" : "Add"} Report Details
-          </Button>
-          {isNonConformity(formData.compliance) && (
-            <Text fontSize="xs" color="red.500" fontWeight="medium">
-              * Required for Non-Conformity
-            </Text>
-          )}
-        </HStack>
+              {/* Report Number */}
+              <FormControl isInvalid={!!errors["report.reportNo"]}>
+                <FormLabel fontSize="sm">Report Number</FormLabel>
+                <Input
+                  size="sm"
+                  value={formData.report.reportNo}
+                  onChange={(e) =>
+                    handleReportChange("reportNo", e.target.value)
+                  }
+                  placeholder="Enter report number"
+                />
+                {errors["report.reportNo"] && (
+                  <FormHelperText color="red.500" fontSize="xs">
+                    {errors["report.reportNo"]}
+                  </FormHelperText>
+                )}
+              </FormControl>
 
-        {/* Report Section */}
-        <Collapse in={showReportSection} animateOpacity>
-          <VStack align="stretch" spacing={4} pt={2}>
-            <Text fontSize="sm" fontWeight="semibold" color="gray.600">
-              Report Information
-            </Text>
+              {/* Report Details */}
+              <FormControl isInvalid={!!errors["report.details"]}>
+                <FormLabel fontSize="sm">Report Details</FormLabel>
+                <Textarea
+                  size="sm"
+                  value={formData.report.details}
+                  onChange={(e) =>
+                    handleReportChange("details", e.target.value)
+                  }
+                  placeholder="Enter report details"
+                  rows={3}
+                />
+                {errors["report.details"] && (
+                  <FormHelperText color="red.500" fontSize="xs">
+                    {errors["report.details"]}
+                  </FormHelperText>
+                )}
+              </FormControl>
 
-            {/* Report Number */}
-            <FormControl isInvalid={!!errors["report.reportNo"]}>
-              <FormLabel fontSize="sm">Report Number</FormLabel>
-              <Input
-                size="sm"
-                value={formData.report.reportNo}
-                onChange={(e) => handleReportChange("reportNo", e.target.value)}
-                placeholder="Enter report number"
-              />
-              {errors["report.reportNo"] && (
-                <FormHelperText color="red.500" fontSize="xs">
-                  {errors["report.reportNo"]}
-                </FormHelperText>
-              )}
-            </FormControl>
+              {/* Date Issued */}
+              <FormControl>
+                <FormLabel fontSize="sm">Date Issued</FormLabel>
+                <SingleDatepicker
+                  date={formData.report.date}
+                  onDateChange={(date) => handleReportChange("date", date)}
+                  configs={{ dateFormat: "MMMM dd, yyyy" }}
+                  propsConfigs={{
+                    inputProps: {
+                      size: "sm",
+                    },
+                    triggerBtnProps: {
+                      size: "sm",
+                      w: "full",
+                    },
+                  }}
+                  usePortal
+                  portalRef={pageRef}
+                />
+              </FormControl>
 
-            {/* Report Details */}
-            <FormControl isInvalid={!!errors["report.details"]}>
-              <FormLabel fontSize="sm">Report Details</FormLabel>
-              <Textarea
-                size="sm"
-                value={formData.report.details}
-                onChange={(e) => handleReportChange("details", e.target.value)}
-                placeholder="Enter report details"
-                rows={3}
-              />
-              {errors["report.details"] && (
-                <FormHelperText color="red.500" fontSize="xs">
-                  {errors["report.details"]}
-                </FormHelperText>
-              )}
-            </FormControl>
+              {/* Auditee */}
+              <FormControl isInvalid={!!errors["report.auditee"]}>
+                <FormLabel fontSize="sm">Auditee</FormLabel>
+                <UserAsyncSelect
+                  label=""
+                  value={
+                    formData.report.auditee ? [formData.report.auditee] : []
+                  }
+                  onChange={(users) =>
+                    handleReportChange("auditee", users[0] || null)
+                  }
+                  isMulti={false}
+                  placeholder="Select Auditee"
+                  displayMode="none"
+                />
+                {errors["report.auditee"] && (
+                  <FormHelperText color="red.500" fontSize="xs">
+                    {errors["report.auditee"]}
+                  </FormHelperText>
+                )}
+              </FormControl>
 
-            {/* Date Issued */}
-            <FormControl>
-              <FormLabel fontSize="sm">Date Issued</FormLabel>
-              <SingleDatepicker
-                date={formData.report.date}
-                onDateChange={(date) => handleReportChange("date", date)}
-                configs={{ dateFormat: "MMMM dd, yyyy" }}
-                propsConfigs={{
-                  inputProps: {
-                    size: "sm",
-                  },
-                  triggerBtnProps: {
-                    size: "sm",
-                    w: "full",
-                  },
-                }}
-                usePortal
-                portalRef={pageRef}
-              />
-            </FormControl>
-
-            {/* Auditee */}
-            <FormControl isInvalid={!!errors["report.auditee"]}>
-              <FormLabel fontSize="sm">Auditee</FormLabel>
-              <UserAsyncSelect
-                label=""
-                value={formData.report.auditee ? [formData.report.auditee] : []}
-                onChange={(users) =>
-                  handleReportChange("auditee", users[0] || null)
-                }
-                isMulti={false}
-                placeholder="Select Auditee"
-                displayMode="none"
-              />
-              {errors["report.auditee"] && (
-                <FormHelperText color="red.500" fontSize="xs">
-                  {errors["report.auditee"]}
-                </FormHelperText>
-              )}
-            </FormControl>
-
-            {/* Auditor */}
-            <FormControl isInvalid={!!errors["report.auditor"]}>
-              <FormLabel fontSize="sm">Auditor</FormLabel>
-              <UserAsyncSelect
-                label=""
-                value={formData.report.auditor ? [formData.report.auditor] : []}
-                onChange={(users) =>
-                  handleReportChange("auditor", users[0] || null)
-                }
-                isMulti={false}
-                placeholder="Select Auditor"
-                displayMode="none"
-              />
-              {errors["report.auditor"] && (
-                <FormHelperText color="red.500" fontSize="xs">
-                  {errors["report.auditor"]}
-                </FormHelperText>
-              )}
-            </FormControl>
-          </VStack>
-        </Collapse>
+              {/* Auditor */}
+              <FormControl isInvalid={!!errors["report.auditor"]}>
+                <FormLabel fontSize="sm">Auditor</FormLabel>
+                <UserAsyncSelect
+                  label=""
+                  value={
+                    formData.report.auditor ? [formData.report.auditor] : []
+                  }
+                  onChange={(users) =>
+                    handleReportChange("auditor", users[0] || null)
+                  }
+                  isMulti={false}
+                  placeholder="Select Auditor"
+                  displayMode="none"
+                />
+                {errors["report.auditor"] && (
+                  <FormHelperText color="red.500" fontSize="xs">
+                    {errors["report.auditor"]}
+                  </FormHelperText>
+                )}
+              </FormControl>
+            </VStack>
+          </>
+        )}
 
         {/* Action Buttons */}
         <HStack justify="flex-end" pt={2}>
