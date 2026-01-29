@@ -63,7 +63,8 @@ const OrganizationCard = ({
   isExpanded = false,
   onToggleExpanded = () => {},
 }) => {
-  const { deleteOrganization, updateOrganization } = useOrganizations();
+  const { deleteOrganization, updateOrganization, dispatch } =
+    useOrganizations();
   const {
     documents,
     loading: documentsLoading,
@@ -302,7 +303,7 @@ const OrganizationCard = ({
                               <FindingsForm
                                 teamObjectives={team?.objectives || []}
                                 onAddFinding={async (findingData) => {
-                                  // Optimistic update: Update local state immediately
+                                  // 1. Calculate updated visits with new finding
                                   const updatedVisits = localOrganization.visits.map(
                                     (v, i) => {
                                       if (i === index) {
@@ -318,22 +319,35 @@ const OrganizationCard = ({
                                     },
                                   );
 
-                                  // Show the finding immediately (optimistic update)
+                                  // 2. Optimistic update in local state (instant UI feedback)
                                   setLocalOrganization({
                                     ...localOrganization,
                                     visits: updatedVisits,
                                   });
 
+                                  // 3. Optimistic update in context (updates all components immediately)
+                                  dispatch({
+                                    type: "UPDATE_ORGANIZATION_OPTIMISTIC",
+                                    payload: {
+                                      _id: organization._id,
+                                      updates: { visits: updatedVisits },
+                                    },
+                                  });
+
                                   try {
-                                    // Update organization via context (in background)
+                                    // 4. Persist to server in background
                                     await updateOrganization(organization._id, {
                                       ...organization,
                                       visits: updatedVisits,
                                     });
-                                    // Success - context will sync and update our useEffect
+                                    // Success - server has confirmed, context already updated
                                   } catch (error) {
-                                    // Revert optimistic update on error
+                                    // 5. Revert optimistic updates on error
                                     setLocalOrganization(organization);
+                                    dispatch({
+                                      type: "UPDATE_ORGANIZATION",
+                                      payload: organization,
+                                    });
                                     console.error("Failed to add finding:", error);
                                   }
                                 }}
