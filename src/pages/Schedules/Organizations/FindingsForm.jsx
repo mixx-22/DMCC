@@ -15,10 +15,15 @@ import {
   IconButton,
 } from "@chakra-ui/react";
 import { Select } from "chakra-react-select";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { FiChevronDown, FiChevronUp, FiSave, FiX } from "react-icons/fi";
 import { SingleDatepicker } from "chakra-dayzed-datepicker";
 import UserAsyncSelect from "../../../components/UserAsyncSelect";
+
+// Helper function to check if compliance type is a Non-Conformity
+const isNonConformity = (complianceType) => {
+  return ["MINOR_NC", "MAJOR_NC", "NC"].includes(complianceType);
+};
 
 // Compliance options as per requirements
 const COMPLIANCE_OPTIONS = [
@@ -69,6 +74,13 @@ const FindingsForm = ({ teamObjectives = [], onAddFinding, onCancel }) => {
 
   const [errors, setErrors] = useState({});
 
+  // Auto-show report section when Non-Conformity compliance type is selected
+  useEffect(() => {
+    if (isNonConformity(formData.compliance)) {
+      setShowReportSection(true);
+    }
+  }, [formData.compliance]);
+
   const handleChange = (field, value) => {
     setFormData((prev) => ({
       ...prev,
@@ -110,8 +122,9 @@ const FindingsForm = ({ teamObjectives = [], onAddFinding, onCancel }) => {
       newErrors.compliance = "Compliance type is required";
     }
 
-    // Validate report section if it's shown
-    if (showReportSection) {
+    // Validate report section if it's required for Non-Conformity OR if it's shown
+    const isNCType = isNonConformity(formData.compliance);
+    if (isNCType || showReportSection) {
       if (!formData.report.reportNo.trim()) {
         newErrors["report.reportNo"] = "Report number is required";
       }
@@ -303,14 +316,27 @@ const FindingsForm = ({ teamObjectives = [], onAddFinding, onCancel }) => {
         <Divider />
 
         {/* Report Section Toggle */}
-        <Button
-          size="sm"
-          variant="ghost"
-          onClick={() => setShowReportSection(!showReportSection)}
-          rightIcon={showReportSection ? <FiChevronUp /> : <FiChevronDown />}
-        >
-          {showReportSection ? "Hide" : "Add"} Report Details
-        </Button>
+        <HStack justify="space-between">
+          <Button
+            size="sm"
+            variant="ghost"
+            onClick={() => {
+              // Prevent hiding if it's a Non-Conformity type (required)
+              if (!isNonConformity(formData.compliance)) {
+                setShowReportSection(!showReportSection);
+              }
+            }}
+            rightIcon={showReportSection ? <FiChevronUp /> : <FiChevronDown />}
+            isDisabled={isNonConformity(formData.compliance) && showReportSection}
+          >
+            {showReportSection ? "Hide" : "Add"} Report Details
+          </Button>
+          {isNonConformity(formData.compliance) && (
+            <Text fontSize="xs" color="red.500" fontWeight="medium">
+              * Required for Non-Conformity
+            </Text>
+          )}
+        </HStack>
 
         {/* Report Section */}
         <Collapse in={showReportSection} animateOpacity>
