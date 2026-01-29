@@ -110,10 +110,10 @@ export const ListView = ({
           </HStack>
         </Td>
         <Td whiteSpace="nowrap">
-          {doc?.owner?.id ? (
+          {doc?.owner?.id || doc?.owner?._id ? (
             <Link
               as={RouterLink}
-              to={`/users/${doc.owner.id}`}
+              to={`/users/${doc.owner.id || doc.owner._id}`}
               onClick={(e) => e.stopPropagation()}
               _hover={{ textDecoration: "none" }}
             >

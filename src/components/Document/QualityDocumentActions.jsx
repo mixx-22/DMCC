@@ -12,7 +12,6 @@ import {
   ModalFooter,
   ModalCloseButton,
   Text,
-  Tooltip,
   VStack,
 } from "@chakra-ui/react";
 import {
@@ -24,10 +23,7 @@ import {
   FiUnlock,
 } from "react-icons/fi";
 import { toast } from "sonner";
-import {
-  isQualityDocument,
-  validateTransition,
-} from "../../utils/qualityDocumentUtils";
+import { isQualityDocument } from "../../utils/qualityDocumentUtils";
 import { useDocuments } from "../../context/_useContext";
 
 /**
@@ -105,11 +101,7 @@ const QualityDocumentActions = ({ document, onUpdate }) => {
         );
         break;
       case "reject":
-        handleAction(
-          "reject",
-          rejectDocumentRequest,
-          "Document rejected",
-        );
+        handleAction("reject", rejectDocumentRequest, "Document rejected");
         break;
       case "publish":
         handleAction(
@@ -149,25 +141,30 @@ const QualityDocumentActions = ({ document, onUpdate }) => {
     }
   };
 
-  // Validate all possible actions
-  const submitValidation = validateTransition(document, "submit");
-  const discardValidation = validateTransition(document, "discard");
-  const endorseValidation = validateTransition(document, "endorse");
-  const rejectValidation = validateTransition(document, "reject");
-  const publishValidation = validateTransition(document, "publish");
-  const checkoutValidation = validateTransition(document, "checkout");
+  // Get document state properties
+  const status = document?.status;
+  const checkedOut = document?.metadata?.checkedOut;
+  const mode = document?.requestData?.mode || "";
 
-  // Check if at least one action is valid
-  const hasAnyValidAction = 
-    submitValidation.valid ||
-    discardValidation.valid ||
-    endorseValidation.valid ||
-    rejectValidation.valid ||
-    publishValidation.valid ||
-    checkoutValidation.valid;
+  // Determine which buttons should be visible based on specific state combinations
+  const showSubmit =
+    status === -1 && checkedOut === 1 && (mode === "NEW" || mode === "DISCARD");
+  const showDiscard = status === -1 && checkedOut === 1 && mode === "REJECT";
+  const showApprove = status === 0 && checkedOut === 0 && mode === "TEAM";
+  const showReject = status === 0 && checkedOut === 0 && mode === "TEAM";
+  const showPublish = status === 0 && checkedOut === 0 && mode === "CONTROLLER";
+  const showCheckOut = status === 2 && checkedOut === 0 && mode === "PUBLISH";
 
-  // Don't render anything if no actions are valid
-  if (!hasAnyValidAction) {
+  // Don't render anything if no buttons should be visible
+  const hasAnyVisibleButton =
+    showSubmit ||
+    showDiscard ||
+    showApprove ||
+    showReject ||
+    showPublish ||
+    showCheckOut;
+
+  if (!hasAnyVisibleButton) {
     return null;
   }
 
@@ -175,144 +172,124 @@ const QualityDocumentActions = ({ document, onUpdate }) => {
     <>
       <VStack spacing={3} align="stretch">
         {/* Submit Button */}
-        <Box>
-          <Tooltip 
-            label={!submitValidation.valid ? submitValidation.message : ""} 
-            isDisabled={submitValidation.valid}
-          >
+        {showSubmit && (
+          <Box>
             <Button
               leftIcon={<FiCheckCircle />}
               colorScheme="blue"
               onClick={() => openConfirmation("submit")}
               isLoading={isProcessing}
-              isDisabled={!submitValidation.valid}
               size="sm"
               w="full"
             >
               Submit
             </Button>
-          </Tooltip>
-          <Text fontSize="xs" color="gray.600" mt={1}>
-            Submit document for review. Locks editing until request is resolved.
-          </Text>
-        </Box>
+            <Text fontSize="xs" color="gray.600" mt={1}>
+              Submit document for review. Locks editing until request is
+              resolved.
+            </Text>
+          </Box>
+        )}
 
         {/* Approve (Endorse) Button */}
-        <Box>
-          <Tooltip 
-            label={!endorseValidation.valid ? endorseValidation.message : ""} 
-            isDisabled={endorseValidation.valid}
-          >
+        {showApprove && (
+          <Box>
             <Button
               leftIcon={<FiLock />}
               colorScheme="green"
               onClick={() => openConfirmation("endorse")}
               isLoading={isProcessing}
-              isDisabled={!endorseValidation.valid}
               size="sm"
               w="full"
             >
               Approve
             </Button>
-          </Tooltip>
-          <Text fontSize="xs" color="gray.600" mt={1}>
-            Approve document and move to controller review for final publishing.
-          </Text>
-        </Box>
+            <Text fontSize="xs" color="gray.600" mt={1}>
+              Approve document and move to controller review for final
+              publishing.
+            </Text>
+          </Box>
+        )}
 
         {/* Reject Button */}
-        <Box>
-          <Tooltip 
-            label={!rejectValidation.valid ? rejectValidation.message : ""} 
-            isDisabled={rejectValidation.valid}
-          >
+        {showReject && (
+          <Box>
             <Button
               leftIcon={<FiXCircle />}
               colorScheme="red"
               variant="outline"
               onClick={() => openConfirmation("reject")}
               isLoading={isProcessing}
-              isDisabled={!rejectValidation.valid}
               size="sm"
               w="full"
             >
               Reject
             </Button>
-          </Tooltip>
-          <Text fontSize="xs" color="gray.600" mt={1}>
-            Reject document and return to team. Team must discard or resubmit.
-          </Text>
-        </Box>
+            <Text fontSize="xs" color="gray.600" mt={1}>
+              Reject document and return to team. Team must discard or resubmit.
+            </Text>
+          </Box>
+        )}
 
         {/* Publish Button */}
-        <Box>
-          <Tooltip 
-            label={!publishValidation.valid ? publishValidation.message : ""} 
-            isDisabled={publishValidation.valid}
-          >
+        {showPublish && (
+          <Box>
             <Button
               leftIcon={<FiUpload />}
               colorScheme="purple"
               onClick={() => openConfirmation("publish")}
               isLoading={isProcessing}
-              isDisabled={!publishValidation.valid}
               size="sm"
               w="full"
             >
               Publish
             </Button>
-          </Tooltip>
-          <Text fontSize="xs" color="gray.600" mt={1}>
-            Publish document as final version. Locks permanently until checked out.
-          </Text>
-        </Box>
+            <Text fontSize="xs" color="gray.600" mt={1}>
+              Publish document as final version. Locks permanently until checked
+              out.
+            </Text>
+          </Box>
+        )}
 
         {/* Discard Button */}
-        <Box>
-          <Tooltip 
-            label={!discardValidation.valid ? discardValidation.message : ""} 
-            isDisabled={discardValidation.valid}
-          >
+        {showDiscard && (
+          <Box>
             <Button
               leftIcon={<FiTrash2 />}
               colorScheme="orange"
               variant="outline"
               onClick={() => openConfirmation("discard")}
               isLoading={isProcessing}
-              isDisabled={!discardValidation.valid}
               size="sm"
               w="full"
             >
               Discard
             </Button>
-          </Tooltip>
-          <Text fontSize="xs" color="gray.600" mt={1}>
-            Discard current request and return document to editable working state.
-          </Text>
-        </Box>
+            <Text fontSize="xs" color="gray.600" mt={1}>
+              Discard current request and return document to editable working
+              state.
+            </Text>
+          </Box>
+        )}
 
         {/* Check Out Button */}
-        <Box>
-          <Tooltip 
-            label={!checkoutValidation.valid ? checkoutValidation.message : ""} 
-            isDisabled={checkoutValidation.valid}
-          >
+        {showCheckOut && (
+          <Box>
             <Button
               leftIcon={<FiUnlock />}
               colorScheme="teal"
               onClick={() => openConfirmation("checkout")}
               isLoading={isProcessing}
-              isDisabled={!checkoutValidation.valid}
               size="sm"
               w="full"
             >
               Check Out
             </Button>
-          </Tooltip>
-          <Text fontSize="xs" color="gray.600" mt={1}>
-            Check out published document to make changes and restart workflow.
-          </Text>
-        </Box>
+            <Text fontSize="xs" color="gray.600" mt={1}>
+              Check out published document to make changes and restart workflow.
+            </Text>
+          </Box>
+        )}
       </VStack>
 
       {/* Confirmation Modal */}

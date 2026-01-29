@@ -169,12 +169,12 @@ export const DocumentsProvider = ({ children }) => {
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       };
-      
+
       // Add lifecycle properties for quality documents
       if (isQualityDocument(docWithId)) {
         Object.assign(docWithId, getInitialLifecycleProps());
       }
-      
+
       const saved = localStorage.getItem("documents");
       const docs = saved ? JSON.parse(saved) : [];
       const updated = [...docs, docWithId];
@@ -205,7 +205,7 @@ export const DocumentsProvider = ({ children }) => {
         } else {
           throw new Error("File is required for document type 'file'");
         }
-        
+
         // Add lifecycle properties for quality documents
         if (isQualityDocument(newDocument)) {
           Object.assign(newDocument, getInitialLifecycleProps());
@@ -481,10 +481,10 @@ export const DocumentsProvider = ({ children }) => {
       throw new Error(validation.message);
     }
 
+    const requestId = document?.requestData?.requestId || document?.requestId;
+
     try {
-      const response = await apiService.discardDocumentRequest(
-        document.requestId,
-      );
+      const response = await apiService.discardDocumentRequest(requestId);
 
       if (response.success !== false) {
         const expectedState = getExpectedState("discard");
@@ -512,13 +512,13 @@ export const DocumentsProvider = ({ children }) => {
       throw new Error(validation.message);
     }
 
+    const requestId = document?.requestData?.requestId || document?.requestId;
+
     try {
-      const response = await apiService.endorseDocumentRequest(
-        document.requestId,
-      );
+      const response = await apiService.endorseDocumentRequest(requestId);
 
       if (response.success !== false) {
-        const expectedState = getExpectedState("endorse", document.requestId);
+        const expectedState = getExpectedState("endorse", requestId);
 
         // Update the document with new lifecycle state
         const updatedDoc = await updateDocument(document, expectedState);
@@ -543,13 +543,13 @@ export const DocumentsProvider = ({ children }) => {
       throw new Error(validation.message);
     }
 
+    const requestId = document?.requestData?.requestId || document?.requestId;
+
     try {
-      const response = await apiService.rejectDocumentRequest(
-        document.requestId,
-      );
+      const response = await apiService.rejectDocumentRequest(requestId);
 
       if (response.success !== false) {
-        const expectedState = getExpectedState("reject", document.requestId);
+        const expectedState = getExpectedState("reject", requestId);
 
         // Update the document with new lifecycle state
         const updatedDoc = await updateDocument(document, expectedState);
@@ -574,8 +574,10 @@ export const DocumentsProvider = ({ children }) => {
       throw new Error(validation.message);
     }
 
+    const requestId = document?.requestData?.requestId || document?.requestId;
+
     try {
-      const response = await apiService.publishDocument(document.requestId);
+      const response = await apiService.publishDocument(requestId);
 
       if (response.success !== false) {
         const expectedState = getExpectedState("publish");

@@ -95,8 +95,10 @@ export const validateTransition = (document, action) => {
     return { valid: false, message: "Not a quality document" };
   }
 
-  const { status, requestId, mode, metadata } = document;
+  const { status, metadata } = document;
   const checkedOut = metadata?.checkedOut;
+  const requestId = document?.requestData?.requestId || document?.requestId;
+  const mode = document?.requestData?.mode || document?.mode;
 
   switch (action) {
     case "submit":
@@ -113,13 +115,22 @@ export const validateTransition = (document, action) => {
       return { valid: true, message: "" };
 
     case "discard":
-      // REJECTED: (status: -1, checkedOut: 0, requestId: !== null, mode: TEAM) - Discard allowed
+      // Allow discard in two scenarios:
+      // 1. REJECTED: (status: -1, checkedOut: 0, requestId: !== null, mode: TEAM)
+      // 2. NEW WITH REJECT MODE: (status: -1, checkedOut: 1, mode: REJECT)
       if (status !== LIFECYCLE_STATUS.WORKING) {
         return {
           valid: false,
           message: "Document must be in working status to discard",
         };
       }
+
+      // Allow discard if mode is REJECT (regardless of checkedOut status)
+      if (mode === "REJECT") {
+        return { valid: true, message: "" };
+      }
+
+      // Original validation for TEAM mode
       if (checkedOut !== CHECKOUT_STATUS.CHECKED_IN) {
         return {
           valid: false,

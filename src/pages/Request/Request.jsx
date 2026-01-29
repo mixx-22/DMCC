@@ -33,7 +33,36 @@ const Request = () => {
       if (response.success) {
         const requestData = response.data || [];
         console.log("Request data:", requestData);
-        setDocuments(requestData);
+        console.log("First document owner:", requestData[0]?.owner);
+
+        // Transform request data to match ListView expected format
+        const transformedData = requestData.map((request) => ({
+          ...request,
+          // Set type to 'file' for proper icon rendering (request.type is the request type like 'SUBMIT')
+          type: "file",
+          // Use documentId as id so ListView navigates to the correct document
+          id: request.documentId,
+          _id: request.documentId,
+          // Map requestedBy to owner for ListView compatibility
+          owner: request.requestedBy
+            ? {
+                _id: request.requestedBy._id,
+                id: request.requestedBy._id,
+                firstName: request.requestedBy.firstName,
+                middleName: request.requestedBy.middleName,
+                lastName: request.requestedBy.lastName,
+                name: `${request.requestedBy.firstName} ${request.requestedBy.lastName}`.trim(),
+              }
+            : request.OwnerData
+              ? {
+                  _id: request.OwnerData.id,
+                  id: request.OwnerData.id,
+                  name: request.OwnerData.name,
+                }
+              : null,
+        }));
+
+        setDocuments(transformedData);
         setTotalCount(response.meta?.total || 0);
       } else {
         throw new Error(response.message || "Failed to fetch requests");

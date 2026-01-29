@@ -639,7 +639,9 @@ const DocumentDetail = () => {
                           w="full"
                           borderRadius="md"
                           _hover={{
-                            background: documentCanBeEdited ? "gray.100" : undefined,
+                            background: documentCanBeEdited
+                              ? "gray.100"
+                              : undefined,
                             cursor: documentCanBeEdited ? "pointer" : "default",
                           }}
                         />
@@ -1030,7 +1032,7 @@ const DocumentDetail = () => {
                         </HStack>
                         <QualityDocumentBadges document={document} />
                       </HStack>
-                      
+
                       {document.requestId && (
                         <HStack justify="space-between">
                           <Text fontSize="sm" color="gray.600">
@@ -1041,12 +1043,14 @@ const DocumentDetail = () => {
                           </Text>
                         </HStack>
                       )}
-                      
+
                       <HStack justify="space-between">
                         <Text fontSize="sm" color="gray.600">
                           Editable
                         </Text>
-                        <Badge colorScheme={documentCanBeEdited ? "green" : "red"}>
+                        <Badge
+                          colorScheme={documentCanBeEdited ? "green" : "red"}
+                        >
                           {documentCanBeEdited ? "Yes" : "No"}
                         </Badge>
                       </HStack>

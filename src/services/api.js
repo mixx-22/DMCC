@@ -343,7 +343,7 @@ export const apiService = {
     }
 
     const response = await this.request(
-      `/request/${requestId}?type=endorse&mode=CONTROLLER`,
+      `/request/${requestId}?type=approve&mode=CONTROLLER`,
       {
         method: "PUT",
       },
@@ -363,9 +363,12 @@ export const apiService = {
       return { success: true };
     }
 
-    const response = await this.request(`/request/${requestId}?type=reject`, {
-      method: "PUT",
-    });
+    const response = await this.request(
+      `/request/${requestId}?type=reject&mode=TEAM`,
+      {
+        method: "PUT",
+      },
+    );
 
     return response;
   },
