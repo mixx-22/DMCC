@@ -39,7 +39,7 @@ import {
   FiChevronUp,
   FiExternalLink,
 } from "react-icons/fi";
-import { useState, useEffect, useMemo } from "react";
+import { useEffect } from "react";
 import { Link as RouterLink } from "react-router-dom";
 import Swal from "sweetalert2";
 import {
@@ -72,31 +72,6 @@ const OrganizationCard = ({
   } = useDocuments();
   const { selectedDocument, closeDocumentDrawer, handleDocumentClick } =
     useLayout();
-
-  // Local state for optimistic updates - shows changes immediately without waiting for server
-  const [localOrganization, setLocalOrganization] = useState(organization);
-
-  // Sync local state when organization prop changes (from context updates)
-  // Smart sync: Only update if server data has same or more findings (preserves optimistic updates)
-  useEffect(() => {
-    // Count findings in both local and prop state
-    const localCount =
-      localOrganization.visits?.reduce(
-        (sum, v) => sum + (v.findings?.length || 0),
-        0,
-      ) || 0;
-    const propCount =
-      organization.visits?.reduce(
-        (sum, v) => sum + (v.findings?.length || 0),
-        0,
-      ) || 0;
-
-    // Only sync if server has same or more findings (prevents losing optimistic updates)
-    if (propCount >= localCount) {
-      setLocalOrganization(organization);
-    }
-    // Otherwise keep local state which has newer optimistic updates
-  }, [organization]); // Only trigger when org prop changes, not local state
   const cardBg = useColorModeValue("white", "gray.700");
   const errorColor = useColorModeValue("error.600", "error.400");
   const borderColor = useColorModeValue("gray.200", "gray.600");
@@ -113,10 +88,10 @@ const OrganizationCard = ({
   };
 
   useEffect(() => {
-    if (localOrganization?.team?.folderId && isExpanded) {
-      fetchDocuments(localOrganization?.team?.folderId);
+    if (organization?.team?.folderId && isExpanded) {
+      fetchDocuments(organization?.team?.folderId);
     }
-  }, [localOrganization?.team?.folderId, isExpanded, fetchDocuments]);
+  }, [organization?.team?.folderId, isExpanded, fetchDocuments]);
 
   const handleDeleteOrganization = async (organization) => {
     const result = await Swal.fire({
@@ -143,7 +118,7 @@ const OrganizationCard = ({
 
   const handleDeleteFinding = async (finding, visitIndex) => {
     // Calculate updated visits without the deleted finding
-    const updatedVisits = localOrganization.visits.map((v, i) => {
+    const updatedVisits = organization.visits.map((v, i) => {
       if (i === visitIndex) {
         return {
           ...v,
@@ -153,40 +128,28 @@ const OrganizationCard = ({
       return v;
     });
 
-    // 1. Optimistic update in local state (instant UI feedback)
-    setLocalOrganization({
-      ...localOrganization,
-      visits: updatedVisits,
-    });
-
-    // 2. Optimistic update in context (updates all components immediately)
+    // Update organization in context
     dispatch({
-      type: "UPDATE_ORGANIZATION_OPTIMISTIC",
+      type: "UPDATE_ORGANIZATION",
       payload: {
-        _id: organization._id,
-        updates: { visits: updatedVisits },
+        ...organization,
+        visits: updatedVisits,
       },
     });
 
     try {
-      // 3. Persist to server in background - use localOrganization as base (has latest data)
+      // Persist to server
       await updateOrganization(organization._id, {
-        ...localOrganization,
+        ...organization,
         visits: updatedVisits,
       });
-      // Success - server has confirmed, context already updated
     } catch (error) {
-      // 4. Revert optimistic updates on error
-      setLocalOrganization(organization);
-      dispatch({
-        type: "UPDATE_ORGANIZATION",
-        payload: organization,
-      });
       console.error("Failed to delete finding:", error);
+      // Could refetch or show error
     }
   };
 
-  const latestVisitDate = useMemo(() => {
+  const latestVisitDate = (() => {
     const { visits = [] } = organization;
     if (!visits?.length) return "";
 
@@ -198,7 +161,7 @@ const OrganizationCard = ({
     const formatted = formatDateRange(start, isOngoing ? new Date() : end);
 
     return isOngoing ? `${formatted} (Ongoing)` : formatted;
-  }, [organization]);
+  })();
 
   return (
     <>
@@ -319,10 +282,9 @@ const OrganizationCard = ({
                   <TabPanels>
                     {/* Visit Details Tab */}
                     <TabPanel px={4}>
-                      {localOrganization.visits &&
-                      localOrganization.visits.length > 0 ? (
+                      {organization.visits && organization.visits.length > 0 ? (
                         <VStack align="stretch" spacing={4}>
-                          {localOrganization.visits.map((visit, index) => (
+                          {organization.visits.map((visit, index) => (
                             <VStack
                               key={index}
                               align="stretch"
@@ -367,9 +329,9 @@ const OrganizationCard = ({
                               <FindingsForm
                                 teamObjectives={team?.objectives || []}
                                 onAddFinding={async (findingData) => {
-                                  // Optimistic update: Update local state immediately
-                                  const updatedVisits =
-                                    localOrganization.visits.map((v, i) => {
+                                  // Calculate updated visits with new finding
+                                  const updatedVisits = organization.visits.map(
+                                    (v, i) => {
                                       if (i === index) {
                                         return {
                                           ...v,
@@ -380,37 +342,30 @@ const OrganizationCard = ({
                                         };
                                       }
                                       return v;
-                                    });
+                                    },
+                                  );
 
-                                  // 2. Optimistic update in local state (instant UI feedback)
-                                  setLocalOrganization({
-                                    ...localOrganization,
-                                    visits: updatedVisits,
-                                  });
-
-                                  // 3. Optimistic update in context (updates all components immediately)
+                                  // Update organization in context
                                   dispatch({
-                                    type: "UPDATE_ORGANIZATION_OPTIMISTIC",
+                                    type: "UPDATE_ORGANIZATION",
                                     payload: {
-                                      _id: organization._id,
-                                      updates: { visits: updatedVisits },
+                                      ...organization,
+                                      visits: updatedVisits,
                                     },
                                   });
 
                                   try {
-                                    // 4. Persist to server in background - use localOrganization as base (has latest data)
+                                    // Persist to server
                                     await updateOrganization(organization._id, {
-                                      ...localOrganization,
+                                      ...organization,
                                       visits: updatedVisits,
                                     });
-                                    // Success - server has confirmed, context already updated
                                   } catch (error) {
-                                    // 5. Revert optimistic updates on error
-                                    setLocalOrganization(organization);
                                     console.error(
                                       "Failed to add finding:",
                                       error,
                                     );
+                                    // Could refetch or show error
                                   }
                                 }}
                               />
