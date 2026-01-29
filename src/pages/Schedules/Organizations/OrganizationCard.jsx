@@ -46,7 +46,7 @@ import {
   FiChevronUp,
   FiExternalLink,
 } from "react-icons/fi";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Link as RouterLink } from "react-router-dom";
 import Swal from "sweetalert2";
 import {
@@ -60,6 +60,7 @@ import { formatDateRange } from "../../../utils/helpers";
 import DocumentDrawer from "../../../components/Document/DocumentDrawer";
 import FindingsForm from "./FindingsForm";
 import FindingsList from "./FindingsList";
+import EditFindingModal from "./EditFindingModal";
 
 const OrganizationCard = ({
   loading = false,
@@ -93,6 +94,11 @@ const OrganizationCard = ({
     medium: "yellow",
     high: "red",
   };
+
+  // State for edit finding modal
+  const [editModalOpen, setEditModalOpen] = useState(false);
+  const [editingFinding, setEditingFinding] = useState(null);
+  const [editingVisitIndex, setEditingVisitIndex] = useState(null);
 
   useEffect(() => {
     if (organization?.team?.folderId && isExpanded) {
@@ -155,6 +161,43 @@ const OrganizationCard = ({
     } catch (error) {
       console.error("Failed to delete finding:", error);
       // Could refetch or show error
+    }
+  };
+
+  const handleEditFinding = async (updatedFinding) => {
+    // Calculate updated visits with the edited finding
+    const updatedVisits = organization.visits.map((v, i) => {
+      if (i === editingVisitIndex) {
+        return {
+          ...v,
+          findings: (v.findings || []).map((f) =>
+            f._id === updatedFinding._id ? updatedFinding : f,
+          ),
+        };
+      }
+      return v;
+    });
+
+    // Update organization in context
+    dispatch({
+      type: "UPDATE_ORGANIZATION",
+      payload: {
+        ...organization,
+        visits: updatedVisits,
+        teamId: organization.teamId || team,
+      },
+    });
+
+    try {
+      // Persist to server
+      await updateOrganization(organization._id, {
+        ...organization,
+        teamId: organization.teamId || team,
+        visits: updatedVisits,
+      });
+    } catch (error) {
+      console.error("Failed to update finding:", error);
+      throw error; // Re-throw to let modal handle it
     }
   };
 
@@ -420,10 +463,9 @@ const OrganizationCard = ({
                                               <FindingsList
                                                 findings={visit.findings}
                                                 onEdit={(finding) => {
-                                                  console.log(
-                                                    "Edit finding:",
-                                                    finding,
-                                                  );
+                                                  setEditingFinding(finding);
+                                                  setEditingVisitIndex(index);
+                                                  setEditModalOpen(true);
                                                 }}
                                                 onDelete={(finding) => {
                                                   handleDeleteFinding(
@@ -731,6 +773,17 @@ const OrganizationCard = ({
         document={selectedDocument}
         isOpen={!!selectedDocument}
         onClose={closeDocumentDrawer}
+      />
+      <EditFindingModal
+        isOpen={editModalOpen}
+        onClose={() => {
+          setEditModalOpen(false);
+          setEditingFinding(null);
+          setEditingVisitIndex(null);
+        }}
+        finding={editingFinding}
+        teamObjectives={team?.objectives || []}
+        onSave={handleEditFinding}
       />
     </>
   );
