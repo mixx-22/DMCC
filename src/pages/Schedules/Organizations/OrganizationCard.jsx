@@ -303,22 +303,59 @@ const OrganizationCard = ({
                               ?.map((f) => f.compliance)
                               ?.includes("MINOR_NC");
                             return (
-                              <AccordionItem key={index}>
+                              <AccordionItem key={index} border="none">
                                 {({ isExpanded }) => (
                                   <>
                                     {/* Visit Date Header */}
                                     <AccordionButton py={4}>
                                       <HStack w="full" alignItems="center">
-                                        <Badge
-                                          boxSize={6}
-                                          borderRadius="full"
-                                          colorScheme="purple"
-                                          justifyContent="center"
-                                          alignItems="center"
-                                          display="flex"
-                                        >
-                                          #{index + 1}
-                                        </Badge>
+                                        <Box pos="relative">
+                                          {index !== 0 && (
+                                            <Box
+                                              w={6}
+                                              h={4}
+                                              pos="absolute"
+                                              zIndex={1}
+                                              top={-4}
+                                              left={"calc(50% - 1px)"}
+                                            >
+                                              <Box
+                                                w="2px"
+                                                h="full"
+                                                bg="gray.500"
+                                              ></Box>
+                                            </Box>
+                                          )}
+                                          {index !==
+                                            organization.visits?.length - 1 && (
+                                            <Box
+                                              w={6}
+                                              h={4}
+                                              pos="absolute"
+                                              zIndex={1}
+                                              bottom={-4}
+                                              left={"calc(50% - 1px)"}
+                                            >
+                                              <Box
+                                                w="2px"
+                                                h="full"
+                                                bg="gray.500"
+                                              ></Box>
+                                            </Box>
+                                          )}
+                                          <Badge
+                                            pos="relative"
+                                            zIndex={2}
+                                            boxSize={6}
+                                            borderRadius="full"
+                                            colorScheme="purple"
+                                            justifyContent="center"
+                                            alignItems="center"
+                                            display="flex"
+                                          >
+                                            #{index + 1}
+                                          </Badge>
+                                        </Box>
                                         <Badge
                                           colorScheme={
                                             hasMajorNC
