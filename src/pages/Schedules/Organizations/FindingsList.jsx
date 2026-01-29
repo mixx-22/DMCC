@@ -12,8 +12,7 @@ import {
   Divider,
   Avatar,
   Tooltip,
-  Wrap,
-  WrapItem,
+  Stack,
 } from "@chakra-ui/react";
 import { useState } from "react";
 import {
@@ -38,7 +37,13 @@ const COMPLIANCE_DISPLAY = {
   MAJOR_NC: { label: "Major Non-Conformity", color: "error" },
 };
 
-const FindingCard = ({ finding, teamObjectives, onEdit, onDelete, onSaveEdit }) => {
+const FindingCard = ({
+  finding,
+  teamObjectives,
+  onEdit,
+  onDelete,
+  onSaveEdit,
+}) => {
   const [isExpanded, setIsExpanded] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const cardBg = useColorModeValue("white", "gray.700");
@@ -186,29 +191,35 @@ const FindingCard = ({ finding, teamObjectives, onEdit, onDelete, onSaveEdit }) 
                   </HStack>
 
                   <VStack align="stretch" spacing={2}>
-                    {/* Report Number */}
-                    {finding.report.reportNo && (
-                      <HStack spacing={2}>
-                        <Text fontSize="xs" color={labelColor} minW="80px">
-                          Report No:
-                        </Text>
-                        <Text fontSize="sm" fontWeight="medium">
-                          {finding.report.reportNo}
-                        </Text>
-                      </HStack>
-                    )}
+                    <HStack>
+                      {/* Report Number */}
+                      {finding.report.reportNo && (
+                        <HStack flex={1} spacing={2}>
+                          <Text fontSize="xs" color={labelColor} minW="80px">
+                            Report No:
+                          </Text>
+                          <Text fontSize="sm" fontWeight="medium">
+                            {finding.report.reportNo}
+                          </Text>
+                        </HStack>
+                      )}
 
-                    {/* Date Issued */}
-                    {finding.report.date && (
-                      <HStack spacing={2}>
-                        <Text fontSize="xs" color={labelColor} minW="80px">
-                          Date Issued:
-                        </Text>
-                        <Text fontSize="sm">
-                          {moment(finding.report.date).format("MMMM DD, YYYY")}
-                        </Text>
-                      </HStack>
-                    )}
+                      {/* Date Issued */}
+                      {finding.report.date && (
+                        <HStack flex={1} spacing={2}>
+                          <Text fontSize="xs" color={labelColor} minW="80px">
+                            Date Issued:
+                          </Text>
+                          <Text fontSize="sm">
+                            {moment(finding.report.date).format(
+                              "MMMM DD, YYYY",
+                            )}
+                          </Text>
+                        </HStack>
+                      )}
+                    </HStack>
+
+                    <Divider my={4} />
 
                     {/* Report Details */}
                     {finding.report.details && (
@@ -222,49 +233,47 @@ const FindingCard = ({ finding, teamObjectives, onEdit, onDelete, onSaveEdit }) 
                       </Box>
                     )}
 
+                    <Divider my={4} />
+
                     {/* Auditee and Auditor */}
-                    <Wrap spacing={4} pt={1}>
+                    <HStack>
                       {finding.report.auditee && (
-                        <WrapItem>
-                          <HStack spacing={2}>
-                            <Text fontSize="xs" color={labelColor}>
-                              Auditee:
-                            </Text>
-                            <Tooltip label={finding.report.auditee.name}>
-                              <HStack spacing={1}>
-                                <Avatar
-                                  size="xs"
-                                  name={finding.report.auditee.name}
-                                />
-                                <Text fontSize="sm">
-                                  {finding.report.auditee.name}
-                                </Text>
-                              </HStack>
-                            </Tooltip>
-                          </HStack>
-                        </WrapItem>
+                        <Stack flex={1} spacing={2}>
+                          <Text fontSize="xs" color={labelColor}>
+                            Auditee:
+                          </Text>
+                          <Tooltip label={finding.report.auditee.name}>
+                            <HStack spacing={1}>
+                              <Avatar
+                                size="xs"
+                                name={finding.report.auditee.name}
+                              />
+                              <Text fontSize="sm">
+                                {finding.report.auditee.name}
+                              </Text>
+                            </HStack>
+                          </Tooltip>
+                        </Stack>
                       )}
                       {finding.report.auditor && (
-                        <WrapItem>
-                          <HStack spacing={2}>
-                            <Text fontSize="xs" color={labelColor}>
-                              Auditor:
-                            </Text>
-                            <Tooltip label={finding.report.auditor.name}>
-                              <HStack spacing={1}>
-                                <Avatar
-                                  size="xs"
-                                  name={finding.report.auditor.name}
-                                />
-                                <Text fontSize="sm">
-                                  {finding.report.auditor.name}
-                                </Text>
-                              </HStack>
-                            </Tooltip>
-                          </HStack>
-                        </WrapItem>
+                        <Stack flex={1} spacing={2}>
+                          <Text fontSize="xs" color={labelColor}>
+                            Auditor:
+                          </Text>
+                          <Tooltip label={finding.report.auditor.name}>
+                            <HStack spacing={1}>
+                              <Avatar
+                                size="xs"
+                                name={finding.report.auditor.name}
+                              />
+                              <Text fontSize="sm">
+                                {finding.report.auditor.name}
+                              </Text>
+                            </HStack>
+                          </Tooltip>
+                        </Stack>
                       )}
-                    </Wrap>
+                    </HStack>
                   </VStack>
                 </Box>
               )}
@@ -276,7 +285,13 @@ const FindingCard = ({ finding, teamObjectives, onEdit, onDelete, onSaveEdit }) 
   );
 };
 
-const FindingsList = ({ findings = [], teamObjectives = [], onEdit, onDelete, onSaveEdit }) => {
+const FindingsList = ({
+  findings = [],
+  teamObjectives = [],
+  onEdit,
+  onDelete,
+  onSaveEdit,
+}) => {
   if (!findings || findings.length === 0) {
     return null;
   }
