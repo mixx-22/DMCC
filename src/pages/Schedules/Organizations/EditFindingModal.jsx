@@ -379,8 +379,6 @@ const EditFindingModal = ({
                     />
                   </FormControl>
 
-                  {console.log("auditee", formData?.report?.auditee ?? [])}
-                  {console.log("auditor", formData?.report?.auditor ?? [])}
                   {/* Auditee */}
                   <FormControl
                     isInvalid={!!errors["report.auditee"]}
@@ -388,16 +386,15 @@ const EditFindingModal = ({
                   >
                     <FormLabel fontSize="sm">Auditee</FormLabel>
                     <UserAsyncSelect
+                      label=""
                       value={
-                        Array.isArray(formData?.report?.auditee)
-                          ? formData.report.auditee
-                          : formData?.report?.auditee
-                            ? [formData.report.auditee]
-                            : []
+                        formData.report.auditee ? [formData.report.auditee] : []
                       }
-                      onChange={(user) => handleReportChange("auditee", user)}
-                      placeholder="Select auditee"
-                      isClearable
+                      onChange={(users) =>
+                        handleReportChange("auditee", users[0] || null)
+                      }
+                      placeholder="Select Auditee"
+                      displayMode="none"
                     />
                     {errors["report.auditee"] && (
                       <Text fontSize="xs" color="red.500" mt={1}>
@@ -413,16 +410,15 @@ const EditFindingModal = ({
                   >
                     <FormLabel fontSize="sm">Auditor</FormLabel>
                     <UserAsyncSelect
+                      label=""
                       value={
-                        Array.isArray(formData?.report?.auditor)
-                          ? formData.report.auditor
-                          : formData?.report?.auditor
-                            ? [formData.report.auditor]
-                            : []
+                        formData.report.auditor ? [formData.report.auditor] : []
                       }
-                      onChange={(user) => handleReportChange("auditor", user)}
-                      placeholder="Select auditor"
-                      isClearable
+                      onChange={(users) =>
+                        handleReportChange("auditor", users[0] || null)
+                      }
+                      placeholder="Select Auditor"
+                      displayMode="none"
                     />
                     {errors["report.auditor"] && (
                       <Text fontSize="xs" color="red.500" mt={1}>
