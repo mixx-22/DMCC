@@ -375,12 +375,13 @@ const FindingsForm = ({ teamObjectives = [], onAddFinding, onCancel }) => {
             <FormControl isInvalid={!!errors["report.auditee"]}>
               <FormLabel fontSize="sm">Auditee</FormLabel>
               <UserAsyncSelect
+                label=""
                 value={formData.report.auditee ? [formData.report.auditee] : []}
                 onChange={(users) =>
                   handleReportChange("auditee", users[0] || null)
                 }
                 isMulti={false}
-                placeholder="Select auditee"
+                placeholder="Select Auditee"
               />
               {errors["report.auditee"] && (
                 <FormHelperText color="red.500" fontSize="xs">
@@ -393,12 +394,13 @@ const FindingsForm = ({ teamObjectives = [], onAddFinding, onCancel }) => {
             <FormControl isInvalid={!!errors["report.auditor"]}>
               <FormLabel fontSize="sm">Auditor</FormLabel>
               <UserAsyncSelect
+                label=""
                 value={formData.report.auditor ? [formData.report.auditor] : []}
                 onChange={(users) =>
                   handleReportChange("auditor", users[0] || null)
                 }
                 isMulti={false}
-                placeholder="Select auditor"
+                placeholder="Select Auditor"
               />
               {errors["report.auditor"] && (
                 <FormHelperText color="red.500" fontSize="xs">
