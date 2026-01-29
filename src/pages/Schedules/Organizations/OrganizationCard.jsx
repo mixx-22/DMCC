@@ -96,7 +96,9 @@ const OrganizationCard = ({
       setLocalOrganization(organization);
     }
     // Otherwise keep local state which has newer optimistic updates
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [organization]); // Only trigger when org prop changes, not local state
+
   const cardBg = useColorModeValue("white", "gray.700");
   const errorColor = useColorModeValue("error.600", "error.400");
   const borderColor = useColorModeValue("gray.200", "gray.600");
@@ -176,6 +178,7 @@ const OrganizationCard = ({
       });
       // Success - server has confirmed, context already updated
     } catch (error) {
+      console.log({ error });
       // 4. Revert optimistic updates on error
       setLocalOrganization(organization);
       dispatch({
@@ -183,6 +186,47 @@ const OrganizationCard = ({
         payload: organization,
       });
       console.error("Failed to delete finding:", error);
+    }
+  };
+
+  const handleAddFinding = async (index, findingData) => {
+    // Optimistic update: Update local state immediately
+    const updatedVisits = localOrganization.visits.map((v, i) => {
+      if (i === index) {
+        return {
+          ...v,
+          findings: [...(v.findings || []), findingData],
+        };
+      }
+      return v;
+    });
+
+    // 2. Optimistic update in local state (instant UI feedback)
+    setLocalOrganization({
+      ...localOrganization,
+      visits: updatedVisits,
+    });
+
+    // 3. Optimistic update in context (updates all components immediately)
+    dispatch({
+      type: "UPDATE_ORGANIZATION_OPTIMISTIC",
+      payload: {
+        _id: organization._id,
+        updates: { visits: updatedVisits },
+      },
+    });
+
+    try {
+      // 4. Persist to server in background - use localOrganization as base (has latest data)
+      await updateOrganization(organization._id, {
+        ...localOrganization,
+        visits: updatedVisits,
+      });
+      // Success - server has confirmed, context already updated
+    } catch (error) {
+      // 5. Revert optimistic updates on error
+      setLocalOrganization(organization);
+      console.error("Failed to add finding:", error);
     }
   };
 
@@ -366,53 +410,9 @@ const OrganizationCard = ({
                               {/* Add Finding Form */}
                               <FindingsForm
                                 teamObjectives={team?.objectives || []}
-                                onAddFinding={async (findingData) => {
-                                  // Optimistic update: Update local state immediately
-                                  const updatedVisits =
-                                    localOrganization.visits.map((v, i) => {
-                                      if (i === index) {
-                                        return {
-                                          ...v,
-                                          findings: [
-                                            ...(v.findings || []),
-                                            findingData,
-                                          ],
-                                        };
-                                      }
-                                      return v;
-                                    });
-
-                                  // 2. Optimistic update in local state (instant UI feedback)
-                                  setLocalOrganization({
-                                    ...localOrganization,
-                                    visits: updatedVisits,
-                                  });
-
-                                  // 3. Optimistic update in context (updates all components immediately)
-                                  dispatch({
-                                    type: "UPDATE_ORGANIZATION_OPTIMISTIC",
-                                    payload: {
-                                      _id: organization._id,
-                                      updates: { visits: updatedVisits },
-                                    },
-                                  });
-
-                                  try {
-                                    // 4. Persist to server in background - use localOrganization as base (has latest data)
-                                    await updateOrganization(organization._id, {
-                                      ...localOrganization,
-                                      visits: updatedVisits,
-                                    });
-                                    // Success - server has confirmed, context already updated
-                                  } catch (error) {
-                                    // 5. Revert optimistic updates on error
-                                    setLocalOrganization(organization);
-                                    console.error(
-                                      "Failed to add finding:",
-                                      error,
-                                    );
-                                  }
-                                }}
+                                onAddFinding={async (finding) =>
+                                  await handleAddFinding(index, finding)
+                                }
                               />
                             </VStack>
                           ))}
