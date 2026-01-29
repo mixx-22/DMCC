@@ -50,6 +50,8 @@ import Timestamp from "../../../components/Timestamp";
 import { GridView } from "../../../components/Document/GridView";
 import { formatDateRange } from "../../../utils/helpers";
 import DocumentDrawer from "../../../components/Document/DocumentDrawer";
+import FindingsForm from "./FindingsForm";
+import FindingsList from "./FindingsList";
 
 const OrganizationCard = ({
   schedule,
@@ -255,19 +257,20 @@ const OrganizationCard = ({
                     {/* Visit Details Tab */}
                     <TabPanel px={4}>
                       {organization.visits && organization.visits.length > 0 ? (
-                        <VStack align="stretch" spacing={2}>
+                        <VStack align="stretch" spacing={4}>
                           {organization.visits.map((visit, index) => (
-                            <Flex
+                            <VStack
                               key={index}
-                              p={3}
+                              align="stretch"
+                              p={4}
                               borderRadius="md"
                               borderWidth="1px"
                               borderColor={borderColor}
-                              align="center"
-                              justify="space-between"
+                              spacing={4}
                             >
+                              {/* Visit Date Header */}
                               <Box>
-                                <Text fontSize="sm" color="gray.500" mb={1}>
+                                <Text fontSize="sm" fontWeight="semibold" color="gray.500" mb={1}>
                                   Visit Date/s
                                 </Text>
                                 <Text fontSize="sm">
@@ -277,7 +280,56 @@ const OrganizationCard = ({
                                   )}
                                 </Text>
                               </Box>
-                            </Flex>
+
+                              {/* Findings List */}
+                              {visit.findings && visit.findings.length > 0 && (
+                                <FindingsList
+                                  findings={visit.findings}
+                                  onEdit={(finding) => {
+                                    // TODO: Implement edit functionality
+                                    console.log("Edit finding:", finding);
+                                  }}
+                                  onDelete={(finding) => {
+                                    // TODO: Implement delete functionality
+                                    console.log("Delete finding:", finding);
+                                  }}
+                                />
+                              )}
+
+                              {/* Add Finding Form */}
+                              <FindingsForm
+                                teamObjectives={team?.objectives || []}
+                                onAddFinding={(findingData) => {
+                                  // Add finding to this specific visit
+                                  const updatedVisits = organization.visits.map(
+                                    (v, i) => {
+                                      if (i === index) {
+                                        return {
+                                          ...v,
+                                          findings: [
+                                            ...(v.findings || []),
+                                            findingData,
+                                          ],
+                                        };
+                                      }
+                                      return v;
+                                    }
+                                  );
+
+                                  // Update the schedule with the new visits
+                                  setScheduleFormData((prev) => ({
+                                    ...prev,
+                                    organizations: prev.organizations?.map(
+                                      (org) =>
+                                        org._id === organization._id ||
+                                        org.id === organization._id
+                                          ? { ...org, visits: updatedVisits }
+                                          : org
+                                    ),
+                                  }));
+                                }}
+                              />
+                            </VStack>
                           ))}
                         </VStack>
                       ) : (
