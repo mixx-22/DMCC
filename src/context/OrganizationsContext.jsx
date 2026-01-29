@@ -244,11 +244,14 @@ export const OrganizationsProvider = ({ children, scheduleId }) => {
           throw error;
         }
       } catch (error) {
-        dispatch({ type: "ERROR", payload: error.message });
-        toast.error("Failed to Update Organization", {
-          description: error.message || "Could not update organization",
-          duration: 3000,
-        });
+        // Only catch and handle network errors, not business logic errors
+        if (error.message !== "Failed to update organization") {
+          dispatch({ type: "ERROR", payload: error.message });
+          toast.error("Failed to Update Organization", {
+            description: error.message || "Could not update organization",
+            duration: 3000,
+          });
+        }
         throw error;
       }
     },

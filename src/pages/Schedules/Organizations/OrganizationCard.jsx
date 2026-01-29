@@ -70,6 +70,14 @@ const OrganizationCard = ({
   const { selectedDocument, closeDocumentDrawer, handleDocumentClick } =
     useLayout();
   const [isExpanded, setIsExpanded] = useState(false);
+  
+  // Local state for optimistic updates - prevents card collapse and shows changes immediately
+  const [localOrganization, setLocalOrganization] = useState(organization);
+  
+  // Sync local state when organization prop changes (from context updates)
+  useEffect(() => {
+    setLocalOrganization(organization);
+  }, [organization]);
   const cardBg = useColorModeValue("white", "gray.700");
   const errorColor = useColorModeValue("error.600", "error.400");
   const borderColor = useColorModeValue("gray.200", "gray.600");
@@ -86,10 +94,10 @@ const OrganizationCard = ({
   };
 
   useEffect(() => {
-    if (organization?.team?.folderId && isExpanded) {
-      fetchDocuments(organization?.team?.folderId);
+    if (localOrganization?.team?.folderId && isExpanded) {
+      fetchDocuments(localOrganization?.team?.folderId);
     }
-  }, [organization, isExpanded, fetchDocuments]);
+  }, [localOrganization?.team?.folderId, isExpanded, fetchDocuments]);
 
   const handleDeleteOrganization = async (organization) => {
     const result = await Swal.fire({
@@ -246,9 +254,9 @@ const OrganizationCard = ({
                   <TabPanels>
                     {/* Visit Details Tab */}
                     <TabPanel px={4}>
-                      {organization.visits && organization.visits.length > 0 ? (
+                      {localOrganization.visits && localOrganization.visits.length > 0 ? (
                         <VStack align="stretch" spacing={4}>
-                          {organization.visits.map((visit, index) => (
+                          {localOrganization.visits.map((visit, index) => (
                             <VStack
                               key={index}
                               align="stretch"
@@ -293,7 +301,8 @@ const OrganizationCard = ({
                               <FindingsForm
                                 teamObjectives={team?.objectives || []}
                                 onAddFinding={async (findingData) => {
-                                  const updatedVisits = organization.visits.map(
+                                  // Optimistic update: Update local state immediately
+                                  const updatedVisits = localOrganization.visits.map(
                                     (v, i) => {
                                       if (i === index) {
                                         return {
@@ -308,11 +317,24 @@ const OrganizationCard = ({
                                     },
                                   );
 
-                                  // Update organization via context
-                                  await updateOrganization(organization._id, {
-                                    ...organization,
+                                  // Show the finding immediately (optimistic update)
+                                  setLocalOrganization({
+                                    ...localOrganization,
                                     visits: updatedVisits,
                                   });
+
+                                  try {
+                                    // Update organization via context (in background)
+                                    await updateOrganization(organization._id, {
+                                      ...organization,
+                                      visits: updatedVisits,
+                                    });
+                                    // Success - context will sync and update our useEffect
+                                  } catch (error) {
+                                    // Revert optimistic update on error
+                                    setLocalOrganization(organization);
+                                    console.error("Failed to add finding:", error);
+                                  }
                                 }}
                               />
                             </VStack>
