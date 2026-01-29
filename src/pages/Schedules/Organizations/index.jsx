@@ -1,5 +1,6 @@
-import { VStack, Flex, Heading, Spinner, Spacer, Text } from "@chakra-ui/react";
+import { VStack, Flex, Heading, Spinner, Spacer, Text, Button } from "@chakra-ui/react";
 import { useState, useCallback } from "react";
+import { FiPlus } from "react-icons/fi";
 import OrganizationCard from "./OrganizationCard";
 import { useOrganizations } from "../../../context/_useContext";
 import PropTypes from "prop-types";
@@ -11,6 +12,9 @@ const Organizations = ({ schedule = {}, setFormData = () => {} }) => {
   // Track which organization cards are expanded (by ID)
   // This preserves expanded state across re-renders when organizations update
   const [expandedOrgIds, setExpandedOrgIds] = useState(new Set());
+  
+  // Track whether to show the organization form
+  const [showOrgForm, setShowOrgForm] = useState(false);
 
   // Toggle expanded state for an organization
   const toggleExpanded = useCallback((orgId) => {
@@ -26,6 +30,10 @@ const Organizations = ({ schedule = {}, setFormData = () => {} }) => {
   }, []);
 
   if (!schedule?._id) return "";
+  
+  // Show form if no organizations exist or if user clicked "Add Organization"
+  const shouldShowForm = organizations?.length === 0 || showOrgForm;
+  
   return (
     <VStack align="stretch" spacing={4}>
       <Flex justify="space-between" align="center">
@@ -58,7 +66,25 @@ const Organizations = ({ schedule = {}, setFormData = () => {} }) => {
           ))}
         </VStack>
       )}
-      <OrganizationForm {...{ schedule, setFormData }} />
+      
+      {/* Show form or Add Organization button */}
+      {shouldShowForm ? (
+        <OrganizationForm 
+          {...{ schedule, setFormData }} 
+          onCancel={() => setShowOrgForm(false)}
+          onSuccess={() => setShowOrgForm(false)}
+        />
+      ) : (
+        <Button
+          leftIcon={<FiPlus />}
+          onClick={() => setShowOrgForm(true)}
+          colorScheme="brandPrimary"
+          variant="outline"
+          size="md"
+        >
+          Add Organization
+        </Button>
+      )}
     </VStack>
   );
 };

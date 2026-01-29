@@ -13,12 +13,12 @@ import {
 import { useOrganizations } from "../../../context/_useContext";
 import { useCallback, useEffect, useState } from "react";
 import TeamSingleAsyncSelect from "../../../components/TeamSingleAsyncSelect";
-import { FiSave } from "react-icons/fi";
+import { FiSave, FiX } from "react-icons/fi";
 import UserAsyncSelect from "../../../components/UserAsyncSelect";
 import VisitManager from "./VisitManager";
 import { toast } from "sonner";
 
-const OrganizationForm = ({ schedule = {} }) => {
+const OrganizationForm = ({ schedule = {}, onCancel = () => {}, onSuccess = () => {} }) => {
   const bg = useColorModeValue("brandPrimary.50", "brandPrimary.200");
   const borderColor = useColorModeValue("brandPrimary.200", "brandPrimary.200");
   const { dispatch, scheduleId, organizations, createOrganization } =
@@ -95,12 +95,13 @@ const OrganizationForm = ({ schedule = {} }) => {
             payload: { ...newOrgData, _id: result._id },
           });
           clearForm();
+          onSuccess(); // Call onSuccess callback to hide form
         }
       } catch (error) {
         console.error("Failed to save organization:", error);
       }
     },
-    [createOrganization, dispatch, schedule],
+    [createOrganization, dispatch, schedule, onSuccess],
   );
 
   const handleSubmit = () => {
@@ -134,7 +135,9 @@ const OrganizationForm = ({ schedule = {} }) => {
   };
 
   const handleCancel = () => {
+    clearForm();
     setValidationErrors({});
+    onCancel(); // Call onCancel callback to hide form
   };
 
   return (
@@ -175,7 +178,12 @@ const OrganizationForm = ({ schedule = {} }) => {
         <HStack w="full">
           <Spacer />
           <ButtonGroup>
-            <Button size="sm" variant="ghost" onClick={handleCancel}>
+            <Button 
+              size="sm" 
+              variant="ghost" 
+              onClick={handleCancel}
+              leftIcon={<FiX />}
+            >
               Cancel
             </Button>
             <Button

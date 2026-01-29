@@ -45,6 +45,7 @@ import {
   FiChevronDown,
   FiChevronUp,
   FiExternalLink,
+  FiPlus,
 } from "react-icons/fi";
 import { useEffect, useState } from "react";
 import { Link as RouterLink } from "react-router-dom";
@@ -99,6 +100,9 @@ const OrganizationCard = ({
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [editingFinding, setEditingFinding] = useState(null);
   const [editingVisitIndex, setEditingVisitIndex] = useState(null);
+  
+  // State to track which visit's finding form is shown (visitIndex -> boolean)
+  const [showFindingFormFor, setShowFindingFormFor] = useState(new Set());
 
   useEffect(() => {
     if (organization?.team?.folderId && isExpanded) {
@@ -475,60 +479,97 @@ const OrganizationCard = ({
                                                 }}
                                               />
                                             )}
-                                          {/* Add Finding Form */}
-                                          <FindingsForm
-                                            teamObjectives={
-                                              team?.objectives || []
-                                            }
-                                            onAddFinding={async (
-                                              findingData,
-                                            ) => {
-                                              // Calculate updated visits with new finding
-                                              const updatedVisits =
-                                                organization.visits.map(
-                                                  (v, i) => {
-                                                    if (i === index) {
-                                                      return {
-                                                        ...v,
-                                                        findings: [
-                                                          ...(v.findings || []),
-                                                          findingData,
-                                                        ],
-                                                      };
-                                                    }
-                                                    return v;
-                                                  },
-                                                );
+                                          
+                                          {/* Add Finding Form or Button */}
+                                          {(visit.findings?.length === 0 || showFindingFormFor.has(index)) ? (
+                                            <FindingsForm
+                                              teamObjectives={
+                                                team?.objectives || []
+                                              }
+                                              onAddFinding={async (
+                                                findingData,
+                                              ) => {
+                                                // Calculate updated visits with new finding
+                                                const updatedVisits =
+                                                  organization.visits.map(
+                                                    (v, i) => {
+                                                      if (i === index) {
+                                                        return {
+                                                          ...v,
+                                                          findings: [
+                                                            ...(v.findings || []),
+                                                            findingData,
+                                                          ],
+                                                        };
+                                                      }
+                                                      return v;
+                                                    },
+                                                  );
 
-                                              // Update organization in context
-                                              dispatch({
-                                                type: "UPDATE_ORGANIZATION",
-                                                payload: {
-                                                  ...organization,
-                                                  visits: updatedVisits,
-                                                  team,
-                                                },
-                                              });
-
-                                              try {
-                                                // Persist to server
-                                                await updateOrganization(
-                                                  organization._id,
-                                                  {
+                                                // Update organization in context
+                                                dispatch({
+                                                  type: "UPDATE_ORGANIZATION",
+                                                  payload: {
                                                     ...organization,
                                                     visits: updatedVisits,
-                                                    team,
+                                                    teamId:
+                                                      organization.teamId || team,
                                                   },
-                                                );
-                                              } catch (error) {
-                                                console.error(
-                                                  "Failed to add finding:",
-                                                  error,
-                                                );
-                                                // Could refetch or show error
-                                              }
-                                            }}
-                                          />
+                                                });
+
+                                                try {
+                                                  // Persist to server
+                                                  await updateOrganization(
+                                                    organization._id,
+                                                    {
+                                                      ...organization,
+                                                      visits: updatedVisits,
+                                                      teamId:
+                                                        organization.teamId ||
+                                                        team,
+                                                    },
+                                                  );
+                                                  
+                                                  // Hide form after successful add
+                                                  setShowFindingFormFor(prev => {
+                                                    const newSet = new Set(prev);
+                                                    newSet.delete(index);
+                                                    return newSet;
+                                                  });
+                                                } catch (error) {
+                                                  console.error(
+                                                    "Failed to add finding:",
+                                                    error,
+                                                  );
+                                                  // Could refetch or show error
+                                                }
+                                              }}
+                                              onCancel={visit.findings?.length > 0 ? () => {
+                                                setShowFindingFormFor(prev => {
+                                                  const newSet = new Set(prev);
+                                                  newSet.delete(index);
+                                                  return newSet;
+                                                });
+                                              } : undefined}
+                                            />
+                                          ) : (
+                                            <Button
+                                              size="sm"
+                                              leftIcon={<FiPlus />}
+                                              onClick={() => {
+                                                setShowFindingFormFor(prev => {
+                                                  const newSet = new Set(prev);
+                                                  newSet.add(index);
+                                                  return newSet;
+                                                });
+                                              }}
+                                              colorScheme="brandPrimary"
+                                              variant="outline"
+                                              mt={2}
+                                            >
+                                              Add Finding
+                                            </Button>
+                                          )}
                                         </Stack>
                                       </Flex>
                                     </AccordionPanel>
