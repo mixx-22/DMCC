@@ -240,14 +240,22 @@ export const OrganizationsProvider = ({ children, scheduleId }) => {
           },
         );
 
-        const { success = false, data } = response;
-        if (success && data) {
-          dispatch({ type: "UPDATE_ORGANIZATION", payload: data });
+        // Handle both response formats:
+        // Format 1: { success: true, data: {...} }
+        // Format 2: { _id: "...", ... } (direct organization data)
+        const { success, data } = response;
+        
+        // If response has _id, it's the organization data directly
+        const organizationData = response._id ? response : data;
+        
+        // Success if we have valid organization data
+        if (organizationData && (organizationData._id || organizationData.id)) {
+          dispatch({ type: "UPDATE_ORGANIZATION", payload: organizationData });
           toast.success("Organization Updated", {
             description: "Organization has been successfully updated",
             duration: 2000,
           });
-          return data;
+          return organizationData;
         } else {
           const error = new Error("Failed to update organization");
           dispatch({ type: "ERROR", payload: error.message });
