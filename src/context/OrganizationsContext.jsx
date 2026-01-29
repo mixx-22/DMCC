@@ -207,9 +207,11 @@ export const OrganizationsProvider = ({ children, scheduleId }) => {
         await new Promise((resolve) => setTimeout(resolve, 800));
         const updated = {
           ...organizationData,
+          team: organizationData?.team?.id || organizationData?.team,
           _id: organizationId,
         };
         dispatch({ type: "UPDATE_ORGANIZATION", payload: updated });
+        console.log({ type: "UPDATE_ORGANIZATION", payload: updated });
         toast.success("Organization Updated", {
           description: "Organization has been successfully updated",
           duration: 2000,
@@ -218,47 +220,33 @@ export const OrganizationsProvider = ({ children, scheduleId }) => {
       }
 
       try {
+        const updated = {
+          ...organizationData,
+          team: organizationData.team._id ?? organizationData.team.id,
+          auditors: organizationData.auditors.map((a) => a._id ?? a.id),
+        };
         const response = await apiService.request(
           `${ORGANIZATIONS_ENDPOINT}/${organizationId}`,
           {
             method: "PUT",
-            body: JSON.stringify(organizationData),
+            body: JSON.stringify(updated),
           },
         );
 
-        // Handle multiple response formats from API
-        console.log("API Response:", response);
-        
-        // Try to extract organization data from various response formats
-        let extractedOrgData;
-        
-        if (response._id || response.id) {
-          // Format 1: Direct organization data { _id: "...", ... }
-          extractedOrgData = response;
-        } else if (response.data && (response.data._id || response.data.id)) {
-          // Format 2: Wrapped data { success: true, data: { _id: "...", ... } }
-          extractedOrgData = response.data;
-        } else if (response.organization && (response.organization._id || response.organization.id)) {
-          // Format 3: { organization: { _id: "...", ... } }
-          extractedOrgData = response.organization;
-        }
-        
-        console.log("Extracted organizationData:", extractedOrgData);
-        
-        // Validate we have valid organization data
-        if (extractedOrgData && (extractedOrgData._id || extractedOrgData.id)) {
-          dispatch({ type: "UPDATE_ORGANIZATION", payload: extractedOrgData });
+        if (response.success && (organizationData._id || organizationData.id)) {
+          dispatch({ type: "UPDATE_ORGANIZATION", payload: organizationData });
           toast.success("Organization Updated", {
             description: "Organization has been successfully updated",
             duration: 2000,
           });
-          return extractedOrgData;
+          return organizationData;
         } else {
           console.error("Invalid response format:", response);
           const error = new Error("Failed to update organization");
           dispatch({ type: "ERROR", payload: error.message });
           toast.error("Failed to Update Organization", {
-            description: "Could not update organization. Invalid response format.",
+            description:
+              "Could not update organization. Invalid response format.",
             duration: 3000,
           });
           throw error;

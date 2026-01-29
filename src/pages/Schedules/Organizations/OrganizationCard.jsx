@@ -133,8 +133,8 @@ const OrganizationCard = ({
       type: "UPDATE_ORGANIZATION",
       payload: {
         ...organization,
-        teamId: organization.teamId || team,
         visits: updatedVisits,
+        team,
       },
     });
 
@@ -352,8 +352,8 @@ const OrganizationCard = ({
                                     type: "UPDATE_ORGANIZATION",
                                     payload: {
                                       ...organization,
-                                      teamId: organization.teamId || team,
                                       visits: updatedVisits,
+                                      team,
                                     },
                                   });
 
@@ -361,8 +361,8 @@ const OrganizationCard = ({
                                     // Persist to server
                                     await updateOrganization(organization._id, {
                                       ...organization,
-                                      teamId: organization.teamId || team,
                                       visits: updatedVisits,
+                                      team,
                                     });
                                   } catch (error) {
                                     console.error(
