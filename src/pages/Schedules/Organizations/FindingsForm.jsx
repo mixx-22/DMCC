@@ -384,7 +384,6 @@ const FindingsForm = ({ teamObjectives = [], onAddFinding, onCancel }) => {
                   onChange={(users) =>
                     handleReportChange("auditee", users[0] || null)
                   }
-                  isMulti={false}
                   placeholder="Select Auditee"
                   displayMode="none"
                 />
@@ -406,7 +405,6 @@ const FindingsForm = ({ teamObjectives = [], onAddFinding, onCancel }) => {
                   onChange={(users) =>
                     handleReportChange("auditor", users[0] || null)
                   }
-                  isMulti={false}
                   placeholder="Select Auditor"
                   displayMode="none"
                 />

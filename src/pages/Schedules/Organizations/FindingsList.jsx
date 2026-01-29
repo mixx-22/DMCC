@@ -32,11 +32,9 @@ const COMPLIANCE_DISPLAY = {
     label: "Opportunities for Improvements",
     color: "yellow",
   },
-  NON_CONFORMITY: { label: "Non-Conformity (NC)", color: "orange" },
-  MINOR_NC: { label: "Minor NC", color: "orange" },
-  MAJOR_NC: { label: "Major NC", color: "red" },
-  CORRECTION: { label: "Correction", color: "green" },
-  CORRECTIVE_ACTION: { label: "Corrective Action", color: "green" },
+  NON_CONFORMITY: { label: "Non-Conformity", color: "orange" },
+  MINOR_NC: { label: "Minor Non-Conformity", color: "orange" },
+  MAJOR_NC: { label: "Major Non-Conformity", color: "red" },
 };
 
 const FindingCard = ({ finding, onEdit, onDelete }) => {
@@ -50,25 +48,31 @@ const FindingCard = ({ finding, onEdit, onDelete }) => {
     COMPLIANCE_DISPLAY[finding.compliance] || COMPLIANCE_DISPLAY.OBSERVATIONS;
 
   return (
-    <Card size="sm" variant="outline" borderColor={borderColor} bg={cardBg}>
+    <Card
+      size="sm"
+      variant="outline"
+      borderColor={borderColor}
+      bg={cardBg}
+      boxShadow="none"
+    >
       <CardBody>
         <VStack align="stretch" spacing={3}>
           {/* Header */}
           <HStack justify="space-between" align="start">
             <VStack align="start" spacing={1} flex={1}>
-              <HStack spacing={2} flexWrap="wrap">
-                <Text fontWeight="semibold" fontSize="md">
-                  {finding.title}
-                </Text>
-                <Badge colorScheme={complianceInfo.color} fontSize="xs">
-                  {complianceInfo.label}
-                </Badge>
-              </HStack>
+              <Badge colorScheme={complianceInfo.color} fontSize="xs">
+                {complianceInfo.label}
+              </Badge>
               {finding.objective && (
                 <Text fontSize="xs" color={labelColor}>
                   Objective: {finding.objective}
                 </Text>
               )}
+              <HStack spacing={2} flexWrap="wrap">
+                <Text fontWeight="semibold" fontSize="md">
+                  {finding.title}
+                </Text>
+              </HStack>
             </VStack>
             <HStack spacing={1}>
               <IconButton
