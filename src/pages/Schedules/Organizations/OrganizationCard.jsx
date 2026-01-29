@@ -844,6 +844,7 @@ const OrganizationCard = ({
                   <VisitManager
                     visits={organization.visits || []}
                     onChange={handleAddVisit}
+                    onCancel={() => setShowVisitForm(false)}
                   />
                 ) : (
                   <Flex justifyContent="flex-end">

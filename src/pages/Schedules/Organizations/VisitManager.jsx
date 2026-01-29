@@ -9,6 +9,7 @@ import {
   FormHelperText,
   Button,
   useColorModeValue,
+  Flex,
 } from "@chakra-ui/react";
 import { useState } from "react";
 import { FiPlus, FiX } from "react-icons/fi";
@@ -18,7 +19,12 @@ import { useLayout } from "../../../context/_useContext";
 import { formatDateRange } from "../../../utils/helpers";
 import { getDocumentIcon } from "../../../components/Document/DocumentIcon";
 
-const VisitManager = ({ visits = [], onChange, isInvalid }) => {
+const VisitManager = ({
+  visits = [],
+  onChange,
+  isInvalid,
+  onCancel = null,
+}) => {
   const { pageRef } = useLayout();
   const bg = useColorModeValue("brandPrimary.50", "brandPrimary.200");
   const borderColor = useColorModeValue("brandPrimary.200", "brandPrimary.200");
@@ -169,15 +175,23 @@ const VisitManager = ({ visits = [], onChange, isInvalid }) => {
             )}
           </HStack>
         ) : (
-          <Button
-            size="sm"
-            leftIcon={<FiPlus />}
-            onClick={() => setShowAddForm(true)}
-            colorScheme="purple"
-            variant="outline"
-          >
-            Add Visit
-          </Button>
+          <Flex gap={1}>
+            <Button
+              flex={1}
+              size="sm"
+              leftIcon={<FiPlus />}
+              onClick={() => setShowAddForm(true)}
+              colorScheme="purple"
+              variant="outline"
+            >
+              Add Visit
+            </Button>
+            {onCancel !== null && (
+              <Button size="sm" onClick={onCancel} variant="ghost">
+                Cancel
+              </Button>
+            )}
+          </Flex>
         )}
       </VStack>
       <FormHelperText fontSize="xs" color="gray.500">
