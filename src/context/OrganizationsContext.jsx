@@ -63,20 +63,6 @@ function organizationsReducer(state, action) {
             ? action.payload
             : state.currentOrganization,
       };
-    case "UPDATE_ORGANIZATION_OPTIMISTIC":
-      // Optimistic update without waiting for server response
-      return {
-        ...state,
-        organizations: state.organizations.map((org) =>
-          org._id === action.payload._id
-            ? { ...org, ...action.payload.updates }
-            : org,
-        ),
-        currentOrganization:
-          state.currentOrganization?._id === action.payload._id
-            ? { ...state.currentOrganization, ...action.payload.updates }
-            : state.currentOrganization,
-      };
     case "DELETE_ORGANIZATION":
       return {
         ...state,
@@ -240,19 +226,39 @@ export const OrganizationsProvider = ({ children, scheduleId }) => {
           },
         );
 
-        const { success = false, data } = response;
-        if (success && data) {
-          dispatch({ type: "UPDATE_ORGANIZATION", payload: data });
+        // Handle multiple response formats from API
+        console.log("API Response:", response);
+        
+        // Try to extract organization data from various response formats
+        let organizationData;
+        
+        if (response._id || response.id) {
+          // Format 1: Direct organization data { _id: "...", ... }
+          organizationData = response;
+        } else if (response.data && (response.data._id || response.data.id)) {
+          // Format 2: Wrapped data { success: true, data: { _id: "...", ... } }
+          organizationData = response.data;
+        } else if (response.organization && (response.organization._id || response.organization.id)) {
+          // Format 3: { organization: { _id: "...", ... } }
+          organizationData = response.organization;
+        }
+        
+        console.log("Extracted organizationData:", organizationData);
+        
+        // Validate we have valid organization data
+        if (organizationData && (organizationData._id || organizationData.id)) {
+          dispatch({ type: "UPDATE_ORGANIZATION", payload: organizationData });
           toast.success("Organization Updated", {
             description: "Organization has been successfully updated",
             duration: 2000,
           });
-          return data;
+          return organizationData;
         } else {
+          console.error("Invalid response format:", response);
           const error = new Error("Failed to update organization");
           dispatch({ type: "ERROR", payload: error.message });
           toast.error("Failed to Update Organization", {
-            description: "Could not update organization",
+            description: "Could not update organization. Invalid response format.",
             duration: 3000,
           });
           throw error;
