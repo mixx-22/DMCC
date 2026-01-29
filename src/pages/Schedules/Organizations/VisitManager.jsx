@@ -2,7 +2,6 @@ import {
   VStack,
   HStack,
   Box,
-  Text,
   FormLabel,
   IconButton,
   Badge,
@@ -12,19 +11,23 @@ import {
   useColorModeValue,
 } from "@chakra-ui/react";
 import { useState } from "react";
-import { FiPlus, FiX, FiCalendar } from "react-icons/fi";
+import { FiPlus, FiX } from "react-icons/fi";
 import { SingleDatepicker } from "chakra-dayzed-datepicker";
 import moment from "moment/moment";
+import { useLayout } from "../../../context/_useContext";
+import { formatDateRange } from "../../../utils/helpers";
+import { getDocumentIcon } from "../../../components/Document/DocumentIcon";
 
 const VisitManager = ({ visits = [], onChange, isInvalid }) => {
+  const { pageRef } = useLayout();
   const bg = useColorModeValue("brandPrimary.50", "brandPrimary.200");
   const borderColor = useColorModeValue("brandPrimary.200", "brandPrimary.200");
   const invalidBg = useColorModeValue("error.50", "error.200");
   const invalidBorderColor = useColorModeValue("error.200", "error.200");
-  
+
   // State to track whether to show the add visit form
   const [showAddForm, setShowAddForm] = useState(false);
-  
+
   const [visitDates, setVisitDates] = useState({
     start: new Date(moment(new Date()).add(1, "d")),
     end: new Date(moment(new Date()).add(1, "d")),
@@ -41,9 +44,9 @@ const VisitManager = ({ visits = [], onChange, isInvalid }) => {
     onChange([...visits, newVisit]);
 
     // Reset dates and hide form
-    setVisitDates({ 
-      start: new Date(moment(new Date()).add(1, "d")), 
-      end: new Date(moment(new Date()).add(1, "d")) 
+    setVisitDates({
+      start: new Date(moment(new Date()).add(1, "d")),
+      end: new Date(moment(new Date()).add(1, "d")),
     });
     setShowAddForm(false);
   };
@@ -51,7 +54,7 @@ const VisitManager = ({ visits = [], onChange, isInvalid }) => {
   const handleRemoveVisit = (index) => {
     onChange(visits.filter((_, i) => i !== index));
   };
-  
+
   // Show form if no visits exist or if user clicked "Add Visit"
   const shouldShowForm = visits.length === 0 || showAddForm;
 
@@ -68,10 +71,10 @@ const VisitManager = ({ visits = [], onChange, isInvalid }) => {
             justify="space-between"
           >
             <HStack spacing={2}>
-              <FiCalendar />
-              <Badge colorScheme="green">{visit.date.start}</Badge>
-              <Text fontSize="sm">to</Text>
-              <Badge colorScheme="green">{visit.date.end}</Badge>
+              {getDocumentIcon({ type: "auditSchedule" }, 20)}
+              <Badge colorScheme="purple">
+                {formatDateRange(visit.date.start, visit.date.end)}
+              </Badge>
             </HStack>
             <IconButton
               icon={<FiX />}
@@ -83,7 +86,7 @@ const VisitManager = ({ visits = [], onChange, isInvalid }) => {
             />
           </HStack>
         ))}
-        
+
         {/* Show form or Add Visit button */}
         {shouldShowForm ? (
           <HStack
@@ -118,6 +121,8 @@ const VisitManager = ({ visits = [], onChange, isInvalid }) => {
                     w: "full",
                   },
                 }}
+                usePortal
+                portalRef={pageRef}
               />
             </Box>
             <Box flex={1}>
@@ -138,11 +143,13 @@ const VisitManager = ({ visits = [], onChange, isInvalid }) => {
                     w: "full",
                   },
                 }}
+                usePortal
+                portalRef={pageRef}
               />
             </Box>
             <Button
               size="sm"
-              colorScheme="brandPrimary"
+              colorScheme="purple"
               w={{ base: "full", md: "fit-content" }}
               onClick={handleAddVisit}
               leftIcon={<FiPlus />}
@@ -166,7 +173,7 @@ const VisitManager = ({ visits = [], onChange, isInvalid }) => {
             size="sm"
             leftIcon={<FiPlus />}
             onClick={() => setShowAddForm(true)}
-            colorScheme="brandPrimary"
+            colorScheme="purple"
             variant="outline"
           >
             Add Visit

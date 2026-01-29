@@ -229,7 +229,7 @@ const OrganizationCard = ({
         teamId: organization.teamId || team,
         visits: newVisits,
       });
-      
+
       // Hide form after successful add
       setShowVisitForm(false);
     } catch (error) {
@@ -850,7 +850,7 @@ const OrganizationCard = ({
                     <Button
                       size="sm"
                       variant="outline"
-                      colorScheme="brandPrimary"
+                      colorScheme="purple"
                       leftIcon={<FiCalendar />}
                       onClick={() => setShowVisitForm(true)}
                     >
