@@ -1,4 +1,12 @@
-import { VStack, Flex, Heading, Spacer, Text, Button } from "@chakra-ui/react";
+import {
+  VStack,
+  Flex,
+  Heading,
+  Spinner,
+  Spacer,
+  Text,
+  Button,
+} from "@chakra-ui/react";
 import { useState, useCallback } from "react";
 import { FiPlus } from "react-icons/fi";
 import OrganizationCard from "./OrganizationCard";
@@ -46,6 +54,12 @@ const Organizations = ({ schedule = {}, setFormData = () => {} }) => {
         </Text>
       </Flex>
 
+      {loading && organizations?.length < 1 && (
+        <Flex justify="center" py={8}>
+          <Spinner size="md" />
+        </Flex>
+      )}
+
       {organizations?.length > 0 && (
         <VStack align="stretch" spacing={3}>
           {organizations.map((org) => (
@@ -63,13 +77,7 @@ const Organizations = ({ schedule = {}, setFormData = () => {} }) => {
       )}
 
       {/* Show form or Add Organization button */}
-      {shouldShowForm ? (
-        <OrganizationForm
-          {...{ schedule, setFormData }}
-          onCancel={() => setShowOrgForm(false)}
-          onSuccess={() => setShowOrgForm(false)}
-        />
-      ) : (
+      {loading || !shouldShowForm ? (
         <Button
           leftIcon={<FiPlus />}
           onClick={() => setShowOrgForm(true)}
@@ -79,6 +87,12 @@ const Organizations = ({ schedule = {}, setFormData = () => {} }) => {
         >
           Add Organization
         </Button>
+      ) : (
+        <OrganizationForm
+          {...{ schedule, setFormData }}
+          onCancel={() => setShowOrgForm(false)}
+          onSuccess={() => setShowOrgForm(false)}
+        />
       )}
     </VStack>
   );

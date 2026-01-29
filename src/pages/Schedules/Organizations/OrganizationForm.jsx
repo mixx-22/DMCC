@@ -18,7 +18,11 @@ import UserAsyncSelect from "../../../components/UserAsyncSelect";
 import VisitManager from "./VisitManager";
 import { toast } from "sonner";
 
-const OrganizationForm = ({ schedule = {}, onCancel = () => {}, onSuccess = () => {} }) => {
+const OrganizationForm = ({
+  schedule = {},
+  onCancel = () => {},
+  onSuccess = () => {},
+}) => {
   const bg = useColorModeValue("brandPrimary.50", "brandPrimary.200");
   const borderColor = useColorModeValue("brandPrimary.200", "brandPrimary.200");
   const { dispatch, scheduleId, organizations, createOrganization } =
@@ -146,6 +150,7 @@ const OrganizationForm = ({ schedule = {}, onCancel = () => {}, onSuccess = () =
       borderWidth={2}
       borderStyle="dashed"
       borderColor={borderColor}
+      shadow="none"
     >
       <CardBody>
         <Stack spacing={4}>
@@ -178,9 +183,9 @@ const OrganizationForm = ({ schedule = {}, onCancel = () => {}, onSuccess = () =
         <HStack w="full">
           <Spacer />
           <ButtonGroup>
-            <Button 
-              size="sm" 
-              variant="ghost" 
+            <Button
+              size="sm"
+              variant="ghost"
               onClick={handleCancel}
               leftIcon={<FiX />}
             >
