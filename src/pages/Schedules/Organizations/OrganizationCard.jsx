@@ -319,7 +319,7 @@ const OrganizationCard = ({
                                 <FindingsList
                                   findings={visit.findings}
                                   onEdit={(finding) => {
-                                    console.log("Edit finding:", finding);
+                                    // TODO: Implement edit functionality
                                   }}
                                   onDelete={(finding) => {
                                     handleDeleteFinding(finding, index);

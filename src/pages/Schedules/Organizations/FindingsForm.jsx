@@ -142,7 +142,7 @@ const FindingsForm = ({ teamObjectives = [], onAddFinding, onCancel }) => {
     return `finding-${timestamp}-${random}`;
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (validateForm()) {
       const findingData = {
         _id: generateFindingId(), // Client-side ID for tracking
@@ -177,23 +177,28 @@ const FindingsForm = ({ teamObjectives = [], onAddFinding, onCancel }) => {
           : undefined,
       };
 
-      onAddFinding(findingData);
+      try {
+        await onAddFinding(findingData);
 
-      // Reset form
-      setFormData({
-        title: "",
-        details: "",
-        objective: "",
-        compliance: "",
-        report: {
-          reportNo: "",
+        // Reset form only on successful add
+        setFormData({
+          title: "",
           details: "",
-          date: new Date(),
-          auditee: null,
-          auditor: null,
-        },
-      });
-      setErrors({});
+          objective: "",
+          compliance: "",
+          report: {
+            reportNo: "",
+            details: "",
+            date: new Date(),
+            auditee: null,
+            auditor: null,
+          },
+        });
+        setErrors({});
+      } catch (error) {
+        // If onAddFinding fails, don't reset form - preserve user's data
+        console.error("Failed to add finding:", error);
+      }
     }
   };
 

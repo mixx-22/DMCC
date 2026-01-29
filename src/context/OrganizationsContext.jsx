@@ -211,7 +211,6 @@ export const OrganizationsProvider = ({ children, scheduleId }) => {
           _id: organizationId,
         };
         dispatch({ type: "UPDATE_ORGANIZATION", payload: updated });
-        console.log({ type: "UPDATE_ORGANIZATION", payload: updated });
         toast.success("Organization Updated", {
           description: "Organization has been successfully updated",
           duration: 2000,
