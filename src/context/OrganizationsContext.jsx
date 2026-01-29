@@ -303,7 +303,8 @@ export const OrganizationsProvider = ({ children, scheduleId }) => {
     if (scheduleId && scheduleId !== "new") {
       fetchOrganizations(scheduleId);
     }
-  }, [scheduleId, fetchOrganizations]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [scheduleId]);
 
   const value = {
     dispatch,
