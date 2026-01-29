@@ -100,7 +100,7 @@ const OrganizationCard = ({
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [editingFinding, setEditingFinding] = useState(null);
   const [editingVisitIndex, setEditingVisitIndex] = useState(null);
-  
+
   // State to track which visit's finding form is shown (visitIndex -> boolean)
   const [showFindingFormFor, setShowFindingFormFor] = useState(new Set());
 
@@ -479,9 +479,15 @@ const OrganizationCard = ({
                                                 }}
                                               />
                                             )}
-                                          
+
+                                          {console.log(
+                                            organization,
+                                            visit.findings,
+                                          )}
                                           {/* Add Finding Form or Button */}
-                                          {(visit.findings?.length === 0 || showFindingFormFor.has(index)) ? (
+                                          {!visit?.findings ||
+                                          visit.findings?.length < 1 ||
+                                          showFindingFormFor.has(index) ? (
                                             <FindingsForm
                                               teamObjectives={
                                                 team?.objectives || []
@@ -497,7 +503,8 @@ const OrganizationCard = ({
                                                         return {
                                                           ...v,
                                                           findings: [
-                                                            ...(v.findings || []),
+                                                            ...(v.findings ||
+                                                              []),
                                                             findingData,
                                                           ],
                                                         };
@@ -513,7 +520,8 @@ const OrganizationCard = ({
                                                     ...organization,
                                                     visits: updatedVisits,
                                                     teamId:
-                                                      organization.teamId || team,
+                                                      organization.teamId ||
+                                                      team,
                                                   },
                                                 });
 
@@ -529,13 +537,17 @@ const OrganizationCard = ({
                                                         team,
                                                     },
                                                   );
-                                                  
+
                                                   // Hide form after successful add
-                                                  setShowFindingFormFor(prev => {
-                                                    const newSet = new Set(prev);
-                                                    newSet.delete(index);
-                                                    return newSet;
-                                                  });
+                                                  setShowFindingFormFor(
+                                                    (prev) => {
+                                                      const newSet = new Set(
+                                                        prev,
+                                                      );
+                                                      newSet.delete(index);
+                                                      return newSet;
+                                                    },
+                                                  );
                                                 } catch (error) {
                                                   console.error(
                                                     "Failed to add finding:",
@@ -544,28 +556,38 @@ const OrganizationCard = ({
                                                   // Could refetch or show error
                                                 }
                                               }}
-                                              onCancel={visit.findings?.length > 0 ? () => {
-                                                setShowFindingFormFor(prev => {
-                                                  const newSet = new Set(prev);
-                                                  newSet.delete(index);
-                                                  return newSet;
-                                                });
-                                              } : undefined}
+                                              onCancel={
+                                                visit.findings?.length > 0
+                                                  ? () => {
+                                                      setShowFindingFormFor(
+                                                        (prev) => {
+                                                          const newSet =
+                                                            new Set(prev);
+                                                          newSet.delete(index);
+                                                          return newSet;
+                                                        },
+                                                      );
+                                                    }
+                                                  : undefined
+                                              }
                                             />
                                           ) : (
                                             <Button
                                               size="sm"
                                               leftIcon={<FiPlus />}
                                               onClick={() => {
-                                                setShowFindingFormFor(prev => {
-                                                  const newSet = new Set(prev);
-                                                  newSet.add(index);
-                                                  return newSet;
-                                                });
+                                                setShowFindingFormFor(
+                                                  (prev) => {
+                                                    const newSet = new Set(
+                                                      prev,
+                                                    );
+                                                    newSet.add(index);
+                                                    return newSet;
+                                                  },
+                                                );
                                               }}
                                               colorScheme="brandPrimary"
                                               variant="outline"
-                                              mt={2}
                                             >
                                               Add Finding
                                             </Button>
