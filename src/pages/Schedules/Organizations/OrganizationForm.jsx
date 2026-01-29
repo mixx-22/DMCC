@@ -8,6 +8,7 @@ import {
   HStack,
   Spacer,
   Stack,
+  useColorModeValue,
 } from "@chakra-ui/react";
 import { useOrganizations } from "../../../context/_useContext";
 import { useCallback, useEffect, useState } from "react";
@@ -18,6 +19,8 @@ import VisitManager from "./VisitManager";
 import { toast } from "sonner";
 
 const OrganizationForm = ({ schedule = {} }) => {
+  const bg = useColorModeValue("brandPrimary.50", "brandPrimary.200");
+  const borderColor = useColorModeValue("brandPrimary.200", "brandPrimary.200");
   const { dispatch, scheduleId, organizations, createOrganization } =
     useOrganizations();
 
@@ -135,7 +138,12 @@ const OrganizationForm = ({ schedule = {} }) => {
   };
 
   return (
-    <Card>
+    <Card
+      bg={bg}
+      borderWidth={2}
+      borderStyle="dashed"
+      borderColor={borderColor}
+    >
       <CardBody>
         <Stack spacing={4}>
           <TeamSingleAsyncSelect
