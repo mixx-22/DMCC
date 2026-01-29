@@ -30,6 +30,13 @@ import {
   useToken,
   Hide,
   Spinner,
+  Accordion,
+  AccordionItem,
+  AccordionPanel,
+  AccordionButton,
+  Spacer,
+  AccordionIcon,
+  Divider,
 } from "@chakra-ui/react";
 import {
   FiMoreVertical,
@@ -189,9 +196,11 @@ const OrganizationCard = ({
                 {loading && <Spinner size="sm" />}
               </HStack>
               <HStack align="center" spacing={0}>
-                <Hide below="md">
-                  <Badge>{latestVisitDate}</Badge>
-                </Hide>
+                {!isExpanded && (
+                  <Hide below="md">
+                    <Badge>{latestVisitDate}</Badge>
+                  </Hide>
+                )}
                 <IconButton
                   icon={isExpanded ? <FiChevronUp /> : <FiChevronDown />}
                   size="sm"
@@ -283,99 +292,155 @@ const OrganizationCard = ({
 
                   <TabPanels>
                     {/* Visit Details Tab */}
-                    <TabPanel px={4}>
+                    <TabPanel p={0}>
                       {organization.visits && organization.visits.length > 0 ? (
-                        <VStack align="stretch" spacing={4}>
-                          {organization.visits.map((visit, index) => (
-                            <VStack
-                              key={index}
-                              align="stretch"
-                              p={4}
-                              borderRadius="md"
-                              borderWidth="1px"
-                              borderColor={borderColor}
-                              spacing={4}
-                            >
-                              {/* Visit Date Header */}
-                              <Box>
-                                <Text
-                                  fontSize="sm"
-                                  fontWeight="semibold"
-                                  color="gray.500"
-                                  mb={1}
-                                >
-                                  Visit Date/s
-                                </Text>
-                                <Text fontSize="sm">
-                                  {formatDateRange(
-                                    visit?.date?.start,
-                                    visit?.date?.end,
-                                  )}
-                                </Text>
-                              </Box>
+                        <Accordion allowToggle>
+                          {organization.visits.map((visit, index) => {
+                            const hasMajorNC = visit?.findings
+                              ?.map((f) => f.compliance)
+                              ?.includes("MAJOR_NC");
+                            const hasMinorNC = visit?.findings
+                              ?.map((f) => f.compliance)
+                              ?.includes("MINOR_NC");
+                            return (
+                              <AccordionItem key={index}>
+                                {({ isExpanded }) => (
+                                  <>
+                                    {/* Visit Date Header */}
+                                    <AccordionButton py={4}>
+                                      <HStack w="full" alignItems="center">
+                                        <Badge
+                                          boxSize={6}
+                                          borderRadius="full"
+                                          colorScheme="purple"
+                                          justifyContent="center"
+                                          alignItems="center"
+                                          display="flex"
+                                        >
+                                          #{index + 1}
+                                        </Badge>
+                                        <Badge
+                                          colorScheme={
+                                            hasMajorNC
+                                              ? "error"
+                                              : hasMinorNC
+                                                ? "warning"
+                                                : undefined
+                                          }
+                                        >
+                                          {formatDateRange(
+                                            visit?.date?.start,
+                                            visit?.date?.end,
+                                          )}
+                                        </Badge>
+                                        <Spacer />
+                                        {!isExpanded && (
+                                          <Text fontSize="sm" color="gray.500">
+                                            ({visit?.findings?.length || 0})
+                                          </Text>
+                                        )}
+                                        <AccordionIcon />
+                                      </HStack>
+                                    </AccordionButton>
 
-                              {/* Findings List */}
-                              {visit.findings && visit.findings.length > 0 && (
-                                <FindingsList
-                                  findings={visit.findings}
-                                  onEdit={(finding) => {
-                                    console.log("Edit finding:", finding);
-                                  }}
-                                  onDelete={(finding) => {
-                                    handleDeleteFinding(finding, index);
-                                  }}
-                                />
-                              )}
+                                    <AccordionPanel pb={4}>
+                                      <Stack>
+                                        <Box>
+                                          <Text
+                                            fontSize="sm"
+                                            fontWeight="semibold"
+                                            color="gray.500"
+                                            mb={1}
+                                          >
+                                            Visit Date/s
+                                          </Text>
+                                          <Text fontSize="sm">
+                                            {formatDateRange(
+                                              visit?.date?.start,
+                                              visit?.date?.end,
+                                            )}
+                                          </Text>
+                                        </Box>
+                                        <Divider my={4} />
+                                        {/* Findings List */}
+                                        {visit.findings &&
+                                          visit.findings.length > 0 && (
+                                            <FindingsList
+                                              findings={visit.findings}
+                                              onEdit={(finding) => {
+                                                console.log(
+                                                  "Edit finding:",
+                                                  finding,
+                                                );
+                                              }}
+                                              onDelete={(finding) => {
+                                                handleDeleteFinding(
+                                                  finding,
+                                                  index,
+                                                );
+                                              }}
+                                            />
+                                          )}
+                                        {/* Add Finding Form */}
+                                        <FindingsForm
+                                          teamObjectives={
+                                            team?.objectives || []
+                                          }
+                                          onAddFinding={async (findingData) => {
+                                            // Calculate updated visits with new finding
+                                            const updatedVisits =
+                                              organization.visits.map(
+                                                (v, i) => {
+                                                  if (i === index) {
+                                                    return {
+                                                      ...v,
+                                                      findings: [
+                                                        ...(v.findings || []),
+                                                        findingData,
+                                                      ],
+                                                    };
+                                                  }
+                                                  return v;
+                                                },
+                                              );
 
-                              {/* Add Finding Form */}
-                              <FindingsForm
-                                teamObjectives={team?.objectives || []}
-                                onAddFinding={async (findingData) => {
-                                  // Calculate updated visits with new finding
-                                  const updatedVisits = organization.visits.map(
-                                    (v, i) => {
-                                      if (i === index) {
-                                        return {
-                                          ...v,
-                                          findings: [
-                                            ...(v.findings || []),
-                                            findingData,
-                                          ],
-                                        };
-                                      }
-                                      return v;
-                                    },
-                                  );
+                                            // Update organization in context
+                                            dispatch({
+                                              type: "UPDATE_ORGANIZATION",
+                                              payload: {
+                                                ...organization,
+                                                visits: updatedVisits,
+                                                team,
+                                              },
+                                            });
 
-                                  // Update organization in context
-                                  dispatch({
-                                    type: "UPDATE_ORGANIZATION",
-                                    payload: {
-                                      ...organization,
-                                      visits: updatedVisits,
-                                      team,
-                                    },
-                                  });
-
-                                  try {
-                                    // Persist to server
-                                    await updateOrganization(organization._id, {
-                                      ...organization,
-                                      visits: updatedVisits,
-                                      team,
-                                    });
-                                  } catch (error) {
-                                    console.error(
-                                      "Failed to add finding:",
-                                      error,
-                                    );
-                                    // Could refetch or show error
-                                  }
-                                }}
-                              />
-                            </VStack>
-                          ))}
-                        </VStack>
+                                            try {
+                                              // Persist to server
+                                              await updateOrganization(
+                                                organization._id,
+                                                {
+                                                  ...organization,
+                                                  visits: updatedVisits,
+                                                  team,
+                                                },
+                                              );
+                                            } catch (error) {
+                                              console.error(
+                                                "Failed to add finding:",
+                                                error,
+                                              );
+                                              // Could refetch or show error
+                                            }
+                                          }}
+                                        />
+                                      </Stack>
+                                    </AccordionPanel>
+                                  </>
+                                )}
+                              </AccordionItem>
+                            );
+                          })}
+                        </Accordion>
                       ) : (
                         <Center minH="xs">
                           <Text color="gray.500" textAlign="center">
