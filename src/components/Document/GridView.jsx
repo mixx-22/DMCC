@@ -35,7 +35,7 @@ export const GridView = ({
 
   // Grid column configurations
   const folderColumns = mini ? [2, 2, 3, 4, 5] : [3, 3, 4, 6, 8];
-  const documentColumns = mini ? [1, 2, 2, 3] : [2, 2, 3, 4];
+  const documentColumns = mini ? [2, 2, 2, 3] : [2, 2, 3, 4];
   const folderIconSize = mini ? { base: 10, md: 12 } : { base: 14, md: 16 };
 
   // Separate folders from other document types
