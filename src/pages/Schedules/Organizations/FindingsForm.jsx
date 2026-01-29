@@ -16,7 +16,7 @@ import {
 } from "@chakra-ui/react";
 import { Select } from "chakra-react-select";
 import { useState } from "react";
-import { FiPlus, FiChevronDown, FiChevronUp, FiSave, FiX } from "react-icons/fi";
+import { FiChevronDown, FiChevronUp, FiSave, FiX } from "react-icons/fi";
 import { SingleDatepicker } from "chakra-dayzed-datepicker";
 import UserAsyncSelect from "../../../components/UserAsyncSelect";
 
@@ -35,33 +35,16 @@ const COMPLIANCE_OPTIONS = [
       "Negative findings which did not violate any standard of ISO or the QMS but may result to non-conformity if not corrected.",
   },
   {
-    value: "NON_CONFORMITY",
-    label: "NON-CONFORMITY (NC)",
-    description:
-      "Violation of a clause or sub-clause of an ISO standard or the QMS",
-  },
-  {
     value: "MINOR_NC",
-    label: "MINOR NC",
+    label: "MINOR NON-CONFORMITY",
     description:
       "NC which violated a single clause or sub-clause which has no adverse effect on consumer satisfaction or product quality",
   },
   {
     value: "MAJOR_NC",
-    label: "MAJOR NC",
+    label: "MAJOR NON-CONFORMITY",
     description:
       "NC which violated a single clause or sub-clause resulting to an adverse effect on consumer satisfaction or product quality.",
-  },
-  {
-    value: "CORRECTION",
-    label: "CORRECTION",
-    description: "Action taken to immediately correct found problem/defect.",
-  },
-  {
-    value: "CORRECTIVE_ACTION",
-    label: "CORRECTIVE ACTION",
-    description:
-      "Action taken to prevent recurrence of found problem/defect",
   },
 ];
 
@@ -157,15 +140,19 @@ const FindingsForm = ({ teamObjectives = [], onAddFinding, onCancel }) => {
               date: formData.report.date.toISOString().split("T")[0],
               auditee: formData.report.auditee
                 ? {
-                    id: formData.report.auditee._id || formData.report.auditee.id,
-                    _id: formData.report.auditee._id || formData.report.auditee.id,
+                    id:
+                      formData.report.auditee._id || formData.report.auditee.id,
+                    _id:
+                      formData.report.auditee._id || formData.report.auditee.id,
                     name: `${formData.report.auditee.firstName} ${formData.report.auditee.lastName}`,
                   }
                 : null,
               auditor: formData.report.auditor
                 ? {
-                    id: formData.report.auditor._id || formData.report.auditor.id,
-                    _id: formData.report.auditor._id || formData.report.auditor.id,
+                    id:
+                      formData.report.auditor._id || formData.report.auditor.id,
+                    _id:
+                      formData.report.auditor._id || formData.report.auditor.id,
                     name: `${formData.report.auditor.firstName} ${formData.report.auditor.lastName}`,
                   }
                 : null,
@@ -263,7 +250,9 @@ const FindingsForm = ({ teamObjectives = [], onAddFinding, onCancel }) => {
                 label: obj.title,
               }))
               .find((opt) => opt.value === formData.objective)}
-            onChange={(option) => handleChange("objective", option?.value || "")}
+            onChange={(option) =>
+              handleChange("objective", option?.value || "")
+            }
             options={teamObjectives.map((obj) => ({
               value: obj._id || obj.title,
               label: obj.title,
