@@ -270,7 +270,12 @@ const OrganizationCard = ({
                             >
                               {/* Visit Date Header */}
                               <Box>
-                                <Text fontSize="sm" fontWeight="semibold" color="gray.500" mb={1}>
+                                <Text
+                                  fontSize="sm"
+                                  fontWeight="semibold"
+                                  color="gray.500"
+                                  mb={1}
+                                >
                                   Visit Date/s
                                 </Text>
                                 <Text fontSize="sm">
@@ -286,11 +291,9 @@ const OrganizationCard = ({
                                 <FindingsList
                                   findings={visit.findings}
                                   onEdit={(finding) => {
-                                    // TODO: Implement edit functionality
                                     console.log("Edit finding:", finding);
                                   }}
                                   onDelete={(finding) => {
-                                    // TODO: Implement delete functionality
                                     console.log("Delete finding:", finding);
                                   }}
                                 />
@@ -300,7 +303,6 @@ const OrganizationCard = ({
                               <FindingsForm
                                 teamObjectives={team?.objectives || []}
                                 onAddFinding={(findingData) => {
-                                  // Add finding to this specific visit
                                   const updatedVisits = organization.visits.map(
                                     (v, i) => {
                                       if (i === index) {
@@ -313,10 +315,9 @@ const OrganizationCard = ({
                                         };
                                       }
                                       return v;
-                                    }
+                                    },
                                   );
 
-                                  // Update the schedule with the new visits
                                   setScheduleFormData((prev) => ({
                                     ...prev,
                                     organizations: prev.organizations?.map(
@@ -324,7 +325,7 @@ const OrganizationCard = ({
                                         org._id === organization._id ||
                                         org.id === organization._id
                                           ? { ...org, visits: updatedVisits }
-                                          : org
+                                          : org,
                                     ),
                                   }));
                                 }}

@@ -150,6 +150,7 @@ const FindingsForm = ({ teamObjectives = [], onAddFinding, onCancel }) => {
                     _id:
                       formData.report.auditee._id || formData.report.auditee.id,
                     name: `${formData.report.auditee.firstName} ${formData.report.auditee.lastName}`,
+                    employeeId: formData.report.auditee?.employeeId,
                   }
                 : null,
               auditor: formData.report.auditor
@@ -159,6 +160,7 @@ const FindingsForm = ({ teamObjectives = [], onAddFinding, onCancel }) => {
                     _id:
                       formData.report.auditor._id || formData.report.auditor.id,
                     name: `${formData.report.auditor.firstName} ${formData.report.auditor.lastName}`,
+                    employeeId: formData.report.auditor?.employeeId,
                   }
                 : null,
             }
@@ -209,40 +211,6 @@ const FindingsForm = ({ teamObjectives = [], onAddFinding, onCancel }) => {
             />
           )}
         </HStack>
-
-        {/* Title */}
-        <FormControl isInvalid={!!errors.title}>
-          <FormLabel fontSize="sm">Title</FormLabel>
-          <Input
-            size="sm"
-            value={formData.title}
-            onChange={(e) => handleChange("title", e.target.value)}
-            placeholder="Enter finding title"
-          />
-          {errors.title && (
-            <FormHelperText color="red.500" fontSize="xs">
-              {errors.title}
-            </FormHelperText>
-          )}
-        </FormControl>
-
-        {/* Details */}
-        <FormControl isInvalid={!!errors.details}>
-          <FormLabel fontSize="sm">Details</FormLabel>
-          <Textarea
-            size="sm"
-            value={formData.details}
-            onChange={(e) => handleChange("details", e.target.value)}
-            placeholder="Enter detailed description of the finding"
-            rows={3}
-          />
-          {errors.details && (
-            <FormHelperText color="red.500" fontSize="xs">
-              {errors.details}
-            </FormHelperText>
-          )}
-        </FormControl>
-
         {/* Objective Dropdown */}
         <FormControl isInvalid={!!errors.objective}>
           <FormLabel fontSize="sm">Objective</FormLabel>
@@ -287,6 +255,7 @@ const FindingsForm = ({ teamObjectives = [], onAddFinding, onCancel }) => {
             placeholder="Select compliance type"
             isClearable
             useBasicStyles
+            menuPortalTarget={document.body}
           />
           {errors.compliance && (
             <FormHelperText color="red.500" fontSize="xs">
@@ -300,6 +269,39 @@ const FindingsForm = ({ teamObjectives = [], onAddFinding, onCancel }) => {
                   (opt) => opt.value === formData.compliance,
                 )?.description
               }
+            </FormHelperText>
+          )}
+        </FormControl>
+
+        {/* Title */}
+        <FormControl isInvalid={!!errors.title}>
+          <FormLabel fontSize="sm">Title</FormLabel>
+          <Input
+            size="sm"
+            value={formData.title}
+            onChange={(e) => handleChange("title", e.target.value)}
+            placeholder="Enter finding title"
+          />
+          {errors.title && (
+            <FormHelperText color="red.500" fontSize="xs">
+              {errors.title}
+            </FormHelperText>
+          )}
+        </FormControl>
+
+        {/* Details */}
+        <FormControl isInvalid={!!errors.details}>
+          <FormLabel fontSize="sm">Details</FormLabel>
+          <Textarea
+            size="sm"
+            value={formData.details}
+            onChange={(e) => handleChange("details", e.target.value)}
+            placeholder="Enter detailed description of the finding"
+            rows={3}
+          />
+          {errors.details && (
+            <FormHelperText color="red.500" fontSize="xs">
+              {errors.details}
             </FormHelperText>
           )}
         </FormControl>

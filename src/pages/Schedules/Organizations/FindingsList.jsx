@@ -23,7 +23,6 @@ import {
   FiTrash2,
   FiFileText,
 } from "react-icons/fi";
-import { formatDateRange } from "../../../utils/helpers";
 import moment from "moment";
 
 // Map compliance values to display names and colors
@@ -48,16 +47,10 @@ const FindingCard = ({ finding, onEdit, onDelete }) => {
   const reportBg = useColorModeValue("gray.50", "gray.800");
 
   const complianceInfo =
-    COMPLIANCE_DISPLAY[finding.compliance] ||
-    COMPLIANCE_DISPLAY.OBSERVATIONS;
+    COMPLIANCE_DISPLAY[finding.compliance] || COMPLIANCE_DISPLAY.OBSERVATIONS;
 
   return (
-    <Card
-      size="sm"
-      variant="outline"
-      borderColor={borderColor}
-      bg={cardBg}
-    >
+    <Card size="sm" variant="outline" borderColor={borderColor} bg={cardBg}>
       <CardBody>
         <VStack align="stretch" spacing={3}>
           {/* Header */}
@@ -115,7 +108,12 @@ const FindingCard = ({ finding, onEdit, onDelete }) => {
 
               {/* Details */}
               <Box>
-                <Text fontSize="xs" color={labelColor} fontWeight="semibold" mb={1}>
+                <Text
+                  fontSize="xs"
+                  color={labelColor}
+                  fontWeight="semibold"
+                  mb={1}
+                >
                   Details
                 </Text>
                 <Text fontSize="sm" whiteSpace="pre-wrap">
@@ -231,6 +229,7 @@ const FindingCard = ({ finding, onEdit, onDelete }) => {
 };
 
 const FindingsList = ({ findings = [], onEdit, onDelete }) => {
+  console.log({ findings });
   if (!findings || findings.length === 0) {
     return null;
   }
