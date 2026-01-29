@@ -77,9 +77,26 @@ const OrganizationCard = ({
   const [localOrganization, setLocalOrganization] = useState(organization);
 
   // Sync local state when organization prop changes (from context updates)
+  // Smart sync: Only update if server data has same or more findings (preserves optimistic updates)
   useEffect(() => {
-    setLocalOrganization(organization);
-  }, [organization]);
+    // Count findings in both local and prop state
+    const localCount =
+      localOrganization.visits?.reduce(
+        (sum, v) => sum + (v.findings?.length || 0),
+        0,
+      ) || 0;
+    const propCount =
+      organization.visits?.reduce(
+        (sum, v) => sum + (v.findings?.length || 0),
+        0,
+      ) || 0;
+
+    // Only sync if server has same or more findings (prevents losing optimistic updates)
+    if (propCount >= localCount) {
+      setLocalOrganization(organization);
+    }
+    // Otherwise keep local state which has newer optimistic updates
+  }, [organization, localOrganization.visits]);
   const cardBg = useColorModeValue("white", "gray.700");
   const errorColor = useColorModeValue("error.600", "error.400");
   const borderColor = useColorModeValue("gray.200", "gray.600");
@@ -121,6 +138,51 @@ const OrganizationCard = ({
       } catch (error) {
         console.error("Failed to delete organization:", error);
       }
+    }
+  };
+
+  const handleDeleteFinding = async (finding, visitIndex) => {
+    // Calculate updated visits without the deleted finding
+    const updatedVisits = localOrganization.visits.map((v, i) => {
+      if (i === visitIndex) {
+        return {
+          ...v,
+          findings: (v.findings || []).filter((f) => f._id !== finding._id),
+        };
+      }
+      return v;
+    });
+
+    // 1. Optimistic update in local state (instant UI feedback)
+    setLocalOrganization({
+      ...localOrganization,
+      visits: updatedVisits,
+    });
+
+    // 2. Optimistic update in context (updates all components immediately)
+    dispatch({
+      type: "UPDATE_ORGANIZATION_OPTIMISTIC",
+      payload: {
+        _id: organization._id,
+        updates: { visits: updatedVisits },
+      },
+    });
+
+    try {
+      // 3. Persist to server in background
+      await updateOrganization(organization._id, {
+        ...organization,
+        visits: updatedVisits,
+      });
+      // Success - server has confirmed, context already updated
+    } catch (error) {
+      // 4. Revert optimistic updates on error
+      setLocalOrganization(organization);
+      dispatch({
+        type: "UPDATE_ORGANIZATION",
+        payload: organization,
+      });
+      console.error("Failed to delete finding:", error);
     }
   };
 
@@ -296,7 +358,7 @@ const OrganizationCard = ({
                                     console.log("Edit finding:", finding);
                                   }}
                                   onDelete={(finding) => {
-                                    console.log("Delete finding:", finding);
+                                    handleDeleteFinding(finding, index);
                                   }}
                                 />
                               )}
