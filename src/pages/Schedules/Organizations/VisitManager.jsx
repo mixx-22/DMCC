@@ -24,6 +24,7 @@ const VisitManager = ({
   onChange,
   isInvalid,
   onCancel = null,
+  label = "Visits",
 }) => {
   const { pageRef } = useLayout();
   const bg = useColorModeValue("brandPrimary.50", "brandPrimary.200");
@@ -66,7 +67,7 @@ const VisitManager = ({
 
   return (
     <FormControl>
-      <FormLabel>Visits</FormLabel>
+      <FormLabel>{label}</FormLabel>
       <VStack align="stretch" spacing={3}>
         {visits.map((visit, index) => (
           <HStack

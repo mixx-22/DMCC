@@ -370,223 +370,212 @@ const OrganizationCard = ({
                 <TabPanels>
                   {/* Visit Details Tab */}
                   <TabPanel p={0}>
-                    {organization.visits && organization.visits.length > 0 ? (
-                      <Accordion allowToggle>
-                        {organization.visits.map((visit, index) => {
-                          const hasMajorNC = visit?.findings
-                            ?.map((f) => f.compliance)
-                            ?.includes("MAJOR_NC");
-                          const hasMinorNC = visit?.findings
-                            ?.map((f) => f.compliance)
-                            ?.includes("MINOR_NC");
-                          return (
-                            <AccordionItem key={index} border="none">
-                              {({ isExpanded }) => (
-                                <>
-                                  {/* Visit Date Header */}
-                                  <AccordionButton py={4}>
-                                    <HStack w="full" alignItems="center">
-                                      <Box pos="relative">
-                                        {index !== 0 && (
-                                          <Box
-                                            w={6}
-                                            h={4}
-                                            pos="absolute"
-                                            zIndex={1}
-                                            top={-4}
-                                            left={"calc(50% - 1px)"}
-                                          >
-                                            <Box
-                                              w="2px"
-                                              h="full"
-                                              bg={objectiveBg}
-                                            ></Box>
+                    {!showVisitForm && (
+                      <>
+                        {organization?.visits?.length > 0 ? (
+                          <Accordion allowToggle>
+                            {organization.visits.map((visit, index) => {
+                              const hasMajorNC = visit?.findings
+                                ?.map((f) => f.compliance)
+                                ?.includes("MAJOR_NC");
+                              const hasMinorNC = visit?.findings
+                                ?.map((f) => f.compliance)
+                                ?.includes("MINOR_NC");
+                              return (
+                                <AccordionItem key={index} border="none">
+                                  {({ isExpanded }) => (
+                                    <>
+                                      {/* Visit Date Header */}
+                                      <AccordionButton py={4}>
+                                        <HStack w="full" alignItems="center">
+                                          <Box pos="relative">
+                                            {index !== 0 && (
+                                              <Box
+                                                w={6}
+                                                h={4}
+                                                pos="absolute"
+                                                zIndex={1}
+                                                top={-4}
+                                                left={"calc(50% - 1px)"}
+                                              >
+                                                <Box
+                                                  w="2px"
+                                                  h="full"
+                                                  bg={objectiveBg}
+                                                ></Box>
+                                              </Box>
+                                            )}
+                                            {index !==
+                                              organization.visits?.length -
+                                                1 && (
+                                              <Box
+                                                w={6}
+                                                h={4}
+                                                pos="absolute"
+                                                zIndex={1}
+                                                bottom={-4}
+                                                left={"calc(50% - 1px)"}
+                                              >
+                                                <Box
+                                                  w="2px"
+                                                  h="full"
+                                                  bg={objectiveBg}
+                                                ></Box>
+                                              </Box>
+                                            )}
+                                            <Badge
+                                              pos="relative"
+                                              zIndex={2}
+                                              boxSize={6}
+                                              borderRadius="full"
+                                              colorScheme="purple"
+                                              justifyContent="center"
+                                              alignItems="center"
+                                              display="flex"
+                                            >
+                                              #{index + 1}
+                                            </Badge>
                                           </Box>
-                                        )}
-                                        {index !==
-                                          organization.visits?.length - 1 && (
-                                          <Box
-                                            w={6}
-                                            h={4}
-                                            pos="absolute"
-                                            zIndex={1}
-                                            bottom={-4}
-                                            left={"calc(50% - 1px)"}
+                                          <Badge
+                                            colorScheme={
+                                              hasMajorNC
+                                                ? "error"
+                                                : hasMinorNC
+                                                  ? "warning"
+                                                  : undefined
+                                            }
                                           >
-                                            <Box
-                                              w="2px"
-                                              h="full"
-                                              bg={objectiveBg}
-                                            ></Box>
-                                          </Box>
-                                        )}
-                                        <Badge
-                                          pos="relative"
-                                          zIndex={2}
-                                          boxSize={6}
-                                          borderRadius="full"
-                                          colorScheme="purple"
-                                          justifyContent="center"
-                                          alignItems="center"
-                                          display="flex"
-                                        >
-                                          #{index + 1}
-                                        </Badge>
-                                      </Box>
-                                      <Badge
-                                        colorScheme={
-                                          hasMajorNC
-                                            ? "error"
-                                            : hasMinorNC
-                                              ? "warning"
-                                              : undefined
-                                        }
-                                      >
-                                        {formatDateRange(
-                                          visit?.date?.start,
-                                          visit?.date?.end,
-                                        )}
-                                      </Badge>
-                                      <Spacer />
-                                      {!isExpanded && (
-                                        <Text fontSize="sm" color="gray.500">
-                                          ({visit?.findings?.length || 0})
-                                        </Text>
-                                      )}
-                                      <AccordionIcon />
-                                    </HStack>
-                                  </AccordionButton>
-
-                                  <AccordionPanel px={4} py={0}>
-                                    <Flex gap={0}>
-                                      <Box
-                                        minW={6}
-                                        display="flex"
-                                        justifyContent="center"
-                                      >
-                                        {index !==
-                                          organization.visits.length - 1 && (
-                                          <Box
-                                            w="2px"
-                                            h="full"
-                                            bg={objectiveBg}
-                                          />
-                                        )}
-                                      </Box>
-                                      <Stack flex={1} py={4} pl={2} pr={0}>
-                                        <Box>
-                                          <Text
-                                            fontSize="sm"
-                                            fontWeight="semibold"
-                                            color="gray.500"
-                                            mb={1}
-                                          >
-                                            Visit Date/s
-                                          </Text>
-                                          <Text fontSize="sm">
                                             {formatDateRange(
                                               visit?.date?.start,
                                               visit?.date?.end,
                                             )}
-                                          </Text>
-                                        </Box>
-                                        <Divider my={4} />
-                                        {/* Findings List */}
-                                        {visit.findings &&
-                                          visit.findings.length > 0 && (
-                                            <FindingsList
-                                              findings={visit.findings}
-                                              onEdit={(finding) => {
-                                                setEditingFinding(finding);
-                                                setEditingVisitIndex(index);
-                                                setEditModalOpen(true);
-                                              }}
-                                              onDelete={(finding) => {
-                                                handleDeleteFinding(
-                                                  finding,
-                                                  index,
-                                                );
-                                              }}
-                                            />
+                                          </Badge>
+                                          <Spacer />
+                                          {!isExpanded && (
+                                            <Text
+                                              fontSize="sm"
+                                              color="gray.500"
+                                            >
+                                              ({visit?.findings?.length || 0})
+                                            </Text>
                                           )}
+                                          <AccordionIcon />
+                                        </HStack>
+                                      </AccordionButton>
 
-                                        {console.log(
-                                          organization,
-                                          visit.findings,
-                                        )}
-                                        {/* Add Finding Form or Button */}
-                                        {!visit?.findings ||
-                                        visit.findings?.length < 1 ||
-                                        showFindingFormFor.has(index) ? (
-                                          <FindingsForm
-                                            teamObjectives={
-                                              team?.objectives || []
-                                            }
-                                            onAddFinding={async (
-                                              findingData,
-                                            ) => {
-                                              // Calculate updated visits with new finding
-                                              const updatedVisits =
-                                                organization.visits.map(
-                                                  (v, i) => {
-                                                    if (i === index) {
-                                                      return {
-                                                        ...v,
-                                                        findings: [
-                                                          ...(v.findings || []),
-                                                          findingData,
-                                                        ],
-                                                      };
-                                                    }
-                                                    return v;
-                                                  },
-                                                );
-
-                                              // Update organization in context
-                                              dispatch({
-                                                type: "UPDATE_ORGANIZATION",
-                                                payload: {
-                                                  ...organization,
-                                                  visits: updatedVisits,
-                                                  teamId:
-                                                    organization.teamId || team,
-                                                },
-                                              });
-
-                                              try {
-                                                // Persist to server
-                                                await updateOrganization(
-                                                  organization._id,
-                                                  {
-                                                    ...organization,
-                                                    visits: updatedVisits,
-                                                    teamId:
-                                                      organization.teamId ||
-                                                      team,
-                                                  },
-                                                );
-
-                                                // Hide form after successful add
-                                                setShowFindingFormFor(
-                                                  (prev) => {
-                                                    const newSet = new Set(
-                                                      prev,
+                                      <AccordionPanel px={4} py={0}>
+                                        <Flex gap={0}>
+                                          <Box
+                                            minW={6}
+                                            display="flex"
+                                            justifyContent="center"
+                                          >
+                                            {index !==
+                                              organization.visits.length -
+                                                1 && (
+                                              <Box
+                                                w="2px"
+                                                h="full"
+                                                bg={objectiveBg}
+                                              />
+                                            )}
+                                          </Box>
+                                          <Stack flex={1} py={4} pl={2} pr={0}>
+                                            <Box>
+                                              <Text
+                                                fontSize="sm"
+                                                fontWeight="semibold"
+                                                color="gray.500"
+                                                mb={1}
+                                              >
+                                                Visit Date/s
+                                              </Text>
+                                              <Text fontSize="sm">
+                                                {formatDateRange(
+                                                  visit?.date?.start,
+                                                  visit?.date?.end,
+                                                )}
+                                              </Text>
+                                            </Box>
+                                            <Divider my={4} />
+                                            {/* Findings List */}
+                                            {visit.findings &&
+                                              visit.findings.length > 0 && (
+                                                <FindingsList
+                                                  findings={visit.findings}
+                                                  onEdit={(finding) => {
+                                                    setEditingFinding(finding);
+                                                    setEditingVisitIndex(index);
+                                                    setEditModalOpen(true);
+                                                  }}
+                                                  onDelete={(finding) => {
+                                                    handleDeleteFinding(
+                                                      finding,
+                                                      index,
                                                     );
-                                                    newSet.delete(index);
-                                                    return newSet;
-                                                  },
-                                                );
-                                              } catch (error) {
-                                                console.error(
-                                                  "Failed to add finding:",
-                                                  error,
-                                                );
-                                                // Could refetch or show error
-                                              }
-                                            }}
-                                            onCancel={
-                                              visit.findings?.length > 0
-                                                ? () => {
+                                                  }}
+                                                />
+                                              )}
+
+                                            {console.log(
+                                              organization,
+                                              visit.findings,
+                                            )}
+                                            {/* Add Finding Form or Button */}
+                                            {!visit?.findings ||
+                                            visit.findings?.length < 1 ||
+                                            showFindingFormFor.has(index) ? (
+                                              <FindingsForm
+                                                teamObjectives={
+                                                  team?.objectives || []
+                                                }
+                                                onAddFinding={async (
+                                                  findingData,
+                                                ) => {
+                                                  // Calculate updated visits with new finding
+                                                  const updatedVisits =
+                                                    organization.visits.map(
+                                                      (v, i) => {
+                                                        if (i === index) {
+                                                          return {
+                                                            ...v,
+                                                            findings: [
+                                                              ...(v.findings ||
+                                                                []),
+                                                              findingData,
+                                                            ],
+                                                          };
+                                                        }
+                                                        return v;
+                                                      },
+                                                    );
+
+                                                  // Update organization in context
+                                                  dispatch({
+                                                    type: "UPDATE_ORGANIZATION",
+                                                    payload: {
+                                                      ...organization,
+                                                      visits: updatedVisits,
+                                                      teamId:
+                                                        organization.teamId ||
+                                                        team,
+                                                    },
+                                                  });
+
+                                                  try {
+                                                    // Persist to server
+                                                    await updateOrganization(
+                                                      organization._id,
+                                                      {
+                                                        ...organization,
+                                                        visits: updatedVisits,
+                                                        teamId:
+                                                          organization.teamId ||
+                                                          team,
+                                                      },
+                                                    );
+
+                                                    // Hide form after successful add
                                                     setShowFindingFormFor(
                                                       (prev) => {
                                                         const newSet = new Set(
@@ -596,43 +585,94 @@ const OrganizationCard = ({
                                                         return newSet;
                                                       },
                                                     );
+                                                  } catch (error) {
+                                                    console.error(
+                                                      "Failed to add finding:",
+                                                      error,
+                                                    );
+                                                    // Could refetch or show error
                                                   }
-                                                : undefined
-                                            }
-                                          />
-                                        ) : (
-                                          <Button
-                                            size="sm"
-                                            leftIcon={<FiPlus />}
-                                            onClick={() => {
-                                              setShowFindingFormFor((prev) => {
-                                                const newSet = new Set(prev);
-                                                newSet.add(index);
-                                                return newSet;
-                                              });
-                                            }}
-                                            colorScheme="brandPrimary"
-                                            variant="outline"
-                                          >
-                                            Add Finding
-                                          </Button>
-                                        )}
-                                      </Stack>
-                                    </Flex>
-                                  </AccordionPanel>
-                                </>
-                              )}
-                            </AccordionItem>
-                          );
-                        })}
-                      </Accordion>
-                    ) : (
-                      <Center minH="xs">
-                        <Text color="gray.500" textAlign="center">
-                          No visits scheduled
-                        </Text>
-                      </Center>
+                                                }}
+                                                onCancel={
+                                                  visit.findings?.length > 0
+                                                    ? () => {
+                                                        setShowFindingFormFor(
+                                                          (prev) => {
+                                                            const newSet =
+                                                              new Set(prev);
+                                                            newSet.delete(
+                                                              index,
+                                                            );
+                                                            return newSet;
+                                                          },
+                                                        );
+                                                      }
+                                                    : undefined
+                                                }
+                                              />
+                                            ) : (
+                                              <Button
+                                                size="sm"
+                                                leftIcon={<FiPlus />}
+                                                onClick={() => {
+                                                  setShowFindingFormFor(
+                                                    (prev) => {
+                                                      const newSet = new Set(
+                                                        prev,
+                                                      );
+                                                      newSet.add(index);
+                                                      return newSet;
+                                                    },
+                                                  );
+                                                }}
+                                                colorScheme="brandPrimary"
+                                                variant="outline"
+                                              >
+                                                Add Finding
+                                              </Button>
+                                            )}
+                                          </Stack>
+                                        </Flex>
+                                      </AccordionPanel>
+                                    </>
+                                  )}
+                                </AccordionItem>
+                              );
+                            })}
+                          </Accordion>
+                        ) : (
+                          <Center minH="xs">
+                            <Text color="gray.500" textAlign="center">
+                              No visits scheduled
+                            </Text>
+                          </Center>
+                        )}
+                      </>
                     )}
+
+                    {/* Add Visit Section */}
+                    <Box p={4} pt={2}>
+                      {showVisitForm ? (
+                        <VisitManager
+                          label=""
+                          visits={organization.visits || []}
+                          onChange={handleAddVisit}
+                          onCancel={() => setShowVisitForm(false)}
+                        />
+                      ) : (
+                        <Flex justifyContent="flex-end">
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            colorScheme="purple"
+                            leftIcon={<FiCalendar />}
+                            onClick={() => setShowVisitForm(true)}
+                          >
+                            Add Visit
+                          </Button>
+                        </Flex>
+                      )}
+                    </Box>
                   </TabPanel>
                   {/* Team Details Tab */}
                   <TabPanel>
@@ -837,29 +877,6 @@ const OrganizationCard = ({
                   </TabPanel>
                 </TabPanels>
               </Tabs>
-
-              {/* Add Visit Section */}
-              <Box p={4}>
-                {showVisitForm ? (
-                  <VisitManager
-                    visits={organization.visits || []}
-                    onChange={handleAddVisit}
-                    onCancel={() => setShowVisitForm(false)}
-                  />
-                ) : (
-                  <Flex justifyContent="flex-end">
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      colorScheme="purple"
-                      leftIcon={<FiCalendar />}
-                      onClick={() => setShowVisitForm(true)}
-                    >
-                      Add Visit
-                    </Button>
-                  </Flex>
-                )}
-              </Box>
             </Box>
           </Collapse>
         </CardBody>
