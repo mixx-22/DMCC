@@ -27,14 +27,14 @@ import moment from "moment";
 
 // Map compliance values to display names and colors
 const COMPLIANCE_DISPLAY = {
-  OBSERVATIONS: { label: "Observations", color: "blue" },
+  OBSERVATIONS: { label: "Observations", color: "brandPrimary" },
   OPPORTUNITIES_FOR_IMPROVEMENTS: {
     label: "Opportunities for Improvements",
-    color: "yellow",
+    color: "brandSecondary",
   },
-  NON_CONFORMITY: { label: "Non-Conformity", color: "orange" },
-  MINOR_NC: { label: "Minor Non-Conformity", color: "orange" },
-  MAJOR_NC: { label: "Major Non-Conformity", color: "red" },
+  NON_CONFORMITY: { label: "Non-Conformity", color: "warning" },
+  MINOR_NC: { label: "Minor Non-Conformity", color: "warning" },
+  MAJOR_NC: { label: "Major Non-Conformity", color: "error" },
 };
 
 const FindingCard = ({ finding, onEdit, onDelete }) => {
@@ -87,7 +87,7 @@ const FindingCard = ({ finding, onEdit, onDelete }) => {
                   icon={<FiEdit />}
                   size="sm"
                   variant="ghost"
-                  colorScheme="blue"
+                  colorScheme="brandPrimary"
                   onClick={() => onEdit(finding)}
                   aria-label="Edit finding"
                 />
@@ -97,7 +97,7 @@ const FindingCard = ({ finding, onEdit, onDelete }) => {
                   icon={<FiTrash2 />}
                   size="sm"
                   variant="ghost"
-                  colorScheme="red"
+                  colorScheme="error"
                   onClick={() => onDelete(finding)}
                   aria-label="Delete finding"
                 />

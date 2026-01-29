@@ -375,6 +375,10 @@ const EditFindingModal = ({
                         inputProps: {
                           size: "sm",
                         },
+                        triggerBtnProps: {
+                          size: "sm",
+                          w: "full",
+                        },
                       }}
                     />
                   </FormControl>
