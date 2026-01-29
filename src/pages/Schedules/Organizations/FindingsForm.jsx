@@ -80,15 +80,19 @@ const FindingsForm = ({
               date: initialData.report.date
                 ? new Date(initialData.report.date)
                 : new Date(),
-              auditee: initialData.report.auditee || null,
-              auditor: initialData.report.auditor || null,
+              auditee: Array.isArray(initialData.report.auditee) 
+                ? initialData.report.auditee 
+                : initialData.report.auditee ? [initialData.report.auditee] : [],
+              auditor: Array.isArray(initialData.report.auditor)
+                ? initialData.report.auditor
+                : initialData.report.auditor ? [initialData.report.auditor] : [],
             }
           : {
               reportNo: "",
               details: "",
               date: new Date(),
-              auditee: null,
-              auditor: null,
+              auditee: [],
+              auditor: [],
             },
       };
     }
@@ -101,8 +105,8 @@ const FindingsForm = ({
         reportNo: "",
         details: "",
         date: new Date(),
-        auditee: null,
-        auditor: null,
+        auditee: [],
+        auditor: [],
       },
     };
   };
@@ -160,11 +164,11 @@ const FindingsForm = ({
       if (!formData.report.details.trim()) {
         newErrors["report.details"] = "Report details are required";
       }
-      if (!formData.report.auditee) {
-        newErrors["report.auditee"] = "Auditee is required";
+      if (!formData.report.auditee || formData.report.auditee.length === 0) {
+        newErrors["report.auditee"] = "At least one auditee is required";
       }
-      if (!formData.report.auditor) {
-        newErrors["report.auditor"] = "Auditor is required";
+      if (!formData.report.auditor || formData.report.auditor.length === 0) {
+        newErrors["report.auditor"] = "At least one auditor is required";
       }
     }
 
@@ -190,26 +194,8 @@ const FindingsForm = ({
           ? {
               ...formData.report,
               date: formData.report.date.toISOString().split("T")[0],
-              auditee: formData.report.auditee
-                ? {
-                    id:
-                      formData.report.auditee._id || formData.report.auditee.id,
-                    _id:
-                      formData.report.auditee._id || formData.report.auditee.id,
-                    name: `${formData.report.auditee.firstName} ${formData.report.auditee.lastName}`,
-                    employeeId: formData.report.auditee?.employeeId,
-                  }
-                : null,
-              auditor: formData.report.auditor
-                ? {
-                    id:
-                      formData.report.auditor._id || formData.report.auditor.id,
-                    _id:
-                      formData.report.auditor._id || formData.report.auditor.id,
-                    name: `${formData.report.auditor.firstName} ${formData.report.auditor.lastName}`,
-                    employeeId: formData.report.auditor?.employeeId,
-                  }
-                : null,
+              auditee: formData.report.auditee || [],
+              auditor: formData.report.auditor || [],
             }
           : undefined,
       };
@@ -430,13 +416,9 @@ const FindingsForm = ({
                 <FormLabel fontSize="sm">Auditee</FormLabel>
                 <UserAsyncSelect
                   label=""
-                  value={
-                    formData.report.auditee ? [formData.report.auditee] : []
-                  }
-                  onChange={(users) =>
-                    handleReportChange("auditee", users[0] || null)
-                  }
-                  placeholder="Select Auditee"
+                  value={formData.report.auditee || []}
+                  onChange={(users) => handleReportChange("auditee", users)}
+                  placeholder="Select Auditee(s)"
                   displayMode="none"
                 />
                 {errors["report.auditee"] && (
@@ -451,13 +433,9 @@ const FindingsForm = ({
                 <FormLabel fontSize="sm">Auditor</FormLabel>
                 <UserAsyncSelect
                   label=""
-                  value={
-                    formData.report.auditor ? [formData.report.auditor] : []
-                  }
-                  onChange={(users) =>
-                    handleReportChange("auditor", users[0] || null)
-                  }
-                  placeholder="Select Auditor"
+                  value={formData.report.auditor || []}
+                  onChange={(users) => handleReportChange("auditor", users)}
+                  placeholder="Select Auditor(s)"
                   displayMode="none"
                 />
                 {errors["report.auditor"] && (
