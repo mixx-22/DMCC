@@ -482,7 +482,7 @@ const OrganizationCard = ({
                           </Center>
                         ) : documents && documents.length > 0 ? (
                           <GridView
-                            // TODO: smaller view; drawer
+                            mini={true}
                             documents={documents}
                             selectedDocument={selectedDocument}
                             onDocumentClick={(doc) => {
