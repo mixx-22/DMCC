@@ -7,11 +7,11 @@ import OrganizationForm from "./OrganizationForm";
 
 const Organizations = ({ schedule = {}, setFormData = () => {} }) => {
   const { loading, organizations } = useOrganizations();
-  
+
   // Track which organization cards are expanded (by ID)
   // This preserves expanded state across re-renders when organizations update
   const [expandedOrgIds, setExpandedOrgIds] = useState(new Set());
-  
+
   // Toggle expanded state for an organization
   const toggleExpanded = useCallback((orgId) => {
     setExpandedOrgIds((prev) => {
@@ -38,15 +38,17 @@ const Organizations = ({ schedule = {}, setFormData = () => {} }) => {
         </Text>
       </Flex>
 
-      {loading ? (
+      {loading && organizations?.length < 1 && (
         <Flex justify="center" py={8}>
           <Spinner size="md" />
         </Flex>
-      ) : organizations?.length > 0 ? (
+      )}
+      {organizations?.length > 0 && (
         <VStack align="stretch" spacing={3}>
           {organizations.map((org) => (
             <OrganizationCard
               key={org._id}
+              loading={loading}
               organization={org}
               team={org.team || { name: org.teamName || "Unknown Team" }}
               auditors={org.auditors || []}
@@ -55,8 +57,6 @@ const Organizations = ({ schedule = {}, setFormData = () => {} }) => {
             />
           ))}
         </VStack>
-      ) : (
-        ""
       )}
       <OrganizationForm {...{ schedule, setFormData }} />
     </VStack>

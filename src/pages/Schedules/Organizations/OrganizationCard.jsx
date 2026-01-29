@@ -29,6 +29,7 @@ import {
   cssVar,
   useToken,
   Hide,
+  Spinner,
 } from "@chakra-ui/react";
 import {
   FiMoreVertical,
@@ -54,8 +55,7 @@ import FindingsForm from "./FindingsForm";
 import FindingsList from "./FindingsList";
 
 const OrganizationCard = ({
-  schedule,
-  setFormData: setScheduleFormData = () => {},
+  loading = false,
   organization,
   team,
   auditors = [],
@@ -71,10 +71,10 @@ const OrganizationCard = ({
   } = useDocuments();
   const { selectedDocument, closeDocumentDrawer, handleDocumentClick } =
     useLayout();
-  
+
   // Local state for optimistic updates - shows changes immediately without waiting for server
   const [localOrganization, setLocalOrganization] = useState(organization);
-  
+
   // Sync local state when organization prop changes (from context updates)
   useEffect(() => {
     setLocalOrganization(organization);
@@ -158,6 +158,7 @@ const OrganizationCard = ({
                 <Text fontWeight="bold" fontSize="lg">
                   {team?.name || "Unknown Team"}
                 </Text>
+                {loading && <Spinner size="sm" />}
               </HStack>
               <HStack align="center" spacing={0}>
                 <Hide below="md">
@@ -255,7 +256,8 @@ const OrganizationCard = ({
                   <TabPanels>
                     {/* Visit Details Tab */}
                     <TabPanel px={4}>
-                      {localOrganization.visits && localOrganization.visits.length > 0 ? (
+                      {localOrganization.visits &&
+                      localOrganization.visits.length > 0 ? (
                         <VStack align="stretch" spacing={4}>
                           {localOrganization.visits.map((visit, index) => (
                             <VStack
@@ -303,8 +305,8 @@ const OrganizationCard = ({
                                 teamObjectives={team?.objectives || []}
                                 onAddFinding={async (findingData) => {
                                   // Optimistic update: Update local state immediately
-                                  const updatedVisits = localOrganization.visits.map(
-                                    (v, i) => {
+                                  const updatedVisits =
+                                    localOrganization.visits.map((v, i) => {
                                       if (i === index) {
                                         return {
                                           ...v,
@@ -315,8 +317,7 @@ const OrganizationCard = ({
                                         };
                                       }
                                       return v;
-                                    },
-                                  );
+                                    });
 
                                   // Show the finding immediately (optimistic update)
                                   setLocalOrganization({
@@ -334,7 +335,10 @@ const OrganizationCard = ({
                                   } catch (error) {
                                     // Revert optimistic update on error
                                     setLocalOrganization(organization);
-                                    console.error("Failed to add finding:", error);
+                                    console.error(
+                                      "Failed to add finding:",
+                                      error,
+                                    );
                                   }
                                 }}
                               />
