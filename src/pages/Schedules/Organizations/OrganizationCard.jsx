@@ -96,7 +96,7 @@ const OrganizationCard = ({
       setLocalOrganization(organization);
     }
     // Otherwise keep local state which has newer optimistic updates
-  }, [organization, localOrganization.visits]);
+  }, [organization]); // Only trigger when org prop changes, not local state
   const cardBg = useColorModeValue("white", "gray.700");
   const errorColor = useColorModeValue("error.600", "error.400");
   const borderColor = useColorModeValue("gray.200", "gray.600");
@@ -169,9 +169,9 @@ const OrganizationCard = ({
     });
 
     try {
-      // 3. Persist to server in background
+      // 3. Persist to server in background - use localOrganization as base (has latest data)
       await updateOrganization(organization._id, {
-        ...organization,
+        ...localOrganization,
         visits: updatedVisits,
       });
       // Success - server has confirmed, context already updated
@@ -398,9 +398,9 @@ const OrganizationCard = ({
                                   });
 
                                   try {
-                                    // 4. Persist to server in background
+                                    // 4. Persist to server in background - use localOrganization as base (has latest data)
                                     await updateOrganization(organization._id, {
-                                      ...organization,
+                                      ...localOrganization,
                                       visits: updatedVisits,
                                     });
                                     // Success - server has confirmed, context already updated
