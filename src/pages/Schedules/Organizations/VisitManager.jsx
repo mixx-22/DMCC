@@ -16,9 +16,11 @@ import { FiPlus, FiX, FiCalendar } from "react-icons/fi";
 import { SingleDatepicker } from "chakra-dayzed-datepicker";
 import moment from "moment/moment";
 
-const VisitManager = ({ visits = [], onChange }) => {
+const VisitManager = ({ visits = [], onChange, isInvalid }) => {
   const bg = useColorModeValue("brandPrimary.50", "brandPrimary.200");
   const borderColor = useColorModeValue("brandPrimary.200", "brandPrimary.200");
+  const invalidBg = useColorModeValue("error.50", "error.200");
+  const invalidBorderColor = useColorModeValue("error.200", "error.200");
   const [visitDates, setVisitDates] = useState({
     start: new Date(moment(new Date()).add(1, "d")),
     end: new Date(moment(new Date()).add(1, "d")),
@@ -72,12 +74,12 @@ const VisitManager = ({ visits = [], onChange }) => {
         ))}
         <HStack
           p={2}
-          bg={bg}
+          bg={isInvalid ? invalidBg : bg}
           borderWidth={2}
           borderRadius="md"
           borderStyle="dashed"
           alignItems="flex-end"
-          borderColor={borderColor}
+          borderColor={isInvalid ? invalidBorderColor : borderColor}
           flexWrap={{ base: "wrap", md: "nowrap" }}
         >
           <Box flex={1}>

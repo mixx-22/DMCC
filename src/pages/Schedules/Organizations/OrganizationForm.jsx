@@ -15,12 +15,13 @@ import TeamSingleAsyncSelect from "../../../components/TeamSingleAsyncSelect";
 import { FiSave } from "react-icons/fi";
 import UserAsyncSelect from "../../../components/UserAsyncSelect";
 import VisitManager from "./VisitManager";
+import { toast } from "sonner";
 
 const OrganizationForm = ({ schedule = {} }) => {
   const { dispatch, scheduleId, organizations, createOrganization } =
     useOrganizations();
 
-  const existingTeamIds = organizations.map((org) => org.teamId);
+  const existingTeamIds = organizations.map((org) => org.team?.id);
 
   const [formData, setFormData] = useState({
     team: null,
@@ -72,8 +73,12 @@ const OrganizationForm = ({ schedule = {} }) => {
       errors.auditors = "At least one auditor is required";
     }
 
+    if (!formData.visits || formData.visits.length === 0) {
+      errors.visits = "At least one auditor is required";
+    }
+
     setValidationErrors(errors);
-    return Object.keys(errors).length === 0;
+    return { isValid: Object.keys(errors).length === 0, errors };
   };
 
   const handleSaveOrganization = useCallback(
@@ -82,7 +87,10 @@ const OrganizationForm = ({ schedule = {} }) => {
         let result = await createOrganization(organizationData);
 
         if (result && result._id && schedule) {
-          dispatch({ type: "ADD_ORGANIZATION", payload: newOrgData });
+          dispatch({
+            type: "ADD_ORGANIZATION",
+            payload: { ...newOrgData, _id: result._id },
+          });
           clearForm();
         }
       } catch (error) {
@@ -93,7 +101,8 @@ const OrganizationForm = ({ schedule = {} }) => {
   );
 
   const handleSubmit = () => {
-    if (validateForm()) {
+    const v = validateForm();
+    if (v.isValid) {
       const base = {
         auditScheduleId: scheduleId,
         visits: formData.visits,
@@ -112,6 +121,12 @@ const OrganizationForm = ({ schedule = {} }) => {
       };
 
       handleSaveOrganization(payload, newOrgData);
+    } else {
+      toast.error("Failed to Add Organization", {
+        description: Object.values(v.errors)?.[0],
+        status: "success",
+        duration: 3000,
+      });
     }
   };
 
@@ -144,6 +159,7 @@ const OrganizationForm = ({ schedule = {} }) => {
           <VisitManager
             visits={formData.visits}
             onChange={(visits) => handleFieldChange("visits", visits)}
+            isInvalid={!!validationErrors.visits}
           />
         </Stack>
       </CardBody>
