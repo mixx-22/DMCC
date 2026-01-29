@@ -517,10 +517,6 @@ const OrganizationCard = ({
                                                 />
                                               )}
 
-                                            {console.log(
-                                              organization,
-                                              visit.findings,
-                                            )}
                                             {/* Add Finding Form or Button */}
                                             {!visit?.findings ||
                                             visit.findings?.length < 1 ||
