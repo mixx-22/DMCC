@@ -196,8 +196,9 @@ const EditFindingModal = ({
             ? {
                 id: formData.report.auditee._id || formData.report.auditee.id,
                 _id: formData.report.auditee._id || formData.report.auditee.id,
-                name: formData.report.auditee.name || 
-                      `${formData.report.auditee.firstName || ""} ${formData.report.auditee.lastName || ""}`.trim(),
+                name:
+                  formData.report.auditee.name ||
+                  `${formData.report.auditee.firstName || ""} ${formData.report.auditee.lastName || ""}`.trim(),
                 employeeId: formData.report.auditee?.employeeId,
               }
             : null,
@@ -205,8 +206,9 @@ const EditFindingModal = ({
             ? {
                 id: formData.report.auditor._id || formData.report.auditor.id,
                 _id: formData.report.auditor._id || formData.report.auditor.id,
-                name: formData.report.auditor.name || 
-                      `${formData.report.auditor.firstName || ""} ${formData.report.auditor.lastName || ""}`.trim(),
+                name:
+                  formData.report.auditor.name ||
+                  `${formData.report.auditor.firstName || ""} ${formData.report.auditor.lastName || ""}`.trim(),
                 employeeId: formData.report.auditor?.employeeId,
               }
             : null,
@@ -415,6 +417,10 @@ const EditFindingModal = ({
                       }
                       placeholder="Select Auditee"
                       displayMode="none"
+                      menuPortalTarget={document.body}
+                      styles={{
+                        menuPortal: (base) => ({ ...base, zIndex: 9999 }),
+                      }}
                     />
                     {errors["report.auditee"] && (
                       <Text fontSize="xs" color="red.500" mt={1}>
@@ -439,6 +445,10 @@ const EditFindingModal = ({
                       }
                       placeholder="Select Auditor"
                       displayMode="none"
+                      menuPortalTarget={document.body}
+                      styles={{
+                        menuPortal: (base) => ({ ...base, zIndex: 9999 }),
+                      }}
                     />
                     {errors["report.auditor"] && (
                       <Text fontSize="xs" color="red.500" mt={1}>
