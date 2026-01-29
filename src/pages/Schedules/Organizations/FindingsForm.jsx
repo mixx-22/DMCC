@@ -6,7 +6,6 @@ import {
   FormLabel,
   Input,
   Textarea,
-  Select,
   Button,
   FormControl,
   FormHelperText,
@@ -15,6 +14,7 @@ import {
   Collapse,
   IconButton,
 } from "@chakra-ui/react";
+import { Select } from "chakra-react-select";
 import { useState } from "react";
 import { FiPlus, FiChevronDown, FiChevronUp, FiSave, FiX } from "react-icons/fi";
 import { SingleDatepicker } from "chakra-dayzed-datepicker";
@@ -257,16 +257,21 @@ const FindingsForm = ({ teamObjectives = [], onAddFinding, onCancel }) => {
           <FormLabel fontSize="sm">Objective</FormLabel>
           <Select
             size="sm"
-            value={formData.objective}
-            onChange={(e) => handleChange("objective", e.target.value)}
+            value={teamObjectives
+              .map((obj) => ({
+                value: obj._id || obj.title,
+                label: obj.title,
+              }))
+              .find((opt) => opt.value === formData.objective)}
+            onChange={(option) => handleChange("objective", option?.value || "")}
+            options={teamObjectives.map((obj) => ({
+              value: obj._id || obj.title,
+              label: obj.title,
+            }))}
             placeholder="Select an objective"
-          >
-            {teamObjectives.map((obj, index) => (
-              <option key={obj._id || index} value={obj._id || obj.title}>
-                {obj.title}
-              </option>
-            ))}
-          </Select>
+            isClearable
+            useBasicStyles
+          />
           {errors.objective && (
             <FormHelperText color="red.500" fontSize="xs">
               {errors.objective}
@@ -279,16 +284,17 @@ const FindingsForm = ({ teamObjectives = [], onAddFinding, onCancel }) => {
           <FormLabel fontSize="sm">Compliance</FormLabel>
           <Select
             size="sm"
-            value={formData.compliance}
-            onChange={(e) => handleChange("compliance", e.target.value)}
+            value={COMPLIANCE_OPTIONS.find(
+              (opt) => opt.value === formData.compliance,
+            )}
+            onChange={(option) =>
+              handleChange("compliance", option?.value || "")
+            }
+            options={COMPLIANCE_OPTIONS}
             placeholder="Select compliance type"
-          >
-            {COMPLIANCE_OPTIONS.map((option) => (
-              <option key={option.value} value={option.value}>
-                {option.label}
-              </option>
-            ))}
-          </Select>
+            isClearable
+            useBasicStyles
+          />
           {errors.compliance && (
             <FormHelperText color="red.500" fontSize="xs">
               {errors.compliance}
