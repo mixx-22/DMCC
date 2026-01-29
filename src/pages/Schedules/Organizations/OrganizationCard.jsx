@@ -47,6 +47,7 @@ import {
   FiChevronUp,
   FiExternalLink,
   FiPlus,
+  FiCalendar,
 } from "react-icons/fi";
 import { useEffect, useState } from "react";
 import { Link as RouterLink } from "react-router-dom";
@@ -806,6 +807,20 @@ const OrganizationCard = ({
                   </TabPanel>
                 </TabPanels>
               </Tabs>
+
+              {/* Actions */}
+              <Box p={4}>
+                <Flex justifyContent="flex-end">
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    colorScheme="brandPrimary"
+                    leftIcon={<FiCalendar />}
+                  >
+                    Add Visit
+                  </Button>
+                </Flex>
+              </Box>
             </Box>
           </Collapse>
         </CardBody>
