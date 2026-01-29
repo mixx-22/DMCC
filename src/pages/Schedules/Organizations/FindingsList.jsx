@@ -233,7 +233,6 @@ const FindingCard = ({ finding, onEdit, onDelete }) => {
 };
 
 const FindingsList = ({ findings = [], onEdit, onDelete }) => {
-  console.log({ findings });
   if (!findings || findings.length === 0) {
     return null;
   }
