@@ -242,14 +242,16 @@ const FindingCard = ({
                           <Text fontSize="xs" color={labelColor}>
                             Auditee:
                           </Text>
-                          <Tooltip label={finding.report.auditee.name}>
+                          <Tooltip
+                            label={`${finding.report.auditee.firstName} ${finding.report.auditee.lastName}`}
+                          >
                             <HStack spacing={1}>
                               <Avatar
                                 size="xs"
-                                name={finding.report.auditee.name}
+                                name={`${finding.report.auditee.firstName} ${finding.report.auditee.lastName}`}
                               />
                               <Text fontSize="sm">
-                                {finding.report.auditee.name}
+                                {`${finding.report.auditee.firstName} ${finding.report.auditee.lastName}`}
                               </Text>
                             </HStack>
                           </Tooltip>
@@ -260,14 +262,16 @@ const FindingCard = ({
                           <Text fontSize="xs" color={labelColor}>
                             Auditor:
                           </Text>
-                          <Tooltip label={finding.report.auditor.name}>
+                          <Tooltip
+                            label={`${finding.report.auditor.firstName} ${finding.report.auditor.lastName}`}
+                          >
                             <HStack spacing={1}>
                               <Avatar
                                 size="xs"
-                                name={finding.report.auditor.name}
+                                name={`${finding.report.auditor.firstName} ${finding.report.auditor.lastName}`}
                               />
                               <Text fontSize="sm">
-                                {finding.report.auditor.name}
+                                {`${finding.report.auditor.firstName} ${finding.report.auditor.lastName}`}
                               </Text>
                             </HStack>
                           </Tooltip>

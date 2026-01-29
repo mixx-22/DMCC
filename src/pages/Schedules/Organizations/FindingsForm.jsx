@@ -53,7 +53,13 @@ const COMPLIANCE_OPTIONS = [
   },
 ];
 
-const FindingsForm = ({ teamObjectives = [], initialData = null, mode = "add", onAddFinding, onCancel }) => {
+const FindingsForm = ({
+  teamObjectives = [],
+  initialData = null,
+  mode = "add",
+  onAddFinding,
+  onCancel,
+}) => {
   const bg = useColorModeValue("brandPrimary.50", "brandPrimary.900");
   const borderColor = useColorModeValue("brandPrimary.200", "brandPrimary.700");
   const { pageRef } = useLayout();
@@ -67,19 +73,23 @@ const FindingsForm = ({ teamObjectives = [], initialData = null, mode = "add", o
         details: initialData.details || "",
         objective: initialData.objective || "",
         compliance: initialData.compliance || "",
-        report: initialData.report ? {
-          reportNo: initialData.report.reportNo || "",
-          details: initialData.report.details || "",
-          date: initialData.report.date ? new Date(initialData.report.date) : new Date(),
-          auditee: initialData.report.auditee || null,
-          auditor: initialData.report.auditor || null,
-        } : {
-          reportNo: "",
-          details: "",
-          date: new Date(),
-          auditee: null,
-          auditor: null,
-        },
+        report: initialData.report
+          ? {
+              reportNo: initialData.report.reportNo || "",
+              details: initialData.report.details || "",
+              date: initialData.report.date
+                ? new Date(initialData.report.date)
+                : new Date(),
+              auditee: initialData.report.auditee || null,
+              auditor: initialData.report.auditor || null,
+            }
+          : {
+              reportNo: "",
+              details: "",
+              date: new Date(),
+              auditee: null,
+              auditor: null,
+            },
       };
     }
     return {
@@ -463,7 +473,12 @@ const FindingsForm = ({ teamObjectives = [], initialData = null, mode = "add", o
         {/* Action Buttons */}
         <HStack justify="flex-end" pt={2}>
           {onCancel && (
-            <Button size="sm" variant="ghost" onClick={onCancel} leftIcon={<FiX />}>
+            <Button
+              size="sm"
+              variant="ghost"
+              onClick={onCancel}
+              leftIcon={<FiX />}
+            >
               Cancel
             </Button>
           )}

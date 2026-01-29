@@ -195,22 +195,16 @@ const EditFindingModal = ({
           date: formData.report.date,
           auditee: formData.report.auditee
             ? {
+                ...formData.report.auditee,
                 id: formData.report.auditee._id || formData.report.auditee.id,
                 _id: formData.report.auditee._id || formData.report.auditee.id,
-                name:
-                  formData.report.auditee.name ||
-                  `${formData.report.auditee.firstName || ""} ${formData.report.auditee.lastName || ""}`.trim(),
-                employeeId: formData.report.auditee?.employeeId,
               }
             : null,
           auditor: formData.report.auditor
             ? {
+                ...formData.report.auditor,
                 id: formData.report.auditor._id || formData.report.auditor.id,
                 _id: formData.report.auditor._id || formData.report.auditor.id,
-                name:
-                  formData.report.auditor.name ||
-                  `${formData.report.auditor.firstName || ""} ${formData.report.auditor.lastName || ""}`.trim(),
-                employeeId: formData.report.auditor?.employeeId,
               }
             : null,
         };
