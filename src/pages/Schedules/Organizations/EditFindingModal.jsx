@@ -64,7 +64,6 @@ const EditFindingModal = ({
   teamObjectives = [],
   onSave,
 }) => {
-  const borderColor = useColorModeValue("gray.200", "gray.700");
   const labelColor = useColorModeValue("gray.600", "gray.400");
 
   const [formData, setFormData] = useState({
@@ -95,7 +94,9 @@ const EditFindingModal = ({
         report: {
           reportNo: finding.report?.reportNo || "",
           details: finding.report?.details || "",
-          date: finding.report?.date ? new Date(finding.report.date) : new Date(),
+          date: finding.report?.date
+            ? new Date(finding.report.date)
+            : new Date(),
           auditee: finding.report?.auditee || null,
           auditor: finding.report?.auditor || null,
         },
@@ -149,10 +150,12 @@ const EditFindingModal = ({
     // Validate report fields if compliance is Non-Conformity
     if (isNonConformity(formData.compliance)) {
       if (!formData.report.reportNo?.trim()) {
-        newErrors["report.reportNo"] = "Report number is required for Non-Conformity";
+        newErrors["report.reportNo"] =
+          "Report number is required for Non-Conformity";
       }
       if (!formData.report.details?.trim()) {
-        newErrors["report.details"] = "Report details are required for Non-Conformity";
+        newErrors["report.details"] =
+          "Report details are required for Non-Conformity";
       }
       if (!formData.report.auditee) {
         newErrors["report.auditee"] = "Auditee is required for Non-Conformity";
@@ -209,7 +212,7 @@ const EditFindingModal = ({
   if (!finding) return null;
 
   const selectedCompliance = COMPLIANCE_OPTIONS.find(
-    (opt) => opt.value === formData.compliance
+    (opt) => opt.value === formData.compliance,
   );
 
   return (
@@ -221,39 +224,7 @@ const EditFindingModal = ({
 
         <ModalBody>
           <VStack align="stretch" spacing={4}>
-            {/* Title */}
-            <FormControl isInvalid={!!errors.title} isRequired>
-              <FormLabel fontSize="sm">Title</FormLabel>
-              <Input
-                size="sm"
-                placeholder="Enter finding title"
-                value={formData.title}
-                onChange={(e) => handleChange("title", e.target.value)}
-              />
-              {errors.title && (
-                <Text fontSize="xs" color="red.500" mt={1}>
-                  {errors.title}
-                </Text>
-              )}
-            </FormControl>
-
-            {/* Details */}
-            <FormControl isInvalid={!!errors.details} isRequired>
-              <FormLabel fontSize="sm">Details</FormLabel>
-              <Textarea
-                size="sm"
-                placeholder="Enter detailed description"
-                value={formData.details}
-                onChange={(e) => handleChange("details", e.target.value)}
-                rows={4}
-              />
-              {errors.details && (
-                <Text fontSize="xs" color="red.500" mt={1}>
-                  {errors.details}
-                </Text>
-              )}
-            </FormControl>
-
+            {" "}
             {/* Objective */}
             <FormControl isInvalid={!!errors.objective} isRequired>
               <FormLabel fontSize="sm">Objective</FormLabel>
@@ -282,7 +253,6 @@ const EditFindingModal = ({
                 </Text>
               )}
             </FormControl>
-
             {/* Compliance */}
             <FormControl isInvalid={!!errors.compliance} isRequired>
               <FormLabel fontSize="sm">Compliance Type</FormLabel>
@@ -308,7 +278,37 @@ const EditFindingModal = ({
                 </Text>
               )}
             </FormControl>
-
+            {/* Title */}
+            <FormControl isInvalid={!!errors.title} isRequired>
+              <FormLabel fontSize="sm">Title</FormLabel>
+              <Input
+                size="sm"
+                placeholder="Enter finding title"
+                value={formData.title}
+                onChange={(e) => handleChange("title", e.target.value)}
+              />
+              {errors.title && (
+                <Text fontSize="xs" color="red.500" mt={1}>
+                  {errors.title}
+                </Text>
+              )}
+            </FormControl>
+            {/* Details */}
+            <FormControl isInvalid={!!errors.details} isRequired>
+              <FormLabel fontSize="sm">Details</FormLabel>
+              <Textarea
+                size="sm"
+                placeholder="Enter detailed description"
+                value={formData.details}
+                onChange={(e) => handleChange("details", e.target.value)}
+                rows={4}
+              />
+              {errors.details && (
+                <Text fontSize="xs" color="red.500" mt={1}>
+                  {errors.details}
+                </Text>
+              )}
+            </FormControl>
             {/* Report Section - Only for Non-Conformity */}
             {isNonConformity(formData.compliance) && (
               <>
@@ -319,7 +319,10 @@ const EditFindingModal = ({
                   </Text>
 
                   {/* Report Number */}
-                  <FormControl isInvalid={!!errors["report.reportNo"]} isRequired>
+                  <FormControl
+                    isInvalid={!!errors["report.reportNo"]}
+                    isRequired
+                  >
                     <FormLabel fontSize="sm">Report Number</FormLabel>
                     <Input
                       size="sm"
@@ -337,7 +340,10 @@ const EditFindingModal = ({
                   </FormControl>
 
                   {/* Report Details */}
-                  <FormControl isInvalid={!!errors["report.details"]} isRequired>
+                  <FormControl
+                    isInvalid={!!errors["report.details"]}
+                    isRequired
+                  >
                     <FormLabel fontSize="sm">Report Details</FormLabel>
                     <Textarea
                       size="sm"
@@ -373,11 +379,22 @@ const EditFindingModal = ({
                     />
                   </FormControl>
 
+                  {console.log("auditee", formData?.report?.auditee ?? [])}
+                  {console.log("auditor", formData?.report?.auditor ?? [])}
                   {/* Auditee */}
-                  <FormControl isInvalid={!!errors["report.auditee"]} isRequired>
+                  <FormControl
+                    isInvalid={!!errors["report.auditee"]}
+                    isRequired
+                  >
                     <FormLabel fontSize="sm">Auditee</FormLabel>
                     <UserAsyncSelect
-                      value={formData.report.auditee}
+                      value={
+                        Array.isArray(formData?.report?.auditee)
+                          ? formData.report.auditee
+                          : formData?.report?.auditee
+                            ? [formData.report.auditee]
+                            : []
+                      }
                       onChange={(user) => handleReportChange("auditee", user)}
                       placeholder="Select auditee"
                       isClearable
@@ -390,10 +407,19 @@ const EditFindingModal = ({
                   </FormControl>
 
                   {/* Auditor */}
-                  <FormControl isInvalid={!!errors["report.auditor"]} isRequired>
+                  <FormControl
+                    isInvalid={!!errors["report.auditor"]}
+                    isRequired
+                  >
                     <FormLabel fontSize="sm">Auditor</FormLabel>
                     <UserAsyncSelect
-                      value={formData.report.auditor}
+                      value={
+                        Array.isArray(formData?.report?.auditor)
+                          ? formData.report.auditor
+                          : formData?.report?.auditor
+                            ? [formData.report.auditor]
+                            : []
+                      }
                       onChange={(user) => handleReportChange("auditor", user)}
                       placeholder="Select auditor"
                       isClearable
