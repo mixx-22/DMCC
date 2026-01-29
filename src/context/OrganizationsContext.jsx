@@ -63,6 +63,20 @@ function organizationsReducer(state, action) {
             ? action.payload
             : state.currentOrganization,
       };
+    case "UPDATE_ORGANIZATION_OPTIMISTIC":
+      // Optimistic update without waiting for server response
+      return {
+        ...state,
+        organizations: state.organizations.map((org) =>
+          org._id === action.payload._id
+            ? { ...org, ...action.payload.updates }
+            : org,
+        ),
+        currentOrganization:
+          state.currentOrganization?._id === action.payload._id
+            ? { ...state.currentOrganization, ...action.payload.updates }
+            : state.currentOrganization,
+      };
     case "DELETE_ORGANIZATION":
       return {
         ...state,

@@ -135,10 +135,20 @@ const FindingsForm = ({ teamObjectives = [], onAddFinding, onCancel }) => {
     return Object.keys(newErrors).length === 0;
   };
 
+  // Generate unique client-side ID for finding
+  const generateFindingId = () => {
+    const timestamp = Date.now();
+    const random = Math.random().toString(36).substr(2, 9);
+    return `finding-${timestamp}-${random}`;
+  };
+
   const handleSubmit = () => {
     if (validateForm()) {
       const findingData = {
+        _id: generateFindingId(), // Client-side ID for tracking
+        id: generateFindingId(), // Backup ID field
         ...formData,
+        createdAt: new Date().toISOString(), // Timestamp for ordering
         report: isNonConformity(formData.compliance)
           ? {
               ...formData.report,
