@@ -382,6 +382,7 @@ const FindingsForm = ({ teamObjectives = [], onAddFinding, onCancel }) => {
                 }
                 isMulti={false}
                 placeholder="Select Auditee"
+                displayMode="none"
               />
               {errors["report.auditee"] && (
                 <FormHelperText color="red.500" fontSize="xs">
@@ -401,6 +402,7 @@ const FindingsForm = ({ teamObjectives = [], onAddFinding, onCancel }) => {
                 }
                 isMulti={false}
                 placeholder="Select Auditor"
+                displayMode="none"
               />
               {errors["report.auditor"] && (
                 <FormHelperText color="red.500" fontSize="xs">
