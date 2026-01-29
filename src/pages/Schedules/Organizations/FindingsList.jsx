@@ -13,6 +13,8 @@ import {
   Avatar,
   Tooltip,
   Stack,
+  Wrap,
+  WrapItem,
 } from "@chakra-ui/react";
 import { useState } from "react";
 import {
@@ -236,47 +238,83 @@ const FindingCard = ({
                     <Divider my={4} />
 
                     {/* Auditee and Auditor */}
-                    <HStack>
-                      {finding.report.auditee && (
-                        <Stack flex={1} spacing={2}>
-                          <Text fontSize="xs" color={labelColor}>
-                            Auditee:
+                    <HStack alignItems="flex-start">
+                      <Stack flex={1} spacing={2}>
+                        <Text fontSize="xs" color={labelColor}>
+                          Auditor/s:
+                        </Text>
+                        {finding?.report?.auditor?.length > 0 ? (
+                          <Box>
+                            <Wrap>
+                              {finding?.report?.auditor?.map((u, index) => {
+                                return (
+                                  <WrapItem key={`auditor-${u.id}-${index}`}>
+                                    <Tooltip
+                                      label={`${u.firstName} ${u.lastName}`}
+                                    >
+                                      <Card variant="filled" shadow="none">
+                                        <CardBody px={2} py={1}>
+                                          <HStack spacing={1}>
+                                            <Avatar
+                                              size="xs"
+                                              name={`${u.firstName} ${u.lastName}`}
+                                            />
+                                            <Text fontSize="sm">
+                                              {`${u.firstName} ${u.lastName}`}
+                                            </Text>
+                                          </HStack>
+                                        </CardBody>
+                                      </Card>
+                                    </Tooltip>
+                                  </WrapItem>
+                                );
+                              })}
+                            </Wrap>
+                          </Box>
+                        ) : (
+                          <Text fontSize="xs" color="gray.500" opacity={0.5}>
+                            No Auditors
                           </Text>
-                          <Tooltip
-                            label={`${finding.report.auditee.firstName} ${finding.report.auditee.lastName}`}
-                          >
-                            <HStack spacing={1}>
-                              <Avatar
-                                size="xs"
-                                name={`${finding.report.auditee.firstName} ${finding.report.auditee.lastName}`}
-                              />
-                              <Text fontSize="sm">
-                                {`${finding.report.auditee.firstName} ${finding.report.auditee.lastName}`}
-                              </Text>
-                            </HStack>
-                          </Tooltip>
-                        </Stack>
-                      )}
-                      {finding.report.auditor && (
-                        <Stack flex={1} spacing={2}>
-                          <Text fontSize="xs" color={labelColor}>
-                            Auditor:
+                        )}
+                      </Stack>
+                      <Stack flex={1} spacing={2}>
+                        <Text fontSize="xs" color={labelColor}>
+                          Auditee/s:
+                        </Text>
+                        {finding?.report?.auditee?.length > 0 ? (
+                          <Box>
+                            <Wrap>
+                              {finding?.report?.auditee?.map((u, index) => {
+                                return (
+                                  <WrapItem key={`auditee-${u.id}-${index}`}>
+                                    <Tooltip
+                                      label={`${u.firstName} ${u.lastName}`}
+                                    >
+                                      <Card variant="filled" shadow="none">
+                                        <CardBody px={2} py={1}>
+                                          <HStack spacing={1}>
+                                            <Avatar
+                                              size="xs"
+                                              name={`${u.firstName} ${u.lastName}`}
+                                            />
+                                            <Text fontSize="sm">
+                                              {`${u.firstName} ${u.lastName}`}
+                                            </Text>
+                                          </HStack>
+                                        </CardBody>
+                                      </Card>
+                                    </Tooltip>
+                                  </WrapItem>
+                                );
+                              })}
+                            </Wrap>
+                          </Box>
+                        ) : (
+                          <Text fontSize="xs" color="gray.500" opacity={0.5}>
+                            No Auditees
                           </Text>
-                          <Tooltip
-                            label={`${finding.report.auditor.firstName} ${finding.report.auditor.lastName}`}
-                          >
-                            <HStack spacing={1}>
-                              <Avatar
-                                size="xs"
-                                name={`${finding.report.auditor.firstName} ${finding.report.auditor.lastName}`}
-                              />
-                              <Text fontSize="sm">
-                                {`${finding.report.auditor.firstName} ${finding.report.auditor.lastName}`}
-                              </Text>
-                            </HStack>
-                          </Tooltip>
-                        </Stack>
-                      )}
+                        )}
+                      </Stack>
                     </HStack>
                   </VStack>
                 </Box>

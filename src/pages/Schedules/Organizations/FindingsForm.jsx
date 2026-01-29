@@ -80,12 +80,16 @@ const FindingsForm = ({
               date: initialData.report.date
                 ? new Date(initialData.report.date)
                 : new Date(),
-              auditee: Array.isArray(initialData.report.auditee) 
-                ? initialData.report.auditee 
-                : initialData.report.auditee ? [initialData.report.auditee] : [],
+              auditee: Array.isArray(initialData.report.auditee)
+                ? initialData.report.auditee
+                : initialData.report.auditee
+                  ? [initialData.report.auditee]
+                  : [],
               auditor: Array.isArray(initialData.report.auditor)
                 ? initialData.report.auditor
-                : initialData.report.auditor ? [initialData.report.auditor] : [],
+                : initialData.report.auditor
+                  ? [initialData.report.auditor]
+                  : [],
             }
           : {
               reportNo: "",
@@ -411,23 +415,6 @@ const FindingsForm = ({
                 />
               </FormControl>
 
-              {/* Auditee */}
-              <FormControl isInvalid={!!errors["report.auditee"]}>
-                <FormLabel fontSize="sm">Auditee</FormLabel>
-                <UserAsyncSelect
-                  label=""
-                  value={formData.report.auditee || []}
-                  onChange={(users) => handleReportChange("auditee", users)}
-                  placeholder="Select Auditee(s)"
-                  displayMode="none"
-                />
-                {errors["report.auditee"] && (
-                  <FormHelperText color="red.500" fontSize="xs">
-                    {errors["report.auditee"]}
-                  </FormHelperText>
-                )}
-              </FormControl>
-
               {/* Auditor */}
               <FormControl isInvalid={!!errors["report.auditor"]}>
                 <FormLabel fontSize="sm">Auditor</FormLabel>
@@ -441,6 +428,23 @@ const FindingsForm = ({
                 {errors["report.auditor"] && (
                   <FormHelperText color="red.500" fontSize="xs">
                     {errors["report.auditor"]}
+                  </FormHelperText>
+                )}
+              </FormControl>
+
+              {/* Auditee */}
+              <FormControl isInvalid={!!errors["report.auditee"]}>
+                <FormLabel fontSize="sm">Auditee</FormLabel>
+                <UserAsyncSelect
+                  label=""
+                  value={formData.report.auditee || []}
+                  onChange={(users) => handleReportChange("auditee", users)}
+                  placeholder="Select Auditee(s)"
+                  displayMode="none"
+                />
+                {errors["report.auditee"] && (
+                  <FormHelperText color="red.500" fontSize="xs">
+                    {errors["report.auditee"]}
                   </FormHelperText>
                 )}
               </FormControl>
