@@ -41,10 +41,15 @@ import {
 import { useState, useEffect, useMemo } from "react";
 import { Link as RouterLink } from "react-router-dom";
 import Swal from "sweetalert2";
-import { useOrganizations, useDocuments } from "../../../context/_useContext";
+import {
+  useOrganizations,
+  useDocuments,
+  useLayout,
+} from "../../../context/_useContext";
 import Timestamp from "../../../components/Timestamp";
 import { GridView } from "../../../components/Document/GridView";
 import { formatDateRange } from "../../../utils/helpers";
+import DocumentDrawer from "../../../components/Document/DocumentDrawer";
 
 const OrganizationCard = ({
   schedule,
@@ -60,6 +65,8 @@ const OrganizationCard = ({
     loading: documentsLoading,
     fetchDocuments,
   } = useDocuments();
+  const { selectedDocument, closeDocumentDrawer, handleDocumentClick } =
+    useLayout();
   const [isExpanded, setIsExpanded] = useState(true);
   const cardBg = useColorModeValue("white", "gray.700");
   const errorColor = useColorModeValue("error.600", "error.400");
@@ -130,362 +137,386 @@ const OrganizationCard = ({
   }, [organization]);
 
   return (
-    <Card bg={cardBg} borderWidth="1px" borderColor={borderColor} shadow="sm">
-      <CardBody p={0}>
-        <VStack align="stretch" spacing={0}>
-          {/* Collapsible Header */}
-          <HStack
-            p={4}
-            spacing={4}
-            align="center"
-            cursor="pointer"
-            justify="space-between"
-            onClick={() => setIsExpanded(!isExpanded)}
-            _hover={{ bg: headerHoverBg }}
-            transition="background 0.2s"
-          >
-            <HStack align="center" spacing={2}>
-              <Avatar size="sm" name={team.name} />
-              <Text fontWeight="bold" fontSize="lg">
-                {team?.name || "Unknown Team"}
-              </Text>
-            </HStack>
-            <HStack align="center" spacing={0}>
-              <Hide below="md">
-                <Badge>{latestVisitDate}</Badge>
-              </Hide>
-              <IconButton
-                icon={isExpanded ? <FiChevronUp /> : <FiChevronDown />}
-                size="sm"
-                variant="ghost"
-                aria-label={isExpanded ? "Collapse" : "Expand"}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setIsExpanded(!isExpanded);
-                }}
-              />
-              <Menu>
-                <MenuButton
-                  as={IconButton}
-                  icon={<FiMoreVertical />}
-                  variant="ghost"
+    <>
+      <Card bg={cardBg} borderWidth="1px" borderColor={borderColor} shadow="sm">
+        <CardBody p={0}>
+          <VStack align="stretch" spacing={0}>
+            {/* Collapsible Header */}
+            <HStack
+              p={4}
+              spacing={4}
+              align="center"
+              cursor="pointer"
+              justify="space-between"
+              onClick={() => setIsExpanded(!isExpanded)}
+              _hover={{ bg: headerHoverBg }}
+              transition="background 0.2s"
+            >
+              <HStack align="center" spacing={2}>
+                <Avatar size="sm" name={team.name} />
+                <Text fontWeight="bold" fontSize="lg">
+                  {team?.name || "Unknown Team"}
+                </Text>
+              </HStack>
+              <HStack align="center" spacing={0}>
+                <Hide below="md">
+                  <Badge>{latestVisitDate}</Badge>
+                </Hide>
+                <IconButton
+                  icon={isExpanded ? <FiChevronUp /> : <FiChevronDown />}
                   size="sm"
-                  aria-label="More options"
-                  onClick={(e) => e.stopPropagation()}
+                  variant="ghost"
+                  aria-label={isExpanded ? "Collapse" : "Expand"}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setIsExpanded(!isExpanded);
+                  }}
                 />
-                <MenuList>
-                  <MenuItem
-                    icon={<FiEdit />}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      onEdit(organization);
-                    }}
-                  >
-                    Edit
-                  </MenuItem>
-                  <MenuItem
-                    icon={<FiTrash2 />}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleDeleteOrganization(organization);
-                    }}
-                    color={errorColor}
-                  >
-                    Delete
-                  </MenuItem>
-                </MenuList>
-              </Menu>{" "}
+                <Menu>
+                  <MenuButton
+                    as={IconButton}
+                    icon={<FiMoreVertical />}
+                    variant="ghost"
+                    size="sm"
+                    aria-label="More options"
+                    onClick={(e) => e.stopPropagation()}
+                  />
+                  <MenuList>
+                    <MenuItem
+                      icon={<FiEdit />}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onEdit(organization);
+                      }}
+                    >
+                      Edit
+                    </MenuItem>
+                    <MenuItem
+                      icon={<FiTrash2 />}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleDeleteOrganization(organization);
+                      }}
+                      color={errorColor}
+                    >
+                      Delete
+                    </MenuItem>
+                  </MenuList>
+                </Menu>{" "}
+              </HStack>
             </HStack>
-          </HStack>
 
-          {/* Collapsible Content */}
-          <Collapse in={isExpanded} animateOpacity>
-            <Box pt={0}>
-              {/* Tabs Section */}
-              <Tabs colorScheme="brandPrimary">
-                <TabList>
-                  <Tab
-                    sx={{ [$tabColor.variable]: tabColor }}
-                    fontWeight={"normal"}
-                  >
-                    <HStack spacing={1}>
-                      <Text>Visits</Text>
-                    </HStack>
-                  </Tab>
-                  <Tab
-                    sx={{ [$tabColor.variable]: tabColor }}
-                    fontWeight={"normal"}
-                  >
-                    <HStack spacing={1}>
-                      <Text>Auditors</Text>
-                    </HStack>
-                  </Tab>
-                  <Tab
-                    sx={{ [$tabColor.variable]: tabColor }}
-                    fontWeight={"normal"}
-                  >
-                    <HStack spacing={1}>
-                      <Hide below="md">
-                        <Text>Team Details</Text>
-                      </Hide>
-                      <Hide above="sm">
-                        <Text>Details</Text>
-                      </Hide>
-                    </HStack>
-                  </Tab>
-                  <Tab
-                    sx={{ [$tabColor.variable]: tabColor }}
-                    fontWeight={"normal"}
-                  >
-                    <HStack spacing={1}>
-                      <Text>Documents</Text>
-                    </HStack>
-                  </Tab>
-                </TabList>
+            {/* Collapsible Content */}
+            <Collapse in={isExpanded} animateOpacity>
+              <Box pt={0}>
+                {/* Tabs Section */}
+                <Tabs colorScheme="brandPrimary">
+                  <TabList>
+                    <Tab
+                      sx={{ [$tabColor.variable]: tabColor }}
+                      fontWeight={"normal"}
+                    >
+                      <HStack spacing={1}>
+                        <Text>Visits</Text>
+                      </HStack>
+                    </Tab>
+                    <Tab
+                      sx={{ [$tabColor.variable]: tabColor }}
+                      fontWeight={"normal"}
+                    >
+                      <HStack spacing={1}>
+                        <Text>Auditors</Text>
+                      </HStack>
+                    </Tab>
+                    <Tab
+                      sx={{ [$tabColor.variable]: tabColor }}
+                      fontWeight={"normal"}
+                    >
+                      <HStack spacing={1}>
+                        <Hide below="md">
+                          <Text>Team Details</Text>
+                        </Hide>
+                        <Hide above="sm">
+                          <Text>Details</Text>
+                        </Hide>
+                      </HStack>
+                    </Tab>
+                    <Tab
+                      sx={{ [$tabColor.variable]: tabColor }}
+                      fontWeight={"normal"}
+                    >
+                      <HStack spacing={1}>
+                        <Text>Documents</Text>
+                      </HStack>
+                    </Tab>
+                  </TabList>
 
-                <TabPanels>
-                  {/* Visit Details Tab */}
-                  <TabPanel px={4}>
-                    {organization.visits && organization.visits.length > 0 ? (
-                      <VStack align="stretch" spacing={2}>
-                        {organization.visits.map((visit, index) => (
-                          <Flex
-                            key={index}
-                            p={3}
-                            borderRadius="md"
-                            borderWidth="1px"
-                            borderColor={borderColor}
-                            align="center"
-                            justify="space-between"
-                          >
-                            <Box>
-                              <Text fontSize="sm" color="gray.500" mb={1}>
-                                Visit Date/s
-                              </Text>
-                              <Text fontSize="sm">
-                                {formatDateRange(
-                                  visit?.date?.start,
-                                  visit?.date?.end,
-                                )}
-                              </Text>
-                            </Box>
-                          </Flex>
-                        ))}
-                      </VStack>
-                    ) : (
-                      <Center minH="xs">
-                        <Text color="gray.500" textAlign="center">
-                          No visits scheduled
+                  <TabPanels>
+                    {/* Visit Details Tab */}
+                    <TabPanel px={4}>
+                      {organization.visits && organization.visits.length > 0 ? (
+                        <VStack align="stretch" spacing={2}>
+                          {organization.visits.map((visit, index) => (
+                            <Flex
+                              key={index}
+                              p={3}
+                              borderRadius="md"
+                              borderWidth="1px"
+                              borderColor={borderColor}
+                              align="center"
+                              justify="space-between"
+                            >
+                              <Box>
+                                <Text fontSize="sm" color="gray.500" mb={1}>
+                                  Visit Date/s
+                                </Text>
+                                <Text fontSize="sm">
+                                  {formatDateRange(
+                                    visit?.date?.start,
+                                    visit?.date?.end,
+                                  )}
+                                </Text>
+                              </Box>
+                            </Flex>
+                          ))}
+                        </VStack>
+                      ) : (
+                        <Center minH="xs">
+                          <Text color="gray.500" textAlign="center">
+                            No visits scheduled
+                          </Text>
+                        </Center>
+                      )}
+                    </TabPanel>
+                    {/* Team Details Tab */}
+                    <TabPanel>
+                      {/* Auditors Section - Always Visible */}
+                      <Box mb={4}>
+                        <Text fontSize="sm" color="gray.500" mb={2}>
+                          Auditors ({auditors.length})
                         </Text>
-                      </Center>
-                    )}
-                  </TabPanel>
-                  {/* Team Details Tab */}
-                  <TabPanel>
-                    {/* Auditors Section - Always Visible */}
-                    <Box mb={4}>
-                      <Text fontSize="sm" color="gray.500" mb={2}>
-                        Auditors ({auditors.length})
-                      </Text>
-                      {auditors && auditors.length > 0 ? (
-                        <Wrap>
-                          {auditors.map((auditor, index) => {
-                            const userId = auditor._id || auditor.id || auditor;
-                            const fullName =
-                              auditor.firstName && auditor.lastName
-                                ? `${auditor.firstName} ${auditor.lastName}`
-                                : auditor.name || `User ${index + 1}`;
-                            const employeeId = auditor.employeeId;
-                            const email = auditor.email;
+                        {auditors && auditors.length > 0 ? (
+                          <Wrap>
+                            {auditors.map((auditor, index) => {
+                              const userId =
+                                auditor._id || auditor.id || auditor;
+                              const fullName =
+                                auditor.firstName && auditor.lastName
+                                  ? `${auditor.firstName} ${auditor.lastName}`
+                                  : auditor.name || `User ${index + 1}`;
+                              const employeeId = auditor.employeeId;
+                              const email = auditor.email;
 
-                            return (
-                              <WrapItem key={userId || index}>
-                                <Tooltip
-                                  label={
-                                    <VStack align="start" spacing={0}>
-                                      <Text fontWeight="bold">{fullName}</Text>
-                                      {email && (
-                                        <Text fontSize="xs">{email}</Text>
-                                      )}
-                                      {employeeId && (
-                                        <Text fontSize="xs">{employeeId}</Text>
-                                      )}
-                                    </VStack>
-                                  }
-                                  hasArrow
-                                  placement="top"
-                                >
-                                  <Box
-                                    px={3}
-                                    py={2}
-                                    borderRadius="md"
-                                    borderWidth="1px"
-                                    borderColor={borderColor}
-                                    _hover={{ bg: hoverBg }}
-                                    cursor="pointer"
-                                    transition="all 0.2s"
-                                  >
-                                    <HStack spacing={2}>
-                                      <Avatar name={fullName} size="xs" />
+                              return (
+                                <WrapItem key={userId || index}>
+                                  <Tooltip
+                                    label={
                                       <VStack align="start" spacing={0}>
-                                        <Text fontSize="sm" fontWeight="medium">
+                                        <Text fontWeight="bold">
                                           {fullName}
                                         </Text>
+                                        {email && (
+                                          <Text fontSize="xs">{email}</Text>
+                                        )}
                                         {employeeId && (
-                                          <Text fontSize="xs" color="gray.500">
+                                          <Text fontSize="xs">
                                             {employeeId}
                                           </Text>
                                         )}
                                       </VStack>
-                                    </HStack>
-                                  </Box>
-                                </Tooltip>
-                              </WrapItem>
-                            );
-                          })}
-                        </Wrap>
-                      ) : (
-                        <Text fontSize="sm" color="gray.500" fontStyle="italic">
-                          No auditors assigned
-                        </Text>
-                      )}
-                    </Box>
-                  </TabPanel>
-                  {/* Team Details Tab */}
-                  <TabPanel>
-                    <VStack align="stretch" spacing={4}>
-                      {/* Team Description */}
-                      {team?.description && (
-                        <Box>
-                          <Text fontSize="sm" color="gray.500" mb={1}>
-                            Description
-                          </Text>
-                          <Text fontSize="sm">{team.description}</Text>
-                        </Box>
-                      )}
-
-                      {/* Team Objectives */}
-                      {team?.objectives && team.objectives.length > 0 && (
-                        <Box>
-                          <Text fontSize="sm" color="gray.500" mb={2}>
-                            Objectives
-                          </Text>
-                          <Stack spacing={3}>
-                            {team.objectives.map((objective, index) => (
-                              <Box
-                                key={objective.id || `objective-${index}`}
-                                p={3}
-                                borderWidth={1}
-                                borderRadius="md"
-                                borderColor={borderColor}
-                                bg={objectiveBg}
-                              >
-                                <Flex
-                                  justify="space-between"
-                                  align="start"
-                                  mb={2}
-                                >
-                                  <Text fontWeight="bold" fontSize="sm">
-                                    {objective.title}
-                                  </Text>
-                                  <Badge
-                                    colorScheme={
-                                      WEIGHT_COLORS[objective.weight]
                                     }
-                                    fontSize="xs"
+                                    hasArrow
+                                    placement="top"
                                   >
-                                    {objective.weight}
-                                  </Badge>
-                                </Flex>
-                                <Text fontSize="sm" color="gray.600">
-                                  {objective.description}
-                                </Text>
-                              </Box>
-                            ))}
-                          </Stack>
-                        </Box>
-                      )}
-
-                      {/* Team Timestamps */}
-                      <Flex gap={6} flexWrap="wrap">
-                        {team?.createdAt && (
-                          <Box>
-                            <Text fontSize="sm" color="gray.500" mb={1}>
-                              Team Created
-                            </Text>
-                            <Text fontSize="sm">
-                              <Timestamp date={team.createdAt} />
-                            </Text>
-                          </Box>
-                        )}
-                        {team?.updatedAt && (
-                          <Box>
-                            <Text fontSize="sm" color="gray.500" mb={1}>
-                              Last Updated
-                            </Text>
-                            <Text fontSize="sm">
-                              <Timestamp date={team.updatedAt} />
-                            </Text>
-                          </Box>
-                        )}
-                      </Flex>
-
-                      {/* View Team Button */}
-                      {team?._id && (
-                        <Box>
-                          <Button
-                            as={RouterLink}
-                            to={`/teams/${team._id}`}
-                            target="_blank"
-                            rightIcon={<FiExternalLink />}
-                            variant="outline"
-                            colorScheme="brandPrimary"
-                            size="sm"
-                            width="full"
+                                    <Box
+                                      px={3}
+                                      py={2}
+                                      borderRadius="md"
+                                      borderWidth="1px"
+                                      borderColor={borderColor}
+                                      _hover={{ bg: hoverBg }}
+                                      cursor="pointer"
+                                      transition="all 0.2s"
+                                    >
+                                      <HStack spacing={2}>
+                                        <Avatar name={fullName} size="xs" />
+                                        <VStack align="start" spacing={0}>
+                                          <Text
+                                            fontSize="sm"
+                                            fontWeight="medium"
+                                          >
+                                            {fullName}
+                                          </Text>
+                                          {employeeId && (
+                                            <Text
+                                              fontSize="xs"
+                                              color="gray.500"
+                                            >
+                                              {employeeId}
+                                            </Text>
+                                          )}
+                                        </VStack>
+                                      </HStack>
+                                    </Box>
+                                  </Tooltip>
+                                </WrapItem>
+                              );
+                            })}
+                          </Wrap>
+                        ) : (
+                          <Text
+                            fontSize="sm"
+                            color="gray.500"
+                            fontStyle="italic"
                           >
-                            View Team in New Tab
-                          </Button>
-                        </Box>
-                      )}
-                    </VStack>
-                  </TabPanel>
+                            No auditors assigned
+                          </Text>
+                        )}
+                      </Box>
+                    </TabPanel>
+                    {/* Team Details Tab */}
+                    <TabPanel>
+                      <VStack align="stretch" spacing={4}>
+                        {/* Team Description */}
+                        {team?.description && (
+                          <Box>
+                            <Text fontSize="sm" color="gray.500" mb={1}>
+                              Description
+                            </Text>
+                            <Text fontSize="sm">{team.description}</Text>
+                          </Box>
+                        )}
 
-                  {/* Documents Tab */}
-                  <TabPanel px={4}>
-                    {organization?.team?.folderId ? (
-                      documentsLoading ? (
-                        <Center minH="xs">
-                          <Text color="gray.500">Loading documents...</Text>
-                        </Center>
-                      ) : documents && documents.length > 0 ? (
-                        <GridView
-                          // TODO: smaller view; drawer
-                          documents={documents}
-                          onDocumentClick={() => {}}
-                          readOnly={true}
-                        />
+                        {/* Team Objectives */}
+                        {team?.objectives && team.objectives.length > 0 && (
+                          <Box>
+                            <Text fontSize="sm" color="gray.500" mb={2}>
+                              Objectives
+                            </Text>
+                            <Stack spacing={3}>
+                              {team.objectives.map((objective, index) => (
+                                <Box
+                                  key={objective.id || `objective-${index}`}
+                                  p={3}
+                                  borderWidth={1}
+                                  borderRadius="md"
+                                  borderColor={borderColor}
+                                  bg={objectiveBg}
+                                >
+                                  <Flex
+                                    justify="space-between"
+                                    align="start"
+                                    mb={2}
+                                  >
+                                    <Text fontWeight="bold" fontSize="sm">
+                                      {objective.title}
+                                    </Text>
+                                    <Badge
+                                      colorScheme={
+                                        WEIGHT_COLORS[objective.weight]
+                                      }
+                                      fontSize="xs"
+                                    >
+                                      {objective.weight}
+                                    </Badge>
+                                  </Flex>
+                                  <Text fontSize="sm" color="gray.600">
+                                    {objective.description}
+                                  </Text>
+                                </Box>
+                              ))}
+                            </Stack>
+                          </Box>
+                        )}
+
+                        {/* Team Timestamps */}
+                        <Flex gap={6} flexWrap="wrap">
+                          {team?.createdAt && (
+                            <Box>
+                              <Text fontSize="sm" color="gray.500" mb={1}>
+                                Team Created
+                              </Text>
+                              <Text fontSize="sm">
+                                <Timestamp date={team.createdAt} />
+                              </Text>
+                            </Box>
+                          )}
+                          {team?.updatedAt && (
+                            <Box>
+                              <Text fontSize="sm" color="gray.500" mb={1}>
+                                Last Updated
+                              </Text>
+                              <Text fontSize="sm">
+                                <Timestamp date={team.updatedAt} />
+                              </Text>
+                            </Box>
+                          )}
+                        </Flex>
+
+                        {/* View Team Button */}
+                        {team?._id && (
+                          <Box>
+                            <Button
+                              as={RouterLink}
+                              to={`/teams/${team._id}`}
+                              target="_blank"
+                              rightIcon={<FiExternalLink />}
+                              variant="outline"
+                              colorScheme="brandPrimary"
+                              size="sm"
+                              width="full"
+                            >
+                              View Team in New Tab
+                            </Button>
+                          </Box>
+                        )}
+                      </VStack>
+                    </TabPanel>
+
+                    {/* Documents Tab */}
+                    <TabPanel px={4}>
+                      {organization?.team?.folderId ? (
+                        documentsLoading ? (
+                          <Center minH="xs">
+                            <Text color="gray.500">Loading documents...</Text>
+                          </Center>
+                        ) : documents && documents.length > 0 ? (
+                          <GridView
+                            // TODO: smaller view; drawer
+                            documents={documents}
+                            selectedDocument={selectedDocument}
+                            onDocumentClick={(doc) => {
+                              handleDocumentClick(doc);
+                            }}
+                          />
+                        ) : (
+                          <Center minH="xs">
+                            <Text color="gray.500" textAlign="center">
+                              No documents found
+                            </Text>
+                          </Center>
+                        )
                       ) : (
                         <Center minH="xs">
                           <Text color="gray.500" textAlign="center">
-                            No documents found
+                            No folder assigned to this organization
                           </Text>
                         </Center>
-                      )
-                    ) : (
-                      <Center minH="xs">
-                        <Text color="gray.500" textAlign="center">
-                          No folder assigned to this organization
-                        </Text>
-                      </Center>
-                    )}
-                  </TabPanel>
-                </TabPanels>
-              </Tabs>
-            </Box>
-          </Collapse>
-        </VStack>
-      </CardBody>
-    </Card>
+                      )}
+                    </TabPanel>
+                  </TabPanels>
+                </Tabs>
+              </Box>
+            </Collapse>
+          </VStack>
+        </CardBody>
+      </Card>
+      <DocumentDrawer
+        document={selectedDocument}
+        isOpen={!!selectedDocument}
+        onClose={closeDocumentDrawer}
+      />
+    </>
   );
 };
 
