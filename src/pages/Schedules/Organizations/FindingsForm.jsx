@@ -241,7 +241,7 @@ const FindingsForm = ({ teamObjectives = [], initialData = null, mode = "add", o
       <VStack align="stretch" spacing={4}>
         <HStack justify="space-between">
           <Text fontWeight="semibold" fontSize="md">
-            Add New Finding
+            {mode === "edit" ? "Edit Finding" : "Add New Finding"}
           </Text>
           {onCancel && (
             <IconButton
