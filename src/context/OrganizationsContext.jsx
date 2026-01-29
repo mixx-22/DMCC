@@ -230,29 +230,29 @@ export const OrganizationsProvider = ({ children, scheduleId }) => {
         console.log("API Response:", response);
         
         // Try to extract organization data from various response formats
-        let organizationData;
+        let extractedOrgData;
         
         if (response._id || response.id) {
           // Format 1: Direct organization data { _id: "...", ... }
-          organizationData = response;
+          extractedOrgData = response;
         } else if (response.data && (response.data._id || response.data.id)) {
           // Format 2: Wrapped data { success: true, data: { _id: "...", ... } }
-          organizationData = response.data;
+          extractedOrgData = response.data;
         } else if (response.organization && (response.organization._id || response.organization.id)) {
           // Format 3: { organization: { _id: "...", ... } }
-          organizationData = response.organization;
+          extractedOrgData = response.organization;
         }
         
-        console.log("Extracted organizationData:", organizationData);
+        console.log("Extracted organizationData:", extractedOrgData);
         
         // Validate we have valid organization data
-        if (organizationData && (organizationData._id || organizationData.id)) {
-          dispatch({ type: "UPDATE_ORGANIZATION", payload: organizationData });
+        if (extractedOrgData && (extractedOrgData._id || extractedOrgData.id)) {
+          dispatch({ type: "UPDATE_ORGANIZATION", payload: extractedOrgData });
           toast.success("Organization Updated", {
             description: "Organization has been successfully updated",
             duration: 2000,
           });
-          return organizationData;
+          return extractedOrgData;
         } else {
           console.error("Invalid response format:", response);
           const error = new Error("Failed to update organization");
