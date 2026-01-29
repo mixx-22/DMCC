@@ -19,6 +19,7 @@ import { useState, useEffect } from "react";
 import { FiChevronDown, FiChevronUp, FiSave, FiX } from "react-icons/fi";
 import { SingleDatepicker } from "chakra-dayzed-datepicker";
 import UserAsyncSelect from "../../../components/UserAsyncSelect";
+import { useLayout } from "../../../context/_useContext";
 
 // Helper function to check if compliance type is a Non-Conformity
 const isNonConformity = (complianceType) => {
@@ -57,6 +58,7 @@ const FindingsForm = ({ teamObjectives = [], onAddFinding, onCancel }) => {
   const bg = useColorModeValue("brandPrimary.50", "brandPrimary.900");
   const borderColor = useColorModeValue("brandPrimary.200", "brandPrimary.700");
   const [showReportSection, setShowReportSection] = useState(false);
+  const { pageRef } = useLayout();
 
   const [formData, setFormData] = useState({
     title: "",
@@ -327,7 +329,9 @@ const FindingsForm = ({ teamObjectives = [], onAddFinding, onCancel }) => {
               }
             }}
             rightIcon={showReportSection ? <FiChevronUp /> : <FiChevronDown />}
-            isDisabled={isNonConformity(formData.compliance) && showReportSection}
+            isDisabled={
+              isNonConformity(formData.compliance) && showReportSection
+            }
           >
             {showReportSection ? "Hide" : "Add"} Report Details
           </Button>
@@ -394,6 +398,8 @@ const FindingsForm = ({ teamObjectives = [], onAddFinding, onCancel }) => {
                     w: "full",
                   },
                 }}
+                usePortal
+                portalRef={pageRef}
               />
             </FormControl>
 
