@@ -11,12 +11,11 @@ import {
   FormHelperText,
   useColorModeValue,
   Divider,
-  Collapse,
   IconButton,
 } from "@chakra-ui/react";
 import { Select } from "chakra-react-select";
-import { useState, useEffect } from "react";
-import { FiChevronDown, FiChevronUp, FiSave, FiX } from "react-icons/fi";
+import { useState } from "react";
+import { FiSave, FiX } from "react-icons/fi";
 import { SingleDatepicker } from "chakra-dayzed-datepicker";
 import UserAsyncSelect from "../../../components/UserAsyncSelect";
 
@@ -56,8 +55,6 @@ const COMPLIANCE_OPTIONS = [
 const FindingsForm = ({ teamObjectives = [], onAddFinding, onCancel }) => {
   const bg = useColorModeValue("brandPrimary.50", "brandPrimary.900");
   const borderColor = useColorModeValue("brandPrimary.200", "brandPrimary.700");
-  const [showReportSection, setShowReportSection] = useState(false);
-
   const [formData, setFormData] = useState({
     title: "",
     details: "",
@@ -73,13 +70,6 @@ const FindingsForm = ({ teamObjectives = [], onAddFinding, onCancel }) => {
   });
 
   const [errors, setErrors] = useState({});
-
-  // Auto-show report section when Non-Conformity compliance type is selected
-  useEffect(() => {
-    if (isNonConformity(formData.compliance)) {
-      setShowReportSection(true);
-    }
-  }, [formData.compliance]);
 
   const handleChange = (field, value) => {
     setFormData((prev) => ({
@@ -122,9 +112,8 @@ const FindingsForm = ({ teamObjectives = [], onAddFinding, onCancel }) => {
       newErrors.compliance = "Compliance type is required";
     }
 
-    // Validate report section if it's required for Non-Conformity OR if it's shown
-    const isNCType = isNonConformity(formData.compliance);
-    if (isNCType || showReportSection) {
+    // Validate report section only for Non-Conformity types
+    if (isNonConformity(formData.compliance)) {
       if (!formData.report.reportNo.trim()) {
         newErrors["report.reportNo"] = "Report number is required";
       }
@@ -147,7 +136,7 @@ const FindingsForm = ({ teamObjectives = [], onAddFinding, onCancel }) => {
     if (validateForm()) {
       const findingData = {
         ...formData,
-        report: showReportSection
+        report: isNonConformity(formData.compliance)
           ? {
               ...formData.report,
               date: formData.report.date.toISOString().split("T")[0],
@@ -313,37 +302,14 @@ const FindingsForm = ({ teamObjectives = [], onAddFinding, onCancel }) => {
           )}
         </FormControl>
 
-        <Divider />
-
-        {/* Report Section Toggle */}
-        <HStack justify="space-between">
-          <Button
-            size="sm"
-            variant="ghost"
-            onClick={() => {
-              // Prevent hiding if it's a Non-Conformity type (required)
-              if (!isNonConformity(formData.compliance)) {
-                setShowReportSection(!showReportSection);
-              }
-            }}
-            rightIcon={showReportSection ? <FiChevronUp /> : <FiChevronDown />}
-            isDisabled={isNonConformity(formData.compliance) && showReportSection}
-          >
-            {showReportSection ? "Hide" : "Add"} Report Details
-          </Button>
-          {isNonConformity(formData.compliance) && (
-            <Text fontSize="xs" color="red.500" fontWeight="medium">
-              * Required for Non-Conformity
-            </Text>
-          )}
-        </HStack>
-
-        {/* Report Section */}
-        <Collapse in={showReportSection} animateOpacity>
-          <VStack align="stretch" spacing={4} pt={2}>
-            <Text fontSize="sm" fontWeight="semibold" color="gray.600">
-              Report Information
-            </Text>
+        {/* Report Section - Only shown for Non-Conformity types */}
+        {isNonConformity(formData.compliance) && (
+          <>
+            <Divider />
+            <VStack align="stretch" spacing={4}>
+              <Text fontSize="sm" fontWeight="semibold" color="gray.700">
+                Report Details (Required for Non-Conformity)
+              </Text>
 
             {/* Report Number */}
             <FormControl isInvalid={!!errors["report.reportNo"]}>
@@ -437,7 +403,8 @@ const FindingsForm = ({ teamObjectives = [], onAddFinding, onCancel }) => {
               )}
             </FormControl>
           </VStack>
-        </Collapse>
+        </>
+        )}
 
         {/* Action Buttons */}
         <HStack justify="flex-end" pt={2}>
