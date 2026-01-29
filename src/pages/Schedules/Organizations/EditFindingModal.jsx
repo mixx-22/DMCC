@@ -417,10 +417,6 @@ const EditFindingModal = ({
                       }
                       placeholder="Select Auditee"
                       displayMode="none"
-                      menuPortalTarget={document.body}
-                      styles={{
-                        menuPortal: (base) => ({ ...base, zIndex: 9999 }),
-                      }}
                     />
                     {errors["report.auditee"] && (
                       <Text fontSize="xs" color="red.500" mt={1}>
@@ -445,10 +441,6 @@ const EditFindingModal = ({
                       }
                       placeholder="Select Auditor"
                       displayMode="none"
-                      menuPortalTarget={document.body}
-                      styles={{
-                        menuPortal: (base) => ({ ...base, zIndex: 9999 }),
-                      }}
                     />
                     {errors["report.auditor"] && (
                       <Text fontSize="xs" color="red.500" mt={1}>
