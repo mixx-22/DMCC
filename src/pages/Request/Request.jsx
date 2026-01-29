@@ -1,11 +1,11 @@
 import { useState, useEffect, useCallback } from "react";
 import { Box, Spinner, Center, Stack, Heading, Text } from "@chakra-ui/react";
 import { toast } from "sonner";
-import PageHeader from "../components/PageHeader";
-import DocumentDrawer from "../components/Document/DocumentDrawer";
-import { ListView } from "../components/Document/ListView";
-import Pagination from "../components/Pagination";
-import apiService from "../services/api";
+import PageHeader from "../../components/PageHeader";
+import DocumentDrawer from "../../components/Document/DocumentDrawer";
+import { ListView } from "../../components/Document/ListView";
+import Pagination from "../../components/Pagination";
+import apiService from "../../services/api";
 
 const ITEMS_PER_PAGE = 10;
 

@@ -216,7 +216,7 @@ const Sidebar = () => {
           // { path: "/documents?status=pending", label: "Pending Approval" },
         ],
       },
-      { id: "request", path: "/request", label: "Request", icon: FiClock },
+      { id: "request", path: "/request", label: "Requests", icon: FiClock },
       // { id: "archive", path: "/archive", label: "Archive", icon: FiArchive },
       // {
       //   id: "certifications",

@@ -292,10 +292,10 @@ export const apiService = {
 
   /**
    * Submit a document for review (creates a new request)
-   * @param {string} documentId - The document ID
-   * @returns {Promise<{requestId: string}>}
+   * @param {string} requestId - The request ID from the document
+   * @returns {Promise<Object>}
    */
-  async submitDocumentRequest(documentId) {
+  async submitDocumentRequest(requestId) {
     if (!USE_API) {
       // Mock mode
       return {
@@ -306,9 +306,8 @@ export const apiService = {
       };
     }
 
-    const response = await this.request("/request", {
-      method: "POST",
-      body: JSON.stringify({ documentId }),
+    const response = await this.request(`/request/${requestId}?type=submit`, {
+      method: "PUT",
     });
 
     return response;
@@ -316,7 +315,7 @@ export const apiService = {
 
   /**
    * Discard a document request
-   * @param {string} requestId - The request ID
+   * @param {string} requestId - The request ID from the document
    * @returns {Promise<Object>}
    */
   async discardDocumentRequest(requestId) {
@@ -334,7 +333,7 @@ export const apiService = {
 
   /**
    * Endorse a document request for publish
-   * @param {string} requestId - The request ID
+   * @param {string} requestId - The request ID from the document
    * @returns {Promise<Object>}
    */
   async endorseDocumentRequest(requestId) {
@@ -355,7 +354,7 @@ export const apiService = {
 
   /**
    * Reject a document request
-   * @param {string} requestId - The request ID
+   * @param {string} requestId - The request ID from the document
    * @returns {Promise<Object>}
    */
   async rejectDocumentRequest(requestId) {
@@ -373,7 +372,7 @@ export const apiService = {
 
   /**
    * Publish a document
-   * @param {string} requestId - The request ID
+   * @param {string} requestId - The request ID from the document
    * @returns {Promise<Object>}
    */
   async publishDocument(requestId) {
@@ -391,16 +390,16 @@ export const apiService = {
 
   /**
    * Check out a published document (restart workflow)
-   * @param {string} documentId - The document ID
+   * @param {string} requestId - The request ID from the document
    * @returns {Promise<Object>}
    */
-  async checkoutDocument(documentId) {
+  async checkoutDocument(requestId) {
     if (!USE_API) {
       // Mock mode
       return { success: true };
     }
 
-    const response = await this.request(`/documents/${documentId}/checkout`, {
+    const response = await this.request(`/documents/${requestId}/checkout`, {
       method: "PUT",
     });
 
