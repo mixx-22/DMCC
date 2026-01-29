@@ -63,7 +63,6 @@ import { formatDateRange } from "../../../utils/helpers";
 import DocumentDrawer from "../../../components/Document/DocumentDrawer";
 import FindingsForm from "./FindingsForm";
 import FindingsList from "./FindingsList";
-import EditFindingModal from "./EditFindingModal";
 import VisitManager from "./VisitManager";
 
 const OrganizationCard = ({
@@ -98,11 +97,6 @@ const OrganizationCard = ({
     medium: "yellow",
     high: "red",
   };
-
-  // State for edit finding modal
-  const [editModalOpen, setEditModalOpen] = useState(false);
-  const [editingFinding, setEditingFinding] = useState(null);
-  const [editingVisitIndex, setEditingVisitIndex] = useState(null);
 
   // State to track which visit's finding form is shown (visitIndex -> boolean)
   const [showFindingFormFor, setShowFindingFormFor] = useState(new Set());
@@ -174,10 +168,10 @@ const OrganizationCard = ({
     }
   };
 
-  const handleEditFinding = async (updatedFinding) => {
+  const handleEditFinding = async (updatedFinding, visitIndex) => {
     // Calculate updated visits with the edited finding
     const updatedVisits = organization.visits.map((v, i) => {
-      if (i === editingVisitIndex) {
+      if (i === visitIndex) {
         return {
           ...v,
           findings: (v.findings || []).map((f) =>
@@ -207,7 +201,7 @@ const OrganizationCard = ({
       });
     } catch (error) {
       console.error("Failed to update finding:", error);
-      throw error; // Re-throw to let modal handle it
+      throw error;
     }
   };
 
@@ -503,16 +497,18 @@ const OrganizationCard = ({
                                               visit.findings.length > 0 && (
                                                 <FindingsList
                                                   findings={visit.findings}
-                                                  onEdit={(finding) => {
-                                                    setEditingFinding(finding);
-                                                    setEditingVisitIndex(index);
-                                                    setEditModalOpen(true);
+                                                  teamObjectives={team?.objectives || []}
+                                                  onEdit={() => {
+                                                    // onEdit is called but inline editing handles the UI
                                                   }}
                                                   onDelete={(finding) => {
                                                     handleDeleteFinding(
                                                       finding,
                                                       index,
                                                     );
+                                                  }}
+                                                  onSaveEdit={(updatedFinding) => {
+                                                    handleEditFinding(updatedFinding, index);
                                                   }}
                                                 />
                                               )}
@@ -881,17 +877,6 @@ const OrganizationCard = ({
         document={selectedDocument}
         isOpen={!!selectedDocument}
         onClose={closeDocumentDrawer}
-      />
-      <EditFindingModal
-        isOpen={editModalOpen}
-        onClose={() => {
-          setEditModalOpen(false);
-          setEditingFinding(null);
-          setEditingVisitIndex(null);
-        }}
-        finding={editingFinding}
-        teamObjectives={team?.objectives || []}
-        onSave={handleEditFinding}
       />
     </>
   );

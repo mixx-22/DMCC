@@ -24,6 +24,7 @@ import {
   FiFileText,
 } from "react-icons/fi";
 import moment from "moment";
+import FindingsForm from "./FindingsForm";
 
 // Map compliance values to display names and colors
 const COMPLIANCE_DISPLAY = {
@@ -37,8 +38,9 @@ const COMPLIANCE_DISPLAY = {
   MAJOR_NC: { label: "Major Non-Conformity", color: "error" },
 };
 
-const FindingCard = ({ finding, onEdit, onDelete }) => {
+const FindingCard = ({ finding, teamObjectives, onEdit, onDelete, onSaveEdit }) => {
   const [isExpanded, setIsExpanded] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
   const cardBg = useColorModeValue("white", "gray.700");
   const borderColor = useColorModeValue("gray.200", "gray.600");
   const labelColor = useColorModeValue("gray.600", "gray.400");
@@ -46,6 +48,48 @@ const FindingCard = ({ finding, onEdit, onDelete }) => {
 
   const complianceInfo =
     COMPLIANCE_DISPLAY[finding.compliance] || COMPLIANCE_DISPLAY.OBSERVATIONS;
+
+  const handleEditClick = () => {
+    setIsEditing(true);
+    setIsExpanded(true); // Expand when editing
+    if (onEdit) {
+      onEdit(finding);
+    }
+  };
+
+  const handleSave = async (findingData) => {
+    if (onSaveEdit) {
+      await onSaveEdit(findingData);
+    }
+    setIsEditing(false);
+  };
+
+  const handleCancel = () => {
+    setIsEditing(false);
+  };
+
+  // If in edit mode, show the form
+  if (isEditing) {
+    return (
+      <Card
+        size="sm"
+        variant="outline"
+        borderColor={borderColor}
+        bg={cardBg}
+        boxShadow="none"
+      >
+        <CardBody>
+          <FindingsForm
+            teamObjectives={teamObjectives}
+            initialData={finding}
+            mode="edit"
+            onAddFinding={handleSave}
+            onCancel={handleCancel}
+          />
+        </CardBody>
+      </Card>
+    );
+  }
 
   return (
     <Card
@@ -88,7 +132,7 @@ const FindingCard = ({ finding, onEdit, onDelete }) => {
                   size="sm"
                   variant="ghost"
                   colorScheme="brandPrimary"
-                  onClick={() => onEdit(finding)}
+                  onClick={handleEditClick}
                   aria-label="Edit finding"
                 />
               )}
@@ -232,7 +276,7 @@ const FindingCard = ({ finding, onEdit, onDelete }) => {
   );
 };
 
-const FindingsList = ({ findings = [], onEdit, onDelete }) => {
+const FindingsList = ({ findings = [], teamObjectives = [], onEdit, onDelete, onSaveEdit }) => {
   if (!findings || findings.length === 0) {
     return null;
   }
@@ -244,10 +288,12 @@ const FindingsList = ({ findings = [], onEdit, onDelete }) => {
       </Text>
       {findings.map((finding, index) => (
         <FindingCard
-          key={index}
+          key={finding._id || index}
           finding={finding}
+          teamObjectives={teamObjectives}
           onEdit={onEdit}
           onDelete={onDelete}
+          onSaveEdit={onSaveEdit}
         />
       ))}
     </VStack>

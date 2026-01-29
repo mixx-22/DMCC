@@ -53,24 +53,51 @@ const COMPLIANCE_OPTIONS = [
   },
 ];
 
-const FindingsForm = ({ teamObjectives = [], onAddFinding, onCancel }) => {
+const FindingsForm = ({ teamObjectives = [], initialData = null, mode = "add", onAddFinding, onCancel }) => {
   const bg = useColorModeValue("brandPrimary.50", "brandPrimary.900");
   const borderColor = useColorModeValue("brandPrimary.200", "brandPrimary.700");
   const { pageRef } = useLayout();
 
-  const [formData, setFormData] = useState({
-    title: "",
-    details: "",
-    objective: "",
-    compliance: "",
-    report: {
-      reportNo: "",
+  // Initialize form data based on mode
+  const getInitialFormData = () => {
+    if (mode === "edit" && initialData) {
+      return {
+        _id: initialData._id,
+        title: initialData.title || "",
+        details: initialData.details || "",
+        objective: initialData.objective || "",
+        compliance: initialData.compliance || "",
+        report: initialData.report ? {
+          reportNo: initialData.report.reportNo || "",
+          details: initialData.report.details || "",
+          date: initialData.report.date ? new Date(initialData.report.date) : new Date(),
+          auditee: initialData.report.auditee || null,
+          auditor: initialData.report.auditor || null,
+        } : {
+          reportNo: "",
+          details: "",
+          date: new Date(),
+          auditee: null,
+          auditor: null,
+        },
+      };
+    }
+    return {
+      title: "",
       details: "",
-      date: new Date(),
-      auditee: null,
-      auditor: null,
-    },
-  });
+      objective: "",
+      compliance: "",
+      report: {
+        reportNo: "",
+        details: "",
+        date: new Date(),
+        auditee: null,
+        auditor: null,
+      },
+    };
+  };
+
+  const [formData, setFormData] = useState(getInitialFormData());
 
   const [errors, setErrors] = useState({});
 
@@ -436,7 +463,7 @@ const FindingsForm = ({ teamObjectives = [], onAddFinding, onCancel }) => {
         {/* Action Buttons */}
         <HStack justify="flex-end" pt={2}>
           {onCancel && (
-            <Button size="sm" variant="ghost" onClick={onCancel}>
+            <Button size="sm" variant="ghost" onClick={onCancel} leftIcon={<FiX />}>
               Cancel
             </Button>
           )}
@@ -446,7 +473,7 @@ const FindingsForm = ({ teamObjectives = [], onAddFinding, onCancel }) => {
             leftIcon={<FiSave />}
             onClick={handleSubmit}
           >
-            Add Finding
+            {mode === "edit" ? "Save Changes" : "Add Finding"}
           </Button>
         </HStack>
       </VStack>
