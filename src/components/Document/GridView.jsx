@@ -28,9 +28,15 @@ export const GridView = ({
   foldersOnly,
   filesOnly,
   sourcePage = null,
+  mini = false, // Mini mode for compact display (fewer columns, smaller icons)
 }) => {
   const [isFoldersOpen, setIsFoldersOpen] = useState(true);
   const folderBg = useColorModeValue("blackAlpha.50", "whiteAlpha.50");
+
+  // Grid column configurations
+  const folderColumns = mini ? [2, 2, 3, 4, 5] : [3, 3, 4, 6, 8];
+  const documentColumns = mini ? [1, 2, 2, 3] : [2, 2, 3, 4];
+  const folderIconSize = mini ? { base: 10, md: 12 } : { base: 14, md: 16 };
 
   // Separate folders from other document types
   const folders = documents.filter((doc) => doc?.type === "folder");
@@ -84,7 +90,7 @@ export const GridView = ({
           <DocumentHoverPopover document={doc}>
             <Center>
               <AuptilyzeFolder
-                boxSize={{ base: 14, md: 16 }}
+                boxSize={folderIconSize}
                 position="relative"
                 filter="drop-shadow(0 2px 2px rgba(0, 0, 0, .15))"
                 _hover={{
@@ -190,7 +196,7 @@ export const GridView = ({
           {foldersOnly ? (
             <SimpleGrid
               gap={0}
-              columns={[3, 3, 4, 6, 8]}
+              columns={folderColumns}
               sx={{ ">*": { h: "full" } }}
             >
               {displayDocuments.map((doc, docIndex) =>
@@ -200,7 +206,7 @@ export const GridView = ({
           ) : (
             <SimpleGrid
               gap={4}
-              columns={[2, 2, 3, 4]}
+              columns={documentColumns}
               sx={{ ">*": { h: "full" } }}
             >
               {displayDocuments.map((doc, docIndex) =>
@@ -231,7 +237,7 @@ export const GridView = ({
               <Collapse in={isFoldersOpen} animateOpacity>
                 <SimpleGrid
                   gap={0}
-                  columns={[3, 3, 4, 6, 8]}
+                  columns={folderColumns}
                   sx={{ ">*": { h: "full" } }}
                 >
                   {folders.map((doc, docIndex) =>
@@ -257,7 +263,7 @@ export const GridView = ({
               )}
               <SimpleGrid
                 gap={4}
-                columns={[2, 2, 3, 4]}
+                columns={documentColumns}
                 sx={{ ">*": { h: "full" } }}
               >
                 {otherDocuments.map((doc, docIndex) =>

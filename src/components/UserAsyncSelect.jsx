@@ -341,7 +341,7 @@ const UserAsyncSelect = ({
             formatOptionLabel={formatOptionLabel}
             isClearable
             cacheOptions
-            defaultOptions={false}
+            defaultOptions={[]}
             loadingMessage={() => "Loading users..."}
             colorScheme="brandPrimary"
             useBasicStyles

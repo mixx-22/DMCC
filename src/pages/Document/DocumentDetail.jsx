@@ -78,7 +78,6 @@ import {
 import { toast } from "sonner";
 import DocumentBadges from "./Badges";
 import moment from "moment";
-import { is } from "date-fns/locale";
 import Can from "../../components/Can";
 
 const DocumentDetail = () => {

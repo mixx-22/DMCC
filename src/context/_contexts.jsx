@@ -15,6 +15,7 @@ const ScheduleProfileContext = createContext();
 const DocumentsContext = createContext();
 const FileTypesContext = createContext();
 const FileTypeContext = createContext();
+const OrganizationsContext = createContext();
 
 export {
   AppContext,
@@ -32,4 +33,5 @@ export {
   DocumentsContext,
   FileTypesContext,
   FileTypeContext,
+  OrganizationsContext,
 };
