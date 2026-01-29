@@ -64,6 +64,7 @@ import DocumentDrawer from "../../../components/Document/DocumentDrawer";
 import FindingsForm from "./FindingsForm";
 import FindingsList from "./FindingsList";
 import EditFindingModal from "./EditFindingModal";
+import VisitManager from "./VisitManager";
 
 const OrganizationCard = ({
   loading = false,
@@ -105,6 +106,9 @@ const OrganizationCard = ({
 
   // State to track which visit's finding form is shown (visitIndex -> boolean)
   const [showFindingFormFor, setShowFindingFormFor] = useState(new Set());
+
+  // State to track if visit form is visible
+  const [showVisitForm, setShowVisitForm] = useState(false);
 
   useEffect(() => {
     if (organization?.team?.folderId && isExpanded) {
@@ -204,6 +208,32 @@ const OrganizationCard = ({
     } catch (error) {
       console.error("Failed to update finding:", error);
       throw error; // Re-throw to let modal handle it
+    }
+  };
+
+  const handleAddVisit = async (newVisits) => {
+    // Update organization in context
+    dispatch({
+      type: "UPDATE_ORGANIZATION",
+      payload: {
+        ...organization,
+        visits: newVisits,
+        teamId: organization.teamId || team,
+      },
+    });
+
+    try {
+      // Persist to server
+      await updateOrganization(organization._id, {
+        ...organization,
+        teamId: organization.teamId || team,
+        visits: newVisits,
+      });
+      
+      // Hide form after successful add
+      setShowVisitForm(false);
+    } catch (error) {
+      console.error("Failed to add visit:", error);
     }
   };
 
@@ -808,18 +838,26 @@ const OrganizationCard = ({
                 </TabPanels>
               </Tabs>
 
-              {/* Actions */}
+              {/* Add Visit Section */}
               <Box p={4}>
-                <Flex justifyContent="flex-end">
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    colorScheme="brandPrimary"
-                    leftIcon={<FiCalendar />}
-                  >
-                    Add Visit
-                  </Button>
-                </Flex>
+                {showVisitForm ? (
+                  <VisitManager
+                    visits={organization.visits || []}
+                    onChange={handleAddVisit}
+                  />
+                ) : (
+                  <Flex justifyContent="flex-end">
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      colorScheme="brandPrimary"
+                      leftIcon={<FiCalendar />}
+                      onClick={() => setShowVisitForm(true)}
+                    >
+                      Add Visit
+                    </Button>
+                  </Flex>
+                )}
               </Box>
             </Box>
           </Collapse>
