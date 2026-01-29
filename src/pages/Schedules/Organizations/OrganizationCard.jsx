@@ -104,11 +104,15 @@ const OrganizationCard = ({
   // State to track if visit form is visible
   const [showVisitForm, setShowVisitForm] = useState(false);
 
+  // State to track active tab index
+  const [activeTabIndex, setActiveTabIndex] = useState(0);
+
   useEffect(() => {
-    if (organization?.team?.folderId && isExpanded) {
+    // Only fetch documents if organization is expanded AND user is on Documents tab (index 3)
+    if (organization?.team?.folderId && isExpanded && activeTabIndex === 3) {
       fetchDocuments(organization?.team?.folderId);
     }
-  }, [organization?.team?.folderId, isExpanded, fetchDocuments]);
+  }, [organization?.team?.folderId, isExpanded, activeTabIndex, fetchDocuments]);
 
   const handleDeleteOrganization = async (organization) => {
     const result = await Swal.fire({
@@ -320,7 +324,10 @@ const OrganizationCard = ({
           <Collapse in={isExpanded} animateOpacity>
             <Box pt={0}>
               {/* Tabs Section */}
-              <Tabs colorScheme="brandPrimary">
+              <Tabs 
+                colorScheme="brandPrimary"
+                onChange={(index) => setActiveTabIndex(index)}
+              >
                 <TabList>
                   <Tab
                     sx={{ [$tabColor.variable]: tabColor }}
