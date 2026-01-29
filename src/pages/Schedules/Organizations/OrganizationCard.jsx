@@ -61,7 +61,7 @@ const OrganizationCard = ({
   auditors = [],
   onEdit,
 }) => {
-  const { deleteOrganization } = useOrganizations();
+  const { deleteOrganization, updateOrganization } = useOrganizations();
   const {
     documents,
     loading: documentsLoading,
@@ -107,17 +107,7 @@ const OrganizationCard = ({
       try {
         const orgId = organization?._id || organization?.id;
         await deleteOrganization(orgId);
-
-        // Update local schedule data to remove the organization ID
-        if (schedule) {
-          const updatedSchedule = {
-            ...schedule,
-            organizations: (schedule.organizations || []).filter(
-              (orgId) => orgId !== orgId,
-            ),
-          };
-          setScheduleFormData((prev) => ({ ...prev, ...updatedSchedule }));
-        }
+        // Context reducer handles updating the organizations list
       } catch (error) {
         console.error("Failed to delete organization:", error);
       }
@@ -302,7 +292,7 @@ const OrganizationCard = ({
                               {/* Add Finding Form */}
                               <FindingsForm
                                 teamObjectives={team?.objectives || []}
-                                onAddFinding={(findingData) => {
+                                onAddFinding={async (findingData) => {
                                   const updatedVisits = organization.visits.map(
                                     (v, i) => {
                                       if (i === index) {
@@ -318,16 +308,11 @@ const OrganizationCard = ({
                                     },
                                   );
 
-                                  setScheduleFormData((prev) => ({
-                                    ...prev,
-                                    organizations: prev.organizations?.map(
-                                      (org) =>
-                                        org._id === organization._id ||
-                                        org.id === organization._id
-                                          ? { ...org, visits: updatedVisits }
-                                          : org,
-                                    ),
-                                  }));
+                                  // Update organization via context
+                                  await updateOrganization(organization._id, {
+                                    ...organization,
+                                    visits: updatedVisits,
+                                  });
                                 }}
                               />
                             </VStack>
