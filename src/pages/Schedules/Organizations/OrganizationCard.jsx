@@ -69,7 +69,7 @@ const OrganizationCard = ({
   } = useDocuments();
   const { selectedDocument, closeDocumentDrawer, handleDocumentClick } =
     useLayout();
-  const [isExpanded, setIsExpanded] = useState(true);
+  const [isExpanded, setIsExpanded] = useState(false);
   const cardBg = useColorModeValue("white", "gray.700");
   const errorColor = useColorModeValue("error.600", "error.400");
   const borderColor = useColorModeValue("gray.200", "gray.600");
