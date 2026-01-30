@@ -10,8 +10,8 @@ import {
   FormHelperText,
   useColorModeValue,
   Switch,
-  Heading,
   Badge,
+  SimpleGrid,
 } from "@chakra-ui/react";
 import { useState } from "react";
 import { FiSave, FiX } from "react-icons/fi";
@@ -35,7 +35,8 @@ const VerificationForm = ({
   const getInitialFormData = () => {
     if (initialData) {
       return {
-        corrected: initialData.corrected !== undefined ? initialData.corrected : -1,
+        corrected:
+          initialData.corrected !== undefined ? initialData.corrected : -1,
         correctionDate: initialData.correctionDate
           ? new Date(initialData.correctionDate)
           : new Date(),
@@ -100,25 +101,26 @@ const VerificationForm = ({
         borderColor={borderColor}
       >
         <VStack align="stretch" spacing={4}>
-          <HStack justify="space-between">
-            <Heading size="sm" color="green.600">
-              Verification
-            </Heading>
-            <Badge colorScheme={formData.corrected === 2 ? "green" : formData.corrected === 0 ? "red" : "orange"}>
-              {formData.corrected === 2 ? "Corrected" : formData.corrected === 0 ? "Not Corrected" : "Pending"}
-            </Badge>
-          </HStack>
-
-          <VStack align="stretch" spacing={3}>
+          <SimpleGrid columns={[1, 1, 2]} align="stretch" spacing={3}>
             <Box>
               <Text fontSize="xs" color={labelColor} mb={1}>
                 Status:
               </Text>
               <Badge
-                colorScheme={formData.corrected === 2 ? "green" : formData.corrected === 0 ? "red" : "orange"}
+                colorScheme={
+                  formData.corrected === 2
+                    ? "green"
+                    : formData.corrected === 0
+                      ? "red"
+                      : "orange"
+                }
                 fontSize="sm"
               >
-                {formData.corrected === 2 ? "Corrected" : formData.corrected === 0 ? "Not Corrected" : "Pending Verification"}
+                {formData.corrected === 2
+                  ? "Corrected"
+                  : formData.corrected === 0
+                    ? "Not Corrected"
+                    : "Pending Verification"}
               </Badge>
             </Box>
 
@@ -132,18 +134,17 @@ const VerificationForm = ({
                 </Text>
               </Box>
             )}
-
-            {formData.remarks && (
-              <Box>
-                <Text fontSize="xs" color={labelColor} mb={1}>
-                  Remarks:
-                </Text>
-                <Text fontSize="sm" whiteSpace="pre-wrap">
-                  {formData.remarks}
-                </Text>
-              </Box>
-            )}
-          </VStack>
+          </SimpleGrid>
+          {formData.remarks && (
+            <Box flex={1}>
+              <Text fontSize="xs" color={labelColor} mb={1}>
+                Remarks:
+              </Text>
+              <Text fontSize="sm" whiteSpace="pre-wrap">
+                {formData.remarks}
+              </Text>
+            </Box>
+          )}
         </VStack>
       </Box>
     );
@@ -195,13 +196,27 @@ const VerificationForm = ({
                 }
                 colorScheme="green"
               />
-              <Text fontSize="sm" fontWeight="medium" color={formData.corrected === 2 ? "green.600" : formData.corrected === 0 ? "red.600" : "orange.600"}>
-                {formData.corrected === 2 ? "Corrected" : formData.corrected === 0 ? "Not Corrected" : "Pending"}
+              <Text
+                fontSize="sm"
+                fontWeight="medium"
+                color={
+                  formData.corrected === 2
+                    ? "green.600"
+                    : formData.corrected === 0
+                      ? "red.600"
+                      : "orange.600"
+                }
+              >
+                {formData.corrected === 2
+                  ? "Corrected"
+                  : formData.corrected === 0
+                    ? "Not Corrected"
+                    : "Pending"}
               </Text>
             </HStack>
             <FormHelperText>
-              {formData.corrected === 2 
-                ? "✓ Finding will be marked as COMPLIANT" 
+              {formData.corrected === 2
+                ? "✓ Finding will be marked as COMPLIANT"
                 : formData.corrected === 0
                   ? "✗ Finding verified as not corrected"
                   : "⚠ Verification pending - use switch to mark as corrected or not corrected"}

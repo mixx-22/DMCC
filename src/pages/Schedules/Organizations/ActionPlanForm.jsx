@@ -17,13 +17,14 @@ import {
   Tooltip,
   Wrap,
   WrapItem,
+  SimpleGrid,
 } from "@chakra-ui/react";
 import { useState } from "react";
 import { FiSave, FiX } from "react-icons/fi";
 import { SingleDatepicker } from "chakra-dayzed-datepicker";
 import UserAsyncSelect from "../../../components/UserAsyncSelect";
 import { useLayout, useUser } from "../../../context/_useContext";
-import moment from "moment";
+import Timestamp from "../../../components/Timestamp";
 
 const ActionPlanForm = ({
   initialData = null,
@@ -42,13 +43,17 @@ const ActionPlanForm = ({
   const getInitialFormData = () => {
     // If editing existing action plan, use existing auditor
     // Otherwise, auto-populate with current logged-in user
-    const defaultAuditor = currentUser ? [{
-      _id: currentUser._id || currentUser.id,
-      id: currentUser._id || currentUser.id,
-      firstName: currentUser.firstName,
-      lastName: currentUser.lastName,
-    }] : [];
-    
+    const defaultAuditor = currentUser
+      ? [
+          {
+            _id: currentUser._id || currentUser.id,
+            id: currentUser._id || currentUser.id,
+            firstName: currentUser.firstName,
+            lastName: currentUser.lastName,
+          },
+        ]
+      : [];
+
     if (initialData) {
       return {
         rootCause: initialData.rootCause || "",
@@ -144,14 +149,6 @@ const ActionPlanForm = ({
         borderColor={borderColor}
       >
         <VStack align="stretch" spacing={4}>
-          <HStack justify="space-between">
-            <Heading size="sm" color="info.600">
-              Action Plan
-            </Heading>
-          </HStack>
-
-          <Divider />
-
           {/* Root Cause Analysis Section */}
           <Box>
             <Text fontSize="sm" fontWeight="semibold" color="info.700" mb={2}>
@@ -168,46 +165,46 @@ const ActionPlanForm = ({
                   </Text>
                 </Box>
               )}
-              {formData.owner && formData.owner.length > 0 && (
-                <Box>
-                  <Text fontSize="xs" color={labelColor} mb={1}>
-                    Owner(s):
-                  </Text>
-                  <Wrap>
-                    {formData.owner.map((u, index) => (
-                      <WrapItem key={`owner-${u.id}-${index}`}>
-                        <Tooltip
-                          label={`${u.firstName || ""} ${u.lastName || ""}`}
-                        >
-                          <Card variant="filled" shadow="none">
-                            <CardBody px={2} py={1}>
-                              <HStack spacing={1}>
-                                <Avatar
-                                  size="xs"
-                                  name={`${u.firstName || ""} ${u.lastName || ""}`}
-                                />
-                                <Text fontSize="sm">
-                                  {`${u.firstName || ""} ${u.lastName || ""}`}
-                                </Text>
-                              </HStack>
-                            </CardBody>
-                          </Card>
-                        </Tooltip>
-                      </WrapItem>
-                    ))}
-                  </Wrap>
-                </Box>
-              )}
-              {formData.proposedDate && (
-                <Box>
-                  <Text fontSize="xs" color={labelColor} mb={1}>
-                    Proposed Completion Date:
-                  </Text>
-                  <Text fontSize="sm">
-                    {moment(formData.proposedDate).format("MMMM DD, YYYY")}
-                  </Text>
-                </Box>
-              )}
+              <SimpleGrid columns={[1, 1, 2]}>
+                {formData.owner && formData.owner.length > 0 && (
+                  <Box>
+                    <Text fontSize="xs" color={labelColor} mb={1}>
+                      Owner(s):
+                    </Text>
+                    <Wrap>
+                      {formData.owner.map((u, index) => (
+                        <WrapItem key={`owner-${u.id}-${index}`}>
+                          <Tooltip
+                            label={`${u.firstName || ""} ${u.lastName || ""}`}
+                          >
+                            <Card variant="filled" shadow="none">
+                              <CardBody px={2} py={1}>
+                                <HStack spacing={1}>
+                                  <Avatar
+                                    size="xs"
+                                    name={`${u.firstName || ""} ${u.lastName || ""}`}
+                                  />
+                                  <Text fontSize="sm">
+                                    {`${u.firstName || ""} ${u.lastName || ""}`}
+                                  </Text>
+                                </HStack>
+                              </CardBody>
+                            </Card>
+                          </Tooltip>
+                        </WrapItem>
+                      ))}
+                    </Wrap>
+                  </Box>
+                )}
+                {formData.proposedDate && (
+                  <Box>
+                    <Text fontSize="xs" color={labelColor} mb={1}>
+                      Proposed Completion Date:
+                    </Text>
+                    <Timestamp date={formData.proposedDate} fontSize="sm" />
+                  </Box>
+                )}
+              </SimpleGrid>
             </VStack>
           </Box>
 
@@ -229,66 +226,68 @@ const ActionPlanForm = ({
                   </Text>
                 </Box>
               )}
-              {formData.takenBy && formData.takenBy.length > 0 && (
-                <Box>
-                  <Text fontSize="xs" color={labelColor} mb={1}>
-                    Taken By:
-                  </Text>
-                  <Wrap>
-                    {formData.takenBy.map((u, index) => (
-                      <WrapItem key={`takenby-${u.id}-${index}`}>
-                        <Tooltip
-                          label={`${u.firstName || ""} ${u.lastName || ""}`}
-                        >
-                          <Card variant="filled" shadow="none">
-                            <CardBody px={2} py={1}>
-                              <HStack spacing={1}>
-                                <Avatar
-                                  size="xs"
-                                  name={`${u.firstName || ""} ${u.lastName || ""}`}
-                                />
-                                <Text fontSize="sm">
-                                  {`${u.firstName || ""} ${u.lastName || ""}`}
-                                </Text>
-                              </HStack>
-                            </CardBody>
-                          </Card>
-                        </Tooltip>
-                      </WrapItem>
-                    ))}
-                  </Wrap>
-                </Box>
-              )}
-              {formData.auditor && formData.auditor.length > 0 && (
-                <Box>
-                  <Text fontSize="xs" color={labelColor} mb={1}>
-                    Verified By:
-                  </Text>
-                  <Wrap>
-                    {formData.auditor.map((u, index) => (
-                      <WrapItem key={`auditor-${u.id}-${index}`}>
-                        <Tooltip
-                          label={`${u.firstName || ""} ${u.lastName || ""}`}
-                        >
-                          <Card variant="filled" shadow="none">
-                            <CardBody px={2} py={1}>
-                              <HStack spacing={1}>
-                                <Avatar
-                                  size="xs"
-                                  name={`${u.firstName || ""} ${u.lastName || ""}`}
-                                />
-                                <Text fontSize="sm">
-                                  {`${u.firstName || ""} ${u.lastName || ""}`}
-                                </Text>
-                              </HStack>
-                            </CardBody>
-                          </Card>
-                        </Tooltip>
-                      </WrapItem>
-                    ))}
-                  </Wrap>
-                </Box>
-              )}
+              <SimpleGrid columns={[1, 1, 2]}>
+                {formData.takenBy && formData.takenBy.length > 0 && (
+                  <Box>
+                    <Text fontSize="xs" color={labelColor} mb={1}>
+                      Taken By:
+                    </Text>
+                    <Wrap>
+                      {formData.takenBy.map((u, index) => (
+                        <WrapItem key={`takenby-${u.id}-${index}`}>
+                          <Tooltip
+                            label={`${u.firstName || ""} ${u.lastName || ""}`}
+                          >
+                            <Card variant="filled" shadow="none">
+                              <CardBody px={2} py={1}>
+                                <HStack spacing={1}>
+                                  <Avatar
+                                    size="xs"
+                                    name={`${u.firstName || ""} ${u.lastName || ""}`}
+                                  />
+                                  <Text fontSize="sm">
+                                    {`${u.firstName || ""} ${u.lastName || ""}`}
+                                  </Text>
+                                </HStack>
+                              </CardBody>
+                            </Card>
+                          </Tooltip>
+                        </WrapItem>
+                      ))}
+                    </Wrap>
+                  </Box>
+                )}
+                {formData.auditor && formData.auditor.length > 0 && (
+                  <Box>
+                    <Text fontSize="xs" color={labelColor} mb={1}>
+                      Verified By:
+                    </Text>
+                    <Wrap>
+                      {formData.auditor.map((u, index) => (
+                        <WrapItem key={`auditor-${u.id}-${index}`}>
+                          <Tooltip
+                            label={`${u.firstName || ""} ${u.lastName || ""}`}
+                          >
+                            <Card variant="filled" shadow="none">
+                              <CardBody px={2} py={1}>
+                                <HStack spacing={1}>
+                                  <Avatar
+                                    size="xs"
+                                    name={`${u.firstName || ""} ${u.lastName || ""}`}
+                                  />
+                                  <Text fontSize="sm">
+                                    {`${u.firstName || ""} ${u.lastName || ""}`}
+                                  </Text>
+                                </HStack>
+                              </CardBody>
+                            </Card>
+                          </Tooltip>
+                        </WrapItem>
+                      ))}
+                    </Wrap>
+                  </Box>
+                )}
+              </SimpleGrid>
             </VStack>
           </Box>
         </VStack>
@@ -435,7 +434,7 @@ const ActionPlanForm = ({
             {/* Auditor - Auto-populated with current user */}
             <Box>
               <Text fontSize="sm" color={labelColor} mb={2}>
-                Verified By (Auditor):
+                Verified By:
               </Text>
               {formData.auditor && formData.auditor.length > 0 ? (
                 <Wrap spacing={1}>
