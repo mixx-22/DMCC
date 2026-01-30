@@ -35,7 +35,7 @@ const VerificationForm = ({
   const getInitialFormData = () => {
     if (initialData) {
       return {
-        corrected: initialData.corrected || 0,
+        corrected: initialData.corrected !== undefined ? initialData.corrected : -1,
         correctionDate: initialData.correctionDate
           ? new Date(initialData.correctionDate)
           : new Date(),
@@ -43,7 +43,7 @@ const VerificationForm = ({
       };
     }
     return {
-      corrected: 0,
+      corrected: -1,
       correctionDate: new Date(),
       remarks: "",
     };
@@ -104,8 +104,8 @@ const VerificationForm = ({
             <Heading size="sm" color="green.600">
               Verification
             </Heading>
-            <Badge colorScheme={formData.corrected === 1 ? "green" : "orange"}>
-              {formData.corrected === 1 ? "Corrected" : "Pending"}
+            <Badge colorScheme={formData.corrected === 2 ? "green" : formData.corrected === 0 ? "red" : "orange"}>
+              {formData.corrected === 2 ? "Corrected" : formData.corrected === 0 ? "Not Corrected" : "Pending"}
             </Badge>
           </HStack>
 
@@ -115,10 +115,10 @@ const VerificationForm = ({
                 Status:
               </Text>
               <Badge
-                colorScheme={formData.corrected === 1 ? "green" : "orange"}
+                colorScheme={formData.corrected === 2 ? "green" : formData.corrected === 0 ? "red" : "orange"}
                 fontSize="sm"
               >
-                {formData.corrected === 1 ? "Corrected" : "Not Yet Corrected"}
+                {formData.corrected === 2 ? "Corrected" : formData.corrected === 0 ? "Not Corrected" : "Pending Verification"}
               </Badge>
             </Box>
 
@@ -189,20 +189,22 @@ const VerificationForm = ({
                 Corrected Status
               </FormLabel>
               <Switch
-                isChecked={formData.corrected === 1}
+                isChecked={formData.corrected === 2}
                 onChange={(e) =>
-                  handleChange("corrected", e.target.checked ? 1 : 0)
+                  handleChange("corrected", e.target.checked ? 2 : 0)
                 }
                 colorScheme="green"
               />
-              <Text fontSize="sm" fontWeight="medium" color={formData.corrected === 1 ? "green.600" : "orange.600"}>
-                {formData.corrected === 1 ? "Corrected" : "Not Corrected"}
+              <Text fontSize="sm" fontWeight="medium" color={formData.corrected === 2 ? "green.600" : formData.corrected === 0 ? "red.600" : "orange.600"}>
+                {formData.corrected === 2 ? "Corrected" : formData.corrected === 0 ? "Not Corrected" : "Pending"}
               </Text>
             </HStack>
             <FormHelperText>
-              {formData.corrected === 1 
+              {formData.corrected === 2 
                 ? "✓ Finding will be marked as COMPLIANT" 
-                : "⚠ Finding will keep its original compliance status"}
+                : formData.corrected === 0
+                  ? "✗ Finding verified as not corrected"
+                  : "⚠ Verification pending - use switch to mark as corrected or not corrected"}
             </FormHelperText>
           </FormControl>
 
