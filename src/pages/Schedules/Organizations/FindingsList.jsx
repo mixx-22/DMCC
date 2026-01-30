@@ -36,6 +36,7 @@ import {
 import moment from "moment";
 import FindingsForm from "./FindingsForm";
 import ActionPlanForm from "./ActionPlanForm";
+import VerificationForm from "./VerificationForm";
 
 // Map compliance values to display names and colors
 const COMPLIANCE_DISPLAY = {
@@ -47,6 +48,7 @@ const COMPLIANCE_DISPLAY = {
   NON_CONFORMITY: { label: "Non-Conformity", color: "warning" },
   MINOR_NC: { label: "Minor Non-Conformity", color: "warning" },
   MAJOR_NC: { label: "Major Non-Conformity", color: "error" },
+  COMPLIANT: { label: "Compliant", color: "green" },
 };
 
 const FindingCard = ({
@@ -59,6 +61,7 @@ const FindingCard = ({
   const [isExpanded, setIsExpanded] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [isEditingActionPlan, setIsEditingActionPlan] = useState(false);
+  const [isEditingVerification, setIsEditingVerification] = useState(false);
   const cardBg = useColorModeValue("white", "gray.700");
   const borderColor = useColorModeValue("gray.200", "gray.600");
   const labelColor = useColorModeValue("gray.600", "gray.400");
@@ -66,6 +69,10 @@ const FindingCard = ({
 
   const complianceInfo =
     COMPLIANCE_DISPLAY[finding.compliance] || COMPLIANCE_DISPLAY.OBSERVATIONS;
+  
+  // Use currentCompliance if available, otherwise fallback to compliance
+  const currentComplianceInfo =
+    COMPLIANCE_DISPLAY[finding.currentCompliance || finding.compliance] || COMPLIANCE_DISPLAY.OBSERVATIONS;
 
   // Check if finding should have action plan (MINOR_NC or MAJOR_NC with report)
   const shouldShowActionPlan =
@@ -74,6 +81,9 @@ const FindingCard = ({
 
   // Check if action plan is missing
   const needsActionPlan = shouldShowActionPlan && !finding.actionPlan;
+  
+  // Check if verification is needed (has action plan but not verified)
+  const needsVerification = shouldShowActionPlan && finding.actionPlan && finding.corrected !== 1;
 
   const handleEditClick = () => {
     setIsEditing(true);
@@ -109,6 +119,32 @@ const FindingCard = ({
 
   const handleCancelActionPlan = () => {
     setIsEditingActionPlan(false);
+  };
+  
+  const handleSaveVerification = async (verificationData) => {
+    // Calculate currentCompliance based on corrected status
+    const currentCompliance = 
+      verificationData.corrected === 1 
+        ? "COMPLIANT" 
+        : finding.compliance;
+    
+    // Save verification data at finding level
+    const updatedFinding = {
+      ...finding,
+      corrected: verificationData.corrected,
+      correctionDate: verificationData.correctionDate,
+      remarks: verificationData.remarks,
+      currentCompliance: currentCompliance,
+    };
+
+    if (onSaveEdit) {
+      await onSaveEdit(updatedFinding);
+    }
+    setIsEditingVerification(false);
+  };
+
+  const handleCancelVerification = () => {
+    setIsEditingVerification(false);
   };
 
   // If in edit mode, show the form
@@ -148,9 +184,18 @@ const FindingCard = ({
           <HStack justify="space-between" align="start">
             <VStack align="start" spacing={1} flex={1}>
               <HStack spacing={2} flexWrap="wrap">
-                <Badge colorScheme={complianceInfo.color} fontSize="xs">
-                  {complianceInfo.label}
-                </Badge>
+                {/* Show currentCompliance badge unless verification tab is being edited */}
+                {!isEditingVerification && (
+                  <Badge colorScheme={currentComplianceInfo.color} fontSize="xs">
+                    {currentComplianceInfo.label}
+                  </Badge>
+                )}
+                {/* Show original compliance when editing verification */}
+                {isEditingVerification && (
+                  <Badge colorScheme={complianceInfo.color} fontSize="xs">
+                    {complianceInfo.label}
+                  </Badge>
+                )}
               </HStack>
               {finding.objective && (
                 <Text fontSize="xs" color={labelColor}>
@@ -165,10 +210,18 @@ const FindingCard = ({
             </VStack>
             <HStack spacing={0}>
               {needsActionPlan && (
-                <Badge colorScheme="warning" fontSize="xs" mr={2}>
+                <Badge colorScheme="orange" fontSize="xs" mr={2}>
                   <HStack spacing={1}>
                     <FiAlertCircle />
                     <Text>Action Plan Required</Text>
+                  </HStack>
+                </Badge>
+              )}
+              {needsVerification && (
+                <Badge colorScheme="orange" fontSize="xs" mr={2}>
+                  <HStack spacing={1}>
+                    <FiAlertCircle />
+                    <Text>Verification Pending</Text>
                   </HStack>
                 </Badge>
               )}
@@ -222,7 +275,7 @@ const FindingCard = ({
                 </Text>
               </Box>
 
-              {/* Tabs for Report and Action Plan - Only for MINOR_NC/MAJOR_NC with report */}
+              {/* Tabs for Report, Action Plan, and Verification - Only for MINOR_NC/MAJOR_NC with report */}
               {shouldShowActionPlan ? (
                 <Tabs colorScheme="brandPrimary">
                   <TabList>
@@ -237,8 +290,19 @@ const FindingCard = ({
                         <FiCheckCircle />
                         <Text>Action Plan</Text>
                         {needsActionPlan && (
-                          <Badge colorScheme="warning" fontSize="xs">
+                          <Badge colorScheme="orange" fontSize="xs">
                             Required
+                          </Badge>
+                        )}
+                      </HStack>
+                    </Tab>
+                    <Tab>
+                      <HStack spacing={2}>
+                        <FiCheckCircle />
+                        <Text>Verification</Text>
+                        {needsVerification && (
+                          <Badge colorScheme="orange" fontSize="xs">
+                            Pending
                           </Badge>
                         )}
                       </HStack>
@@ -458,6 +522,63 @@ const FindingCard = ({
                             onClick={() => setIsEditingActionPlan(true)}
                           >
                             Add Action Plan
+                          </Button>
+                        </Box>
+                      )}
+                    </TabPanel>
+
+                    {/* Verification Tab Panel */}
+                    <TabPanel px={0} py={4}>
+                      {isEditingVerification ? (
+                        <VerificationForm
+                          initialData={{
+                            corrected: finding.corrected,
+                            correctionDate: finding.correctionDate,
+                            remarks: finding.remarks,
+                          }}
+                          onSave={handleSaveVerification}
+                          onCancel={handleCancelVerification}
+                          readOnly={false}
+                        />
+                      ) : finding.corrected === 1 ? (
+                        <Box>
+                          <HStack justify="space-between" mb={2}>
+                            <HStack spacing={2}>
+                              <FiCheckCircle />
+                              <Text fontSize="sm" fontWeight="semibold">
+                                Verification Details
+                              </Text>
+                            </HStack>
+                            <IconButton
+                              icon={<FiEdit />}
+                              size="xs"
+                              variant="ghost"
+                              colorScheme="green"
+                              onClick={() => setIsEditingVerification(true)}
+                              aria-label="Edit verification"
+                            />
+                          </HStack>
+                          <VerificationForm
+                            initialData={{
+                              corrected: finding.corrected,
+                              correctionDate: finding.correctionDate,
+                              remarks: finding.remarks,
+                            }}
+                            onSave={handleSaveVerification}
+                            onCancel={handleCancelVerification}
+                            readOnly={true}
+                          />
+                        </Box>
+                      ) : (
+                        <Box>
+                          <Button
+                            size="sm"
+                            leftIcon={<FiPlus />}
+                            colorScheme="green"
+                            variant="outline"
+                            onClick={() => setIsEditingVerification(true)}
+                          >
+                            Add Verification
                           </Button>
                         </Box>
                       )}
