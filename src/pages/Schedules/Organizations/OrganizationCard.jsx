@@ -109,14 +109,20 @@ const OrganizationCard = ({
   const [activeTabIndex, setActiveTabIndex] = useState(0);
 
   // State to track which visit's compliance form is shown (visitIndex)
-  const [editingVisitComplianceFor, setEditingVisitComplianceFor] = useState(null);
+  const [editingVisitComplianceFor, setEditingVisitComplianceFor] =
+    useState(null);
 
   useEffect(() => {
     // Only fetch documents if organization is expanded AND user is on Documents tab (index 3)
     if (organization?.team?.folderId && isExpanded && activeTabIndex === 3) {
       fetchDocuments(organization?.team?.folderId);
     }
-  }, [organization?.team?.folderId, isExpanded, activeTabIndex, fetchDocuments]);
+  }, [
+    organization?.team?.folderId,
+    isExpanded,
+    activeTabIndex,
+    fetchDocuments,
+  ]);
 
   const handleDeleteOrganization = async (organization) => {
     const result = await Swal.fire({
@@ -278,7 +284,6 @@ const OrganizationCard = ({
     }
   };
 
-
   const latestVisitDate = (() => {
     const { visits = [] } = organization;
     if (!visits?.length) return "";
@@ -368,7 +373,7 @@ const OrganizationCard = ({
           <Collapse in={isExpanded} animateOpacity>
             <Box pt={0}>
               {/* Tabs Section */}
-              <Tabs 
+              <Tabs
                 colorScheme="brandPrimary"
                 onChange={(index) => setActiveTabIndex(index)}
               >
@@ -495,25 +500,29 @@ const OrganizationCard = ({
                                               visit?.date?.end,
                                             )}
                                           </Badge>
-                                          
+
                                           {/* Visit Compliance Badge */}
                                           {visit?.compliance && (
                                             <Badge
                                               colorScheme={
                                                 visit.compliance === "COMPLIANT"
                                                   ? "green"
-                                                  : visit.compliance === "MAJOR_NC"
+                                                  : visit.compliance ===
+                                                      "MAJOR_NC"
                                                     ? "red"
-                                                    : visit.compliance === "MINOR_NC"
+                                                    : visit.compliance ===
+                                                        "MINOR_NC"
                                                       ? "orange"
                                                       : "blue"
                                               }
                                               fontSize="xs"
                                             >
-                                              Visit: {visit.compliance === "COMPLIANT" ? "✓ COMPLIANT" : visit.compliance}
+                                              {visit.compliance === "COMPLIANT"
+                                                ? "✓ COMPLIANT"
+                                                : visit.compliance}
                                             </Badge>
                                           )}
-                                          
+
                                           <Spacer />
                                           {!isExpanded && (
                                             <Text
@@ -572,15 +581,21 @@ const OrganizationCard = ({
                                               >
                                                 Visit Compliance
                                               </Text>
-                                              
-                                              {editingVisitComplianceFor === index ? (
+
+                                              {editingVisitComplianceFor ===
+                                              index ? (
                                                 <VisitComplianceForm
                                                   visit={visit}
                                                   onSave={(complianceData) => {
-                                                    handleSaveVisitCompliance(index, complianceData);
+                                                    handleSaveVisitCompliance(
+                                                      index,
+                                                      complianceData,
+                                                    );
                                                   }}
                                                   onCancel={() => {
-                                                    setEditingVisitComplianceFor(null);
+                                                    setEditingVisitComplianceFor(
+                                                      null,
+                                                    );
                                                   }}
                                                   readOnly={false}
                                                 />
@@ -589,7 +604,9 @@ const OrganizationCard = ({
                                                   visit={visit}
                                                   onSave={() => {}}
                                                   onCancel={() => {
-                                                    setEditingVisitComplianceFor(index);
+                                                    setEditingVisitComplianceFor(
+                                                      index,
+                                                    );
                                                   }}
                                                   readOnly={true}
                                                 />
@@ -600,7 +617,9 @@ const OrganizationCard = ({
                                                   colorScheme="green"
                                                   variant="outline"
                                                   onClick={() => {
-                                                    setEditingVisitComplianceFor(index);
+                                                    setEditingVisitComplianceFor(
+                                                      index,
+                                                    );
                                                   }}
                                                   w="full"
                                                 >
@@ -615,7 +634,9 @@ const OrganizationCard = ({
                                               visit.findings.length > 0 && (
                                                 <FindingsList
                                                   findings={visit.findings}
-                                                  teamObjectives={team?.objectives || []}
+                                                  teamObjectives={
+                                                    team?.objectives || []
+                                                  }
                                                   team={team} // NEW: Pass full team object
                                                   onEdit={() => {
                                                     // onEdit is called but inline editing handles the UI
@@ -626,8 +647,13 @@ const OrganizationCard = ({
                                                       index,
                                                     );
                                                   }}
-                                                  onSaveEdit={(updatedFinding) => {
-                                                    handleEditFinding(updatedFinding, index);
+                                                  onSaveEdit={(
+                                                    updatedFinding,
+                                                  ) => {
+                                                    handleEditFinding(
+                                                      updatedFinding,
+                                                      index,
+                                                    );
                                                   }}
                                                 />
                                               )}

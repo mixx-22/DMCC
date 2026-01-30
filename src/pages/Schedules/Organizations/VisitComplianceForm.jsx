@@ -48,18 +48,16 @@ const COMPLIANCE_OPTIONS = [
 
 const COMPLIANCE_DISPLAY = {
   OBSERVATIONS: { label: "OBSERVATIONS", color: "blue" },
-  OPPORTUNITIES_FOR_IMPROVEMENTS: { label: "OPPORTUNITIES FOR IMPROVEMENTS", color: "yellow" },
+  OPPORTUNITIES_FOR_IMPROVEMENTS: {
+    label: "OPPORTUNITIES FOR IMPROVEMENTS",
+    color: "yellow",
+  },
   MINOR_NC: { label: "MINOR NON-CONFORMITY", color: "orange" },
   MAJOR_NC: { label: "MAJOR NON-CONFORMITY", color: "red" },
   COMPLIANT: { label: "COMPLIANT", color: "green" },
 };
 
-const VisitComplianceForm = ({
-  visit,
-  onSave,
-  onCancel,
-  readOnly = false,
-}) => {
+const VisitComplianceForm = ({ visit, onSave, onCancel, readOnly = false }) => {
   const bg = useColorModeValue("green.50", "green.900");
   const borderColor = useColorModeValue("green.200", "green.700");
   const labelColor = useColorModeValue("gray.600", "gray.400");
@@ -77,6 +75,7 @@ const VisitComplianceForm = ({
 
   useEffect(() => {
     setFormData(getInitialFormData());
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [visit]);
 
   const handleChange = (field, value) => {
@@ -155,7 +154,12 @@ const VisitComplianceForm = ({
               <Text fontSize="xs" color={labelColor} mb={1}>
                 Status:
               </Text>
-              <Badge colorScheme={complianceInfo.color} fontSize="sm" px={3} py={1}>
+              <Badge
+                colorScheme={complianceInfo.color}
+                fontSize="sm"
+                px={3}
+                py={1}
+              >
                 {complianceInfo.label}
               </Badge>
             </Box>
@@ -197,7 +201,9 @@ const VisitComplianceForm = ({
                   Set On:
                 </Text>
                 <Text fontSize="sm">
-                  {moment(visit.complianceSetAt).format("MMMM DD, YYYY [at] h:mm A")}
+                  {moment(visit.complianceSetAt).format(
+                    "MMMM DD, YYYY [at] h:mm A",
+                  )}
                 </Text>
               </Box>
             )}
@@ -209,7 +215,7 @@ const VisitComplianceForm = ({
 
   // Edit form mode
   return (
-    <Card variant="outline" borderColor={borderColor} bg={bg}>
+    <Card variant="outline" borderColor={borderColor} bg={bg} shadow="none">
       <CardBody>
         <VStack align="stretch" spacing={4}>
           <HStack justify="space-between">
@@ -235,7 +241,7 @@ const VisitComplianceForm = ({
             <Select
               options={COMPLIANCE_OPTIONS}
               value={COMPLIANCE_OPTIONS.find(
-                (opt) => opt.value === formData.compliance
+                (opt) => opt.value === formData.compliance,
               )}
               onChange={(option) =>
                 handleChange("compliance", option?.value || "")
@@ -267,7 +273,7 @@ const VisitComplianceForm = ({
               </Text>
             )}
             <Text fontSize="xs" color={labelColor} mt={1}>
-              Who is setting this visit's compliance status?
+              Who is setting this visit&apos;s compliance status?
             </Text>
           </FormControl>
 
