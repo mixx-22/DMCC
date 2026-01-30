@@ -64,6 +64,7 @@ import DocumentDrawer from "../../../components/Document/DocumentDrawer";
 import FindingsForm from "./FindingsForm";
 import FindingsList from "./FindingsList";
 import VisitManager from "./VisitManager";
+import VisitComplianceForm from "./VisitComplianceForm";
 
 const OrganizationCard = ({
   loading = false,
@@ -106,6 +107,9 @@ const OrganizationCard = ({
 
   // State to track active tab index
   const [activeTabIndex, setActiveTabIndex] = useState(0);
+
+  // State to track which visit's compliance form is shown (visitIndex)
+  const [editingVisitComplianceFor, setEditingVisitComplianceFor] = useState(null);
 
   useEffect(() => {
     // Only fetch documents if organization is expanded AND user is on Documents tab (index 3)
@@ -234,6 +238,46 @@ const OrganizationCard = ({
       console.error("Failed to add visit:", error);
     }
   };
+
+  const handleSaveVisitCompliance = async (visitIndex, complianceData) => {
+    // Update the specific visit with compliance data
+    const updatedVisits = organization.visits.map((v, i) => {
+      if (i === visitIndex) {
+        return {
+          ...v,
+          compliance: complianceData.compliance,
+          complianceUser: complianceData.complianceUser,
+          complianceSetAt: complianceData.complianceSetAt,
+        };
+      }
+      return v;
+    });
+
+    // Update organization in context
+    dispatch({
+      type: "UPDATE_ORGANIZATION",
+      payload: {
+        ...organization,
+        visits: updatedVisits,
+        teamId: organization.teamId || team,
+      },
+    });
+
+    try {
+      // Persist to server
+      await updateOrganization(organization._id, {
+        ...organization,
+        teamId: organization.teamId || team,
+        visits: updatedVisits,
+      });
+
+      // Hide compliance form after successful save
+      setEditingVisitComplianceFor(null);
+    } catch (error) {
+      console.error("Failed to save visit compliance:", error);
+    }
+  };
+
 
   const latestVisitDate = (() => {
     const { visits = [] } = organization;
@@ -451,6 +495,25 @@ const OrganizationCard = ({
                                               visit?.date?.end,
                                             )}
                                           </Badge>
+                                          
+                                          {/* Visit Compliance Badge */}
+                                          {visit?.compliance && (
+                                            <Badge
+                                              colorScheme={
+                                                visit.compliance === "COMPLIANT"
+                                                  ? "green"
+                                                  : visit.compliance === "MAJOR_NC"
+                                                    ? "red"
+                                                    : visit.compliance === "MINOR_NC"
+                                                      ? "orange"
+                                                      : "blue"
+                                              }
+                                              fontSize="xs"
+                                            >
+                                              Visit: {visit.compliance === "COMPLIANT" ? "✓ COMPLIANT" : visit.compliance}
+                                            </Badge>
+                                          )}
+                                          
                                           <Spacer />
                                           {!isExpanded && (
                                             <Text
@@ -498,6 +561,54 @@ const OrganizationCard = ({
                                                 )}
                                               </Text>
                                             </Box>
+
+                                            {/* Visit Compliance Section */}
+                                            <Box mt={4}>
+                                              <Text
+                                                fontSize="sm"
+                                                fontWeight="semibold"
+                                                color="gray.500"
+                                                mb={2}
+                                              >
+                                                Visit Compliance
+                                              </Text>
+                                              
+                                              {editingVisitComplianceFor === index ? (
+                                                <VisitComplianceForm
+                                                  visit={visit}
+                                                  onSave={(complianceData) => {
+                                                    handleSaveVisitCompliance(index, complianceData);
+                                                  }}
+                                                  onCancel={() => {
+                                                    setEditingVisitComplianceFor(null);
+                                                  }}
+                                                  readOnly={false}
+                                                />
+                                              ) : visit?.compliance ? (
+                                                <VisitComplianceForm
+                                                  visit={visit}
+                                                  onSave={() => {}}
+                                                  onCancel={() => {
+                                                    setEditingVisitComplianceFor(index);
+                                                  }}
+                                                  readOnly={true}
+                                                />
+                                              ) : (
+                                                <Button
+                                                  size="sm"
+                                                  leftIcon={<FiPlus />}
+                                                  colorScheme="green"
+                                                  variant="outline"
+                                                  onClick={() => {
+                                                    setEditingVisitComplianceFor(index);
+                                                  }}
+                                                  w="full"
+                                                >
+                                                  Set Visit Compliance
+                                                </Button>
+                                              )}
+                                            </Box>
+
                                             <Divider my={4} />
                                             {/* Findings List */}
                                             {visit.findings &&
