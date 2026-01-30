@@ -1,4 +1,5 @@
 import { Link as RouterLink, useNavigate } from "react-router-dom";
+import moment from "moment";
 import {
   Table,
   Thead,
@@ -31,6 +32,7 @@ export const ListView = ({
   foldersOnly,
   filesOnly,
   sourcePage = null,
+  isQualityDocumentsView = false,
 }) => {
   const navigate = useNavigate();
   const [isFoldersOpen, setIsFoldersOpen] = useState(true);
@@ -88,7 +90,9 @@ export const ListView = ({
                   fontWeight="semibold"
                   color={isValid ? "inherit" : "red.500"}
                 >
-                  {doc?.title || "Untitled"}
+                  {isQualityDocumentsView && doc?.metadata?.documentNumber
+                    ? doc.metadata.documentNumber
+                    : doc?.title || "Untitled"}
                 </Text>
                 {!isValid && (
                   <Text fontSize="xs" color="red.500">
@@ -96,28 +100,68 @@ export const ListView = ({
                   </Text>
                 )}
               </HStack>
-              {doc?.type === "file" && doc?.metadata?.filename && (
-                <Text fontSize="xs" color="gray.500">
-                  {doc.metadata.filename}
-                </Text>
-              )}
-              {doc?.type === "file" && !doc?.metadata?.filename && (
-                <Text fontSize="xs" color="red.500">
-                  Missing metadata
-                </Text>
+              {isQualityDocumentsView ? (
+                <>
+                  {/* Show title (original) below document number */}
+                  {doc?.displayTitle && (
+                    <Text fontSize="xs" color="gray.600" fontWeight="medium">
+                      {doc.displayTitle}
+                    </Text>
+                  )}
+                </>
+              ) : (
+                <>
+                  {doc?.type === "file" && doc?.metadata?.filename && (
+                    <Text fontSize="xs" color="gray.500">
+                      {doc.metadata.filename}
+                    </Text>
+                  )}
+                  {doc?.type === "file" && !doc?.metadata?.filename && (
+                    <Text fontSize="xs" color="red.500">
+                      Missing metadata
+                    </Text>
+                  )}
+                </>
               )}
             </VStack>
           </HStack>
         </Td>
-        <Td whiteSpace="nowrap">
-          {doc?.owner?.id || doc?.owner?._id ? (
-            <Link
-              as={RouterLink}
-              to={`/users/${doc.owner.id || doc.owner._id}`}
-              onClick={(e) => e.stopPropagation()}
-              _hover={{ textDecoration: "none" }}
-            >
-              <HStack _hover={{ opacity: 0.8 }}>
+        {!isQualityDocumentsView && (
+          <Td whiteSpace="nowrap">
+            {doc?.owner?.id || doc?.owner?._id ? (
+              <Link
+                as={RouterLink}
+                to={`/users/${doc.owner.id || doc.owner._id}`}
+                onClick={(e) => e.stopPropagation()}
+                _hover={{ textDecoration: "none" }}
+              >
+                <HStack _hover={{ opacity: 0.8 }}>
+                  <Avatar
+                    src={doc?.owner?.profilePicture}
+                    name={
+                      doc?.owner
+                        ? [
+                            doc?.owner.firstName,
+                            doc?.owner.middleName,
+                            doc?.owner.lastName,
+                          ]
+                            .filter(Boolean)
+                            .join(" ") ||
+                          doc?.owner.name ||
+                          "User"
+                        : "User"
+                    }
+                    size="xs"
+                  />
+                  <Text fontSize="sm">
+                    {doc?.owner?.firstName && doc?.owner?.lastName
+                      ? `${doc.owner.firstName} ${doc.owner.lastName}`
+                      : "Unknown"}
+                  </Text>
+                </HStack>
+              </Link>
+            ) : (
+              <HStack>
                 <Avatar
                   src={doc?.owner?.profilePicture}
                   name={
@@ -141,34 +185,35 @@ export const ListView = ({
                     : "Unknown"}
                 </Text>
               </HStack>
-            </Link>
-          ) : (
-            <HStack>
-              <Avatar
-                src={doc?.owner?.profilePicture}
-                name={
-                  doc?.owner
-                    ? [
-                        doc?.owner.firstName,
-                        doc?.owner.middleName,
-                        doc?.owner.lastName,
-                      ]
-                        .filter(Boolean)
-                        .join(" ") ||
-                      doc?.owner.name ||
-                      "User"
-                    : "User"
-                }
-                size="xs"
-              />
-              <Text fontSize="sm">
-                {doc?.owner?.firstName && doc?.owner?.lastName
-                  ? `${doc.owner.firstName} ${doc.owner.lastName}`
-                  : "Unknown"}
-              </Text>
-            </HStack>
-          )}
-        </Td>
+            )}
+          </Td>
+        )}
+        {isQualityDocumentsView && (
+          <>
+            <Td whiteSpace="nowrap">
+              {doc?.issuedDate ? (
+                <Text fontSize="sm">
+                  {moment(doc.issuedDate).format("MMMM DD, YYYY")}
+                </Text>
+              ) : (
+                <Text fontSize="sm" color="gray.400">
+                  -
+                </Text>
+              )}
+            </Td>
+            <Td whiteSpace="nowrap">
+              {doc?.effectivityDate ? (
+                <Text fontSize="sm">
+                  {moment(doc.effectivityDate).format("MMMM DD, YYYY")}
+                </Text>
+              ) : (
+                <Text fontSize="sm" color="gray.400">
+                  -
+                </Text>
+              )}
+            </Td>
+          </>
+        )}
         <Td whiteSpace="nowrap">
           {doc?.updatedAt ? (
             <Timestamp fontSize="sm" date={doc.updatedAt} />
@@ -203,8 +248,15 @@ export const ListView = ({
           <Table variant="simple">
             <Thead>
               <Tr>
-                <Th w="full">Name</Th>
-                <Th>Owner</Th>
+                <Th w="full">{isQualityDocumentsView ? "Document" : "Name"}</Th>
+                {isQualityDocumentsView ? (
+                  <>
+                    <Th>Issued Date</Th>
+                    <Th>Effectivity Date</Th>
+                  </>
+                ) : (
+                  <Th>Owner</Th>
+                )}
                 <Th>Date Modified</Th>
                 <Th></Th>
               </Tr>
@@ -235,8 +287,17 @@ export const ListView = ({
                 <Table variant="simple">
                   <Thead>
                     <Tr>
-                      <Th w="full">Name</Th>
-                      <Th>Owner</Th>
+                      <Th w="full">
+                        {isQualityDocumentsView ? "Document" : "Name"}
+                      </Th>
+                      {isQualityDocumentsView ? (
+                        <>
+                          <Th>Issued Date</Th>
+                          <Th>Effectivity Date</Th>
+                        </>
+                      ) : (
+                        <Th>Owner</Th>
+                      )}
                       <Th>Date Modified</Th>
                       <Th></Th>
                     </Tr>
@@ -263,8 +324,17 @@ export const ListView = ({
               <Table variant="simple">
                 <Thead>
                   <Tr>
-                    <Th w="full">Name</Th>
-                    <Th>Owner</Th>
+                    <Th w="full">
+                      {isQualityDocumentsView ? "Document" : "Name"}
+                    </Th>
+                    {isQualityDocumentsView ? (
+                      <>
+                        <Th>Issued Date</Th>
+                        <Th>Effectivity Date</Th>
+                      </>
+                    ) : (
+                      <Th>Owner</Th>
+                    )}
                     <Th>Date Modified</Th>
                     <Th></Th>
                   </Tr>

@@ -31,7 +31,20 @@ const QualityDocuments = () => {
       });
 
       if (response.success) {
-        setDocuments(response.data || []);
+        // Transform quality documents to show document number, title, and dates
+        const transformedData = (response.data || []).map((doc) => ({
+          ...doc,
+          // Store original title as displayTitle for secondary display
+          displayTitle: doc.title,
+          // Replace title with document number
+          title: doc.metadata?.documentNumber || doc.title || "N/A",
+          // Store filename as subtitle
+          subtitle: doc.metadata?.filename || "",
+          // Add issued and effectivity dates
+          issuedDate: doc.metadata?.issuedDate || null,
+          effectivityDate: doc.metadata?.effectivityDate || null,
+        }));
+        setDocuments(transformedData);
         setTotalCount(response.meta?.total || 0);
       } else {
         throw new Error(
@@ -89,7 +102,11 @@ const QualityDocuments = () => {
               documents={documents}
               selectedDocument={selectedDocument}
               onDocumentClick={handleDocumentClick}
-              sourcePage={{ path: "/quality-documents", label: "Quality Documents" }}
+              sourcePage={{
+                path: "/quality-documents",
+                label: "Quality Documents",
+              }}
+              isQualityDocumentsView={true}
             />
             {totalCount > ITEMS_PER_PAGE && (
               <Pagination

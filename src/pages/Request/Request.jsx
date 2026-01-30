@@ -1,8 +1,21 @@
 import { useState, useEffect, useCallback } from "react";
-import { Box, Spinner, Center, Stack, Heading, Text } from "@chakra-ui/react";
+import {
+  Box,
+  Spinner,
+  Center,
+  Stack,
+  Heading,
+  Text,
+  Button,
+  Flex,
+  useDisclosure,
+} from "@chakra-ui/react";
+import { FiPlus } from "react-icons/fi";
 import { toast } from "sonner";
 import PageHeader from "../../components/PageHeader";
+import PageFooter from "../../components/PageFooter";
 import DocumentDrawer from "../../components/Document/DocumentDrawer";
+import QualityDocumentUploadModal from "../../components/Document/modals/QualityDocumentUploadModal";
 import { ListView } from "../../components/Document/ListView";
 import Pagination from "../../components/Pagination";
 import apiService from "../../services/api";
@@ -15,6 +28,12 @@ const Request = () => {
   const [loading, setLoading] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalCount, setTotalCount] = useState(0);
+
+  const {
+    isOpen: isQualityDocumentModalOpen,
+    onOpen: onQualityDocumentModalOpen,
+    onClose: onQualityDocumentModalClose,
+  } = useDisclosure();
 
   // Fetch requests
   const fetchRequests = useCallback(async (page = 1) => {
@@ -137,6 +156,25 @@ const Request = () => {
         isOpen={!!selectedDocument}
         onClose={() => setSelectedDocument(null)}
       />
+
+      <QualityDocumentUploadModal
+        isOpen={isQualityDocumentModalOpen}
+        onClose={onQualityDocumentModalClose}
+        parentId={null}
+        path={`/request`}
+      />
+
+      <PageFooter>
+        <Flex justify="flex-end">
+          <Button
+            leftIcon={<FiPlus />}
+            colorScheme="brandPrimary"
+            onClick={onQualityDocumentModalOpen}
+          >
+            New Request
+          </Button>
+        </Flex>
+      </PageFooter>
     </Box>
   );
 };

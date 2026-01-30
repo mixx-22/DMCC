@@ -173,7 +173,7 @@ export const PreviewButton = ({
 
   // Determine if button should be disabled
   const buttonDisabled = isDisabled || isPreviewing || !canPreview();
-  
+
   // Get tooltip message
   const getTooltipLabel = () => {
     if (!canPreview()) {
@@ -212,8 +212,8 @@ export const PreviewButton = ({
   // Render regular Button
   return (
     <>
-      <Tooltip 
-        label={!canPreview() ? getTooltipLabel() : ""} 
+      <Tooltip
+        label={!canPreview() ? getTooltipLabel() : ""}
         placement="top"
         isDisabled={canPreview()}
       >
