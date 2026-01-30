@@ -12,11 +12,20 @@ import {
   Divider,
   Switch,
   Heading,
+  Card,
+  CardBody,
+  Avatar,
+  Tooltip,
+  Wrap,
+  WrapItem,
+  Badge,
 } from "@chakra-ui/react";
 import { useState } from "react";
-import { FiSave, FiX } from "react-icons/fi";
+import { FiSave, FiX, FiEdit } from "react-icons/fi";
 import { SingleDatepicker } from "chakra-dayzed-datepicker";
 import UserAsyncSelect from "../../../components/UserAsyncSelect";
+import { useLayout } from "../../../context/_useContext";
+import moment from "moment";
 
 const ActionPlanForm = ({
   initialData = null,
@@ -27,20 +36,34 @@ const ActionPlanForm = ({
   const bg = useColorModeValue("blue.50", "blue.900");
   const borderColor = useColorModeValue("blue.200", "blue.700");
   const sectionBg = useColorModeValue("white", "gray.800");
+  const labelColor = useColorModeValue("gray.600", "gray.400");
+  const { pageRef } = useLayout();
 
   // Initialize form data
   const getInitialFormData = () => {
     if (initialData) {
       return {
         rootCause: initialData.rootCause || "",
-        owner: initialData.owner || [],
+        owner: Array.isArray(initialData.owner)
+          ? initialData.owner
+          : initialData.owner
+            ? [initialData.owner]
+            : [],
         proposedDate: initialData.proposedDate
           ? new Date(initialData.proposedDate)
           : new Date(),
         correctiveAction: initialData.correctiveAction || "",
-        takenBy: initialData.takenBy || [],
+        takenBy: Array.isArray(initialData.takenBy)
+          ? initialData.takenBy
+          : initialData.takenBy
+            ? [initialData.takenBy]
+            : [],
         corrected: initialData.corrected || 0,
-        auditor: initialData.auditor || [],
+        auditor: Array.isArray(initialData.auditor)
+          ? initialData.auditor
+          : initialData.auditor
+            ? [initialData.auditor]
+            : [],
         correctedDate: initialData.correctedDate
           ? new Date(initialData.correctedDate)
           : new Date(),
@@ -112,7 +135,7 @@ const ActionPlanForm = ({
   };
 
   if (readOnly) {
-    // Read-only display mode
+    // Read-only display mode (following FindingsList user display pattern)
     return (
       <Box
         p={4}
@@ -122,9 +145,14 @@ const ActionPlanForm = ({
         borderColor={borderColor}
       >
         <VStack align="stretch" spacing={4}>
-          <Heading size="sm" color="blue.600">
-            Action Plan
-          </Heading>
+          <HStack justify="space-between">
+            <Heading size="sm" color="blue.600">
+              Action Plan
+            </Heading>
+            <Badge colorScheme={formData.corrected === 1 ? "green" : "orange"}>
+              {formData.corrected === 1 ? "Corrected" : "Pending"}
+            </Badge>
+          </HStack>
 
           <Divider />
 
@@ -133,10 +161,10 @@ const ActionPlanForm = ({
             <Text fontSize="sm" fontWeight="semibold" color="blue.700" mb={2}>
               Root Cause Analysis
             </Text>
-            <VStack align="stretch" spacing={2}>
+            <VStack align="stretch" spacing={3}>
               {formData.rootCause && (
                 <Box>
-                  <Text fontSize="xs" color="gray.600" mb={1}>
+                  <Text fontSize="xs" color={labelColor} mb={1}>
                     Root Cause:
                   </Text>
                   <Text fontSize="sm" whiteSpace="pre-wrap">
@@ -146,21 +174,39 @@ const ActionPlanForm = ({
               )}
               {formData.owner && formData.owner.length > 0 && (
                 <Box>
-                  <Text fontSize="xs" color="gray.600" mb={1}>
+                  <Text fontSize="xs" color={labelColor} mb={1}>
                     Owner(s):
                   </Text>
-                  <Text fontSize="sm">
-                    {formData.owner.map((u) => u.name).join(", ")}
-                  </Text>
+                  <Wrap>
+                    {formData.owner.map((u, index) => (
+                      <WrapItem key={`owner-${u.id}-${index}`}>
+                        <Tooltip label={`${u.firstName || ""} ${u.lastName || ""}`}>
+                          <Card variant="filled" shadow="none">
+                            <CardBody px={2} py={1}>
+                              <HStack spacing={1}>
+                                <Avatar
+                                  size="xs"
+                                  name={`${u.firstName || ""} ${u.lastName || ""}`}
+                                />
+                                <Text fontSize="sm">
+                                  {`${u.firstName || ""} ${u.lastName || ""}`}
+                                </Text>
+                              </HStack>
+                            </CardBody>
+                          </Card>
+                        </Tooltip>
+                      </WrapItem>
+                    ))}
+                  </Wrap>
                 </Box>
               )}
               {formData.proposedDate && (
                 <Box>
-                  <Text fontSize="xs" color="gray.600" mb={1}>
-                    Proposed Date:
+                  <Text fontSize="xs" color={labelColor} mb={1}>
+                    Proposed Completion Date:
                   </Text>
                   <Text fontSize="sm">
-                    {new Date(formData.proposedDate).toLocaleDateString()}
+                    {moment(formData.proposedDate).format("MMMM DD, YYYY")}
                   </Text>
                 </Box>
               )}
@@ -174,10 +220,10 @@ const ActionPlanForm = ({
             <Text fontSize="sm" fontWeight="semibold" color="blue.700" mb={2}>
               Corrective Action
             </Text>
-            <VStack align="stretch" spacing={2}>
+            <VStack align="stretch" spacing={3}>
               {formData.correctiveAction && (
                 <Box>
-                  <Text fontSize="xs" color="gray.600" mb={1}>
+                  <Text fontSize="xs" color={labelColor} mb={1}>
                     Corrective Action:
                   </Text>
                   <Text fontSize="sm" whiteSpace="pre-wrap">
@@ -187,61 +233,86 @@ const ActionPlanForm = ({
               )}
               {formData.takenBy && formData.takenBy.length > 0 && (
                 <Box>
-                  <Text fontSize="xs" color="gray.600" mb={1}>
+                  <Text fontSize="xs" color={labelColor} mb={1}>
                     Taken By:
                   </Text>
-                  <Text fontSize="sm">
-                    {formData.takenBy.map((u) => u.name).join(", ")}
-                  </Text>
+                  <Wrap>
+                    {formData.takenBy.map((u, index) => (
+                      <WrapItem key={`takenby-${u.id}-${index}`}>
+                        <Tooltip label={`${u.firstName || ""} ${u.lastName || ""}`}>
+                          <Card variant="filled" shadow="none">
+                            <CardBody px={2} py={1}>
+                              <HStack spacing={1}>
+                                <Avatar
+                                  size="xs"
+                                  name={`${u.firstName || ""} ${u.lastName || ""}`}
+                                />
+                                <Text fontSize="sm">
+                                  {`${u.firstName || ""} ${u.lastName || ""}`}
+                                </Text>
+                              </HStack>
+                            </CardBody>
+                          </Card>
+                        </Tooltip>
+                      </WrapItem>
+                    ))}
+                  </Wrap>
                 </Box>
               )}
-              <Box>
-                <Text fontSize="xs" color="gray.600" mb={1}>
-                  Status:
-                </Text>
-                <Text
-                  fontSize="sm"
-                  fontWeight="semibold"
-                  color={formData.corrected === 1 ? "green.600" : "orange.600"}
-                >
-                  {formData.corrected === 1 ? "Corrected" : "Not Corrected"}
-                </Text>
-              </Box>
               {formData.auditor && formData.auditor.length > 0 && (
                 <Box>
-                  <Text fontSize="xs" color="gray.600" mb={1}>
+                  <Text fontSize="xs" color={labelColor} mb={1}>
                     Verified By:
                   </Text>
-                  <Text fontSize="sm">
-                    {formData.auditor.map((u) => u.name).join(", ")}
-                  </Text>
+                  <Wrap>
+                    {formData.auditor.map((u, index) => (
+                      <WrapItem key={`auditor-${u.id}-${index}`}>
+                        <Tooltip label={`${u.firstName || ""} ${u.lastName || ""}`}>
+                          <Card variant="filled" shadow="none">
+                            <CardBody px={2} py={1}>
+                              <HStack spacing={1}>
+                                <Avatar
+                                  size="xs"
+                                  name={`${u.firstName || ""} ${u.lastName || ""}`}
+                                />
+                                <Text fontSize="sm">
+                                  {`${u.firstName || ""} ${u.lastName || ""}`}
+                                </Text>
+                              </HStack>
+                            </CardBody>
+                          </Card>
+                        </Tooltip>
+                      </WrapItem>
+                    ))}
+                  </Wrap>
                 </Box>
               )}
               {formData.correctedDate && (
                 <Box>
-                  <Text fontSize="xs" color="gray.600" mb={1}>
+                  <Text fontSize="xs" color={labelColor} mb={1}>
                     Corrected Date:
                   </Text>
                   <Text fontSize="sm">
-                    {new Date(formData.correctedDate).toLocaleDateString()}
+                    {moment(formData.correctedDate).format("MMMM DD, YYYY")}
                   </Text>
                 </Box>
               )}
             </VStack>
           </Box>
 
-          <Divider />
-
           {/* Comments Section */}
           {formData.comments && (
-            <Box>
-              <Text fontSize="sm" fontWeight="semibold" color="blue.700" mb={2}>
-                Comments
-              </Text>
-              <Text fontSize="sm" whiteSpace="pre-wrap">
-                {formData.comments}
-              </Text>
-            </Box>
+            <>
+              <Divider />
+              <Box>
+                <Text fontSize="sm" fontWeight="semibold" color="blue.700" mb={2}>
+                  Comments
+                </Text>
+                <Text fontSize="sm" whiteSpace="pre-wrap">
+                  {formData.comments}
+                </Text>
+              </Box>
+            </>
           )}
         </VStack>
       </Box>
@@ -324,11 +395,18 @@ const ActionPlanForm = ({
               <SingleDatepicker
                 date={formData.proposedDate}
                 onDateChange={(date) => handleChange("proposedDate", date)}
+                configs={{ dateFormat: "MMMM dd, yyyy" }}
                 propsConfigs={{
                   inputProps: {
                     size: "sm",
                   },
+                  triggerBtnProps: {
+                    size: "sm",
+                    w: "full",
+                  },
                 }}
+                usePortal
+                portalRef={pageRef}
               />
             </FormControl>
           </VStack>
@@ -414,11 +492,18 @@ const ActionPlanForm = ({
               <SingleDatepicker
                 date={formData.correctedDate}
                 onDateChange={(date) => handleChange("correctedDate", date)}
+                configs={{ dateFormat: "MMMM dd, yyyy" }}
                 propsConfigs={{
                   inputProps: {
                     size: "sm",
                   },
+                  triggerBtnProps: {
+                    size: "sm",
+                    w: "full",
+                  },
                 }}
+                usePortal
+                portalRef={pageRef}
               />
             </FormControl>
           </VStack>
