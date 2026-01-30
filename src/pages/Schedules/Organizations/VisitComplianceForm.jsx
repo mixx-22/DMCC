@@ -19,8 +19,8 @@ import {
 import { Select } from "chakra-react-select";
 import { useState, useEffect } from "react";
 import { FiSave, FiX, FiEdit } from "react-icons/fi";
-import UserAsyncSelect from "../../../components/UserAsyncSelect";
 import moment from "moment";
+import { useUser } from "../../../context/_useContext";
 
 // Compliance options matching FindingsForm
 const COMPLIANCE_OPTIONS = [
@@ -61,11 +61,23 @@ const VisitComplianceForm = ({ visit, onSave, onCancel, readOnly = false }) => {
   const bg = useColorModeValue("green.50", "green.900");
   const borderColor = useColorModeValue("green.200", "green.700");
   const labelColor = useColorModeValue("gray.600", "gray.400");
+  
+  // Get current user from context
+  const { user: currentUser } = useUser();
 
   const getInitialFormData = () => {
+    // If editing existing compliance, use existing user
+    // Otherwise, auto-populate with current logged-in user
+    const defaultUser = currentUser ? [{
+      _id: currentUser._id || currentUser.id,
+      id: currentUser._id || currentUser.id,
+      firstName: currentUser.firstName,
+      lastName: currentUser.lastName,
+    }] : [];
+    
     return {
       compliance: visit?.compliance || "",
-      complianceUser: visit?.complianceUser || [],
+      complianceUser: visit?.complianceUser || defaultUser,
       complianceSetAt: visit?.complianceSetAt || null,
     };
   };
@@ -99,8 +111,9 @@ const VisitComplianceForm = ({ visit, onSave, onCancel, readOnly = false }) => {
       newErrors.compliance = "Compliance status is required";
     }
 
+    // User is auto-populated from context, but check just in case
     if (!formData.complianceUser || formData.complianceUser.length === 0) {
-      newErrors.complianceUser = "At least one user is required";
+      newErrors.complianceUser = "User information is missing";
     }
 
     setErrors(newErrors);
@@ -257,25 +270,40 @@ const VisitComplianceForm = ({ visit, onSave, onCancel, readOnly = false }) => {
             )}
           </FormControl>
 
-          {/* User Selection */}
-          <FormControl isInvalid={!!errors.complianceUser}>
-            <FormLabel fontSize="sm">Set By (User) *</FormLabel>
-            <UserAsyncSelect
-              label=""
-              value={formData.complianceUser || []}
-              onChange={(users) => handleChange("complianceUser", users)}
-              placeholder="Select user(s)"
-              displayMode="none"
-            />
-            {errors.complianceUser && (
-              <Text fontSize="xs" color="red.500" mt={1}>
-                {errors.complianceUser}
+          {/* Current User Display (Auto-populated) */}
+          <Box>
+            <Text fontSize="sm" color={labelColor} mb={2}>
+              Set By:
+            </Text>
+            {formData.complianceUser && formData.complianceUser.length > 0 ? (
+              <Wrap spacing={1}>
+                {formData.complianceUser.map((user, idx) => (
+                  <WrapItem key={`user-${user._id || user.id}-${idx}`}>
+                    <Card variant="filled" shadow="none" bg="green.100">
+                      <CardBody px={2} py={1}>
+                        <HStack spacing={1}>
+                          <Avatar
+                            size="xs"
+                            name={`${user.firstName} ${user.lastName}`}
+                          />
+                          <Text fontSize="sm" fontWeight="medium">
+                            {user.firstName} {user.lastName}
+                          </Text>
+                        </HStack>
+                      </CardBody>
+                    </Card>
+                  </WrapItem>
+                ))}
+              </Wrap>
+            ) : (
+              <Text fontSize="sm" color="red.500">
+                Current user not available
               </Text>
             )}
             <Text fontSize="xs" color={labelColor} mt={1}>
-              Who is setting this visit&apos;s compliance status?
+              Automatically set to current logged-in user
             </Text>
-          </FormControl>
+          </Box>
 
           {/* Action Buttons */}
           <HStack justify="flex-end" spacing={2}>
