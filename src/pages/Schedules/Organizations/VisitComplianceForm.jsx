@@ -15,12 +15,13 @@ import {
   Wrap,
   WrapItem,
   Divider,
+  SimpleGrid,
 } from "@chakra-ui/react";
 import { Select } from "chakra-react-select";
 import { useState, useEffect } from "react";
 import { FiSave, FiX, FiEdit } from "react-icons/fi";
-import moment from "moment";
 import { useUser } from "../../../context/_useContext";
+import Timestamp from "../../../components/Timestamp";
 
 // Compliance options matching FindingsForm
 const COMPLIANCE_OPTIONS = [
@@ -61,20 +62,24 @@ const VisitComplianceForm = ({ visit, onSave, onCancel, readOnly = false }) => {
   const bg = useColorModeValue("green.50", "green.900");
   const borderColor = useColorModeValue("green.200", "green.700");
   const labelColor = useColorModeValue("gray.600", "gray.400");
-  
+
   // Get current user from context
   const { user: currentUser } = useUser();
 
   const getInitialFormData = () => {
     // If editing existing compliance, use existing user
     // Otherwise, auto-populate with current logged-in user
-    const defaultUser = currentUser ? [{
-      _id: currentUser._id || currentUser.id,
-      id: currentUser._id || currentUser.id,
-      firstName: currentUser.firstName,
-      lastName: currentUser.lastName,
-    }] : [];
-    
+    const defaultUser = currentUser
+      ? [
+          {
+            _id: currentUser._id || currentUser.id,
+            id: currentUser._id || currentUser.id,
+            firstName: currentUser.firstName,
+            lastName: currentUser.lastName,
+          },
+        ]
+      : [];
+
     return {
       compliance: visit?.compliance || "",
       complianceUser: visit?.complianceUser || defaultUser,
@@ -142,87 +147,72 @@ const VisitComplianceForm = ({ visit, onSave, onCancel, readOnly = false }) => {
     };
 
     return (
-      <Card variant="outline" borderColor={borderColor} bg={bg} shadow="none">
-        <CardBody>
-          <VStack align="stretch" spacing={3}>
-            <HStack justify="space-between">
-              <Text fontSize="sm" fontWeight="semibold" color={labelColor}>
-                Visit Compliance Status
-              </Text>
-              <Button
-                size="sm"
-                leftIcon={<FiEdit />}
-                onClick={onCancel}
-                variant="ghost"
-                colorScheme="green"
-              >
-                Edit
-              </Button>
-            </HStack>
+      <VStack align="stretch" spacing={3}>
+        <HStack>
+          {/* Compliance Status */}
+          <Box>
+            <Badge
+              colorScheme={complianceInfo.color}
+              fontSize="sm"
+              px={3}
+              py={1}
+            >
+              {complianceInfo.label}
+            </Badge>
+          </Box>
+          <Button
+            size="sm"
+            leftIcon={<FiEdit />}
+            onClick={onCancel}
+            variant="ghost"
+            colorScheme="green"
+          >
+            Edit
+          </Button>
+        </HStack>
 
-            <Divider />
-
-            {/* Compliance Status */}
+        <SimpleGrid columns={[1, 1, 2]}>
+          {/* Set By */}
+          {visit.complianceUser && visit.complianceUser.length > 0 && (
             <Box>
               <Text fontSize="xs" color={labelColor} mb={1}>
-                Status:
+                Visit Compliance Set By:
               </Text>
-              <Badge
-                colorScheme={complianceInfo.color}
-                fontSize="sm"
-                px={3}
-                py={1}
-              >
-                {complianceInfo.label}
-              </Badge>
+              <Wrap spacing={1}>
+                {visit.complianceUser.map((user, idx) => (
+                  <WrapItem key={`user-${user._id || user.id}-${idx}`}>
+                    <Tooltip label={`${user.firstName} ${user.lastName}`}>
+                      <Card variant="filled" shadow="none">
+                        <CardBody px={2} py={1}>
+                          <HStack spacing={1}>
+                            <Avatar
+                              size="xs"
+                              name={`${user.firstName} ${user.lastName}`}
+                            />
+                            <Text fontSize="sm">
+                              {user.firstName} {user.lastName}
+                            </Text>
+                          </HStack>
+                        </CardBody>
+                      </Card>
+                    </Tooltip>
+                  </WrapItem>
+                ))}
+              </Wrap>
             </Box>
+          )}
 
-            {/* Set By */}
-            {visit.complianceUser && visit.complianceUser.length > 0 && (
-              <Box>
-                <Text fontSize="xs" color={labelColor} mb={1}>
-                  Set By:
-                </Text>
-                <Wrap spacing={1}>
-                  {visit.complianceUser.map((user, idx) => (
-                    <WrapItem key={`user-${user._id || user.id}-${idx}`}>
-                      <Tooltip label={`${user.firstName} ${user.lastName}`}>
-                        <Card variant="filled" shadow="none">
-                          <CardBody px={2} py={1}>
-                            <HStack spacing={1}>
-                              <Avatar
-                                size="xs"
-                                name={`${user.firstName} ${user.lastName}`}
-                              />
-                              <Text fontSize="sm">
-                                {user.firstName} {user.lastName}
-                              </Text>
-                            </HStack>
-                          </CardBody>
-                        </Card>
-                      </Tooltip>
-                    </WrapItem>
-                  ))}
-                </Wrap>
-              </Box>
-            )}
-
-            {/* Set At */}
-            {visit.complianceSetAt && (
-              <Box>
-                <Text fontSize="xs" color={labelColor} mb={1}>
-                  Set On:
-                </Text>
-                <Text fontSize="sm">
-                  {moment(visit.complianceSetAt).format(
-                    "MMMM DD, YYYY [at] h:mm A",
-                  )}
-                </Text>
-              </Box>
-            )}
-          </VStack>
-        </CardBody>
-      </Card>
+          {/* Set At */}
+          {visit.complianceSetAt && (
+            <Box>
+              <Text fontSize="xs" color={labelColor} mb={1}>
+                Visit Compliance Set On:
+              </Text>
+              <Timestamp date={visit.complianceSetAt} fontSize="sm" />
+            </Box>
+          )}
+        </SimpleGrid>
+      </VStack>
     );
   }
 
