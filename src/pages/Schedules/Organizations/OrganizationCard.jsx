@@ -99,6 +99,18 @@ const OrganizationCard = ({
     high: "red",
   };
 
+  const COMPLIANCE_DISPLAY = {
+    OBSERVATIONS: { label: "Observations", color: "brandPrimary" },
+    OPPORTUNITIES_FOR_IMPROVEMENTS: {
+      label: "Opportunities for Improvements",
+      color: "brandSecondary",
+    },
+    NON_CONFORMITY: { label: "Non-Conformity", color: "warning" },
+    MINOR_NC: { label: "Minor Non-Conformity", color: "warning" },
+    MAJOR_NC: { label: "Major Non-Conformity", color: "error" },
+    COMPLIANT: { label: "Compliant", color: "green" },
+  };
+
   // State to track which visit's finding form is shown (visitIndex -> boolean)
   const [showFindingFormFor, setShowFindingFormFor] = useState(new Set());
 
@@ -519,7 +531,7 @@ const OrganizationCard = ({
                                             >
                                               {visit.compliance === "COMPLIANT"
                                                 ? "✓ COMPLIANT"
-                                                : visit.compliance}
+                                                : COMPLIANCE_DISPLAY[visit.compliance]?.label || visit.compliance}
                                             </Badge>
                                           )}
 
