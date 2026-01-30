@@ -51,6 +51,12 @@ const COMPLIANCE_OPTIONS = [
     description:
       "NC which violated a single clause or sub-clause resulting to an adverse effect on consumer satisfaction or product quality.",
   },
+  {
+    value: "COMPLIANT",
+    label: "COMPLIANT",
+    description:
+      "Non-conformity has been corrected and verified. The finding is now compliant with requirements.",
+  },
 ];
 
 const FindingsForm = ({
@@ -73,6 +79,10 @@ const FindingsForm = ({
         details: initialData.details || "",
         objective: initialData.objective || "",
         compliance: initialData.compliance || "",
+        currentCompliance: initialData.currentCompliance || initialData.compliance || "",
+        corrected: initialData.corrected || 0,
+        correctionDate: initialData.correctionDate ? new Date(initialData.correctionDate) : null,
+        remarks: initialData.remarks || "",
         report: initialData.report
           ? {
               reportNo: initialData.report.reportNo || "",
@@ -106,6 +116,10 @@ const FindingsForm = ({
       details: "",
       objective: "",
       compliance: "",
+      currentCompliance: "",
+      corrected: 0,
+      correctionDate: null,
+      remarks: "",
       report: {
         reportNo: "",
         details: "",
@@ -190,10 +204,20 @@ const FindingsForm = ({
 
   const handleSubmit = async () => {
     if (validateForm()) {
+      // Calculate currentCompliance based on corrected status
+      const calculatedCurrentCompliance = 
+        formData.corrected === 1 
+          ? "COMPLIANT" 
+          : formData.compliance;
+
       const findingData = {
         _id: formData._id || generateFindingId(), // Use existing ID in edit mode or generate new for add mode
         id: formData.id || generateFindingId(), // Backup ID field
         ...formData,
+        currentCompliance: calculatedCurrentCompliance,
+        correctionDate: formData.correctionDate 
+          ? formData.correctionDate.toISOString().split("T")[0]
+          : null,
         createdAt: formData.createdAt || new Date().toISOString(), // Preserve existing or add new timestamp
         report: isNonConformity(formData.compliance)
           ? {

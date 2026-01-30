@@ -58,16 +58,11 @@ const ActionPlanForm = ({
           : initialData.takenBy
             ? [initialData.takenBy]
             : [],
-        corrected: initialData.corrected || 0,
         auditor: Array.isArray(initialData.auditor)
           ? initialData.auditor
           : initialData.auditor
             ? [initialData.auditor]
             : [],
-        correctedDate: initialData.correctedDate
-          ? new Date(initialData.correctedDate)
-          : new Date(),
-        comments: initialData.comments || "",
       };
     }
     return {
@@ -76,10 +71,7 @@ const ActionPlanForm = ({
       proposedDate: new Date(),
       correctiveAction: "",
       takenBy: [],
-      corrected: 0,
       auditor: [],
-      correctedDate: new Date(),
-      comments: "",
     };
   };
 
@@ -125,7 +117,6 @@ const ActionPlanForm = ({
       const actionPlanData = {
         ...formData,
         proposedDate: formData.proposedDate.toISOString().split("T")[0],
-        correctedDate: formData.correctedDate.toISOString().split("T")[0],
       };
 
       if (onSave) {
@@ -149,9 +140,6 @@ const ActionPlanForm = ({
             <Heading size="sm" color="info.600">
               Action Plan
             </Heading>
-            <Badge colorScheme={formData.corrected === 1 ? "green" : "orange"}>
-              {formData.corrected === 1 ? "Corrected" : "Pending"}
-            </Badge>
           </HStack>
 
           <Divider />
@@ -293,38 +281,8 @@ const ActionPlanForm = ({
                   </Wrap>
                 </Box>
               )}
-              {formData.correctedDate && (
-                <Box>
-                  <Text fontSize="xs" color={labelColor} mb={1}>
-                    Corrected Date:
-                  </Text>
-                  <Text fontSize="sm">
-                    {moment(formData.correctedDate).format("MMMM DD, YYYY")}
-                  </Text>
-                </Box>
-              )}
             </VStack>
           </Box>
-
-          {/* Comments Section */}
-          {formData.comments && (
-            <>
-              <Divider />
-              <Box>
-                <Text
-                  fontSize="sm"
-                  fontWeight="semibold"
-                  color="info.700"
-                  mb={2}
-                >
-                  Comments
-                </Text>
-                <Text fontSize="sm" whiteSpace="pre-wrap">
-                  {formData.comments}
-                </Text>
-              </Box>
-            </>
-          )}
         </VStack>
       </Box>
     );
@@ -466,25 +424,6 @@ const ActionPlanForm = ({
               )}
             </FormControl>
 
-            {/* Corrected Status */}
-            <FormControl>
-              <HStack spacing={3}>
-                <FormLabel fontSize="sm" mb={0}>
-                  Corrected Status
-                </FormLabel>
-                <Switch
-                  isChecked={formData.corrected === 1}
-                  onChange={(e) =>
-                    handleChange("corrected", e.target.checked ? 1 : 0)
-                  }
-                  colorScheme="green"
-                />
-                <Text fontSize="sm" color="gray.600">
-                  {formData.corrected === 1 ? "Corrected" : "Not Corrected"}
-                </Text>
-              </HStack>
-            </FormControl>
-
             {/* Auditor */}
             <FormControl>
               <FormLabel fontSize="sm">Verified By (Auditor)</FormLabel>
@@ -496,46 +435,7 @@ const ActionPlanForm = ({
                 displayMode="none"
               />
             </FormControl>
-
-            {/* Corrected Date */}
-            <FormControl>
-              <FormLabel fontSize="sm">Corrected Date</FormLabel>
-              <SingleDatepicker
-                date={formData.correctedDate}
-                onDateChange={(date) => handleChange("correctedDate", date)}
-                configs={{ dateFormat: "MMMM dd, yyyy" }}
-                propsConfigs={{
-                  inputProps: {
-                    size: "sm",
-                  },
-                  triggerBtnProps: {
-                    size: "sm",
-                    w: "full",
-                  },
-                }}
-                usePortal
-                portalRef={pageRef}
-              />
-            </FormControl>
           </VStack>
-        </Box>
-
-        {/* Phase 3: Comments */}
-        <Box p={3} bg={sectionBg} borderRadius="md">
-          <Text fontSize="sm" fontWeight="bold" color="info.700" mb={3}>
-            Phase 3: Additional Comments
-          </Text>
-
-          <FormControl>
-            <FormLabel fontSize="sm">Comments</FormLabel>
-            <Textarea
-              value={formData.comments}
-              onChange={(e) => handleChange("comments", e.target.value)}
-              placeholder="Any additional comments or notes..."
-              size="sm"
-              rows={3}
-            />
-          </FormControl>
         </Box>
 
         {/* Submit Button */}
