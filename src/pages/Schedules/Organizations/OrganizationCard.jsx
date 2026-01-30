@@ -505,6 +505,7 @@ const OrganizationCard = ({
                                                 <FindingsList
                                                   findings={visit.findings}
                                                   teamObjectives={team?.objectives || []}
+                                                  team={team} // NEW: Pass full team object
                                                   onEdit={() => {
                                                     // onEdit is called but inline editing handles the UI
                                                   }}
@@ -528,6 +529,7 @@ const OrganizationCard = ({
                                                 teamObjectives={
                                                   team?.objectives || []
                                                 }
+                                                team={team} // NEW: Pass full team object
                                                 onAddFinding={async (
                                                   findingData,
                                                 ) => {

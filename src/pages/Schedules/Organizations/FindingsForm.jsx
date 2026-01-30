@@ -61,6 +61,7 @@ const COMPLIANCE_OPTIONS = [
 
 const FindingsForm = ({
   teamObjectives = [],
+  team = null, // NEW: Accept full team object for updatedAt
   initialData = null,
   mode = "add",
   onAddFinding,
@@ -73,11 +74,29 @@ const FindingsForm = ({
   // Initialize form data based on mode
   const getInitialFormData = () => {
     if (mode === "edit" && initialData) {
+      // Handle backward compatibility: convert old single objective to array
+      let objectives = [];
+      if (initialData.objectives && Array.isArray(initialData.objectives)) {
+        objectives = initialData.objectives;
+      } else if (initialData.objective) {
+        // Old format: single objective - convert to array with snapshot
+        const matchingObj = teamObjectives.find(
+          obj => (obj._id || obj.title) === initialData.objective
+        );
+        if (matchingObj) {
+          objectives = [{
+            _id: matchingObj._id || matchingObj.title,
+            title: matchingObj.title,
+            teamUpdatedAt: team?.updatedAt || new Date().toISOString(),
+          }];
+        }
+      }
+      
       return {
         _id: initialData._id,
         title: initialData.title || "",
         details: initialData.details || "",
-        objective: initialData.objective || "",
+        objectives: objectives, // NEW: Array of objective snapshots
         compliance: initialData.compliance || "",
         currentCompliance: initialData.currentCompliance || initialData.compliance || "",
         corrected: initialData.corrected || 0,
@@ -114,7 +133,7 @@ const FindingsForm = ({
     return {
       title: "",
       details: "",
-      objective: "",
+      objectives: [], // NEW: Array instead of single value
       compliance: "",
       currentCompliance: "",
       corrected: 0,
@@ -168,8 +187,8 @@ const FindingsForm = ({
     if (!formData.details.trim()) {
       newErrors.details = "Details are required";
     }
-    if (!formData.objective) {
-      newErrors.objective = "Objective is required";
+    if (!formData.objectives || formData.objectives.length === 0) {
+      newErrors.objectives = "At least one objective is required";
     }
     if (!formData.compliance) {
       newErrors.compliance = "Compliance type is required";
@@ -281,31 +300,41 @@ const FindingsForm = ({
             />
           )}
         </HStack>
-        {/* Objective Dropdown */}
-        <FormControl isInvalid={!!errors.objective}>
-          <FormLabel fontSize="sm">Objective</FormLabel>
+        {/* Objectives Multi-Select */}
+        <FormControl isInvalid={!!errors.objectives}>
+          <FormLabel fontSize="sm">Objectives</FormLabel>
           <Select
+            isMulti
             size="sm"
-            value={teamObjectives
-              .map((obj) => ({
-                value: obj._id || obj.title,
-                label: obj.title,
-              }))
-              .find((opt) => opt.value === formData.objective)}
-            onChange={(option) =>
-              handleChange("objective", option?.value || "")
-            }
+            value={formData.objectives.map(obj => ({
+              value: obj._id,
+              label: obj.title,
+            }))}
+            onChange={(selectedOptions) => {
+              // Create snapshot of selected objectives with team updatedAt
+              const objectivesSnapshot = (selectedOptions || []).map(option => {
+                const matchingObj = teamObjectives.find(
+                  obj => (obj._id || obj.title) === option.value
+                );
+                return {
+                  _id: option.value,
+                  title: option.label,
+                  teamUpdatedAt: team?.updatedAt || matchingObj?.updatedAt || new Date().toISOString(),
+                };
+              });
+              handleChange("objectives", objectivesSnapshot);
+            }}
             options={teamObjectives.map((obj) => ({
               value: obj._id || obj.title,
               label: obj.title,
             }))}
-            placeholder="Select an objective"
+            placeholder="Select objectives"
             isClearable
             useBasicStyles
           />
-          {errors.objective && (
+          {errors.objectives && (
             <FormHelperText color="red.500" fontSize="xs">
-              {errors.objective}
+              {errors.objectives}
             </FormHelperText>
           )}
         </FormControl>

@@ -56,6 +56,7 @@ const COMPLIANCE_DISPLAY = {
 const FindingCard = ({
   finding,
   teamObjectives,
+  team, // NEW: Accept team object
   onEdit,
   onDelete,
   onSaveEdit,
@@ -162,6 +163,7 @@ const FindingCard = ({
         <CardBody>
           <FindingsForm
             teamObjectives={teamObjectives}
+            team={team} // NEW: Pass team object
             initialData={finding}
             mode="edit"
             onAddFinding={handleSave}
@@ -202,7 +204,39 @@ const FindingCard = ({
                   </Badge>
                 )}
               </HStack>
-              {finding.objective && (
+              {/* Objectives Display */}
+              {finding.objectives && finding.objectives.length > 0 && (
+                <Box>
+                  <Text fontSize="xs" color={labelColor} mb={1}>
+                    Objectives:
+                  </Text>
+                  <Wrap spacing={1}>
+                    {finding.objectives.map((obj, idx) => (
+                      <WrapItem key={`obj-${obj._id}-${idx}`}>
+                        <Tooltip
+                          label={`Updated: ${moment(obj.teamUpdatedAt).format("MMMM DD, YYYY")}`}
+                          placement="top"
+                        >
+                          <Badge
+                            colorScheme="purple"
+                            fontSize="xs"
+                            px={2}
+                            py={1}
+                            borderRadius="md"
+                          >
+                            {obj.title}
+                          </Badge>
+                        </Tooltip>
+                      </WrapItem>
+                    ))}
+                  </Wrap>
+                  <Text fontSize="xs" color="gray.500" mt={1}>
+                    Last updated: {moment(finding.objectives[0]?.teamUpdatedAt).format("MMM DD, YYYY")}
+                  </Text>
+                </Box>
+              )}
+              {/* Backward compatibility for old single objective */}
+              {!finding.objectives && finding.objective && (
                 <Text fontSize="xs" color={labelColor}>
                   Objective: {finding.objective}
                 </Text>
@@ -766,6 +800,7 @@ const FindingCard = ({
 const FindingsList = ({
   findings = [],
   teamObjectives = [],
+  team = null, // NEW: Accept team object
   onEdit,
   onDelete,
   onSaveEdit,
@@ -784,6 +819,7 @@ const FindingsList = ({
           key={finding._id || index}
           finding={finding}
           teamObjectives={teamObjectives}
+          team={team} // NEW: Pass team object
           onEdit={onEdit}
           onDelete={onDelete}
           onSaveEdit={onSaveEdit}
