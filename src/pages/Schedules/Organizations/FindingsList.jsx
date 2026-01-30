@@ -586,7 +586,7 @@ const FindingCard = ({
                           onCancel={handleCancelVerification}
                           readOnly={false}
                         />
-                      ) : finding.corrected === 1 ? (
+                      ) : (finding.corrected !== undefined && finding.corrected !== null) ? (
                         <Box>
                           <HStack justify="space-between" mb={2}>
                             <HStack spacing={2}>
@@ -599,7 +599,7 @@ const FindingCard = ({
                               icon={<FiEdit />}
                               size="xs"
                               variant="ghost"
-                              colorScheme="green"
+                              colorScheme={finding.corrected === 1 ? "green" : "orange"}
                               onClick={() => setIsEditingVerification(true)}
                               aria-label="Edit verification"
                             />
