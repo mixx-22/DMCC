@@ -17,7 +17,7 @@ import { useState } from "react";
 import { FiSave, FiX } from "react-icons/fi";
 import { SingleDatepicker } from "chakra-dayzed-datepicker";
 import { useLayout } from "../../../context/_useContext";
-import moment from "moment";
+import Timestamp from "../../../components/Timestamp";
 
 const VerificationForm = ({
   initialData = null,
@@ -34,6 +34,13 @@ const VerificationForm = ({
   // Initialize form data
   const getInitialFormData = () => {
     if (initialData) {
+      // Handle backward compatibility: convert old corrected value (1) to new system (2)
+      let correctedValue =
+        initialData.corrected !== undefined ? initialData.corrected : -1;
+      if (correctedValue === 1) {
+        correctedValue = 2; // Old "corrected" becomes new "corrected"
+      }
+
       return {
         corrected:
           initialData.corrected !== undefined ? initialData.corrected : -1,
@@ -129,9 +136,7 @@ const VerificationForm = ({
                 <Text fontSize="xs" color={labelColor} mb={1}>
                   Correction Date:
                 </Text>
-                <Text fontSize="sm">
-                  {moment(formData.correctionDate).format("MMMM DD, YYYY")}
-                </Text>
+                <Timestamp date={formData.correctionDate} fontSize="sm" />
               </Box>
             )}
           </SimpleGrid>
@@ -211,7 +216,7 @@ const VerificationForm = ({
                   ? "Corrected"
                   : formData.corrected === 0
                     ? "Not Corrected"
-                    : "Pending"}
+                    : "Pending Verification"}
               </Text>
             </HStack>
             <FormHelperText>

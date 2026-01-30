@@ -586,7 +586,7 @@ const FindingCard = ({
                           onCancel={handleCancelVerification}
                           readOnly={false}
                         />
-                      ) : (finding.corrected !== undefined && finding.corrected !== null) ? (
+                      ) : (finding.corrected === 0 || finding.corrected === 2 || finding.corrected === 1) ? (
                         <Box>
                           <HStack justify="space-between" mb={2}>
                             <HStack spacing={2}>
