@@ -65,6 +65,15 @@ import FindingsForm from "./FindingsForm";
 import FindingsList from "./FindingsList";
 import VisitManager from "./VisitManager";
 import VisitComplianceForm from "./VisitComplianceForm";
+import {
+  getStatusDisplay,
+  canEdit,
+  canAddVisit,
+  canCloseVisit,
+  isCurrentVisit,
+  allFindingsHaveActionPlans,
+  allFindingsVerified,
+} from "../../../utils/organizationStatus";
 
 const OrganizationCard = ({
   loading = false,
@@ -90,6 +99,7 @@ const OrganizationCard = ({
   const hoverBg = useColorModeValue("gray.50", "gray.600");
   const headerHoverBg = useColorModeValue("gray.100", "gray.650");
   const objectiveBg = useColorModeValue("gray.50", "gray.700");
+  const currentVisitBg = useColorModeValue("purple.50", "purple.900");
   const [tabColor] = useToken("colors", ["gray.500"]);
   const $tabColor = cssVar("tabs-color");
 
@@ -310,6 +320,11 @@ const OrganizationCard = ({
     return isOngoing ? `${formatted} (Ongoing)` : formatted;
   })();
 
+  // Get status display information
+  const orgStatus = organization.status ?? 0;
+  const statusDisplay = getStatusDisplay(orgStatus, organization.visits);
+  const isReadOnly = !canEdit(orgStatus);
+
   return (
     <>
       <Card bg={cardBg} borderWidth="1px" borderColor={borderColor} shadow="sm">
@@ -331,11 +346,18 @@ const OrganizationCard = ({
               </Text>
               {loading && <Spinner size="sm" />}
             </HStack>
-            <HStack align="center" spacing={0}>
+            <HStack align="center" spacing={2}>
               {!isExpanded && (
-                <Hide below="md">
-                  <Badge>{latestVisitDate}</Badge>
-                </Hide>
+                <>
+                  <Hide below="md">
+                    <Badge colorScheme={statusDisplay.colorScheme}>
+                      {statusDisplay.label}
+                    </Badge>
+                  </Hide>
+                  <Hide below="md">
+                    <Badge>{latestVisitDate}</Badge>
+                  </Hide>
+                </>
               )}
               <IconButton
                 icon={isExpanded ? <FiChevronUp /> : <FiChevronDown />}
@@ -363,6 +385,7 @@ const OrganizationCard = ({
                       e.stopPropagation();
                       onEdit(organization);
                     }}
+                    isDisabled={isReadOnly}
                   >
                     Edit
                   </MenuItem>
@@ -373,6 +396,7 @@ const OrganizationCard = ({
                       handleDeleteOrganization(organization);
                     }}
                     color={errorColor}
+                    isDisabled={isReadOnly}
                   >
                     Delete
                   </MenuItem>
@@ -443,8 +467,16 @@ const OrganizationCard = ({
                               const hasMinorNC = visit?.findings
                                 ?.map((f) => f.compliance)
                                 ?.includes("MINOR_NC");
+                              const isCurrent = isCurrentVisit(index, orgStatus);
+                              const visitHasActionPlans = allFindingsHaveActionPlans(visit);
+                              const visitVerified = allFindingsVerified(visit);
+                              const canClose = canCloseVisit(visit);
                               return (
-                                <AccordionItem key={index} border="none">
+                                <AccordionItem 
+                                  key={index} 
+                                  border="none"
+                                  bg={isCurrent ? currentVisitBg : undefined}
+                                >
                                   {({ isExpanded }) => (
                                     <>
                                       {/* Visit Date Header */}
@@ -490,7 +522,7 @@ const OrganizationCard = ({
                                               zIndex={2}
                                               boxSize={6}
                                               borderRadius="full"
-                                              colorScheme="purple"
+                                              colorScheme={isCurrent ? "purple" : "gray"}
                                               justifyContent="center"
                                               alignItems="center"
                                               display="flex"
@@ -512,6 +544,13 @@ const OrganizationCard = ({
                                               visit?.date?.end,
                                             )}
                                           </Badge>
+
+                                          {/* Current Visit Indicator */}
+                                          {isCurrent && (
+                                            <Badge colorScheme="purple" fontSize="xs">
+                                              CURRENT
+                                            </Badge>
+                                          )}
 
                                           {/* Visit Compliance Badge */}
                                           {visit?.compliance && (
@@ -623,20 +662,33 @@ const OrganizationCard = ({
                                                   readOnly={true}
                                                 />
                                               ) : (
-                                                <Button
-                                                  size="sm"
-                                                  leftIcon={<FiPlus />}
-                                                  colorScheme="green"
-                                                  variant="outline"
-                                                  onClick={() => {
-                                                    setEditingVisitComplianceFor(
-                                                      index,
-                                                    );
-                                                  }}
-                                                  w="full"
+                                                <Tooltip
+                                                  label={
+                                                    !visitHasActionPlans
+                                                      ? "All findings must have action plans before closing this visit"
+                                                      : !visitVerified
+                                                        ? "All findings must be verified before closing this visit"
+                                                        : "Set compliance status for this visit"
+                                                  }
+                                                  isDisabled={canClose && !isReadOnly}
+                                                  shouldWrapChildren
                                                 >
-                                                  Set Visit Compliance
-                                                </Button>
+                                                  <Button
+                                                    size="sm"
+                                                    leftIcon={<FiPlus />}
+                                                    colorScheme="green"
+                                                    variant="outline"
+                                                    onClick={() => {
+                                                      setEditingVisitComplianceFor(
+                                                        index,
+                                                      );
+                                                    }}
+                                                    w="full"
+                                                    isDisabled={!canClose || isReadOnly}
+                                                  >
+                                                    Set Visit Compliance
+                                                  </Button>
+                                                </Tooltip>
                                               )}
                                             </Box>
 
@@ -777,6 +829,7 @@ const OrganizationCard = ({
                                                 }}
                                                 colorScheme="brandPrimary"
                                                 variant="outline"
+                                                isDisabled={isReadOnly}
                                               >
                                                 Add Finding
                                               </Button>
@@ -811,15 +864,26 @@ const OrganizationCard = ({
                         />
                       ) : (
                         <Flex justifyContent="flex-end">
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            colorScheme="purple"
-                            leftIcon={<FiCalendar />}
-                            onClick={() => setShowVisitForm(true)}
+                          <Tooltip
+                            label={
+                              !canAddVisit(organization)
+                                ? "Current visit must be closed before adding a new visit"
+                                : "Add a new visit to this organization"
+                            }
+                            isDisabled={canAddVisit(organization) && !isReadOnly}
+                            shouldWrapChildren
                           >
-                            Add Visit
-                          </Button>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              colorScheme="purple"
+                              leftIcon={<FiCalendar />}
+                              onClick={() => setShowVisitForm(true)}
+                              isDisabled={!canAddVisit(organization) || isReadOnly}
+                            >
+                              Add Visit
+                            </Button>
+                          </Tooltip>
                         </Flex>
                       )}
                     </Box>

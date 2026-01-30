@@ -2,6 +2,7 @@ import { useCallback, useReducer, useEffect } from "react";
 import { toast } from "sonner";
 import apiService from "../services/api";
 import { OrganizationsContext } from "./_contexts";
+import { calculateOrganizationStatus } from "../utils/organizationStatus";
 
 const ORGANIZATIONS_ENDPOINT = "/organizations";
 const USE_API = import.meta.env.VITE_USE_API !== "false";
@@ -153,7 +154,7 @@ export const OrganizationsProvider = ({ children, scheduleId }) => {
       const newOrg = {
         ...organizationData,
         _id: `org-${Date.now()}`,
-        status: 0,
+        status: calculateOrganizationStatus(organizationData),
         documents: [],
       };
       dispatch({ type: "ADD_ORGANIZATION", payload: newOrg });
@@ -165,9 +166,15 @@ export const OrganizationsProvider = ({ children, scheduleId }) => {
     }
 
     try {
+      // Calculate status before sending to API
+      const dataWithStatus = {
+        ...organizationData,
+        status: calculateOrganizationStatus(organizationData),
+      };
+      
       const response = await apiService.request(ORGANIZATIONS_ENDPOINT, {
         method: "POST",
-        body: JSON.stringify(organizationData),
+        body: JSON.stringify(dataWithStatus),
       });
 
       const { success = false, organization: data } = response;
@@ -209,6 +216,7 @@ export const OrganizationsProvider = ({ children, scheduleId }) => {
           ...organizationData,
           team: organizationData?.team?.id || organizationData?.team,
           _id: organizationId,
+          status: calculateOrganizationStatus(organizationData),
         };
         dispatch({ type: "UPDATE_ORGANIZATION", payload: updated });
         toast.success("Organization Updated", {
@@ -223,6 +231,7 @@ export const OrganizationsProvider = ({ children, scheduleId }) => {
           ...organizationData,
           team: organizationData.team._id ?? organizationData.team.id,
           auditors: organizationData.auditors.map((a) => a._id ?? a.id),
+          status: calculateOrganizationStatus(organizationData),
         };
         const response = await apiService.request(
           `${ORGANIZATIONS_ENDPOINT}/${organizationId}`,
@@ -233,12 +242,16 @@ export const OrganizationsProvider = ({ children, scheduleId }) => {
         );
 
         if (response.success && (organizationData._id || organizationData.id)) {
-          dispatch({ type: "UPDATE_ORGANIZATION", payload: organizationData });
+          const updatedWithStatus = {
+            ...organizationData,
+            status: calculateOrganizationStatus(organizationData),
+          };
+          dispatch({ type: "UPDATE_ORGANIZATION", payload: updatedWithStatus });
           toast.success("Organization Updated", {
             description: "Organization has been successfully updated",
             duration: 2000,
           });
-          return organizationData;
+          return updatedWithStatus;
         } else {
           console.error("Invalid response format:", response);
           const error = new Error("Failed to update organization");
