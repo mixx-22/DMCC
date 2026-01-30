@@ -22,7 +22,7 @@ import { useState } from "react";
 import { FiSave, FiX } from "react-icons/fi";
 import { SingleDatepicker } from "chakra-dayzed-datepicker";
 import UserAsyncSelect from "../../../components/UserAsyncSelect";
-import { useLayout } from "../../../context/_useContext";
+import { useLayout, useUser } from "../../../context/_useContext";
 import moment from "moment";
 
 const ActionPlanForm = ({
@@ -36,9 +36,19 @@ const ActionPlanForm = ({
   const sectionBg = useColorModeValue("white", "gray.800");
   const labelColor = useColorModeValue("gray.600", "gray.400");
   const { pageRef } = useLayout();
+  const { user: currentUser } = useUser();
 
   // Initialize form data
   const getInitialFormData = () => {
+    // If editing existing action plan, use existing auditor
+    // Otherwise, auto-populate with current logged-in user
+    const defaultAuditor = currentUser ? [{
+      _id: currentUser._id || currentUser.id,
+      id: currentUser._id || currentUser.id,
+      firstName: currentUser.firstName,
+      lastName: currentUser.lastName,
+    }] : [];
+    
     if (initialData) {
       return {
         rootCause: initialData.rootCause || "",
@@ -60,7 +70,7 @@ const ActionPlanForm = ({
           ? initialData.auditor
           : initialData.auditor
             ? [initialData.auditor]
-            : [],
+            : defaultAuditor,
       };
     }
     return {
@@ -69,7 +79,7 @@ const ActionPlanForm = ({
       proposedDate: new Date(),
       correctiveAction: "",
       takenBy: [],
-      auditor: [],
+      auditor: defaultAuditor,
     };
   };
 
@@ -422,17 +432,40 @@ const ActionPlanForm = ({
               )}
             </FormControl>
 
-            {/* Auditor */}
-            <FormControl>
-              <FormLabel fontSize="sm">Verified By (Auditor)</FormLabel>
-              <UserAsyncSelect
-                label=""
-                value={formData.auditor || []}
-                onChange={(users) => handleChange("auditor", users)}
-                placeholder="Select auditor(s) who verified the correction"
-                displayMode="none"
-              />
-            </FormControl>
+            {/* Auditor - Auto-populated with current user */}
+            <Box>
+              <Text fontSize="sm" color={labelColor} mb={2}>
+                Verified By (Auditor):
+              </Text>
+              {formData.auditor && formData.auditor.length > 0 ? (
+                <Wrap spacing={1}>
+                  {formData.auditor.map((user, idx) => (
+                    <WrapItem key={`auditor-${user._id || user.id}-${idx}`}>
+                      <Card variant="filled" shadow="none" bg="info.100">
+                        <CardBody px={2} py={1}>
+                          <HStack spacing={1}>
+                            <Avatar
+                              size="xs"
+                              name={`${user.firstName} ${user.lastName}`}
+                            />
+                            <Text fontSize="sm" fontWeight="medium">
+                              {user.firstName} {user.lastName}
+                            </Text>
+                          </HStack>
+                        </CardBody>
+                      </Card>
+                    </WrapItem>
+                  ))}
+                </Wrap>
+              ) : (
+                <Text fontSize="sm" color="red.500">
+                  Current user not available
+                </Text>
+              )}
+              <Text fontSize="xs" color={labelColor} mt={1}>
+                Automatically set to current logged-in user
+              </Text>
+            </Box>
           </VStack>
         </Box>
 
