@@ -16,6 +16,11 @@ import {
   Wrap,
   WrapItem,
   Button,
+  Tabs,
+  TabList,
+  Tab,
+  TabPanels,
+  TabPanel,
 } from "@chakra-ui/react";
 import { useState } from "react";
 import {
@@ -26,6 +31,7 @@ import {
   FiFileText,
   FiCheckCircle,
   FiPlus,
+  FiAlertCircle,
 } from "react-icons/fi";
 import moment from "moment";
 import FindingsForm from "./FindingsForm";
@@ -63,6 +69,9 @@ const FindingCard = ({
 
   // Check if finding should have action plan (MINOR_NC or MAJOR_NC with report)
   const shouldShowActionPlan = (finding.compliance === "MINOR_NC" || finding.compliance === "MAJOR_NC") && finding.report;
+  
+  // Check if action plan is missing
+  const needsActionPlan = shouldShowActionPlan && !finding.actionPlan;
 
   const handleEditClick = () => {
     setIsEditing(true);
@@ -136,9 +145,19 @@ const FindingCard = ({
           {/* Header */}
           <HStack justify="space-between" align="start">
             <VStack align="start" spacing={1} flex={1}>
-              <Badge colorScheme={complianceInfo.color} fontSize="xs">
-                {complianceInfo.label}
-              </Badge>
+              <HStack spacing={2} flexWrap="wrap">
+                <Badge colorScheme={complianceInfo.color} fontSize="xs">
+                  {complianceInfo.label}
+                </Badge>
+                {needsActionPlan && (
+                  <Badge colorScheme="orange" fontSize="xs">
+                    <HStack spacing={1}>
+                      <FiAlertCircle />
+                      <Text>Action Plan Required</Text>
+                    </HStack>
+                  </Badge>
+                )}
+              </HStack>
               {finding.objective && (
                 <Text fontSize="xs" color={labelColor}>
                   Objective: {finding.objective}
@@ -201,201 +220,362 @@ const FindingCard = ({
                 </Text>
               </Box>
 
-              {/* Report Section */}
-              {finding.report && (
-                <Box
-                  p={3}
-                  bg={reportBg}
-                  borderRadius="md"
-                  borderWidth="1px"
-                  borderColor={borderColor}
-                >
-                  <HStack spacing={2} mb={2}>
-                    <FiFileText />
-                    <Text fontSize="sm" fontWeight="semibold">
-                      Report Details
-                    </Text>
-                  </HStack>
-
-                  <VStack align="stretch" spacing={2}>
-                    <HStack>
-                      {/* Report Number */}
-                      {finding.report.reportNo && (
-                        <HStack flex={1} spacing={2}>
-                          <Text fontSize="xs" color={labelColor} minW="80px">
-                            Report No:
-                          </Text>
-                          <Text fontSize="sm" fontWeight="medium">
-                            {finding.report.reportNo}
-                          </Text>
-                        </HStack>
-                      )}
-
-                      {/* Date Issued */}
-                      {finding.report.date && (
-                        <HStack flex={1} spacing={2}>
-                          <Text fontSize="xs" color={labelColor} minW="80px">
-                            Date Issued:
-                          </Text>
-                          <Text fontSize="sm">
-                            {moment(finding.report.date).format(
-                              "MMMM DD, YYYY",
-                            )}
-                          </Text>
-                        </HStack>
-                      )}
-                    </HStack>
-
-                    <Divider my={4} />
-
-                    {/* Report Details */}
-                    {finding.report.details && (
-                      <Box>
-                        <Text fontSize="xs" color={labelColor} mb={1}>
-                          Report Details:
-                        </Text>
-                        <Text fontSize="sm" whiteSpace="pre-wrap">
-                          {finding.report.details}
-                        </Text>
-                      </Box>
-                    )}
-
-                    <Divider my={4} />
-
-                    {/* Auditee and Auditor */}
-                    <HStack alignItems="flex-start">
-                      <Stack flex={1} spacing={2}>
-                        <Text fontSize="xs" color={labelColor}>
-                          Auditor/s:
-                        </Text>
-                        {finding?.report?.auditor?.length > 0 ? (
-                          <Box>
-                            <Wrap>
-                              {finding?.report?.auditor?.map((u, index) => {
-                                return (
-                                  <WrapItem key={`auditor-${u.id}-${index}`}>
-                                    <Tooltip
-                                      label={`${u.firstName} ${u.lastName}`}
-                                    >
-                                      <Card variant="filled" shadow="none">
-                                        <CardBody px={2} py={1}>
-                                          <HStack spacing={1}>
-                                            <Avatar
-                                              size="xs"
-                                              name={`${u.firstName} ${u.lastName}`}
-                                            />
-                                            <Text fontSize="sm">
-                                              {`${u.firstName} ${u.lastName}`}
-                                            </Text>
-                                          </HStack>
-                                        </CardBody>
-                                      </Card>
-                                    </Tooltip>
-                                  </WrapItem>
-                                );
-                              })}
-                            </Wrap>
-                          </Box>
-                        ) : (
-                          <Text fontSize="xs" color="gray.500" opacity={0.5}>
-                            No Auditors
-                          </Text>
-                        )}
-                      </Stack>
-                      <Stack flex={1} spacing={2}>
-                        <Text fontSize="xs" color={labelColor}>
-                          Auditee/s:
-                        </Text>
-                        {finding?.report?.auditee?.length > 0 ? (
-                          <Box>
-                            <Wrap>
-                              {finding?.report?.auditee?.map((u, index) => {
-                                return (
-                                  <WrapItem key={`auditee-${u.id}-${index}`}>
-                                    <Tooltip
-                                      label={`${u.firstName} ${u.lastName}`}
-                                    >
-                                      <Card variant="filled" shadow="none">
-                                        <CardBody px={2} py={1}>
-                                          <HStack spacing={1}>
-                                            <Avatar
-                                              size="xs"
-                                              name={`${u.firstName} ${u.lastName}`}
-                                            />
-                                            <Text fontSize="sm">
-                                              {`${u.firstName} ${u.lastName}`}
-                                            </Text>
-                                          </HStack>
-                                        </CardBody>
-                                      </Card>
-                                    </Tooltip>
-                                  </WrapItem>
-                                );
-                              })}
-                            </Wrap>
-                          </Box>
-                        ) : (
-                          <Text fontSize="xs" color="gray.500" opacity={0.5}>
-                            No Auditees
-                          </Text>
-                        )}
-                      </Stack>
-                    </HStack>
-                  </VStack>
-                </Box>
-              )}
-
-              {/* Action Plan Section - Only for MINOR_NC/MAJOR_NC with report */}
-              {shouldShowActionPlan && (
-                <>
-                  <Divider />
-                  {isEditingActionPlan ? (
-                    <ActionPlanForm
-                      initialData={finding.actionPlan}
-                      onSave={handleSaveActionPlan}
-                      onCancel={handleCancelActionPlan}
-                      readOnly={false}
-                    />
-                  ) : finding.actionPlan ? (
-                    <Box>
-                      <HStack justify="space-between" mb={2}>
-                        <HStack spacing={2}>
-                          <FiCheckCircle />
-                          <Text fontSize="sm" fontWeight="semibold">
-                            Action Plan
-                          </Text>
-                        </HStack>
-                        <IconButton
-                          icon={<FiEdit />}
-                          size="xs"
-                          variant="ghost"
-                          colorScheme="blue"
-                          onClick={() => setIsEditingActionPlan(true)}
-                          aria-label="Edit action plan"
-                        />
+              {/* Tabs for Report and Action Plan - Only for MINOR_NC/MAJOR_NC with report */}
+              {shouldShowActionPlan ? (
+                <Tabs colorScheme="brandPrimary">
+                  <TabList>
+                    <Tab>
+                      <HStack spacing={2}>
+                        <FiFileText />
+                        <Text>Report</Text>
                       </HStack>
-                      <ActionPlanForm
-                        initialData={finding.actionPlan}
-                        onSave={handleSaveActionPlan}
-                        onCancel={handleCancelActionPlan}
-                        readOnly={true}
-                      />
-                    </Box>
-                  ) : (
-                    <Box>
-                      <Button
-                        size="sm"
-                        leftIcon={<FiPlus />}
-                        colorScheme="blue"
-                        variant="outline"
-                        onClick={() => setIsEditingActionPlan(true)}
-                        w="full"
+                    </Tab>
+                    <Tab>
+                      <HStack spacing={2}>
+                        <FiCheckCircle />
+                        <Text>Action Plan</Text>
+                        {needsActionPlan && (
+                          <Badge colorScheme="orange" fontSize="xs">
+                            Required
+                          </Badge>
+                        )}
+                      </HStack>
+                    </Tab>
+                  </TabList>
+
+                  <TabPanels>
+                    {/* Report Tab Panel */}
+                    <TabPanel px={0} py={4}>
+                      <Box
+                        p={3}
+                        bg={reportBg}
+                        borderRadius="md"
+                        borderWidth="1px"
+                        borderColor={borderColor}
                       >
-                        Add Action Plan
-                      </Button>
-                    </Box>
-                  )}
-                </>
+                        <VStack align="stretch" spacing={2}>
+                          <HStack>
+                            {/* Report Number */}
+                            {finding.report.reportNo && (
+                              <HStack flex={1} spacing={2}>
+                                <Text fontSize="xs" color={labelColor} minW="80px">
+                                  Report No:
+                                </Text>
+                                <Text fontSize="sm" fontWeight="medium">
+                                  {finding.report.reportNo}
+                                </Text>
+                              </HStack>
+                            )}
+
+                            {/* Date Issued */}
+                            {finding.report.date && (
+                              <HStack flex={1} spacing={2}>
+                                <Text fontSize="xs" color={labelColor} minW="80px">
+                                  Date Issued:
+                                </Text>
+                                <Text fontSize="sm">
+                                  {moment(finding.report.date).format(
+                                    "MMMM DD, YYYY",
+                                  )}
+                                </Text>
+                              </HStack>
+                            )}
+                          </HStack>
+
+                          <Divider my={4} />
+
+                          {/* Report Details */}
+                          {finding.report.details && (
+                            <Box>
+                              <Text fontSize="xs" color={labelColor} mb={1}>
+                                Report Details:
+                              </Text>
+                              <Text fontSize="sm" whiteSpace="pre-wrap">
+                                {finding.report.details}
+                              </Text>
+                            </Box>
+                          )}
+
+                          <Divider my={4} />
+
+                          {/* Auditee and Auditor */}
+                          <HStack alignItems="flex-start">
+                            <Stack flex={1} spacing={2}>
+                              <Text fontSize="xs" color={labelColor}>
+                                Auditor/s:
+                              </Text>
+                              {finding?.report?.auditor?.length > 0 ? (
+                                <Box>
+                                  <Wrap>
+                                    {finding?.report?.auditor?.map((u, index) => {
+                                      return (
+                                        <WrapItem key={`auditor-${u.id}-${index}`}>
+                                          <Tooltip
+                                            label={`${u.firstName} ${u.lastName}`}
+                                          >
+                                            <Card variant="filled" shadow="none">
+                                              <CardBody px={2} py={1}>
+                                                <HStack spacing={1}>
+                                                  <Avatar
+                                                    size="xs"
+                                                    name={`${u.firstName} ${u.lastName}`}
+                                                  />
+                                                  <Text fontSize="sm">
+                                                    {`${u.firstName} ${u.lastName}`}
+                                                  </Text>
+                                                </HStack>
+                                              </CardBody>
+                                            </Card>
+                                          </Tooltip>
+                                        </WrapItem>
+                                      );
+                                    })}
+                                  </Wrap>
+                                </Box>
+                              ) : (
+                                <Text fontSize="xs" color="gray.500" opacity={0.5}>
+                                  No Auditors
+                                </Text>
+                              )}
+                            </Stack>
+                            <Stack flex={1} spacing={2}>
+                              <Text fontSize="xs" color={labelColor}>
+                                Auditee/s:
+                              </Text>
+                              {finding?.report?.auditee?.length > 0 ? (
+                                <Box>
+                                  <Wrap>
+                                    {finding?.report?.auditee?.map((u, index) => {
+                                      return (
+                                        <WrapItem key={`auditee-${u.id}-${index}`}>
+                                          <Tooltip
+                                            label={`${u.firstName} ${u.lastName}`}
+                                          >
+                                            <Card variant="filled" shadow="none">
+                                              <CardBody px={2} py={1}>
+                                                <HStack spacing={1}>
+                                                  <Avatar
+                                                    size="xs"
+                                                    name={`${u.firstName} ${u.lastName}`}
+                                                  />
+                                                  <Text fontSize="sm">
+                                                    {`${u.firstName} ${u.lastName}`}
+                                                  </Text>
+                                                </HStack>
+                                              </CardBody>
+                                            </Card>
+                                          </Tooltip>
+                                        </WrapItem>
+                                      );
+                                    })}
+                                  </Wrap>
+                                </Box>
+                              ) : (
+                                <Text fontSize="xs" color="gray.500" opacity={0.5}>
+                                  No Auditees
+                                </Text>
+                              )}
+                            </Stack>
+                          </HStack>
+                        </VStack>
+                      </Box>
+                    </TabPanel>
+
+                    {/* Action Plan Tab Panel */}
+                    <TabPanel px={0} py={4}>
+                      {isEditingActionPlan ? (
+                        <ActionPlanForm
+                          initialData={finding.actionPlan}
+                          onSave={handleSaveActionPlan}
+                          onCancel={handleCancelActionPlan}
+                          readOnly={false}
+                        />
+                      ) : finding.actionPlan ? (
+                        <Box>
+                          <HStack justify="space-between" mb={2}>
+                            <HStack spacing={2}>
+                              <FiCheckCircle />
+                              <Text fontSize="sm" fontWeight="semibold">
+                                Action Plan Details
+                              </Text>
+                            </HStack>
+                            <IconButton
+                              icon={<FiEdit />}
+                              size="xs"
+                              variant="ghost"
+                              colorScheme="blue"
+                              onClick={() => setIsEditingActionPlan(true)}
+                              aria-label="Edit action plan"
+                            />
+                          </HStack>
+                          <ActionPlanForm
+                            initialData={finding.actionPlan}
+                            onSave={handleSaveActionPlan}
+                            onCancel={handleCancelActionPlan}
+                            readOnly={true}
+                          />
+                        </Box>
+                      ) : (
+                        <Box>
+                          <Button
+                            size="sm"
+                            leftIcon={<FiPlus />}
+                            colorScheme="blue"
+                            variant="outline"
+                            onClick={() => setIsEditingActionPlan(true)}
+                            w="full"
+                          >
+                            Add Action Plan
+                          </Button>
+                        </Box>
+                      )}
+                    </TabPanel>
+                  </TabPanels>
+                </Tabs>
+              ) : (
+                /* Report Section - For findings without tabs (non-NC or without report) */
+                finding.report && (
+                  <Box
+                    p={3}
+                    bg={reportBg}
+                    borderRadius="md"
+                    borderWidth="1px"
+                    borderColor={borderColor}
+                  >
+                    <HStack spacing={2} mb={2}>
+                      <FiFileText />
+                      <Text fontSize="sm" fontWeight="semibold">
+                        Report Details
+                      </Text>
+                    </HStack>
+
+                    <VStack align="stretch" spacing={2}>
+                      <HStack>
+                        {/* Report Number */}
+                        {finding.report.reportNo && (
+                          <HStack flex={1} spacing={2}>
+                            <Text fontSize="xs" color={labelColor} minW="80px">
+                              Report No:
+                            </Text>
+                            <Text fontSize="sm" fontWeight="medium">
+                              {finding.report.reportNo}
+                            </Text>
+                          </HStack>
+                        )}
+
+                        {/* Date Issued */}
+                        {finding.report.date && (
+                          <HStack flex={1} spacing={2}>
+                            <Text fontSize="xs" color={labelColor} minW="80px">
+                              Date Issued:
+                            </Text>
+                            <Text fontSize="sm">
+                              {moment(finding.report.date).format(
+                                "MMMM DD, YYYY",
+                              )}
+                            </Text>
+                          </HStack>
+                        )}
+                      </HStack>
+
+                      <Divider my={4} />
+
+                      {/* Report Details */}
+                      {finding.report.details && (
+                        <Box>
+                          <Text fontSize="xs" color={labelColor} mb={1}>
+                            Report Details:
+                          </Text>
+                          <Text fontSize="sm" whiteSpace="pre-wrap">
+                            {finding.report.details}
+                          </Text>
+                        </Box>
+                      )}
+
+                      <Divider my={4} />
+
+                      {/* Auditee and Auditor */}
+                      <HStack alignItems="flex-start">
+                        <Stack flex={1} spacing={2}>
+                          <Text fontSize="xs" color={labelColor}>
+                            Auditor/s:
+                          </Text>
+                          {finding?.report?.auditor?.length > 0 ? (
+                            <Box>
+                              <Wrap>
+                                {finding?.report?.auditor?.map((u, index) => {
+                                  return (
+                                    <WrapItem key={`auditor-${u.id}-${index}`}>
+                                      <Tooltip
+                                        label={`${u.firstName} ${u.lastName}`}
+                                      >
+                                        <Card variant="filled" shadow="none">
+                                          <CardBody px={2} py={1}>
+                                            <HStack spacing={1}>
+                                              <Avatar
+                                                size="xs"
+                                                name={`${u.firstName} ${u.lastName}`}
+                                              />
+                                              <Text fontSize="sm">
+                                                {`${u.firstName} ${u.lastName}`}
+                                              </Text>
+                                            </HStack>
+                                          </CardBody>
+                                        </Card>
+                                      </Tooltip>
+                                    </WrapItem>
+                                  );
+                                })}
+                              </Wrap>
+                            </Box>
+                          ) : (
+                            <Text fontSize="xs" color="gray.500" opacity={0.5}>
+                              No Auditors
+                            </Text>
+                          )}
+                        </Stack>
+                        <Stack flex={1} spacing={2}>
+                          <Text fontSize="xs" color={labelColor}>
+                            Auditee/s:
+                          </Text>
+                          {finding?.report?.auditee?.length > 0 ? (
+                            <Box>
+                              <Wrap>
+                                {finding?.report?.auditee?.map((u, index) => {
+                                  return (
+                                    <WrapItem key={`auditee-${u.id}-${index}`}>
+                                      <Tooltip
+                                        label={`${u.firstName} ${u.lastName}`}
+                                      >
+                                        <Card variant="filled" shadow="none">
+                                          <CardBody px={2} py={1}>
+                                            <HStack spacing={1}>
+                                              <Avatar
+                                                size="xs"
+                                                name={`${u.firstName} ${u.lastName}`}
+                                              />
+                                              <Text fontSize="sm">
+                                                {`${u.firstName} ${u.lastName}`}
+                                              </Text>
+                                            </HStack>
+                                          </CardBody>
+                                        </Card>
+                                      </Tooltip>
+                                    </WrapItem>
+                                  );
+                                })}
+                              </Wrap>
+                            </Box>
+                          ) : (
+                            <Text fontSize="xs" color="gray.500" opacity={0.5}>
+                              No Auditees
+                            </Text>
+                          )}
+                        </Stack>
+                      </HStack>
+                    </VStack>
+                  </Box>
+                )
               )}
             </VStack>
           </Collapse>
