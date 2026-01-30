@@ -86,7 +86,7 @@ const SchedulesList = () => {
       );
     }
     return (
-      <Badge colorScheme="blue" fontSize="xs">
+      <Badge colorScheme="warning" fontSize="xs">
         Ongoing
       </Badge>
     );

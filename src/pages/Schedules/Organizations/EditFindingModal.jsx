@@ -460,7 +460,7 @@ const EditFindingModal = ({
               Cancel
             </Button>
             <Button
-              colorScheme="blue"
+              colorScheme="brandPrimary"
               leftIcon={<FiSave />}
               onClick={handleSubmit}
               isLoading={isSubmitting}

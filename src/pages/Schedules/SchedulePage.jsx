@@ -512,7 +512,7 @@ const SchedulePageContent = () => {
                         {formData.status === 1 ? (
                           <Badge colorScheme="green">Closed</Badge>
                         ) : (
-                          <Badge colorScheme="blue">Ongoing</Badge>
+                          <Badge colorScheme="warning">Ongoing</Badge>
                         )}
                       </HStack>
                     </VStack>
@@ -635,7 +635,7 @@ const SchedulePageContent = () => {
                     {formData.status === 1 ? (
                       <Badge colorScheme="green">Closed</Badge>
                     ) : (
-                      <Badge colorScheme="blue">Ongoing</Badge>
+                      <Badge colorScheme="warning">Ongoing</Badge>
                     )}
                   </HStack>
 

@@ -21,7 +21,7 @@ import {
   Badge,
 } from "@chakra-ui/react";
 import { useState } from "react";
-import { FiSave, FiX, FiEdit } from "react-icons/fi";
+import { FiSave, FiX } from "react-icons/fi";
 import { SingleDatepicker } from "chakra-dayzed-datepicker";
 import UserAsyncSelect from "../../../components/UserAsyncSelect";
 import { useLayout } from "../../../context/_useContext";
@@ -33,8 +33,8 @@ const ActionPlanForm = ({
   onCancel,
   readOnly = false,
 }) => {
-  const bg = useColorModeValue("blue.50", "blue.900");
-  const borderColor = useColorModeValue("blue.200", "blue.700");
+  const bg = useColorModeValue("info.50", "info.900");
+  const borderColor = useColorModeValue("info.200", "info.700");
   const sectionBg = useColorModeValue("white", "gray.800");
   const labelColor = useColorModeValue("gray.600", "gray.400");
   const { pageRef } = useLayout();
@@ -146,7 +146,7 @@ const ActionPlanForm = ({
       >
         <VStack align="stretch" spacing={4}>
           <HStack justify="space-between">
-            <Heading size="sm" color="blue.600">
+            <Heading size="sm" color="info.600">
               Action Plan
             </Heading>
             <Badge colorScheme={formData.corrected === 1 ? "green" : "orange"}>
@@ -158,7 +158,7 @@ const ActionPlanForm = ({
 
           {/* Root Cause Analysis Section */}
           <Box>
-            <Text fontSize="sm" fontWeight="semibold" color="blue.700" mb={2}>
+            <Text fontSize="sm" fontWeight="semibold" color="info.700" mb={2}>
               Root Cause Analysis
             </Text>
             <VStack align="stretch" spacing={3}>
@@ -180,7 +180,9 @@ const ActionPlanForm = ({
                   <Wrap>
                     {formData.owner.map((u, index) => (
                       <WrapItem key={`owner-${u.id}-${index}`}>
-                        <Tooltip label={`${u.firstName || ""} ${u.lastName || ""}`}>
+                        <Tooltip
+                          label={`${u.firstName || ""} ${u.lastName || ""}`}
+                        >
                           <Card variant="filled" shadow="none">
                             <CardBody px={2} py={1}>
                               <HStack spacing={1}>
@@ -217,7 +219,7 @@ const ActionPlanForm = ({
 
           {/* Corrective Action Section */}
           <Box>
-            <Text fontSize="sm" fontWeight="semibold" color="blue.700" mb={2}>
+            <Text fontSize="sm" fontWeight="semibold" color="info.700" mb={2}>
               Corrective Action
             </Text>
             <VStack align="stretch" spacing={3}>
@@ -239,7 +241,9 @@ const ActionPlanForm = ({
                   <Wrap>
                     {formData.takenBy.map((u, index) => (
                       <WrapItem key={`takenby-${u.id}-${index}`}>
-                        <Tooltip label={`${u.firstName || ""} ${u.lastName || ""}`}>
+                        <Tooltip
+                          label={`${u.firstName || ""} ${u.lastName || ""}`}
+                        >
                           <Card variant="filled" shadow="none">
                             <CardBody px={2} py={1}>
                               <HStack spacing={1}>
@@ -267,7 +271,9 @@ const ActionPlanForm = ({
                   <Wrap>
                     {formData.auditor.map((u, index) => (
                       <WrapItem key={`auditor-${u.id}-${index}`}>
-                        <Tooltip label={`${u.firstName || ""} ${u.lastName || ""}`}>
+                        <Tooltip
+                          label={`${u.firstName || ""} ${u.lastName || ""}`}
+                        >
                           <Card variant="filled" shadow="none">
                             <CardBody px={2} py={1}>
                               <HStack spacing={1}>
@@ -305,7 +311,12 @@ const ActionPlanForm = ({
             <>
               <Divider />
               <Box>
-                <Text fontSize="sm" fontWeight="semibold" color="blue.700" mb={2}>
+                <Text
+                  fontSize="sm"
+                  fontWeight="semibold"
+                  color="info.700"
+                  mb={2}
+                >
                   Comments
                 </Text>
                 <Text fontSize="sm" whiteSpace="pre-wrap">
@@ -331,7 +342,7 @@ const ActionPlanForm = ({
     >
       <VStack align="stretch" spacing={4}>
         <HStack justify="space-between">
-          <Heading size="sm" color="blue.600">
+          <Heading size="sm" color="info.600">
             {initialData ? "Edit Action Plan" : "Add Action Plan"}
           </Heading>
           {onCancel && (
@@ -350,7 +361,7 @@ const ActionPlanForm = ({
 
         {/* Phase 1: Root Cause Analysis */}
         <Box p={3} bg={sectionBg} borderRadius="md">
-          <Text fontSize="sm" fontWeight="bold" color="blue.700" mb={3}>
+          <Text fontSize="sm" fontWeight="bold" color="info.700" mb={3}>
             Phase 1: Root Cause Analysis
           </Text>
 
@@ -414,7 +425,7 @@ const ActionPlanForm = ({
 
         {/* Phase 2: Corrective Action */}
         <Box p={3} bg={sectionBg} borderRadius="md">
-          <Text fontSize="sm" fontWeight="bold" color="blue.700" mb={3}>
+          <Text fontSize="sm" fontWeight="bold" color="info.700" mb={3}>
             Phase 2: Corrective Action
           </Text>
 
@@ -511,7 +522,7 @@ const ActionPlanForm = ({
 
         {/* Phase 3: Comments */}
         <Box p={3} bg={sectionBg} borderRadius="md">
-          <Text fontSize="sm" fontWeight="bold" color="blue.700" mb={3}>
+          <Text fontSize="sm" fontWeight="bold" color="info.700" mb={3}>
             Phase 3: Additional Comments
           </Text>
 
@@ -531,7 +542,7 @@ const ActionPlanForm = ({
         <HStack justify="flex-end">
           <Button
             leftIcon={<FiSave />}
-            colorScheme="blue"
+            colorScheme="info"
             size="sm"
             onClick={handleSubmit}
           >
