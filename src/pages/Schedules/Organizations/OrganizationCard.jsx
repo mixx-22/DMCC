@@ -668,9 +668,10 @@ const OrganizationCard = ({
                                                       ? "All findings must have action plans before closing this visit"
                                                       : !visitVerified
                                                         ? "All findings must be verified before closing this visit"
-                                                        : ""
+                                                        : "Set compliance status for this visit"
                                                   }
-                                                  isDisabled={canClose}
+                                                  isDisabled={canClose && !isReadOnly}
+                                                  shouldWrapChildren
                                                 >
                                                   <Button
                                                     size="sm"
@@ -867,9 +868,10 @@ const OrganizationCard = ({
                             label={
                               !canAddVisit(organization)
                                 ? "Current visit must be closed before adding a new visit"
-                                : ""
+                                : "Add a new visit to this organization"
                             }
                             isDisabled={canAddVisit(organization) && !isReadOnly}
+                            shouldWrapChildren
                           >
                             <Button
                               size="sm"

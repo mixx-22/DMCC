@@ -19,8 +19,10 @@ export const calculateOrganizationStatus = (organization) => {
 
   const visits = organization.visits;
   
-  // Find the first unverified visit (visit without compliance set)
-  const firstUnverifiedVisitIndex = visits.findIndex(visit => !visit.compliance);
+  // Find the first unverified visit (visit without compliance explicitly set)
+  const firstUnverifiedVisitIndex = visits.findIndex(visit => 
+    visit.compliance === null || visit.compliance === undefined
+  );
   
   if (firstUnverifiedVisitIndex !== -1) {
     // Current visit is the first unverified one
@@ -120,8 +122,10 @@ export const allFindingsVerified = (visit) => {
     return true; // No findings that need verification
   }
   
-  // Check if all NC findings with action plans are verified (corrected !== -1)
-  return ncFindingsWithActionPlans.every(f => f.corrected !== undefined && f.corrected !== -1);
+  // Check if all NC findings with action plans are verified (corrected is explicitly set and not -1)
+  return ncFindingsWithActionPlans.every(f => 
+    f.corrected !== undefined && f.corrected !== null && f.corrected !== -1
+  );
 };
 
 /**
@@ -140,7 +144,7 @@ export const canCloseVisit = (visit) => {
  */
 export const canAddVisit = (organization) => {
   if (!organization || !organization.visits || organization.visits.length === 0) {
-    return false; // Can't add visit if there are no visits yet (initial state)
+    return true; // Can add first visit to a new organization
   }
   
   // Get the last visit

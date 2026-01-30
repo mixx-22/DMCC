@@ -166,9 +166,15 @@ export const OrganizationsProvider = ({ children, scheduleId }) => {
     }
 
     try {
+      // Calculate status before sending to API
+      const dataWithStatus = {
+        ...organizationData,
+        status: calculateOrganizationStatus(organizationData),
+      };
+      
       const response = await apiService.request(ORGANIZATIONS_ENDPOINT, {
         method: "POST",
-        body: JSON.stringify(organizationData),
+        body: JSON.stringify(dataWithStatus),
       });
 
       const { success = false, organization: data } = response;
