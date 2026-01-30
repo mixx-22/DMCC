@@ -33,6 +33,7 @@ import {
   FiCheckCircle,
   FiPlus,
   FiAlertCircle,
+  FiTool,
 } from "react-icons/fi";
 import moment from "moment";
 import FindingsForm from "./FindingsForm";
@@ -291,7 +292,7 @@ const FindingCard = ({
                     </Tab>
                     <Tab>
                       <HStack spacing={2}>
-                        <FiCheckCircle />
+                        <FiTool />
                         <Text>Action Plan</Text>
                         {needsActionPlan && (
                           <Badge colorScheme="orange" fontSize="xs">
