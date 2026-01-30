@@ -98,6 +98,7 @@ const FindingsForm = ({
               auditee: [],
               auditor: [],
             },
+        actionPlan: initialData.actionPlan || undefined, // Preserve action plan
       };
     }
     return {
@@ -190,10 +191,10 @@ const FindingsForm = ({
   const handleSubmit = async () => {
     if (validateForm()) {
       const findingData = {
-        _id: generateFindingId(), // Client-side ID for tracking
-        id: generateFindingId(), // Backup ID field
+        _id: formData._id || generateFindingId(), // Use existing ID in edit mode or generate new for add mode
+        id: formData.id || generateFindingId(), // Backup ID field
         ...formData,
-        createdAt: new Date().toISOString(), // Timestamp for ordering
+        createdAt: formData.createdAt || new Date().toISOString(), // Preserve existing or add new timestamp
         report: isNonConformity(formData.compliance)
           ? {
               ...formData.report,
@@ -202,26 +203,29 @@ const FindingsForm = ({
               auditor: formData.report.auditor || [],
             }
           : undefined,
+        actionPlan: formData.actionPlan || undefined, // Preserve action plan if it exists
       };
 
       try {
         await onAddFinding(findingData);
 
-        // Reset form only on successful add
-        setFormData({
-          title: "",
-          details: "",
-          objective: "",
-          compliance: "",
-          report: {
-            reportNo: "",
+        // Reset form only on successful add (not in edit mode)
+        if (mode === "add") {
+          setFormData({
+            title: "",
             details: "",
-            date: new Date(),
-            auditee: null,
-            auditor: null,
-          },
-        });
-        setErrors({});
+            objective: "",
+            compliance: "",
+            report: {
+              reportNo: "",
+              details: "",
+              date: new Date(),
+              auditee: [],
+              auditor: [],
+            },
+          });
+          setErrors({});
+        }
       } catch (error) {
         // If onAddFinding fails, don't reset form - preserve user's data
         console.error("Failed to add finding:", error);
