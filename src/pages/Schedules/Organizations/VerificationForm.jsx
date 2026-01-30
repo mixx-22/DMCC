@@ -34,8 +34,14 @@ const VerificationForm = ({
   // Initialize form data
   const getInitialFormData = () => {
     if (initialData) {
+      // Handle backward compatibility: convert old corrected value (1) to new system (2)
+      let correctedValue = initialData.corrected !== undefined ? initialData.corrected : -1;
+      if (correctedValue === 1) {
+        correctedValue = 2; // Old "corrected" becomes new "corrected"
+      }
+      
       return {
-        corrected: initialData.corrected !== undefined ? initialData.corrected : -1,
+        corrected: correctedValue,
         correctionDate: initialData.correctionDate
           ? new Date(initialData.correctionDate)
           : new Date(),
@@ -105,7 +111,7 @@ const VerificationForm = ({
               Verification
             </Heading>
             <Badge colorScheme={formData.corrected === 2 ? "green" : formData.corrected === 0 ? "red" : "orange"}>
-              {formData.corrected === 2 ? "Corrected" : formData.corrected === 0 ? "Not Corrected" : "Pending"}
+              {formData.corrected === 2 ? "Corrected" : formData.corrected === 0 ? "Not Corrected" : "Pending Verification"}
             </Badge>
           </HStack>
 
@@ -196,7 +202,7 @@ const VerificationForm = ({
                 colorScheme="green"
               />
               <Text fontSize="sm" fontWeight="medium" color={formData.corrected === 2 ? "green.600" : formData.corrected === 0 ? "red.600" : "orange.600"}>
-                {formData.corrected === 2 ? "Corrected" : formData.corrected === 0 ? "Not Corrected" : "Pending"}
+                {formData.corrected === 2 ? "Corrected" : formData.corrected === 0 ? "Not Corrected" : "Pending Verification"}
               </Text>
             </HStack>
             <FormHelperText>
