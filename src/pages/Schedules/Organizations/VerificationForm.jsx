@@ -195,12 +195,14 @@ const VerificationForm = ({
                 }
                 colorScheme="green"
               />
-              <Text fontSize="sm" color="gray.600">
+              <Text fontSize="sm" fontWeight="medium" color={formData.corrected === 1 ? "green.600" : "orange.600"}>
                 {formData.corrected === 1 ? "Corrected" : "Not Corrected"}
               </Text>
             </HStack>
             <FormHelperText>
-              Mark as corrected when the issue has been resolved
+              {formData.corrected === 1 
+                ? "✓ Finding will be marked as COMPLIANT" 
+                : "⚠ Finding will keep its original compliance status"}
             </FormHelperText>
           </FormControl>
 
