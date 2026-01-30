@@ -131,7 +131,7 @@ const VerificationForm = ({
               </Badge>
             </Box>
 
-            {formData.correctionDate && (
+            {formData.corrected !== -1 && formData.correctionDate && (
               <Box>
                 <Text fontSize="xs" color={labelColor} mb={1}>
                   Correction Date:
