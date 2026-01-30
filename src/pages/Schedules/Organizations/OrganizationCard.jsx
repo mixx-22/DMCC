@@ -99,6 +99,7 @@ const OrganizationCard = ({
   const hoverBg = useColorModeValue("gray.50", "gray.600");
   const headerHoverBg = useColorModeValue("gray.100", "gray.650");
   const objectiveBg = useColorModeValue("gray.50", "gray.700");
+  const currentVisitBg = useColorModeValue("purple.50", "purple.900");
   const [tabColor] = useToken("colors", ["gray.500"]);
   const $tabColor = cssVar("tabs-color");
 
@@ -474,7 +475,7 @@ const OrganizationCard = ({
                                 <AccordionItem 
                                   key={index} 
                                   border="none"
-                                  bg={isCurrent ? useColorModeValue("purple.50", "purple.900") : undefined}
+                                  bg={isCurrent ? currentVisitBg : undefined}
                                 >
                                   {({ isExpanded }) => (
                                     <>
