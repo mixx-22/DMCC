@@ -129,7 +129,7 @@ const VisitComplianceForm = ({ visit, onSave, onCancel, readOnly = false }) => {
     };
 
     return (
-      <Card variant="outline" borderColor={borderColor} bg={bg}>
+      <Card variant="outline" borderColor={borderColor} bg={bg} shadow="none">
         <CardBody>
           <VStack align="stretch" spacing={3}>
             <HStack justify="space-between">
