@@ -15,6 +15,7 @@ import {
   Stack,
   Wrap,
   WrapItem,
+  Button,
 } from "@chakra-ui/react";
 import { useState } from "react";
 import {
@@ -23,9 +24,12 @@ import {
   FiEdit,
   FiTrash2,
   FiFileText,
+  FiCheckCircle,
+  FiPlus,
 } from "react-icons/fi";
 import moment from "moment";
 import FindingsForm from "./FindingsForm";
+import ActionPlanForm from "./ActionPlanForm";
 
 // Map compliance values to display names and colors
 const COMPLIANCE_DISPLAY = {
@@ -48,6 +52,7 @@ const FindingCard = ({
 }) => {
   const [isExpanded, setIsExpanded] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
+  const [isEditingActionPlan, setIsEditingActionPlan] = useState(false);
   const cardBg = useColorModeValue("white", "gray.700");
   const borderColor = useColorModeValue("gray.200", "gray.600");
   const labelColor = useColorModeValue("gray.600", "gray.400");
@@ -55,6 +60,9 @@ const FindingCard = ({
 
   const complianceInfo =
     COMPLIANCE_DISPLAY[finding.compliance] || COMPLIANCE_DISPLAY.OBSERVATIONS;
+
+  // Check if finding should have action plan (MINOR_NC or MAJOR_NC with report)
+  const shouldShowActionPlan = (finding.compliance === "MINOR_NC" || finding.compliance === "MAJOR_NC") && finding.report;
 
   const handleEditClick = () => {
     setIsEditing(true);
@@ -73,6 +81,23 @@ const FindingCard = ({
 
   const handleCancel = () => {
     setIsEditing(false);
+  };
+
+  const handleSaveActionPlan = async (actionPlanData) => {
+    // Save action plan as part of the finding
+    const updatedFinding = {
+      ...finding,
+      actionPlan: actionPlanData,
+    };
+    
+    if (onSaveEdit) {
+      await onSaveEdit(updatedFinding);
+    }
+    setIsEditingActionPlan(false);
+  };
+
+  const handleCancelActionPlan = () => {
+    setIsEditingActionPlan(false);
   };
 
   // If in edit mode, show the form
@@ -318,6 +343,59 @@ const FindingCard = ({
                     </HStack>
                   </VStack>
                 </Box>
+              )}
+
+              {/* Action Plan Section - Only for MINOR_NC/MAJOR_NC with report */}
+              {shouldShowActionPlan && (
+                <>
+                  <Divider />
+                  {isEditingActionPlan ? (
+                    <ActionPlanForm
+                      initialData={finding.actionPlan}
+                      onSave={handleSaveActionPlan}
+                      onCancel={handleCancelActionPlan}
+                      readOnly={false}
+                    />
+                  ) : finding.actionPlan ? (
+                    <Box>
+                      <HStack justify="space-between" mb={2}>
+                        <HStack spacing={2}>
+                          <FiCheckCircle />
+                          <Text fontSize="sm" fontWeight="semibold">
+                            Action Plan
+                          </Text>
+                        </HStack>
+                        <IconButton
+                          icon={<FiEdit />}
+                          size="xs"
+                          variant="ghost"
+                          colorScheme="blue"
+                          onClick={() => setIsEditingActionPlan(true)}
+                          aria-label="Edit action plan"
+                        />
+                      </HStack>
+                      <ActionPlanForm
+                        initialData={finding.actionPlan}
+                        onSave={handleSaveActionPlan}
+                        onCancel={handleCancelActionPlan}
+                        readOnly={true}
+                      />
+                    </Box>
+                  ) : (
+                    <Box>
+                      <Button
+                        size="sm"
+                        leftIcon={<FiPlus />}
+                        colorScheme="blue"
+                        variant="outline"
+                        onClick={() => setIsEditingActionPlan(true)}
+                        w="full"
+                      >
+                        Add Action Plan
+                      </Button>
+                    </Box>
+                  )}
+                </>
               )}
             </VStack>
           </Collapse>
