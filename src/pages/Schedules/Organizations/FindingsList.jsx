@@ -208,7 +208,14 @@ const FindingCard = ({
               {finding.objectives && finding.objectives.length > 0 && (
                 <Box>
                   <Text fontSize="xs" color={labelColor} mb={1}>
-                    Objectives:
+                    Objectives{" "}
+                    <Text as="span" fontSize="xs" color="gray.500" mt={1}>
+                      (Last updated:{" "}
+                      {moment(finding.objectives[0]?.teamUpdatedAt).format(
+                        "MMM DD, YYYY",
+                      )}
+                      )
+                    </Text>
                   </Text>
                   <Wrap spacing={1}>
                     {finding.objectives.map((obj, idx) => (
@@ -217,22 +224,13 @@ const FindingCard = ({
                           label={`Updated: ${moment(obj.teamUpdatedAt).format("MMMM DD, YYYY")}`}
                           placement="top"
                         >
-                          <Badge
-                            colorScheme="purple"
-                            fontSize="xs"
-                            px={2}
-                            py={1}
-                            borderRadius="md"
-                          >
+                          <Badge fontSize="2xs" px={2} py={1} borderRadius="md">
                             {obj.title}
                           </Badge>
                         </Tooltip>
                       </WrapItem>
                     ))}
                   </Wrap>
-                  <Text fontSize="xs" color="gray.500" mt={1}>
-                    Last updated: {moment(finding.objectives[0]?.teamUpdatedAt).format("MMM DD, YYYY")}
-                  </Text>
                 </Box>
               )}
               {/* Backward compatibility for old single objective */}
