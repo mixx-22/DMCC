@@ -10,7 +10,6 @@ import {
   FormHelperText,
   useColorModeValue,
   Divider,
-  Switch,
   Heading,
   Card,
   CardBody,
@@ -18,7 +17,6 @@ import {
   Tooltip,
   Wrap,
   WrapItem,
-  Badge,
 } from "@chakra-ui/react";
 import { useState } from "react";
 import { FiSave, FiX } from "react-icons/fi";

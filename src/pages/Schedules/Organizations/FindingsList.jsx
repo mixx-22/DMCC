@@ -21,6 +21,7 @@ import {
   Tab,
   TabPanels,
   TabPanel,
+  Center,
 } from "@chakra-ui/react";
 import { useState } from "react";
 import {
@@ -69,10 +70,11 @@ const FindingCard = ({
 
   const complianceInfo =
     COMPLIANCE_DISPLAY[finding.compliance] || COMPLIANCE_DISPLAY.OBSERVATIONS;
-  
+
   // Use currentCompliance if available, otherwise fallback to compliance
   const currentComplianceInfo =
-    COMPLIANCE_DISPLAY[finding.currentCompliance || finding.compliance] || COMPLIANCE_DISPLAY.OBSERVATIONS;
+    COMPLIANCE_DISPLAY[finding.currentCompliance || finding.compliance] ||
+    COMPLIANCE_DISPLAY.OBSERVATIONS;
 
   // Check if finding should have action plan (MINOR_NC or MAJOR_NC with report)
   const shouldShowActionPlan =
@@ -81,9 +83,10 @@ const FindingCard = ({
 
   // Check if action plan is missing
   const needsActionPlan = shouldShowActionPlan && !finding.actionPlan;
-  
+
   // Check if verification is needed (has action plan but not verified)
-  const needsVerification = shouldShowActionPlan && finding.actionPlan && finding.corrected !== 1;
+  const needsVerification =
+    shouldShowActionPlan && finding.actionPlan && finding.corrected !== 1;
 
   const handleEditClick = () => {
     setIsEditing(true);
@@ -120,14 +123,12 @@ const FindingCard = ({
   const handleCancelActionPlan = () => {
     setIsEditingActionPlan(false);
   };
-  
+
   const handleSaveVerification = async (verificationData) => {
     // Calculate currentCompliance based on corrected status
-    const currentCompliance = 
-      verificationData.corrected === 1 
-        ? "COMPLIANT" 
-        : finding.compliance;
-    
+    const currentCompliance =
+      verificationData.corrected === 1 ? "COMPLIANT" : finding.compliance;
+
     // Save verification data at finding level
     const updatedFinding = {
       ...finding,
@@ -186,7 +187,10 @@ const FindingCard = ({
               <HStack spacing={2} flexWrap="wrap">
                 {/* Show currentCompliance badge unless verification tab is being edited */}
                 {!isEditingVerification && (
-                  <Badge colorScheme={currentComplianceInfo.color} fontSize="xs">
+                  <Badge
+                    colorScheme={currentComplianceInfo.color}
+                    fontSize="xs"
+                  >
                     {currentComplianceInfo.label}
                   </Badge>
                 )}
@@ -512,9 +516,18 @@ const FindingCard = ({
                           />
                         </Box>
                       ) : (
-                        <Box>
+                        <Center w="full" flexDir="column" minH="xs">
+                          <Text
+                            mb={2}
+                            fontSize="xs"
+                            color="gray.500"
+                            textAlign="center"
+                          >
+                            No Action Plan Set Yet.
+                            <br />
+                            Add one now by clicking the button below.
+                          </Text>
                           <Button
-                            ml="auto"
                             size="sm"
                             leftIcon={<FiPlus />}
                             colorScheme="brandPrimary"
@@ -523,7 +536,7 @@ const FindingCard = ({
                           >
                             Add Action Plan
                           </Button>
-                        </Box>
+                        </Center>
                       )}
                     </TabPanel>
 
@@ -570,7 +583,18 @@ const FindingCard = ({
                           />
                         </Box>
                       ) : (
-                        <Box>
+                        <Center w="full" flexDir="column" minH="xs">
+                          <Text
+                            mb={2}
+                            fontSize="xs"
+                            color="gray.500"
+                            textAlign="center"
+                          >
+                            No Verification Yet.
+                            <br />
+                            Verify this finding now by clicking the button
+                            below.
+                          </Text>
                           <Button
                             size="sm"
                             leftIcon={<FiPlus />}
@@ -580,7 +604,7 @@ const FindingCard = ({
                           >
                             Add Verification
                           </Button>
-                        </Box>
+                        </Center>
                       )}
                     </TabPanel>
                   </TabPanels>
