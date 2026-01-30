@@ -11,11 +11,7 @@ const Layout = ({ children }) => {
   const { pageRef } = useLayout();
   const xsmallMaxContent = useMemo(() => {
     const pathSegments = location.pathname.split("/").filter(Boolean);
-    return (
-      (["audit-schedule"].includes(pathSegments[0]) &&
-        pathSegments.length === 2) ||
-      (["form"].includes(pathSegments[1]) && pathSegments.length === 3)
-    );
+    return ["form"].includes(pathSegments[1]) && pathSegments.length === 3;
   }, [location.pathname]);
   const smallMaxContent = useMemo(() => {
     const pathSegments = location.pathname.split("/").filter(Boolean);

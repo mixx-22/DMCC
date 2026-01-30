@@ -32,6 +32,12 @@ import {
   StepTitle,
   StepSeparator,
   useSteps,
+  Divider,
+  Stack,
+  Editable,
+  EditableTextarea,
+  EditablePreview,
+  useDisclosure,
 } from "@chakra-ui/react";
 import {
   FiArrowLeft,
@@ -41,34 +47,49 @@ import {
   FiTrash2,
   FiChevronRight,
   FiChevronLeft,
+  FiEdit,
 } from "react-icons/fi";
 import { useNavigate, useParams } from "react-router-dom";
-import { toast } from "sonner";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import Swal from "sweetalert2";
 import PageHeader from "../../components/PageHeader";
 import PageFooter from "../../components/PageFooter";
 import { useScheduleProfile } from "../../context/_useContext";
 import { getAuditTypeLabel } from "../../utils/auditHelpers";
+import EditAuditDetailsModal from "./EditAuditDetailsModal";
+import { OrganizationsProvider } from "../../context/OrganizationsContext";
+import Timestamp from "../../components/Timestamp";
+import Organizations from "./Organizations";
 
-const SchedulePage = () => {
+// Inner component that uses organizations context
+const SchedulePageContent = () => {
   const navigate = useNavigate();
   const { id } = useParams();
   const {
     schedule,
     initialScheduleData,
     loading,
-    saving,
     updateSchedule,
     createSchedule,
     deleteSchedule,
   } = useScheduleProfile();
+
   const errorColor = useColorModeValue("error.600", "error.400");
   const summaryCardBg = useColorModeValue("gray.50", "gray.700");
 
   const isNewSchedule = id === "new";
   const [formData, setFormData] = useState(initialScheduleData);
   const [validationErrors, setValidationErrors] = useState({});
+  const titleTextareaRef = useRef(null);
+  const descriptionTextareaRef = useRef(null);
+  const updateTimeoutRef = useRef(null);
+
+  // Modal state for editing audit details
+  const {
+    isOpen: isEditDetailsOpen,
+    onOpen: onEditDetailsOpen,
+    onClose: onEditDetailsClose,
+  } = useDisclosure();
 
   const steps = [
     { title: "Basic Information", fields: ["title", "description"] },
@@ -90,6 +111,8 @@ const SchedulePage = () => {
         ...initialScheduleData,
         ...schedule,
       });
+      // Don't force re-render on every update - only on initial load
+      // Editable components will update naturally via formData changes
     }
   }, [schedule, isNewSchedule, initialScheduleData]);
 
@@ -148,10 +171,6 @@ const SchedulePage = () => {
     try {
       if (isNewSchedule) {
         const result = await createSchedule(formData);
-        toast.success("Schedule Created", {
-          description: `"${formData.title}" has been successfully created`,
-          duration: 3000,
-        });
         if (result?.id || result?._id) {
           navigate(`/audit-schedule/${result.id || result._id}`, {
             replace: true,
@@ -161,17 +180,11 @@ const SchedulePage = () => {
         }
       } else {
         await updateSchedule(id, formData);
-        toast.success("Schedule Updated", {
-          description: `"${formData.title}" has been successfully updated`,
-          duration: 3000,
-        });
-        navigate("/audit-schedules");
+        // Stay on current page - context is already updated
       }
     } catch (error) {
-      toast.error(`Failed to ${isNewSchedule ? `Create` : `Update`} Schedule`, {
-        description: error.message || "An error occurred. Please try again.",
-        duration: 3000,
-      });
+      // Error toast is handled by context
+      console.error("Failed to save schedule:", error);
     }
   };
 
@@ -189,23 +202,100 @@ const SchedulePage = () => {
 
     if (result.isConfirmed) {
       try {
-        await deleteSchedule(id);
-        toast.success("Schedule Deleted", {
-          description: `"${formData.title}" has been deleted`,
-          duration: 3000,
-        });
+        await deleteSchedule(id, formData.title);
         navigate("/audit-schedules");
       } catch (error) {
-        toast.error("Delete Failed", {
-          description: error.message || "Failed to delete schedule",
-          duration: 3000,
-        });
+        // Error toast is handled by context
+        console.error("Failed to delete schedule:", error);
       }
     }
   };
 
   const handleCancel = () => {
     navigate("/audit-schedules");
+  };
+
+  // Helper function to build update payload with only business fields
+  const buildUpdatePayload = (overrides = {}) => {
+    return {
+      title: formData.title,
+      description: formData.description,
+      auditCode: formData.auditCode,
+      auditType: formData.auditType,
+      standard: formData.standard,
+      status: formData.status,
+      ...overrides,
+    };
+  };
+
+  const handleTitleBlur = async (newTitle) => {
+    const trimmedTitle = newTitle?.trim();
+
+    if (!trimmedTitle) {
+      // Title cannot be empty - will revert via schedule key
+      return;
+    }
+
+    if (trimmedTitle === formData?.title) {
+      return;
+    }
+
+    // Cancel any pending updates
+    if (updateTimeoutRef.current) {
+      clearTimeout(updateTimeoutRef.current);
+    }
+
+    try {
+      const updatePayload = buildUpdatePayload({ title: trimmedTitle });
+      const updatedSchedule = await updateSchedule(id, updatePayload);
+      setFormData((prev) => ({ ...prev, ...updatedSchedule }));
+    } catch (error) {
+      // Error toast is handled by context
+      console.error("Failed to update title:", error);
+      // Editable will revert via schedule key
+    }
+  };
+
+  const handleDescriptionBlur = async (newDescription) => {
+    const trimmedDescription = newDescription?.trim() || "";
+
+    if (trimmedDescription === (formData?.description?.trim() || "")) {
+      return;
+    }
+
+    // Cancel any pending updates
+    if (updateTimeoutRef.current) {
+      clearTimeout(updateTimeoutRef.current);
+    }
+
+    try {
+      const updatePayload = buildUpdatePayload({
+        description: trimmedDescription,
+      });
+      const updatedSchedule = await updateSchedule(id, updatePayload);
+      setFormData((prev) => ({ ...prev, ...updatedSchedule }));
+    } catch (error) {
+      // Error toast is handled by context
+      console.error("Failed to update description:", error);
+      // Editable will revert via schedule key
+    }
+  };
+
+  const handleSaveAuditDetails = async (detailsData) => {
+    try {
+      const updatePayload = buildUpdatePayload({
+        auditCode: detailsData.auditCode,
+        auditType: detailsData.auditType,
+        standard: detailsData.standard,
+      });
+      const updatedSchedule = await updateSchedule(id, updatePayload);
+      setFormData((prev) => ({ ...prev, ...updatedSchedule }));
+      onEditDetailsClose();
+    } catch (error) {
+      // Error toast is handled by context
+      console.error("Failed to update audit details:", error);
+      // Don't close modal on error so user can retry
+    }
   };
 
   if (loading) {
@@ -223,44 +313,24 @@ const SchedulePage = () => {
     );
   }
 
-  return (
-    <Box>
-      <PageHeader>
-        <Flex justify="space-between" align="center" w="full">
-          <HStack>
-            <IconButton
-              icon={<FiArrowLeft />}
-              onClick={handleCancel}
-              aria-label="Back to schedules"
-              variant="ghost"
-            />
-            <Heading variant="pageTitle">
-              {isNewSchedule ? "Create New Schedule" : formData.title}
-            </Heading>
-          </HStack>
-          {!isNewSchedule && (
-            <Menu>
-              <MenuButton
-                as={IconButton}
-                icon={<FiMoreVertical />}
+  // Render multi-step form for new schedules
+  if (isNewSchedule) {
+    return (
+      <Box>
+        <PageHeader>
+          <Flex justify="space-between" align="center" w="full">
+            <HStack>
+              <IconButton
+                icon={<FiArrowLeft />}
+                onClick={handleCancel}
+                aria-label="Back to schedules"
                 variant="ghost"
-                aria-label="More options"
               />
-              <MenuList>
-                <MenuItem
-                  icon={<FiTrash2 />}
-                  onClick={handleDelete}
-                  color={errorColor}
-                >
-                  Delete Schedule
-                </MenuItem>
-              </MenuList>
-            </Menu>
-          )}
-        </Flex>
-      </PageHeader>
+              <Heading variant="pageTitle">Create New Schedule</Heading>
+            </HStack>
+          </Flex>
+        </PageHeader>
 
-      {isNewSchedule && (
         <Stepper index={activeStep} colorScheme="brandPrimary" mb={6}>
           {steps.map((step, index) => (
             <Step key={index}>
@@ -280,213 +350,465 @@ const SchedulePage = () => {
             </Step>
           ))}
         </Stepper>
-      )}
 
-      <Card>
-        <CardBody>
-          <VStack spacing={6} align="stretch">
-            {/* Step 1: Basic Information */}
-            {activeStep === 0 && (
-              <>
-                <Heading size="md" mb={2}>
-                  Basic Information
-                </Heading>
-                <FormControl isRequired isInvalid={!!validationErrors.title}>
-                  <FormLabel>Title</FormLabel>
-                  <Input
-                    value={formData.title}
-                    onChange={(e) => handleFieldChange("title", e.target.value)}
-                    placeholder="e.g., Annual Financial Audit 2024"
-                  />
-                  <FormErrorMessage>{validationErrors.title}</FormErrorMessage>
-                </FormControl>
+        <Card>
+          <CardBody>
+            <VStack spacing={6} align="stretch">
+              {/* Step 1: Basic Information */}
+              {activeStep === 0 && (
+                <>
+                  <Heading size="md" mb={2}>
+                    Basic Information
+                  </Heading>
+                  <FormControl isRequired isInvalid={!!validationErrors.title}>
+                    <FormLabel>Title</FormLabel>
+                    <Input
+                      value={formData.title}
+                      onChange={(e) =>
+                        handleFieldChange("title", e.target.value)
+                      }
+                      placeholder="e.g., Annual Financial Audit 2024"
+                    />
+                    <FormErrorMessage>
+                      {validationErrors.title}
+                    </FormErrorMessage>
+                  </FormControl>
 
-                <FormControl
-                  isRequired
-                  isInvalid={!!validationErrors.description}
-                >
-                  <FormLabel>Description</FormLabel>
-                  <Textarea
-                    value={formData.description}
-                    onChange={(e) =>
-                      handleFieldChange("description", e.target.value)
-                    }
-                    placeholder="Describe the purpose and scope of this audit"
-                    rows={5}
-                  />
-                  <FormErrorMessage>
-                    {validationErrors.description}
-                  </FormErrorMessage>
-                </FormControl>
-              </>
-            )}
-
-            {/* Step 2: Audit Details */}
-            {activeStep === 1 && (
-              <>
-                <Heading size="md" mb={2}>
-                  Audit Details
-                </Heading>
-                <FormControl
-                  isRequired
-                  isInvalid={!!validationErrors.auditCode}
-                >
-                  <FormLabel>Audit Code</FormLabel>
-                  <Input
-                    value={formData.auditCode}
-                    onChange={(e) =>
-                      handleFieldChange("auditCode", e.target.value)
-                    }
-                    placeholder="e.g., AUD-2024-001"
-                  />
-                  <FormHelperText>
-                    Unique identifier for this audit schedule
-                  </FormHelperText>
-                  <FormErrorMessage>
-                    {validationErrors.auditCode}
-                  </FormErrorMessage>
-                </FormControl>
-
-                <FormControl
-                  isRequired
-                  isInvalid={!!validationErrors.auditType}
-                >
-                  <FormLabel>Audit Type</FormLabel>
-                  <Select
-                    value={formData.auditType}
-                    onChange={(e) =>
-                      handleFieldChange("auditType", e.target.value)
-                    }
-                    placeholder="Select audit type"
+                  <FormControl
+                    isRequired
+                    isInvalid={!!validationErrors.description}
                   >
-                    <option value="internal">Internal Audit</option>
-                    <option value="external">External Audit</option>
-                    <option value="compliance">Compliance Audit</option>
-                    <option value="financial">Financial Audit</option>
-                    <option value="operational">Operational Audit</option>
-                  </Select>
-                  <FormErrorMessage>
-                    {validationErrors.auditType}
-                  </FormErrorMessage>
-                </FormControl>
+                    <FormLabel>Description</FormLabel>
+                    <Textarea
+                      value={formData.description}
+                      onChange={(e) =>
+                        handleFieldChange("description", e.target.value)
+                      }
+                      placeholder="Describe the purpose and scope of this audit"
+                      rows={5}
+                    />
+                    <FormErrorMessage>
+                      {validationErrors.description}
+                    </FormErrorMessage>
+                  </FormControl>
+                </>
+              )}
 
-                <FormControl>
-                  <FormLabel>Standard</FormLabel>
-                  <Input
-                    value={formData.standard}
-                    onChange={(e) =>
-                      handleFieldChange("standard", e.target.value)
-                    }
-                    placeholder="e.g., ISO 9001, SOX, ISO 27001"
-                  />
-                  <FormHelperText>
-                    The audit standard or framework being followed (optional)
-                  </FormHelperText>
-                </FormControl>
-              </>
-            )}
+              {/* Step 2: Audit Details */}
+              {activeStep === 1 && (
+                <>
+                  <Heading size="md" mb={2}>
+                    Audit Details
+                  </Heading>
+                  <FormControl
+                    isRequired
+                    isInvalid={!!validationErrors.auditCode}
+                  >
+                    <FormLabel>Audit Code</FormLabel>
+                    <Input
+                      value={formData.auditCode}
+                      onChange={(e) =>
+                        handleFieldChange("auditCode", e.target.value)
+                      }
+                      placeholder="e.g., AUD-2024-001"
+                    />
+                    <FormHelperText>
+                      Unique identifier for this audit schedule
+                    </FormHelperText>
+                    <FormErrorMessage>
+                      {validationErrors.auditCode}
+                    </FormErrorMessage>
+                  </FormControl>
 
-            {/* Step 3: Review */}
-            {activeStep === 2 && (
-              <>
-                <Heading size="md" mb={2}>
-                  Review
-                </Heading>
+                  <FormControl
+                    isRequired
+                    isInvalid={!!validationErrors.auditType}
+                  >
+                    <FormLabel>Audit Type</FormLabel>
+                    <Select
+                      value={formData.auditType}
+                      onChange={(e) =>
+                        handleFieldChange("auditType", e.target.value)
+                      }
+                      placeholder="Select audit type"
+                    >
+                      <option value="internal">Internal Audit</option>
+                      <option value="external">External Audit</option>
+                      <option value="compliance">Compliance Audit</option>
+                      <option value="financial">Financial Audit</option>
+                      <option value="operational">Operational Audit</option>
+                    </Select>
+                    <FormErrorMessage>
+                      {validationErrors.auditType}
+                    </FormErrorMessage>
+                  </FormControl>
 
-                {/* Summary Card */}
-                <Box
-                  p={4}
-                  borderWidth="1px"
-                  borderRadius="md"
-                  bg={summaryCardBg}
+                  <FormControl>
+                    <FormLabel>Standard</FormLabel>
+                    <Input
+                      value={formData.standard}
+                      onChange={(e) =>
+                        handleFieldChange("standard", e.target.value)
+                      }
+                      placeholder="e.g., ISO 9001, SOX, ISO 27001"
+                    />
+                    <FormHelperText>
+                      The audit standard or framework being followed (optional)
+                    </FormHelperText>
+                  </FormControl>
+                </>
+              )}
+
+              {/* Step 3: Review */}
+              {activeStep === 2 && (
+                <>
+                  <Heading size="md" mb={2}>
+                    Review
+                  </Heading>
+
+                  {/* Summary Card */}
+                  <Box
+                    p={4}
+                    borderWidth="1px"
+                    borderRadius="md"
+                    bg={summaryCardBg}
+                  >
+                    <Text fontWeight="bold" mb={3}>
+                      Review Your Schedule
+                    </Text>
+                    <VStack align="stretch" spacing={2} fontSize="sm">
+                      <HStack>
+                        <Text fontWeight="semibold" minW="120px">
+                          Title:
+                        </Text>
+                        <Text>{formData.title || "-"}</Text>
+                      </HStack>
+                      <HStack>
+                        <Text fontWeight="semibold" minW="120px">
+                          Audit Code:
+                        </Text>
+                        <Text>{formData.auditCode || "-"}</Text>
+                      </HStack>
+                      <HStack>
+                        <Text fontWeight="semibold" minW="120px">
+                          Type:
+                        </Text>
+                        <Text>
+                          {formData.auditType
+                            ? getAuditTypeLabel(formData.auditType)
+                            : "-"}
+                        </Text>
+                      </HStack>
+                      <HStack>
+                        <Text fontWeight="semibold" minW="120px">
+                          Standard:
+                        </Text>
+                        <Text>{formData.standard || "-"}</Text>
+                      </HStack>
+                      <HStack>
+                        <Text fontWeight="semibold" minW="120px">
+                          Status:
+                        </Text>
+                        {formData.status === 1 ? (
+                          <Badge colorScheme="green">Closed</Badge>
+                        ) : (
+                          <Badge colorScheme="warning">Ongoing</Badge>
+                        )}
+                      </HStack>
+                    </VStack>
+                  </Box>
+                </>
+              )}
+            </VStack>
+          </CardBody>
+        </Card>
+
+        <PageFooter>
+          <Flex justify="space-between" w="full">
+            <Button variant="ghost" onClick={handleCancel} leftIcon={<FiX />}>
+              Cancel
+            </Button>
+            <HStack>
+              {activeStep > 0 && (
+                <Button
+                  variant="outline"
+                  onClick={handlePrevious}
+                  leftIcon={<FiChevronLeft />}
                 >
-                  <Text fontWeight="bold" mb={3}>
-                    Review Your Schedule
-                  </Text>
-                  <VStack align="stretch" spacing={2} fontSize="sm">
-                    <HStack>
-                      <Text fontWeight="semibold" minW="120px">
-                        Title:
-                      </Text>
-                      <Text>{formData.title || "-"}</Text>
-                    </HStack>
-                    <HStack>
-                      <Text fontWeight="semibold" minW="120px">
-                        Audit Code:
-                      </Text>
-                      <Text>{formData.auditCode || "-"}</Text>
-                    </HStack>
-                    <HStack>
-                      <Text fontWeight="semibold" minW="120px">
-                        Type:
-                      </Text>
-                      <Text>
-                        {formData.auditType
-                          ? getAuditTypeLabel(formData.auditType)
-                          : "-"}
-                      </Text>
-                    </HStack>
-                    <HStack>
-                      <Text fontWeight="semibold" minW="120px">
-                        Standard:
-                      </Text>
-                      <Text>{formData.standard || "-"}</Text>
-                    </HStack>
-                    <HStack>
-                      <Text fontWeight="semibold" minW="120px">
-                        Status:
-                      </Text>
-                      {formData.status === 1 ? (
-                        <Badge colorScheme="green">Closed</Badge>
-                      ) : (
-                        <Badge colorScheme="blue">Ongoing</Badge>
-                      )}
-                    </HStack>
-                  </VStack>
-                </Box>
-              </>
-            )}
-          </VStack>
-        </CardBody>
-      </Card>
+                  Previous
+                </Button>
+              )}
+              {activeStep < steps.length - 1 ? (
+                <Button
+                  colorScheme="brandPrimary"
+                  onClick={handleNext}
+                  rightIcon={<FiChevronRight />}
+                >
+                  Next
+                </Button>
+              ) : (
+                <Button
+                  colorScheme="brandPrimary"
+                  onClick={handleSubmit}
+                  isLoading={loading}
+                  leftIcon={<FiSave />}
+                >
+                  Create Audit Schedule
+                </Button>
+              )}
+            </HStack>
+          </Flex>
+        </PageFooter>
+      </Box>
+    );
+  }
 
-      <PageFooter>
-        <Flex justify="space-between" w="full">
-          <Button variant="ghost" onClick={handleCancel} leftIcon={<FiX />}>
-            Cancel
-          </Button>
+  // Render folder-like layout for existing schedules
+  return (
+    <>
+      <PageHeader>
+        <Flex justify="space-between" align="center" w="full">
           <HStack>
-            {isNewSchedule && activeStep > 0 && (
-              <Button
-                variant="outline"
-                onClick={handlePrevious}
-                leftIcon={<FiChevronLeft />}
-              >
-                Previous
-              </Button>
-            )}
-            {isNewSchedule && activeStep < steps.length - 1 ? (
-              <Button
-                colorScheme="brandPrimary"
-                onClick={handleNext}
-                rightIcon={<FiChevronRight />}
-              >
-                Next
-              </Button>
-            ) : (
-              <Button
-                colorScheme="brandPrimary"
-                onClick={handleSubmit}
-                isLoading={saving}
-                leftIcon={<FiSave />}
-              >
-                {isNewSchedule ? "Create Audit Schedule" : "Save Changes"}
-              </Button>
-            )}
+            <IconButton
+              icon={<FiArrowLeft />}
+              onClick={handleCancel}
+              aria-label="Back to schedules"
+              variant="ghost"
+            />
+            <Heading variant="pageTitle">{formData.title}</Heading>
           </HStack>
         </Flex>
+      </PageHeader>
+
+      <Box flex="1">
+        <Flex
+          gap={4}
+          maxW="container.xl"
+          flexDir={{ base: "column", lg: "row" }}
+        >
+          {/* Left Column - Main Audit Information */}
+          <Stack spacing={4} w="full" maxW={{ base: "unset", lg: "xs" }}>
+            {/* Main Audit Info Card */}
+            <Card>
+              <CardBody>
+                <VStack align="stretch" spacing={4}>
+                  <Editable
+                    key={`title-${schedule?.id || schedule?._id}`}
+                    defaultValue={schedule?.title || "Untitled"}
+                    onSubmit={handleTitleBlur}
+                    fontSize="2xl"
+                    fontWeight="bold"
+                    w="full"
+                    isPreviewFocusable={true}
+                    submitOnBlur={true}
+                    selectAllOnFocus={false}
+                  >
+                    <EditablePreview
+                      w="full"
+                      borderRadius="md"
+                      _hover={{
+                        background: "gray.100",
+                        cursor: "pointer",
+                      }}
+                    />
+                    <EditableTextarea
+                      ref={titleTextareaRef}
+                      py={2}
+                      px={2}
+                      resize="vertical"
+                      minH="auto"
+                      rows={1}
+                      onFocus={(e) => {
+                        // Auto-resize on focus
+                        e.target.style.height = "auto";
+                        e.target.style.height = `${e.target.scrollHeight}px`;
+                      }}
+                      onInput={(e) => {
+                        // Continue resizing as user types
+                        e.target.style.height = "auto";
+                        e.target.style.height = `${e.target.scrollHeight}px`;
+                      }}
+                    />
+                  </Editable>
+
+                  <HStack mt={-4}>
+                    {formData.status === 1 ? (
+                      <Badge colorScheme="green">Closed</Badge>
+                    ) : (
+                      <Badge colorScheme="warning">Ongoing</Badge>
+                    )}
+                  </HStack>
+
+                  <Divider />
+
+                  {/* Editable Description */}
+                  <Editable
+                    w="full"
+                    key={`description-${schedule?.id || schedule?._id}`}
+                    defaultValue={schedule?.description || ""}
+                    onSubmit={handleDescriptionBlur}
+                    placeholder="Add a description..."
+                    isPreviewFocusable={true}
+                    submitOnBlur={true}
+                    selectAllOnFocus={false}
+                  >
+                    <EditablePreview
+                      py={2}
+                      w="full"
+                      borderRadius="md"
+                      color={schedule?.description ? "gray.700" : "gray.400"}
+                      _hover={{
+                        background: "gray.100",
+                        cursor: "pointer",
+                      }}
+                    />
+                    <EditableTextarea
+                      ref={descriptionTextareaRef}
+                      py={2}
+                      px={2}
+                      minH="60px"
+                      resize="vertical"
+                      onFocus={(e) => {
+                        // Auto-resize on focus
+                        e.target.style.height = "auto";
+                        e.target.style.height = `${e.target.scrollHeight}px`;
+                      }}
+                      onInput={(e) => {
+                        // Continue resizing as user types
+                        e.target.style.height = "auto";
+                        e.target.style.height = `${e.target.scrollHeight}px`;
+                      }}
+                    />
+                  </Editable>
+
+                  <Divider />
+
+                  {/* Timestamps */}
+                  <HStack>
+                    {formData?.createdAt && (
+                      <Box flex={1}>
+                        <Text fontSize="sm" color="gray.600">
+                          Created At
+                        </Text>
+                        <Text fontSize="sm" mt={2}>
+                          <Timestamp date={formData.createdAt} />
+                        </Text>
+                      </Box>
+                    )}
+
+                    {formData?.updatedAt && (
+                      <Box flex={1}>
+                        <Text fontSize="sm" color="gray.600">
+                          Last Modified
+                        </Text>
+                        <Text fontSize="sm" mt={2}>
+                          <Timestamp date={formData.updatedAt} />
+                        </Text>
+                      </Box>
+                    )}
+                  </HStack>
+                </VStack>
+              </CardBody>
+            </Card>
+
+            {/* Audit Details Card */}
+            <Card>
+              <CardBody>
+                <Flex justify="space-between" align="center" mb={4}>
+                  <Text fontWeight="semibold">Audit Details</Text>
+                  <Button
+                    size="xs"
+                    variant="ghost"
+                    colorScheme="brandPrimary"
+                    leftIcon={<FiEdit />}
+                    onClick={onEditDetailsOpen}
+                  >
+                    Edit
+                  </Button>
+                </Flex>
+                <VStack align="stretch" spacing={3}>
+                  <Box>
+                    <Text fontSize="sm" color="gray.600">
+                      Audit Code
+                    </Text>
+                    <Text fontSize="sm" mt={1} fontWeight="medium">
+                      {formData.auditCode || "-"}
+                    </Text>
+                  </Box>
+                  <Box>
+                    <Text fontSize="sm" color="gray.600">
+                      Type
+                    </Text>
+                    <Text fontSize="sm" mt={1} fontWeight="medium">
+                      {formData.auditType
+                        ? getAuditTypeLabel(formData.auditType)
+                        : "-"}
+                    </Text>
+                  </Box>
+                  <Box>
+                    <Text fontSize="sm" color="gray.600">
+                      Standard
+                    </Text>
+                    <Text fontSize="sm" mt={1} fontWeight="medium">
+                      {formData.standard || "-"}
+                    </Text>
+                  </Box>
+                </VStack>
+              </CardBody>
+            </Card>
+          </Stack>
+
+          {/* Right Column - Organizations */}
+          <Stack spacing={4} flex={1}>
+            <Organizations schedule={schedule ?? {}} {...{ setFormData }} />
+          </Stack>
+        </Flex>
+      </Box>
+
+      {/* PageFooter with More Options */}
+      <PageFooter>
+        <HStack spacing={3} w="full">
+          <Menu>
+            <MenuButton
+              as={Button}
+              leftIcon={<FiMoreVertical />}
+              variant="ghost"
+            >
+              More Options
+            </MenuButton>
+            <MenuList>
+              <MenuItem
+                icon={<FiTrash2 />}
+                onClick={handleDelete}
+                color={errorColor}
+              >
+                Delete Schedule
+              </MenuItem>
+            </MenuList>
+          </Menu>
+        </HStack>
       </PageFooter>
-    </Box>
+
+      {/* Edit Audit Details Modal */}
+      <EditAuditDetailsModal
+        isOpen={isEditDetailsOpen}
+        onClose={onEditDetailsClose}
+        auditData={formData}
+        onSave={handleSaveAuditDetails}
+        isSaving={loading}
+      />
+    </>
+  );
+};
+
+// Wrapper component with OrganizationsProvider
+const SchedulePage = () => {
+  const { id } = useParams();
+
+  return (
+    <OrganizationsProvider scheduleId={id}>
+      <SchedulePageContent />
+    </OrganizationsProvider>
   );
 };
 

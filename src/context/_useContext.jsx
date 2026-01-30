@@ -15,6 +15,7 @@ import {
   FileTypesContext,
   FileTypeContext,
   PermissionContext,
+  OrganizationsContext,
 } from "./_contexts";
 
 export const useApp = () => {
@@ -133,3 +134,12 @@ export const useFileType = () => {
   }
   return context;
 };
+
+export const useOrganizations = () => {
+  const context = useContext(OrganizationsContext);
+  if (!context) {
+    throw new Error("useOrganizations must be used within OrganizationsProvider");
+  }
+  return context;
+};
+

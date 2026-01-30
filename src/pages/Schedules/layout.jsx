@@ -86,7 +86,7 @@ const SchedulesList = () => {
       );
     }
     return (
-      <Badge colorScheme="blue" fontSize="xs">
+      <Badge colorScheme="warning" fontSize="xs">
         Ongoing
       </Badge>
     );
@@ -185,7 +185,6 @@ const SchedulesList = () => {
               ) : (
                 schedules.map((schedule, scheduleIndex) => {
                   const scheduleId = schedule._id || schedule.id;
-                  console.log({ schedule });
                   const auditDoc = {
                     title: schedule?.title,
                     type: "auditSchedule",
