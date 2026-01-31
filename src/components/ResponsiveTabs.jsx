@@ -40,6 +40,7 @@ const ResponsiveTabs = ({ children, index, onChange, ...tabsProps }) => {
   const tabListRef = useRef(null);
   const [tabLabels, setTabLabels] = useState([]);
   const [shouldCollapse, setShouldCollapse] = useState(false);
+  const [tabListElement, setTabListElement] = useState(null);
   
   // Determine if we should use mobile layout based on breakpoint
   // ssr: false prevents hydration mismatches between server and client
@@ -76,14 +77,14 @@ const ResponsiveTabs = ({ children, index, onChange, ...tabsProps }) => {
         return;
       }
 
-      if (!tabListRef.current) {
+      // On desktop, default to not collapsed
+      if (!tabListElement) {
         setShouldCollapse(false);
         return;
       }
 
-      const tabList = tabListRef.current;
-      const containerWidth = tabList.offsetWidth;
-      const tabsArray = Array.from(tabList.children);
+      const containerWidth = tabListElement.offsetWidth;
+      const tabsArray = Array.from(tabListElement.children);
       
       if (tabsArray.length === 0) {
         setShouldCollapse(false);
@@ -103,15 +104,15 @@ const ResponsiveTabs = ({ children, index, onChange, ...tabsProps }) => {
     const timer = setTimeout(checkOverflow, DOM_READY_DELAY);
     
     const resizeObserver = new ResizeObserver(checkOverflow);
-    if (tabListRef.current) {
-      resizeObserver.observe(tabListRef.current);
+    if (tabListElement) {
+      resizeObserver.observe(tabListElement);
     }
 
     return () => {
       clearTimeout(timer);
       resizeObserver.disconnect();
     };
-  }, [isMobile, tabLabels]);
+  }, [isMobile, tabLabels, tabListElement]);
 
   // Handle tab change
   const handleTabChange = (newIndex) => {
@@ -177,8 +178,13 @@ const ResponsiveTabs = ({ children, index, onChange, ...tabsProps }) => {
             </Box>
           );
         } else {
-          // Desktop: Show as normal tabs with ref
-          return cloneElement(child, { ref: tabListRef });
+          // Desktop: Show as normal tabs with callback ref
+          return cloneElement(child, {
+            ref: (element) => {
+              tabListRef.current = element;
+              setTabListElement(element);
+            }
+          });
         }
       }
       
