@@ -60,6 +60,75 @@ import {
 } from "../../../context/_useContext";
 import apiService from "../../../services/api";
 import Timestamp from "../../../components/Timestamp";
+
+const USE_API = import.meta.env.VITE_USE_API !== "false";
+
+// Mock organizations for development - matching the ones in OrganizationsContext
+const MOCK_ORGANIZATIONS = [
+  {
+    _id: "org-prev-1",
+    auditScheduleId: "schedule-1",
+    teamId: "team-1",
+    team: {
+      _id: "team-1",
+      name: "Engineering Team",
+      description: "Software development team",
+    },
+    status: 1,
+    documents: [],
+    auditors: ["user-1"],
+    visits: [
+      {
+        date: {
+          start: "2023-06-10",
+          end: "2023-06-12",
+        },
+        findings: [
+          {
+            _id: "finding-1",
+            title: "Documentation Gap",
+            details: "Missing technical documentation for the API endpoints",
+            compliance: "MINOR_NC",
+            objectives: [
+              {
+                _id: "obj-1",
+                title: "Documentation Quality",
+                description: "Maintain comprehensive documentation"
+              }
+            ],
+            report: {
+              reportNo: "NC-001",
+              details: "Several API endpoints lack proper documentation",
+              date: "2023-06-11",
+              auditor: ["John Auditor"],
+              auditee: ["Jane Engineer"]
+            },
+            corrected: 2,
+            correctionDate: "2023-07-15",
+            currentCompliance: "COMPLIANT",
+            remarks: "Documentation has been updated and reviewed"
+          },
+          {
+            _id: "finding-2",
+            title: "Code Review Process",
+            details: "Inconsistent code review practices observed",
+            compliance: "OPPORTUNITIES_FOR_IMPROVEMENTS",
+            objectives: [
+              {
+                _id: "obj-2",
+                title: "Code Quality",
+                description: "Maintain high code quality standards"
+              }
+            ],
+            corrected: -1
+          }
+        ]
+      },
+    ],
+  },
+];
+
+import Timestamp from "../../../components/Timestamp";
 import { GridView } from "../../../components/Document/GridView";
 import { formatDateRange } from "../../../utils/helpers";
 import DocumentDrawer from "../../../components/Document/DocumentDrawer";
@@ -178,12 +247,23 @@ const OrganizationCard = ({
 
       try {
         const previousAuditId = schedule.previousAudit._id || schedule.previousAudit.id;
-        const response = await apiService.request(
-          `/organizations?auditScheduleId=${previousAuditId}`,
-          { method: "GET" }
-        );
-
-        const previousOrganizations = response.data || [];
+        
+        let previousOrganizations = [];
+        
+        if (!USE_API) {
+          // Mock mode - filter from mock data
+          await new Promise((resolve) => setTimeout(resolve, 500));
+          previousOrganizations = MOCK_ORGANIZATIONS.filter(
+            (org) => org.auditScheduleId === previousAuditId
+          );
+        } else {
+          // API mode
+          const response = await apiService.request(
+            `/organizations?auditScheduleId=${previousAuditId}`,
+            { method: "GET" }
+          );
+          previousOrganizations = response.data || [];
+        }
         
         // Find the organization in the previous audit that matches this team
         const currentTeamId = organization.teamId || organization.team?._id || organization.team?.id;
