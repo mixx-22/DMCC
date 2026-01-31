@@ -10,8 +10,9 @@ const USE_API = import.meta.env.VITE_USE_API !== "false";
 const MOCK_ORGANIZATIONS = [
   {
     _id: "org-1",
-    auditScheduleId: "schedule-mock-1",
-    team: "team-1",
+    auditScheduleId: "schedule-1",
+    team: { _id: "team-1", name: "Engineering Team" },
+    teamName: "Engineering Team",
     status: 0,
     documents: [],
     auditors: ["user-1", "user-2"],
@@ -21,8 +22,47 @@ const MOCK_ORGANIZATIONS = [
           start: "2024-02-15",
           end: "2024-02-16",
         },
+        compliance: "MINOR_NC",
+        findings: [
+          {
+            _id: "finding-1",
+            title: "Security Configuration Issue",
+            details: "Firewall rules need review",
+            compliance: "MINOR_NC",
+            objectives: [{ _id: "obj-1", title: "Security Objective" }],
+          },
+        ],
       },
     ],
+    verdict: "MINOR_NC", // Now has verdict set
+  },
+  {
+    _id: "org-2",
+    auditScheduleId: "schedule-1",
+    team: { _id: "team-2", name: "Operations Team" },
+    teamName: "Operations Team",
+    status: 0,
+    documents: [],
+    auditors: ["user-1"],
+    visits: [
+      {
+        date: {
+          start: "2024-03-01",
+          end: "2024-03-02",
+        },
+        compliance: "COMPLIANT",
+        findings: [
+          {
+            _id: "finding-2",
+            title: "Documentation Review",
+            details: "All documentation is up to date",
+            compliance: "COMPLIANT",
+            objectives: [{ _id: "obj-2", title: "Documentation Objective" }],
+          },
+        ],
+      },
+    ],
+    verdict: "COMPLIANT", // This organization has a verdict set
   },
 ];
 

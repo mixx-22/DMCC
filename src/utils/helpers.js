@@ -113,3 +113,45 @@ export function calculateOrganizationVerdict(organization) {
 
   return highestSeverity;
 }
+
+/**
+ * Validate if an audit schedule can be closed
+ * Returns an object with { canClose: boolean, issues: Array<string> }
+ */
+export function validateAuditScheduleClosure(organizations = []) {
+  const issues = [];
+
+  // Check if there are any organizations
+  if (organizations.length === 0) {
+    issues.push("No organizations have been added to this audit schedule");
+    return { canClose: false, issues };
+  }
+
+  // Check each organization
+  organizations.forEach((org, index) => {
+    const orgIdentifier = org.team?.name || `Organization ${index + 1}`;
+
+    // Check if organization has a verdict
+    if (!org.verdict) {
+      issues.push(`${orgIdentifier}: Missing final verdict`);
+    }
+
+    // Check if all findings in all visits have compliance
+    const { visits = [] } = org;
+    visits.forEach((visit, visitIndex) => {
+      const { findings = [] } = visit;
+      findings.forEach((finding, findingIndex) => {
+        if (!finding.compliance) {
+          issues.push(
+            `${orgIdentifier}, Visit ${visitIndex + 1}, Finding ${findingIndex + 1}: Missing compliance type`
+          );
+        }
+      });
+    });
+  });
+
+  return {
+    canClose: issues.length === 0,
+    issues,
+  };
+}
