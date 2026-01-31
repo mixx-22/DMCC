@@ -346,12 +346,8 @@ const UserAsyncSelect = ({
             colorScheme="brandPrimary"
             useBasicStyles
             menuPortalTarget={document.body}
-            chakraStyles={{
+            styles={{
               menuPortal: (provided) => ({
-                ...provided,
-                zIndex: 1500, // Chakra popover z-index level
-              }),
-              menu: (provided) => ({
                 ...provided,
                 zIndex: 1500,
               }),

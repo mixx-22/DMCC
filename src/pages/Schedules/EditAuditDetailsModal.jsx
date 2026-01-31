@@ -17,6 +17,7 @@ import {
 } from "@chakra-ui/react";
 import { useState, useEffect } from "react";
 import { FiSave } from "react-icons/fi";
+import PreviousAuditAsyncSelect from "../../components/PreviousAuditAsyncSelect";
 
 const EditAuditDetailsModal = ({
   isOpen,
@@ -24,11 +25,13 @@ const EditAuditDetailsModal = ({
   auditData,
   onSave,
   isSaving,
+  currentScheduleId = null,
 }) => {
   const [formData, setFormData] = useState({
     auditCode: "",
     auditType: "",
     standard: "",
+    previousAudit: null,
   });
   const [validationErrors, setValidationErrors] = useState({});
 
@@ -38,6 +41,7 @@ const EditAuditDetailsModal = ({
         auditCode: auditData.auditCode || "",
         auditType: auditData.auditType || "",
         standard: auditData.standard || "",
+        previousAudit: auditData.previousAudit || null,
       });
       setValidationErrors({});
     }
@@ -85,6 +89,7 @@ const EditAuditDetailsModal = ({
         auditCode: auditData.auditCode || "",
         auditType: auditData.auditType || "",
         standard: auditData.standard || "",
+        previousAudit: auditData.previousAudit || null,
       });
     }
     onClose();
@@ -138,6 +143,13 @@ const EditAuditDetailsModal = ({
                 The audit standard or framework being followed (optional)
               </FormHelperText>
             </FormControl>
+
+            <PreviousAuditAsyncSelect
+              value={formData.previousAudit}
+              onChange={(audit) => handleFieldChange("previousAudit", audit)}
+              currentScheduleId={currentScheduleId}
+              label="Previous Audit"
+            />
           </VStack>
         </ModalBody>
         <ModalFooter>
