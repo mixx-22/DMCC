@@ -234,9 +234,9 @@ const OrganizationCard = ({
         !isExpanded ||
         activeTabIndex !== 5 ||
         !schedule?.previousAudit?._id ||
-        !organization?.teamId &&
+        (!organization?.teamId &&
         !organization?.team?._id &&
-        !organization?.team?.id
+        !organization?.team?.id)
       ) {
         return;
       }
