@@ -130,8 +130,8 @@ const TeamProfileView = ({ team, isValidDate, onManageObjectives }) => {
           <TabList>
             <Tab>Info</Tab>
             <Tab>Objectives</Tab>
-            <Tab>Documents</Tab>
             <Tab>Quality Documents</Tab>
+            <Tab>Other Documents</Tab>
           </TabList>
 
           <TabPanels>
@@ -415,6 +415,10 @@ const TeamProfileView = ({ team, isValidDate, onManageObjectives }) => {
               </Card>
             </TabPanel>
 
+            <TabPanel px={0}>
+              <TeamQualityDocuments teamId={team._id || team.id} />
+            </TabPanel>
+
             <TabPanel px={0} pt={0}>
               {team.folderId && (
                 <HStack px={0} py={4} alignItems="center">
@@ -484,10 +488,6 @@ const TeamProfileView = ({ team, isValidDate, onManageObjectives }) => {
                   </VStack>
                 </Center>
               )}
-            </TabPanel>
-
-            <TabPanel>
-              <TeamQualityDocuments teamId={team._id || team.id} />
             </TabPanel>
           </TabPanels>
         </Tabs>

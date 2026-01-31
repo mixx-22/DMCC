@@ -6,8 +6,6 @@ import {
   Button,
   useDisclosure,
   Center,
-  Card,
-  CardBody,
   VStack,
 } from "@chakra-ui/react";
 import { FiPlus } from "react-icons/fi";
@@ -94,67 +92,66 @@ const TeamQualityDocuments = ({ teamId }) => {
   };
 
   return (
-    <Card w="full">
-      <CardBody>
-        <VStack align="stretch" spacing={4}>
-          <Flex justify="flex-end">
-            <Button
-              leftIcon={<FiPlus />}
-              colorScheme="brandPrimary"
-              onClick={onQualityDocumentModalOpen}
-              size="sm"
-            >
-              New Quality Document
-            </Button>
-          </Flex>
+    <>
+      <VStack align="stretch" spacing={4}>
+        <Flex justify="flex-end">
+          <Button
+            variant="outline"
+            leftIcon={<FiPlus />}
+            colorScheme="brandPrimary"
+            onClick={onQualityDocumentModalOpen}
+            size="sm"
+          >
+            New Quality Document
+          </Button>
+        </Flex>
 
-          <Stack spacing={{ base: 4, lg: 6 }}>
-            {loading ? (
-              <DocumentsListSkeleton rows={ITEMS_PER_PAGE} />
-            ) : documents.length === 0 ? (
-              <Center py={12}>
-                <Text color="gray.500" fontSize="lg">
-                  No Quality Documents
-                </Text>
-              </Center>
-            ) : (
-              <>
-                <ListView
-                  documents={documents}
-                  selectedDocument={selectedDocument}
-                  onDocumentClick={handleDocumentClick}
-                  sourcePage={{
-                    path: `/teams/${teamId}`,
-                    label: "Team Quality Documents",
-                  }}
+        <Stack spacing={{ base: 4, lg: 6 }}>
+          {loading ? (
+            <DocumentsListSkeleton rows={ITEMS_PER_PAGE} />
+          ) : documents.length === 0 ? (
+            <Center py={12}>
+              <Text color="gray.500" fontSize="lg">
+                No Quality Documents
+              </Text>
+            </Center>
+          ) : (
+            <>
+              <ListView
+                documents={documents}
+                selectedDocument={selectedDocument}
+                onDocumentClick={handleDocumentClick}
+                sourcePage={{
+                  path: `/teams/${teamId}`,
+                  label: "Team Quality Documents",
+                }}
+              />
+              {totalCount > ITEMS_PER_PAGE && (
+                <Pagination
+                  currentPage={currentPage}
+                  totalItems={totalCount}
+                  itemsPerPage={ITEMS_PER_PAGE}
+                  onPageChange={handlePageChange}
                 />
-                {totalCount > ITEMS_PER_PAGE && (
-                  <Pagination
-                    currentPage={currentPage}
-                    totalItems={totalCount}
-                    itemsPerPage={ITEMS_PER_PAGE}
-                    onPageChange={handlePageChange}
-                  />
-                )}
-              </>
-            )}
-          </Stack>
+              )}
+            </>
+          )}
+        </Stack>
 
-          <QualityDocumentUploadModal
-            isOpen={isQualityDocumentModalOpen}
-            onClose={handleQualityDocumentModalClose}
-            parentId={null}
-            path={`/`} // Document tree path (root level)
-            teamId={teamId}
-          />
-          <DocumentDrawer
-            document={selectedDocument}
-            isOpen={!!selectedDocument}
-            onClose={() => setSelectedDocument(null)}
-          />
-        </VStack>
-      </CardBody>
-    </Card>
+        <QualityDocumentUploadModal
+          isOpen={isQualityDocumentModalOpen}
+          onClose={handleQualityDocumentModalClose}
+          parentId={null}
+          path={`/`} // Document tree path (root level)
+          teamId={teamId}
+        />
+        <DocumentDrawer
+          document={selectedDocument}
+          isOpen={!!selectedDocument}
+          onClose={() => setSelectedDocument(null)}
+        />
+      </VStack>
+    </>
   );
 };
 
