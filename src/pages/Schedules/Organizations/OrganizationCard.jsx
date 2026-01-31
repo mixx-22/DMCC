@@ -58,6 +58,7 @@ import {
   useDocuments,
   useLayout,
 } from "../../../context/_useContext";
+import apiService from "../../../services/api";
 import Timestamp from "../../../components/Timestamp";
 import { GridView } from "../../../components/Document/GridView";
 import { formatDateRange } from "../../../utils/helpers";
@@ -78,6 +79,7 @@ const OrganizationCard = ({
   onEdit = () => {},
   isExpanded = false,
   onToggleExpanded = () => {},
+  schedule = {},
 }) => {
   const { deleteOrganization, updateOrganization, dispatch } =
     useOrganizations();
@@ -132,6 +134,11 @@ const OrganizationCard = ({
   // State to track verdict modal
   const [isVerdictModalOpen, setIsVerdictModalOpen] = useState(false);
 
+  // State for previous audit findings
+  const [previousAuditFindings, setPreviousAuditFindings] = useState([]);
+  const [loadingPreviousFindings, setLoadingPreviousFindings] = useState(false);
+  const [previousFindingsError, setPreviousFindingsError] = useState(null);
+
   // Calculate the organization verdict
   const calculatedVerdict = calculateOrganizationVerdict(organization);
 
@@ -145,6 +152,71 @@ const OrganizationCard = ({
     isExpanded,
     activeTabIndex,
     fetchDocuments,
+  ]);
+
+  // Fetch previous audit findings when Previous Findings tab is opened (index 5)
+  useEffect(() => {
+    const fetchPreviousAuditFindings = async () => {
+      // Only fetch if:
+      // 1. Organization is expanded
+      // 2. User is on the Previous Findings tab (index 5)
+      // 3. Schedule has a previousAudit
+      // 4. Organization has a team ID to match
+      if (
+        !isExpanded ||
+        activeTabIndex !== 5 ||
+        !schedule?.previousAudit?._id ||
+        !organization?.teamId &&
+        !organization?.team?._id &&
+        !organization?.team?.id
+      ) {
+        return;
+      }
+
+      setLoadingPreviousFindings(true);
+      setPreviousFindingsError(null);
+
+      try {
+        const previousAuditId = schedule.previousAudit._id || schedule.previousAudit.id;
+        const response = await apiService.request(
+          `/organizations?auditScheduleId=${previousAuditId}`,
+          { method: "GET" }
+        );
+
+        const previousOrganizations = response.data || [];
+        
+        // Find the organization in the previous audit that matches this team
+        const currentTeamId = organization.teamId || organization.team?._id || organization.team?.id;
+        const matchingPrevOrg = previousOrganizations.find((prevOrg) => {
+          const prevTeamId = prevOrg.teamId || prevOrg.team?._id || prevOrg.team?.id;
+          return prevTeamId === currentTeamId;
+        });
+
+        // Extract all findings from all visits of the matching organization
+        if (matchingPrevOrg?.visits) {
+          const allFindings = matchingPrevOrg.visits.flatMap((visit) => visit.findings || []);
+          setPreviousAuditFindings(allFindings);
+        } else {
+          setPreviousAuditFindings([]);
+        }
+      } catch (error) {
+        console.error("Failed to fetch previous audit findings:", error);
+        setPreviousFindingsError(error.message || "Failed to load previous audit findings");
+        setPreviousAuditFindings([]);
+      } finally {
+        setLoadingPreviousFindings(false);
+      }
+    };
+
+    fetchPreviousAuditFindings();
+  }, [
+    isExpanded,
+    activeTabIndex,
+    schedule?.previousAudit?._id,
+    schedule?.previousAudit?.id,
+    organization?.teamId,
+    organization?.team?._id,
+    organization?.team?.id,
   ]);
 
   const handleDeleteOrganization = async (organization) => {
@@ -507,6 +579,14 @@ const OrganizationCard = ({
                   >
                     <HStack spacing={1}>
                       <Text>Other Documents</Text>
+                    </HStack>
+                  </Tab>
+                  <Tab
+                    sx={{ [$tabColor.variable]: tabColor }}
+                    fontWeight={"normal"}
+                  >
+                    <HStack spacing={1}>
+                      <Text>Previous Findings</Text>
                     </HStack>
                   </Tab>
                 </TabList>
@@ -1137,6 +1217,65 @@ const OrganizationCard = ({
                         <Text color="gray.500" textAlign="center">
                           No folder assigned to this organization
                         </Text>
+                      </Center>
+                    )}
+                  </TabPanel>
+
+                  {/* Previous Findings Tab */}
+                  <TabPanel px={4}>
+                    {!schedule?.previousAudit ? (
+                      <Center minH="xs">
+                        <VStack spacing={2}>
+                          <Text color="gray.500" textAlign="center">
+                            No previous audit configured
+                          </Text>
+                          <Text color="gray.400" fontSize="sm" textAlign="center">
+                            Configure a previous audit in the audit details to view historical findings
+                          </Text>
+                        </VStack>
+                      </Center>
+                    ) : loadingPreviousFindings ? (
+                      <Center minH="xs">
+                        <VStack spacing={3}>
+                          <Spinner size="md" color="brandPrimary.500" />
+                          <Text color="gray.500">Loading previous audit findings...</Text>
+                        </VStack>
+                      </Center>
+                    ) : previousFindingsError ? (
+                      <Center minH="xs">
+                        <VStack spacing={2}>
+                          <Text color="error.500" textAlign="center">
+                            Failed to load previous findings
+                          </Text>
+                          <Text color="gray.500" fontSize="sm" textAlign="center">
+                            {previousFindingsError}
+                          </Text>
+                        </VStack>
+                      </Center>
+                    ) : previousAuditFindings.length > 0 ? (
+                      <VStack align="stretch" spacing={4}>
+                        <Box>
+                          <Text fontSize="sm" color="gray.500" mb={2}>
+                            Previous Audit: {schedule.previousAudit.title || schedule.previousAudit.auditCode}
+                          </Text>
+                          <Text fontSize="xs" color="gray.400">
+                            Showing {previousAuditFindings.length} finding{previousAuditFindings.length === 1 ? '' : 's'} from the previous audit
+                          </Text>
+                        </Box>
+                        <FindingsList
+                          findings={previousAuditFindings}
+                        />
+                      </VStack>
+                    ) : (
+                      <Center minH="xs">
+                        <VStack spacing={2}>
+                          <Text color="gray.500" textAlign="center">
+                            No findings in previous audit
+                          </Text>
+                          <Text color="gray.400" fontSize="sm" textAlign="center">
+                            The previous audit ({schedule.previousAudit?.title || schedule.previousAudit?.auditCode}) has no findings for this team
+                          </Text>
+                        </VStack>
                       </Center>
                     )}
                   </TabPanel>
