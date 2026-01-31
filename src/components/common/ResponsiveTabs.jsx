@@ -12,6 +12,8 @@ import {
   Box,
   useBreakpointValue,
   Portal,
+  TabIndicator,
+  useColorModeValue,
 } from "@chakra-ui/react";
 import { FiChevronDown } from "react-icons/fi";
 import { Children, cloneElement, useMemo } from "react";
@@ -44,6 +46,7 @@ export const ResponsiveTabs = ({
   colorScheme = "brandPrimary",
   ...props
 }) => {
+  const bg = useColorModeValue(`${colorScheme}.600`, `${colorScheme}.200`);
   const isMobile = useBreakpointValue(
     { base: true, md: false },
     { ssr: false },
@@ -116,7 +119,7 @@ export const ResponsiveTabs = ({
 
       {/* Desktop Tabs */}
       {isMobile === false && tabListElement && cloneElement(tabListElement)}
-
+      <TabIndicator bg={bg} h="2px" pos="relative !important" top={"-2px"} />
       {/* Tab Panels (both mobile and desktop) */}
       {tabPanelsElement && cloneElement(tabPanelsElement)}
     </Tabs>
