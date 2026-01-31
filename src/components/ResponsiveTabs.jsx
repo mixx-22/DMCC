@@ -8,6 +8,7 @@ import {
   MenuList,
   MenuItem,
   Button,
+  Portal,
   useBreakpointValue,
 } from "@chakra-ui/react";
 import { ChevronDownIcon } from "@chakra-ui/icons";
@@ -25,6 +26,7 @@ const DOM_READY_DELAY = 100; // Delay to ensure DOM is fully rendered before mea
  * - Showing all tabs on desktop/wide screens
  * - Collapsing tabs to a dropdown menu on mobile/narrow screens
  * - Maintaining the visual style of tabs
+ * - Using Portal for dropdown menu to avoid z-index issues with other UI elements
  * 
  * @param {Object} props - All standard Chakra UI Tabs props are supported
  * @param {React.ReactNode} props.children - TabList and TabPanels components
@@ -153,22 +155,24 @@ const ResponsiveTabs = ({ children, index, onChange, ...tabsProps }) => {
                 >
                   {currentTabLabel}
                 </MenuButton>
-                <MenuList>
-                  {tabLabels.map((tab, idx) => (
-                    <MenuItem
-                      key={idx}
-                      onClick={() => handleTabChange(idx)}
-                      fontWeight={idx === tabIndex ? "bold" : "normal"}
-                      bg={idx === tabIndex ? "gray.100" : "transparent"}
-                      _dark={{
-                        bg: idx === tabIndex ? "gray.700" : "transparent",
-                      }}
-                      textTransform="lowercase"
-                    >
-                      {tab.label}
-                    </MenuItem>
-                  ))}
-                </MenuList>
+                <Portal>
+                  <MenuList>
+                    {tabLabels.map((tab, idx) => (
+                      <MenuItem
+                        key={idx}
+                        onClick={() => handleTabChange(idx)}
+                        fontWeight={idx === tabIndex ? "bold" : "normal"}
+                        bg={idx === tabIndex ? "gray.100" : "transparent"}
+                        _dark={{
+                          bg: idx === tabIndex ? "gray.700" : "transparent",
+                        }}
+                        textTransform="lowercase"
+                      >
+                        {tab.label}
+                      </MenuItem>
+                    ))}
+                  </MenuList>
+                </Portal>
               </Menu>
             </Box>
           );
