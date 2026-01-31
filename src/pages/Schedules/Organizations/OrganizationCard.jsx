@@ -478,8 +478,8 @@ const OrganizationCard = ({
             <Box pt={0}>
               {/* Tabs Section */}
               <ResponsiveTabs
-                colorScheme="brandPrimary"
                 index={activeTabIndex}
+                colorScheme="brandPrimary"
                 onChange={(index) => setActiveTabIndex(index)}
               >
                 <ResponsiveTabList>

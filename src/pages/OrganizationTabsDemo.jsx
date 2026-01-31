@@ -26,8 +26,9 @@ const OrganizationTabsDemo = () => {
             Organization Tabs Demo - Mobile Test
           </Heading>
           <Text color="gray.600">
-            This demonstrates the fix for OrganizationCard tabs on mobile. 
-            Resize to mobile view to see the dropdown button now showing the active tab.
+            This demonstrates the fix for OrganizationCard tabs on mobile.
+            Resize to mobile view to see the dropdown button now showing the
+            active tab.
           </Text>
           <Text color="gray.600" mt={2}>
             Active Tab Index: {activeTabIndex}
@@ -55,22 +56,22 @@ const OrganizationTabsDemo = () => {
 
               <ResponsiveTabPanels>
                 <ResponsiveTabPanel>
-                  <Text>Visits tab content - This should be visible when "Visits" is selected</Text>
+                  <Text>{`Visits tab content - This should be visible when "Visits" is selected`}</Text>
                 </ResponsiveTabPanel>
                 <ResponsiveTabPanel>
-                  <Text>Auditors tab content - This should be visible when "Auditors" is selected</Text>
+                  <Text>{`Auditors tab content - This should be visible when "Auditors" is selected`}</Text>
                 </ResponsiveTabPanel>
                 <ResponsiveTabPanel>
-                  <Text>Team Details tab content - This should be visible when "Team Details" is selected</Text>
+                  <Text>{`Team Details tab content - This should be visible when "Team Details" is selected`}</Text>
                 </ResponsiveTabPanel>
                 <ResponsiveTabPanel>
-                  <Text>Quality Documents tab content - This should be visible when "Quality Documents" is selected</Text>
+                  <Text>{`Quality Documents tab content - This should be visible when "Quality Documents" is selected`}</Text>
                 </ResponsiveTabPanel>
                 <ResponsiveTabPanel>
-                  <Text>Other Documents tab content - This should be visible when "Other Documents" is selected</Text>
+                  <Text>{`Other Documents tab content - This should be visible when "Other Documents" is selected`}</Text>
                 </ResponsiveTabPanel>
                 <ResponsiveTabPanel>
-                  <Text>Previous Audit Findings tab content - This should be visible when "Previous Audit Findings" is selected</Text>
+                  <Text>{`Previous Audit Findings tab content - This should be visible when "Previous Audit Findings" is selected`}</Text>
                 </ResponsiveTabPanel>
               </ResponsiveTabPanels>
             </ResponsiveTabs>

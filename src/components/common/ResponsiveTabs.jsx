@@ -94,6 +94,7 @@ export const ResponsiveTabs = ({
       index={index}
       onChange={handleTabsChange}
       colorScheme={colorScheme}
+      variant="unstyled"
       {...props}
     >
       {/* Mobile Dropdown Menu */}
@@ -144,7 +145,17 @@ export const ResponsiveTabs = ({
 };
 
 export const ResponsiveTabList = ({ children, ...props }) => {
-  return <TabList {...props}>{children}</TabList>;
+  const borderColor = useColorModeValue(`gray.200`, `whiteAlpha.300`);
+  return (
+    <TabList
+      borderBottom="2px solid"
+      borderColor={borderColor}
+      mb={"-2px"}
+      {...props}
+    >
+      {children}
+    </TabList>
+  );
 };
 
 export const ResponsiveTab = ({ children, ...props }) => {
