@@ -48,7 +48,7 @@ const TeamQualityDocuments = ({ teamId }) => {
         const params = {
           page,
           limit: ITEMS_PER_PAGE,
-          teamId: teamId, // Add teamId filter
+          teamId, // Use object property shorthand
         };
 
         const response = await apiService.request("/documents/quality", {
@@ -145,6 +145,7 @@ const TeamQualityDocuments = ({ teamId }) => {
             onClose={handleQualityDocumentModalClose}
             parentId={null}
             path={`/`}
+            teamId={teamId}
           />
           <DocumentDrawer
             document={selectedDocument}
