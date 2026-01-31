@@ -69,6 +69,7 @@ import VisitComplianceForm from "./VisitComplianceForm";
 import SetVerdictModal from "./SetVerdictModal";
 import { calculateOrganizationVerdict } from "../../../utils/helpers";
 import TeamQualityDocuments from "../../../components/TeamQualityDocuments";
+import PreviousAuditFindings from "./PreviousAuditFindings";
 
 const OrganizationCard = ({
   loading = false,
@@ -507,6 +508,14 @@ const OrganizationCard = ({
                   >
                     <HStack spacing={1}>
                       <Text>Other Documents</Text>
+                    </HStack>
+                  </Tab>
+                  <Tab
+                    sx={{ [$tabColor.variable]: tabColor }}
+                    fontWeight={"normal"}
+                  >
+                    <HStack spacing={1}>
+                      <Text>Previous Audit Findings</Text>
                     </HStack>
                   </Tab>
                 </TabList>
@@ -1139,6 +1148,14 @@ const OrganizationCard = ({
                         </Text>
                       </Center>
                     )}
+                  </TabPanel>
+
+                  {/* Previous Audit Findings Tab */}
+                  <TabPanel px={0} pt={0}>
+                    <PreviousAuditFindings
+                      auditScheduleId={organization?.auditScheduleId}
+                      isActive={isExpanded && activeTabIndex === 5}
+                    />
                   </TabPanel>
                 </TabPanels>
               </Tabs>
