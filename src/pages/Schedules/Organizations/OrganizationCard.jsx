@@ -18,7 +18,6 @@ import {
   WrapItem,
   Flex,
   Collapse,
-  Tabs,
   TabList,
   TabPanels,
   Tab,
@@ -69,6 +68,7 @@ import VisitComplianceForm from "./VisitComplianceForm";
 import SetVerdictModal from "./SetVerdictModal";
 import { calculateOrganizationVerdict } from "../../../utils/helpers";
 import TeamQualityDocuments from "../../../components/TeamQualityDocuments";
+import ResponsiveTabs from "../../../components/ResponsiveTabs";
 
 const OrganizationCard = ({
   loading = false,
@@ -459,7 +459,7 @@ const OrganizationCard = ({
           <Collapse in={isExpanded} animateOpacity>
             <Box pt={0}>
               {/* Tabs Section */}
-              <Tabs
+              <ResponsiveTabs
                 colorScheme="brandPrimary"
                 onChange={(index) => setActiveTabIndex(index)}
               >
@@ -1141,7 +1141,7 @@ const OrganizationCard = ({
                     )}
                   </TabPanel>
                 </TabPanels>
-              </Tabs>
+              </ResponsiveTabs>
             </Box>
           </Collapse>
         </CardBody>
