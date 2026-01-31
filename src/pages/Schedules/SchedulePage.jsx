@@ -759,11 +759,9 @@ const SchedulePageContent = () => {
                       Previous Audit
                     </Text>
                     <Text fontSize="sm" mt={1} fontWeight="medium">
-                      {formData.previousAudit
-                        ? formData.previousAudit.title ||
-                          formData.previousAudit.auditCode ||
-                          "-"
-                        : "-"}
+                      {formData.previousAudit?.title ||
+                        formData.previousAudit?.auditCode ||
+                        "-"}
                     </Text>
                   </Box>
                 </VStack>

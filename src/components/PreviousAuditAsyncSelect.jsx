@@ -72,6 +72,7 @@ const PreviousAuditAsyncSelect = ({
 
         debounceTimerRef.current = setTimeout(async () => {
           if (!USE_API) {
+            const searchLower = inputValue.toLowerCase();
             const filtered = MOCK_SCHEDULES.filter((schedule) => {
               const scheduleId = getScheduleId(schedule);
               // Exclude current schedule
@@ -82,8 +83,8 @@ const PreviousAuditAsyncSelect = ({
               const title = (schedule.title || "").toLowerCase();
               const auditCode = (schedule.auditCode || "").toLowerCase();
               return (
-                title.includes(inputValue.toLowerCase()) ||
-                auditCode.includes(inputValue.toLowerCase())
+                title.includes(searchLower) ||
+                auditCode.includes(searchLower)
               );
             });
             resolve(
