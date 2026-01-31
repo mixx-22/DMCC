@@ -2,7 +2,6 @@ import {
   Box,
   Tabs,
   TabList,
-  TabPanels,
   Tab,
   Menu,
   MenuButton,
@@ -10,11 +9,9 @@ import {
   MenuItem,
   Button,
   useBreakpointValue,
-  Hide,
-  Show,
 } from "@chakra-ui/react";
 import { ChevronDownIcon } from "@chakra-ui/icons";
-import { useState, useEffect, useRef, Children } from "react";
+import { useState, useEffect, useRef, Children, cloneElement, isValidElement } from "react";
 
 /**
  * ResponsiveTabs - A mobile-friendly tabs component that collapses to a dropdown on narrow screens
@@ -33,23 +30,25 @@ import { useState, useEffect, useRef, Children } from "react";
 const ResponsiveTabs = ({ children, index, onChange, ...tabsProps }) => {
   const [tabIndex, setTabIndex] = useState(index || 0);
   const containerRef = useRef(null);
+  const tabListRef = useRef(null);
   const [tabLabels, setTabLabels] = useState([]);
   const [shouldCollapse, setShouldCollapse] = useState(false);
   
   // Determine if we should use mobile layout based on breakpoint
-  const isMobileBreakpoint = useBreakpointValue({ base: true, md: false });
+  const isMobile = useBreakpointValue({ base: true, md: false }, { ssr: false });
 
-  // Extract tab labels and panels from children
+  // Extract tab labels from TabList children
   useEffect(() => {
     const childArray = Children.toArray(children);
-    const tabList = childArray.find(
-      (child) => child.type?.name === "TabList" || child.type?.displayName === "TabList"
-    );
+    const tabList = childArray.find((child) => {
+      return isValidElement(child) && child.type === TabList;
+    });
     
     if (tabList) {
-      const tabs = Children.toArray(tabList.props.children).filter(
-        (child) => child.type?.name === "Tab" || child.type?.displayName === "Tab"
-      );
+      const tabs = Children.toArray(tabList.props.children).filter((child) => {
+        return isValidElement(child) && child.type === Tab;
+      });
+      
       const labels = tabs.map((tab, idx) => ({
         label: tab.props.children,
         originalProps: tab.props,
@@ -59,34 +58,52 @@ const ResponsiveTabs = ({ children, index, onChange, ...tabsProps }) => {
     }
   }, [children]);
 
-  // Detect if tabs overflow the container
+  // Check if tabs should collapse based on breakpoint or overflow
   useEffect(() => {
-    if (!containerRef.current || isMobileBreakpoint === undefined) return;
+    if (isMobile === undefined) return;
 
     const checkOverflow = () => {
-      const container = containerRef.current;
-      if (!container) return;
+      if (isMobile) {
+        setShouldCollapse(true);
+        return;
+      }
 
-      const tabList = container.querySelector('[role="tablist"]');
-      if (!tabList) return;
+      if (!tabListRef.current) {
+        setShouldCollapse(false);
+        return;
+      }
 
-      const containerWidth = container.offsetWidth;
-      const tabsWidth = Array.from(tabList.children).reduce(
-        (sum, tab) => sum + tab.offsetWidth,
+      const tabList = tabListRef.current;
+      const containerWidth = tabList.offsetWidth;
+      const tabsArray = Array.from(tabList.children);
+      
+      if (tabsArray.length === 0) {
+        setShouldCollapse(false);
+        return;
+      }
+
+      const tabsWidth = tabsArray.reduce(
+        (sum, tab) => sum + tab.offsetWidth + 8, // Add gap between tabs
         0
       );
 
-      // Add some margin for safety
-      setShouldCollapse(isMobileBreakpoint || tabsWidth > containerWidth - 20);
+      // Collapse if tabs overflow with some margin
+      setShouldCollapse(tabsWidth > containerWidth - 40);
     };
 
-    // Check on mount and when window resizes
-    checkOverflow();
+    // Small delay to ensure DOM is ready
+    const timer = setTimeout(checkOverflow, 100);
+    
     const resizeObserver = new ResizeObserver(checkOverflow);
-    resizeObserver.observe(containerRef.current);
+    if (tabListRef.current) {
+      resizeObserver.observe(tabListRef.current);
+    }
 
-    return () => resizeObserver.disconnect();
-  }, [isMobileBreakpoint, tabLabels]);
+    return () => {
+      clearTimeout(timer);
+      resizeObserver.disconnect();
+    };
+  }, [isMobile, tabLabels]);
 
   // Handle tab change
   const handleTabChange = (newIndex) => {
@@ -101,66 +118,64 @@ const ResponsiveTabs = ({ children, index, onChange, ...tabsProps }) => {
     if (index !== undefined && index !== tabIndex) {
       setTabIndex(index);
     }
-  }, [index]);
+  }, [index, tabIndex]);
 
   // Get the current tab label
-  const currentTabLabel =
-    tabLabels[tabIndex]?.label || `Tab ${tabIndex + 1}`;
+  const currentTabLabel = tabLabels[tabIndex]?.label || `Tab ${tabIndex + 1}`;
 
-  // Clone children to inject our custom behavior
-  const clonedChildren = Children.map(children, (child) => {
-    if (!child) return child;
-    
-    // For TabPanels, just pass through
-    if (child.type?.name === "TabPanels" || child.type?.displayName === "TabPanels") {
-      return child;
-    }
-    
-    // For TabList, handle responsive behavior
-    if (child.type?.name === "TabList" || child.type?.displayName === "TabList") {
-      if (shouldCollapse) {
-        // Mobile: Show as dropdown
-        return (
-          <Box mb={4}>
-            <Menu matchWidth>
-              <MenuButton
-                as={Button}
-                rightIcon={<ChevronDownIcon />}
-                w="full"
-                textAlign="left"
-                fontWeight="semibold"
-                textTransform="lowercase"
-                colorScheme={tabsProps.colorScheme || "gray"}
-                variant="outline"
-              >
-                {currentTabLabel}
-              </MenuButton>
-              <MenuList>
-                {tabLabels.map((tab, idx) => (
-                  <MenuItem
-                    key={idx}
-                    onClick={() => handleTabChange(idx)}
-                    fontWeight={idx === tabIndex ? "bold" : "normal"}
-                    bg={idx === tabIndex ? "gray.100" : "transparent"}
-                    _dark={{
-                      bg: idx === tabIndex ? "gray.700" : "transparent",
-                    }}
-                  >
-                    {tab.label}
-                  </MenuItem>
-                ))}
-              </MenuList>
-            </Menu>
-          </Box>
-        );
-      } else {
-        // Desktop: Show as normal tabs
-        return child;
+  // Transform children based on collapse state
+  const renderChildren = () => {
+    return Children.map(children, (child) => {
+      if (!isValidElement(child)) return child;
+      
+      // For TabList, handle responsive behavior
+      if (child.type === TabList) {
+        if (shouldCollapse && tabLabels.length > 0) {
+          // Mobile: Show as dropdown
+          return (
+            <Box mb={4}>
+              <Menu matchWidth>
+                <MenuButton
+                  as={Button}
+                  rightIcon={<ChevronDownIcon />}
+                  w="full"
+                  textAlign="left"
+                  fontWeight="semibold"
+                  textTransform="lowercase"
+                  colorScheme={tabsProps.colorScheme || "gray"}
+                  variant="outline"
+                >
+                  {currentTabLabel}
+                </MenuButton>
+                <MenuList>
+                  {tabLabels.map((tab, idx) => (
+                    <MenuItem
+                      key={idx}
+                      onClick={() => handleTabChange(idx)}
+                      fontWeight={idx === tabIndex ? "bold" : "normal"}
+                      bg={idx === tabIndex ? "gray.100" : "transparent"}
+                      _dark={{
+                        bg: idx === tabIndex ? "gray.700" : "transparent",
+                      }}
+                      textTransform="lowercase"
+                    >
+                      {tab.label}
+                    </MenuItem>
+                  ))}
+                </MenuList>
+              </Menu>
+            </Box>
+          );
+        } else {
+          // Desktop: Show as normal tabs with ref
+          return cloneElement(child, { ref: tabListRef });
+        }
       }
-    }
-    
-    return child;
-  });
+      
+      // For other children (TabPanels), pass through
+      return child;
+    });
+  };
 
   return (
     <Box ref={containerRef} w="full">
@@ -169,7 +184,7 @@ const ResponsiveTabs = ({ children, index, onChange, ...tabsProps }) => {
         index={tabIndex}
         onChange={handleTabChange}
       >
-        {clonedChildren}
+        {renderChildren()}
       </Tabs>
     </Box>
   );
