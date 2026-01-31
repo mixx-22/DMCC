@@ -8,21 +8,18 @@ import {
   CardBody,
   useColorModeValue,
   Divider,
-  Avatar,
   Wrap,
   WrapItem,
   Center,
   Spinner,
-  Accordion,
-  AccordionItem,
-  AccordionButton,
-  AccordionPanel,
-  AccordionIcon,
+  IconButton,
+  Collapse,
 } from "@chakra-ui/react";
 import { useState, useEffect, useCallback } from "react";
-import { FiAlertCircle } from "react-icons/fi";
+import { FiAlertCircle, FiChevronDown, FiChevronUp } from "react-icons/fi";
 import moment from "moment";
 import apiService from "../../../services/api";
+import { formatDateRange } from "../../../utils/helpers";
 
 const USE_API = import.meta.env.VITE_USE_API !== "false";
 
@@ -37,6 +34,378 @@ const COMPLIANCE_DISPLAY = {
   MINOR_NC: { label: "Minor Non-Conformity", color: "warning" },
   MAJOR_NC: { label: "Major Non-Conformity", color: "error" },
   COMPLIANT: { label: "Compliant", color: "green" },
+};
+
+// Collapsible Finding Card Component
+const FindingCard = ({
+  finding,
+  borderColor,
+  cardBg,
+  labelColor,
+  objectiveBg,
+}) => {
+  const [isExpanded, setIsExpanded] = useState(false);
+
+  const complianceInfo =
+    COMPLIANCE_DISPLAY[finding.compliance] || COMPLIANCE_DISPLAY.OBSERVATIONS;
+
+  return (
+    <Card
+      size="sm"
+      bg={cardBg}
+      shadow="none"
+      borderWidth="1px"
+      borderColor={borderColor}
+    >
+      <CardBody>
+        <VStack align="stretch" spacing={2}>
+          {/* Header with compliance badge, title, and expand button */}
+          <HStack justify="space-between" align="center">
+            <VStack align="flex-start" spacing={1} flex={1}>
+              {finding.title && (
+                <Text fontWeight="semibold" fontSize="sm">
+                  {finding.title}
+                </Text>
+              )}
+            </VStack>
+            <HStack spacing={2}>
+              <Badge colorScheme={complianceInfo.color} fontSize="xs">
+                {complianceInfo.label}
+              </Badge>
+              {finding.visitDate && (
+                <Text fontSize="xs" color={labelColor} whiteSpace="nowrap">
+                  {formatDateRange(
+                    finding.visitDate.start,
+                    finding.visitDate.end,
+                  )}
+                </Text>
+              )}
+              <IconButton
+                icon={isExpanded ? <FiChevronUp /> : <FiChevronDown />}
+                size="sm"
+                variant="ghost"
+                onClick={() => setIsExpanded(!isExpanded)}
+                aria-label={isExpanded ? "Collapse" : "Expand"}
+              />
+            </HStack>
+          </HStack>
+
+          {/* Collapsible Content */}
+          <Collapse in={isExpanded} animateOpacity>
+            <VStack align="stretch" spacing={2}>
+              <Divider />
+
+              <HStack>
+                {/* Objectives */}
+                {finding.objectives && finding.objectives.length > 0 && (
+                  <Box flex={1}>
+                    <Text fontSize="xs" color={labelColor} mb={1}>
+                      Related Objectives:
+                    </Text>
+                    <Wrap>
+                      {finding.objectives.map((objective) => (
+                        <WrapItem
+                          key={
+                            objective._id ||
+                            objective.id ||
+                            objective.title ||
+                            objective
+                          }
+                        >
+                          <Badge
+                            bg={objectiveBg}
+                            color={labelColor}
+                            fontSize="xs"
+                          >
+                            {objective.title || objective._id || objective}
+                          </Badge>
+                        </WrapItem>
+                      ))}
+                    </Wrap>
+                  </Box>
+                )}
+
+                {/* Details */}
+                {finding.details && (
+                  <Box flex={1}>
+                    <Text fontSize="xs" color={labelColor} mb={1}>
+                      Details:
+                    </Text>
+                    <Text fontSize="sm" whiteSpace="pre-wrap">
+                      {finding.details}
+                    </Text>
+                  </Box>
+                )}
+              </HStack>
+
+              {/* Report (if exists and is an object) */}
+              {finding.report && typeof finding.report === "object" && (
+                <>
+                  <Divider />
+
+                  <Box>
+                    <Text
+                      fontSize="xs"
+                      color={labelColor}
+                      mb={2}
+                      fontWeight="semibold"
+                    >
+                      Report:
+                    </Text>
+                    <VStack align="stretch" spacing={2}>
+                      <HStack>
+                        {finding.report.reportNo && (
+                          <HStack flex={1}>
+                            <Text fontSize="xs" color={labelColor} minW="80px">
+                              Report No:
+                            </Text>
+                            <Text fontSize="sm">{finding.report.reportNo}</Text>
+                          </HStack>
+                        )}
+                        {finding.report.date && (
+                          <HStack flex={1}>
+                            <Text fontSize="xs" color={labelColor} minW="80px">
+                              Date:
+                            </Text>
+                            <Text fontSize="sm">
+                              {moment(finding.report.date).format(
+                                "MMM D, YYYY",
+                              )}
+                            </Text>
+                          </HStack>
+                        )}
+                      </HStack>
+                      {finding.report.details && (
+                        <Box>
+                          <Text fontSize="xs" color={labelColor} mb={1}>
+                            Details:
+                          </Text>
+                          <Text fontSize="sm" whiteSpace="pre-wrap">
+                            {finding.report.details}
+                          </Text>
+                        </Box>
+                      )}
+                      <HStack>
+                        {finding.report.auditee &&
+                          finding.report.auditee.length > 0 && (
+                            <Box flex={1}>
+                              <Text fontSize="xs" color={labelColor} mb={1}>
+                                Auditee(s):
+                              </Text>
+                              <Wrap>
+                                {finding.report.auditee.map((person) => (
+                                  <WrapItem
+                                    key={
+                                      person._id ||
+                                      person.id ||
+                                      `${person.firstName}-${person.lastName}-${person.employeeId}`
+                                    }
+                                  >
+                                    <Badge colorScheme="blue" fontSize="xs">
+                                      {person.firstName} {person.lastName}
+                                      {person.employeeId &&
+                                        ` (${person.employeeId})`}
+                                    </Badge>
+                                  </WrapItem>
+                                ))}
+                              </Wrap>
+                            </Box>
+                          )}
+                        {finding.report.auditor &&
+                          finding.report.auditor.length > 0 && (
+                            <Box flex={1}>
+                              <Text fontSize="xs" color={labelColor} mb={1}>
+                                Auditor(s):
+                              </Text>
+                              <Wrap>
+                                {finding.report.auditor.map((person) => (
+                                  <WrapItem
+                                    key={
+                                      person._id ||
+                                      person.id ||
+                                      `${person.firstName}-${person.lastName}-${person.employeeId}`
+                                    }
+                                  >
+                                    <Badge colorScheme="purple" fontSize="xs">
+                                      {person.firstName} {person.lastName}
+                                      {person.employeeId &&
+                                        ` (${person.employeeId})`}
+                                    </Badge>
+                                  </WrapItem>
+                                ))}
+                              </Wrap>
+                            </Box>
+                          )}
+                      </HStack>
+                    </VStack>
+                  </Box>
+                </>
+              )}
+
+              {/* Action Plan (if exists and is an object) */}
+              {finding.actionPlan && typeof finding.actionPlan === "object" && (
+                <>
+                  <Divider />
+                  <Box>
+                    <Text
+                      fontSize="xs"
+                      color={labelColor}
+                      mb={2}
+                      fontWeight="semibold"
+                    >
+                      Action Plan:
+                    </Text>
+                    <VStack align="stretch" spacing={2}>
+                      <HStack>
+                        {finding.actionPlan.rootCause && (
+                          <Box flex={1}>
+                            <Text fontSize="xs" color={labelColor} mb={1}>
+                              Root Cause:
+                            </Text>
+                            <Text fontSize="sm" whiteSpace="pre-wrap">
+                              {finding.actionPlan.rootCause}
+                            </Text>
+                          </Box>
+                        )}
+                        {finding.actionPlan.correctiveAction && (
+                          <Box flex={1}>
+                            <Text fontSize="xs" color={labelColor} mb={1}>
+                              Corrective Action:
+                            </Text>
+                            <Text fontSize="sm" whiteSpace="pre-wrap">
+                              {finding.actionPlan.correctiveAction}
+                            </Text>
+                          </Box>
+                        )}
+                      </HStack>
+                      {finding.actionPlan.proposedDate && (
+                        <VStack
+                          w="full"
+                          justifyContent="flex-start"
+                          alignItems="flex-start"
+                          spacing={1}
+                        >
+                          <Text fontSize="xs" color={labelColor}>
+                            Proposed Date:
+                          </Text>
+                          <Text fontSize="sm">
+                            {moment(finding.actionPlan.proposedDate).format(
+                              "MMM D, YYYY",
+                            )}
+                          </Text>
+                        </VStack>
+                      )}
+                      <HStack>
+                        {finding.actionPlan.owner &&
+                          finding.actionPlan.owner.length > 0 && (
+                            <Box flex={1}>
+                              <Text fontSize="xs" color={labelColor} mb={1}>
+                                Owner(s):
+                              </Text>
+                              <Wrap>
+                                {finding.actionPlan.owner.map((person) => (
+                                  <WrapItem
+                                    key={
+                                      person._id ||
+                                      person.id ||
+                                      `${person.firstName}-${person.lastName}-${person.employeeId}`
+                                    }
+                                  >
+                                    <Badge colorScheme="green" fontSize="xs">
+                                      {person.firstName} {person.lastName}
+                                      {person.employeeId &&
+                                        ` (${person.employeeId})`}
+                                    </Badge>
+                                  </WrapItem>
+                                ))}
+                              </Wrap>
+                            </Box>
+                          )}
+                        {finding.actionPlan.takenBy &&
+                          finding.actionPlan.takenBy.length > 0 && (
+                            <Box flex={1}>
+                              <Text fontSize="xs" color={labelColor} mb={1}>
+                                Action Taken By:
+                              </Text>
+                              <Wrap>
+                                {finding.actionPlan.takenBy.map((person) => (
+                                  <WrapItem
+                                    key={
+                                      person._id ||
+                                      person.id ||
+                                      `${person.firstName}-${person.lastName}-${person.employeeId}`
+                                    }
+                                  >
+                                    <Badge colorScheme="teal" fontSize="xs">
+                                      {person.firstName} {person.lastName}
+                                      {person.employeeId &&
+                                        ` (${person.employeeId})`}
+                                    </Badge>
+                                  </WrapItem>
+                                ))}
+                              </Wrap>
+                            </Box>
+                          )}
+                      </HStack>
+                    </VStack>
+                  </Box>
+                </>
+              )}
+
+              {/* Correction Status */}
+              {finding.corrected !== undefined && finding.corrected !== -1 && (
+                <>
+                  <Divider />
+                  <Box>
+                    <Text
+                      fontSize="xs"
+                      color={labelColor}
+                      mb={2}
+                      fontWeight="semibold"
+                    >
+                      Correction Status:
+                    </Text>
+                    <VStack align="stretch" spacing={2}>
+                      <HStack spacing={2}>
+                        <Badge
+                          colorScheme={
+                            finding.corrected === 1 ? "green" : "red"
+                          }
+                          fontSize="xs"
+                        >
+                          {finding.corrected === 1
+                            ? "Corrected"
+                            : "Not Corrected"}
+                        </Badge>
+                        {finding.correctionDate && (
+                          <Text fontSize="xs" color={labelColor}>
+                            on{" "}
+                            {moment(finding.correctionDate).format(
+                              "MMM D, YYYY",
+                            )}
+                          </Text>
+                        )}
+                      </HStack>
+                      {finding.remarks && (
+                        <Box>
+                          <Text fontSize="xs" color={labelColor} mb={1}>
+                            Remarks:
+                          </Text>
+                          <Text fontSize="sm" whiteSpace="pre-wrap">
+                            {finding.remarks}
+                          </Text>
+                        </Box>
+                      )}
+                    </VStack>
+                  </Box>
+                </>
+              )}
+            </VStack>
+          </Collapse>
+        </VStack>
+      </CardBody>
+    </Card>
+  );
 };
 
 const PreviousAuditFindings = ({
@@ -96,7 +465,8 @@ const PreviousAuditFindings = ({
                   ],
                   report: {
                     reportNo: "RPT-2023-001",
-                    details: "This is a sample finding report from the previous audit cycle.",
+                    details:
+                      "This is a sample finding report from the previous audit cycle.",
                     date: "2023-12-02",
                     auditee: [
                       {
@@ -215,12 +585,40 @@ const PreviousAuditFindings = ({
     );
   }
 
-  // Filter organizations that have findings
-  const organizationsWithFindings = previousOrganizations.filter(
-    (org) => getAllFindings(org).length > 0,
-  );
+  // Since API filters by team, we expect only one organization
+  // Get the first organization and verify it matches the current team
+  const previousOrg = previousOrganizations[0];
 
-  if (organizationsWithFindings.length === 0) {
+  if (!previousOrg) {
+    return (
+      <Center minH="xs" py={8}>
+        <VStack spacing={2}>
+          <FiAlertCircle size={40} color="gray" />
+          <Text color="gray.500">No previous audit findings found</Text>
+        </VStack>
+      </Center>
+    );
+  }
+
+  // Verify the team matches
+  const previousTeamId = previousOrg.team?.id || previousOrg.team?._id;
+  const currentTeamId = team?.id || team?._id;
+
+  if (previousTeamId !== currentTeamId) {
+    return (
+      <Center minH="xs" py={8}>
+        <VStack spacing={2}>
+          <FiAlertCircle size={40} color="gray" />
+          <Text color="gray.500">Team mismatch in previous audit data</Text>
+        </VStack>
+      </Center>
+    );
+  }
+
+  // Get all findings from the organization
+  const findings = getAllFindings(previousOrg);
+
+  if (findings.length === 0) {
     return (
       <Center minH="xs" py={8}>
         <VStack spacing={2}>
@@ -234,321 +632,21 @@ const PreviousAuditFindings = ({
   return (
     <Box p={4}>
       <Text fontSize="sm" color={labelColor} mb={4}>
-        Findings from previous audit schedule
+        Findings from previous audit schedule ({findings.length}{" "}
+        {findings.length === 1 ? "finding" : "findings"})
       </Text>
-      <Accordion allowMultiple>
-        {organizationsWithFindings.map((organization) => {
-          const findings = getAllFindings(organization);
-          return (
-            <AccordionItem
-              key={organization._id}
-              border="1px"
-              borderColor={borderColor}
-              mb={2}
-            >
-              <AccordionButton>
-                <HStack flex="1" textAlign="left" spacing={2}>
-                  <Avatar
-                    size="sm"
-                    name={organization.team?.name || "Unknown"}
-                  />
-                  <Text fontWeight="medium">
-                    {organization.team?.name || "Unknown Team"}
-                  </Text>
-                  <Badge colorScheme="gray" fontSize="xs">
-                    {findings.length}{" "}
-                    {findings.length === 1 ? "Finding" : "Findings"}
-                  </Badge>
-                </HStack>
-                <AccordionIcon />
-              </AccordionButton>
-              <AccordionPanel pb={4}>
-                <VStack align="stretch" spacing={3}>
-                  {findings.map((finding) => {
-                    const complianceInfo =
-                      COMPLIANCE_DISPLAY[finding.compliance] ||
-                      COMPLIANCE_DISPLAY.OBSERVATIONS;
-                    return (
-                      <Card
-                        key={finding._id}
-                        bg={cardBg}
-                        borderWidth="1px"
-                        borderColor={borderColor}
-                        size="sm"
-                      >
-                        <CardBody>
-                          <VStack align="stretch" spacing={2}>
-                            {/* Header with compliance badge and title */}
-                            <HStack justify="space-between" align="flex-start">
-                              <VStack align="flex-start" spacing={1} flex={1}>
-                                <Badge
-                                  colorScheme={complianceInfo.color}
-                                  fontSize="xs"
-                                >
-                                  {complianceInfo.label}
-                                </Badge>
-                                {finding.title && (
-                                  <Text fontWeight="semibold" fontSize="sm">
-                                    {finding.title}
-                                  </Text>
-                                )}
-                              </VStack>
-                              {finding.visitDate && (
-                                <Text fontSize="xs" color={labelColor} whiteSpace="nowrap">
-                                  {moment(finding.visitDate.start).format(
-                                    "MMM D, YYYY",
-                                  )}
-                                  {finding.visitDate.end &&
-                                    ` - ${moment(finding.visitDate.end).format("MMM D, YYYY")}`}
-                                </Text>
-                              )}
-                            </HStack>
-
-                            {/* Objectives */}
-                            {finding.objectives &&
-                              finding.objectives.length > 0 && (
-                                <Box>
-                                  <Text fontSize="xs" color={labelColor} mb={1}>
-                                    Related Objectives:
-                                  </Text>
-                                  <Wrap>
-                                    {finding.objectives.map(
-                                      (objective, idx) => (
-                                        <WrapItem key={idx}>
-                                          <Badge
-                                            bg={objectiveBg}
-                                            color={labelColor}
-                                            fontSize="xs"
-                                          >
-                                            {objective.title || objective._id || objective}
-                                          </Badge>
-                                        </WrapItem>
-                                      ),
-                                    )}
-                                  </Wrap>
-                                </Box>
-                              )}
-
-                            {/* Details */}
-                            {finding.details && (
-                              <Box>
-                                <Text fontSize="xs" color={labelColor} mb={1}>
-                                  Details:
-                                </Text>
-                                <Text fontSize="sm" whiteSpace="pre-wrap">
-                                  {finding.details}
-                                </Text>
-                              </Box>
-                            )}
-
-                            {/* Report (if exists and is an object) */}
-                            {finding.report && typeof finding.report === 'object' && (
-                              <>
-                                <Divider />
-                                <Box>
-                                  <Text fontSize="xs" color={labelColor} mb={2} fontWeight="semibold">
-                                    Report:
-                                  </Text>
-                                  <VStack align="stretch" spacing={2}>
-                                    {finding.report.reportNo && (
-                                      <HStack>
-                                        <Text fontSize="xs" color={labelColor} minW="80px">
-                                          Report No:
-                                        </Text>
-                                        <Text fontSize="sm">{finding.report.reportNo}</Text>
-                                      </HStack>
-                                    )}
-                                    {finding.report.date && (
-                                      <HStack>
-                                        <Text fontSize="xs" color={labelColor} minW="80px">
-                                          Date:
-                                        </Text>
-                                        <Text fontSize="sm">
-                                          {moment(finding.report.date).format("MMM D, YYYY")}
-                                        </Text>
-                                      </HStack>
-                                    )}
-                                    {finding.report.details && (
-                                      <Box>
-                                        <Text fontSize="xs" color={labelColor} mb={1}>
-                                          Details:
-                                        </Text>
-                                        <Text fontSize="sm" whiteSpace="pre-wrap">
-                                          {finding.report.details}
-                                        </Text>
-                                      </Box>
-                                    )}
-                                    {finding.report.auditee && finding.report.auditee.length > 0 && (
-                                      <Box>
-                                        <Text fontSize="xs" color={labelColor} mb={1}>
-                                          Auditee(s):
-                                        </Text>
-                                        <Wrap>
-                                          {finding.report.auditee.map((person, idx) => (
-                                            <WrapItem key={idx}>
-                                              <Badge colorScheme="blue" fontSize="xs">
-                                                {person.firstName} {person.lastName}
-                                                {person.employeeId && ` (${person.employeeId})`}
-                                              </Badge>
-                                            </WrapItem>
-                                          ))}
-                                        </Wrap>
-                                      </Box>
-                                    )}
-                                    {finding.report.auditor && finding.report.auditor.length > 0 && (
-                                      <Box>
-                                        <Text fontSize="xs" color={labelColor} mb={1}>
-                                          Auditor(s):
-                                        </Text>
-                                        <Wrap>
-                                          {finding.report.auditor.map((person, idx) => (
-                                            <WrapItem key={idx}>
-                                              <Badge colorScheme="purple" fontSize="xs">
-                                                {person.firstName} {person.lastName}
-                                                {person.employeeId && ` (${person.employeeId})`}
-                                              </Badge>
-                                            </WrapItem>
-                                          ))}
-                                        </Wrap>
-                                      </Box>
-                                    )}
-                                  </VStack>
-                                </Box>
-                              </>
-                            )}
-
-                            {/* Action Plan (if exists and is an object) */}
-                            {finding.actionPlan && typeof finding.actionPlan === 'object' && (
-                              <>
-                                <Divider />
-                                <Box>
-                                  <Text fontSize="xs" color={labelColor} mb={2} fontWeight="semibold">
-                                    Action Plan:
-                                  </Text>
-                                  <VStack align="stretch" spacing={2}>
-                                    {finding.actionPlan.rootCause && (
-                                      <Box>
-                                        <Text fontSize="xs" color={labelColor} mb={1}>
-                                          Root Cause:
-                                        </Text>
-                                        <Text fontSize="sm" whiteSpace="pre-wrap">
-                                          {finding.actionPlan.rootCause}
-                                        </Text>
-                                      </Box>
-                                    )}
-                                    {finding.actionPlan.correctiveAction && (
-                                      <Box>
-                                        <Text fontSize="xs" color={labelColor} mb={1}>
-                                          Corrective Action:
-                                        </Text>
-                                        <Text fontSize="sm" whiteSpace="pre-wrap">
-                                          {finding.actionPlan.correctiveAction}
-                                        </Text>
-                                      </Box>
-                                    )}
-                                    {finding.actionPlan.proposedDate && (
-                                      <HStack>
-                                        <Text fontSize="xs" color={labelColor} minW="100px">
-                                          Proposed Date:
-                                        </Text>
-                                        <Text fontSize="sm">
-                                          {moment(finding.actionPlan.proposedDate).format("MMM D, YYYY")}
-                                        </Text>
-                                      </HStack>
-                                    )}
-                                    {finding.actionPlan.owner && finding.actionPlan.owner.length > 0 && (
-                                      <Box>
-                                        <Text fontSize="xs" color={labelColor} mb={1}>
-                                          Owner(s):
-                                        </Text>
-                                        <Wrap>
-                                          {finding.actionPlan.owner.map((person, idx) => (
-                                            <WrapItem key={idx}>
-                                              <Badge colorScheme="green" fontSize="xs">
-                                                {person.firstName} {person.lastName}
-                                                {person.employeeId && ` (${person.employeeId})`}
-                                              </Badge>
-                                            </WrapItem>
-                                          ))}
-                                        </Wrap>
-                                      </Box>
-                                    )}
-                                    {finding.actionPlan.takenBy && finding.actionPlan.takenBy.length > 0 && (
-                                      <Box>
-                                        <Text fontSize="xs" color={labelColor} mb={1}>
-                                          Action Taken By:
-                                        </Text>
-                                        <Wrap>
-                                          {finding.actionPlan.takenBy.map((person, idx) => (
-                                            <WrapItem key={idx}>
-                                              <Badge colorScheme="teal" fontSize="xs">
-                                                {person.firstName} {person.lastName}
-                                                {person.employeeId && ` (${person.employeeId})`}
-                                              </Badge>
-                                            </WrapItem>
-                                          ))}
-                                        </Wrap>
-                                      </Box>
-                                    )}
-                                  </VStack>
-                                </Box>
-                              </>
-                            )}
-
-                            {/* Correction Status */}
-                            {finding.corrected !== undefined &&
-                              finding.corrected !== -1 && (
-                                <>
-                                  <Divider />
-                                  <Box>
-                                    <Text fontSize="xs" color={labelColor} mb={2} fontWeight="semibold">
-                                      Correction Status:
-                                    </Text>
-                                    <VStack align="stretch" spacing={2}>
-                                      <HStack spacing={2}>
-                                        <Badge
-                                          colorScheme={
-                                            finding.corrected === 1
-                                              ? "green"
-                                              : "red"
-                                          }
-                                          fontSize="xs"
-                                        >
-                                          {finding.corrected === 1
-                                            ? "Corrected"
-                                            : "Not Corrected"}
-                                        </Badge>
-                                        {finding.correctionDate && (
-                                          <Text fontSize="xs" color={labelColor}>
-                                            on {moment(finding.correctionDate).format("MMM D, YYYY")}
-                                          </Text>
-                                        )}
-                                      </HStack>
-                                      {finding.remarks && (
-                                        <Box>
-                                          <Text fontSize="xs" color={labelColor} mb={1}>
-                                            Remarks:
-                                          </Text>
-                                          <Text fontSize="sm" whiteSpace="pre-wrap">
-                                            {finding.remarks}
-                                          </Text>
-                                        </Box>
-                                      )}
-                                    </VStack>
-                                  </Box>
-                                </>
-                              )}
-                          </VStack>
-                        </CardBody>
-                      </Card>
-                    );
-                  })}
-                </VStack>
-              </AccordionPanel>
-            </AccordionItem>
-          );
-        })}
-      </Accordion>
+      <VStack align="stretch" spacing={3}>
+        {findings.map((finding) => (
+          <FindingCard
+            key={finding._id}
+            finding={finding}
+            borderColor={borderColor}
+            cardBg={cardBg}
+            labelColor={labelColor}
+            objectiveBg={objectiveBg}
+          />
+        ))}
+      </VStack>
     </Box>
   );
 };

@@ -179,6 +179,7 @@ const MOCK_ORGANIZATIONS = [
         findings: [],
       },
     ],
+    verdict: "COMPLIANT", // This organization has a verdict set
   },
 ];
 
