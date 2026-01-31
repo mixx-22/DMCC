@@ -90,8 +90,9 @@ export const ResponsiveTabs = ({
           <Menu isLazy matchWidth>
             <MenuButton
               as={Button}
-              rightIcon={<FiChevronDown />}
               variant="tabBtn"
+              {...{ colorScheme }}
+              rightIcon={<FiChevronDown />}
             >
               {tabs[index]?.props?.children || `Tab ${index + 1}`}
             </MenuButton>

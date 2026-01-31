@@ -15,19 +15,22 @@ const teamStats = defineStyle({
   },
 });
 
-const tabBtn = defineStyle((props) => ({
-  background: "transparent",
-  width: "full",
-  justifyContent: "flex-start",
-  textAlign: "left",
-  fontFamily: "heading",
-  textTransform: "lowercase",
-  borderRadius: 0,
-  borderBottom: "2px solid",
-  // borderColor: mode(`gray.200`, `whiteAlpha.300`)(props),
-  borderColor: mode(`brandPrimary.600`, `brandPrimary.200`)(props),
-  color: mode(`brandPrimary.600`, `brandPrimary.200`)(props),
-}));
+const tabBtn = defineStyle((props) => {
+  const { colorScheme = "brandPrimary" } = props;
+  return {
+    background: "transparent",
+    width: "full",
+    justifyContent: "flex-start",
+    textAlign: "left",
+    fontFamily: "heading",
+    textTransform: "lowercase",
+    borderRadius: 0,
+    borderBottom: "2px solid",
+    // borderColor: mode(`gray.200`, `whiteAlpha.300`)(props),
+    borderColor: mode(`${colorScheme}.600`, `${colorScheme}.200`)(props),
+    color: mode(`${colorScheme}.600`, `${colorScheme}.200`)(props),
+  };
+});
 
 export const buttonTheme = defineStyleConfig({
   variants: { teamStats, tabBtn },
