@@ -74,7 +74,7 @@ const OrganizationCard = ({
   organization,
   team,
   auditors = [],
-  onEdit,
+  onEdit = () => {},
   isExpanded = false,
   onToggleExpanded = () => {},
 }) => {
