@@ -42,6 +42,7 @@ import FormTemplateBuilder from "./pages/FormTemplateBuilder";
 import FormResponse from "./pages/Document/FormResponse";
 import QualityDocuments from "./pages/QualityDocuments";
 import ResponsiveTabsDemo from "./pages/ResponsiveTabsDemo";
+import OrganizationTabsDemo from "./pages/OrganizationTabsDemo";
 
 const ProtectedRoute = ({ children }) => {
   const { currentUser } = useApp();
@@ -74,6 +75,10 @@ function App() {
           <Route
             path="/demo/responsive-tabs"
             element={<ResponsiveTabsDemo />}
+          />
+          <Route
+            path="/demo/organization-tabs"
+            element={<OrganizationTabsDemo />}
           />
           <Route
             path="/*"
