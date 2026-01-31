@@ -25,16 +25,55 @@ import {
   Button,
   Center,
   Stack,
+  Spinner,
+  IconButton,
+  Spacer,
+  Tooltip,
 } from "@chakra-ui/react";
-import { FiUsers, FiTarget } from "react-icons/fi";
+import { FiUsers, FiTarget, FiFolder, FiExternalLink } from "react-icons/fi";
+import { useState, useEffect } from "react";
 import Timestamp from "./Timestamp";
 import { Link as RouterLink } from "react-router-dom";
+import { useDocuments } from "../context/_useContext";
+import { getDocumentIcon } from "./Document/DocumentIcon";
+import { formatFileSize } from "../utils/fileUpload";
+import { DocumentHoverPopover } from "./Document/DocumentHoverPopover";
 
 const TeamProfileView = ({ team, isValidDate, onManageObjectives }) => {
   const borderColor = useColorModeValue("white", "gray.700");
   const bg = useColorModeValue("brandPrimary.600", "brandPrimary.800");
   const headerBg = useColorModeValue("brandPrimary.50", "brandPrimary.900");
   const objectiveBg = useColorModeValue("gray.50", "gray.700");
+
+  const [tabIndex, setTabIndex] = useState(0);
+  const handleTabsChange = (index) => {
+    setTabIndex(index);
+  };
+
+  const {
+    fetchDocuments,
+    folder,
+    documents,
+    loading: loadingDocuments,
+  } = useDocuments();
+  const [loadingFolder, setLoadingFolder] = useState(false);
+
+  useEffect(() => {
+    const loadFolderContents = async () => {
+      if (team?.folderId && tabIndex === 2) {
+        setLoadingFolder(true);
+        try {
+          await fetchDocuments(team.folderId);
+        } catch (error) {
+          console.error("Failed to load folder contents:", error);
+        } finally {
+          setLoadingFolder(false);
+        }
+      }
+    };
+
+    loadFolderContents();
+  }, [team.folderId, fetchDocuments, tabIndex]);
 
   const WEIGHT_COLORS = {
     low: "green",
@@ -79,7 +118,11 @@ const TeamProfileView = ({ team, isValidDate, onManageObjectives }) => {
         </CardBody>
       </Card>
 
-      <Tabs colorScheme="brandPrimary">
+      <Tabs
+        colorScheme="brandPrimary"
+        index={tabIndex}
+        onChange={handleTabsChange}
+      >
         <TabList>
           <Tab>Info</Tab>
           <Tab>Objectives</Tab>
@@ -113,7 +156,8 @@ const TeamProfileView = ({ team, isValidDate, onManageObjectives }) => {
                       >
                         <Tbody>
                           {team.leaders.map((leader, leaderIndex) => {
-                            const leaderId = leader.id || leader._id || leader.userId;
+                            const leaderId =
+                              leader.id || leader._id || leader.userId;
                             const fullName = `${leader.firstName || ""} ${
                               leader.lastName || ""
                             }`.trim();
@@ -126,14 +170,20 @@ const TeamProfileView = ({ team, isValidDate, onManageObjectives }) => {
                                       to={`/users/${leaderId}`}
                                       _hover={{ textDecoration: "none" }}
                                     >
-                                      <HStack spacing={3} _hover={{ opacity: 0.8 }}>
+                                      <HStack
+                                        spacing={3}
+                                        _hover={{ opacity: 0.8 }}
+                                      >
                                         <Avatar
                                           size="sm"
                                           name={fullName}
                                           src={leader.profilePicture}
                                         />
                                         <VStack align="start" spacing={0}>
-                                          <Text fontSize="sm" fontWeight="medium">
+                                          <Text
+                                            fontSize="sm"
+                                            fontWeight="medium"
+                                          >
                                             {fullName || "Leader"}
                                           </Text>
                                           <Text fontSize="xs" color="gray.500">
@@ -318,9 +368,7 @@ const TeamProfileView = ({ team, isValidDate, onManageObjectives }) => {
                                   {objective.title}
                                 </Text>
                                 <Badge
-                                  colorScheme={
-                                    WEIGHT_COLORS[objective.weight]
-                                  }
+                                  colorScheme={WEIGHT_COLORS[objective.weight]}
                                   ml={2}
                                 >
                                   {objective.weight}
@@ -355,16 +403,103 @@ const TeamProfileView = ({ team, isValidDate, onManageObjectives }) => {
             </Card>
           </TabPanel>
 
-          <TabPanel>
-            <Card w="full">
-              <CardBody>
+          <TabPanel px={0} pt={0}>
+            {team.folderId && (
+              <HStack px={4} pt={4} pb={2} alignItems="center">
+                <Text fontSize="sm" color="gray.500">
+                  {loadingDocuments
+                    ? `Loading Team Documents`
+                    : (folder?.title ?? `${team?.title}'s Documents`)}
+                </Text>
+                <Spacer />
+                <Tooltip label="Open Folder in New Tab">
+                  <IconButton
+                    isRound
+                    size="xs"
+                    variant="ghost"
+                    colorScheme="brandPrimary"
+                    as={RouterLink}
+                    icon={<FiExternalLink />}
+                    to={`/documents/folders/${team.folderId}`}
+                  />
+                </Tooltip>
+              </HStack>
+            )}
+            {team.folderId ? (
+              loadingFolder || loadingDocuments ? (
                 <Center minH="xs">
-                  <Text color="gray.500" textAlign="center" py={8}>
-                    Documents section coming soon
-                  </Text>
+                  <VStack>
+                    <Spinner size="lg" />
+                    <Text color="gray.500">Loading documents...</Text>
+                  </VStack>
                 </Center>
-              </CardBody>
-            </Card>
+              ) : documents && documents.length > 0 ? (
+                <Table variant="simple" size="sm" border="none">
+                  <Tbody>
+                    {documents.map((doc, index) => {
+                      const docId = doc?._id ?? doc?.id;
+                      const isFolder = doc.type === "folder";
+                      return (
+                        <Tr key={docId || `doc-${index}`}>
+                          <Td>
+                            <Link
+                              as={RouterLink}
+                              to={
+                                isFolder
+                                  ? `/documents/folders/${docId}`
+                                  : `/document/${docId}`
+                              }
+                              _hover={{ textDecoration: "none" }}
+                              target="_blank"
+                            >
+                              <HStack spacing={3} _hover={{ opacity: 0.8 }}>
+                                <DocumentHoverPopover document={doc}>
+                                  {getDocumentIcon(doc, 18)}
+                                </DocumentHoverPopover>
+                                <VStack align="start" spacing={0}>
+                                  <Text fontSize="sm" fontWeight="medium">
+                                    {doc.title}
+                                  </Text>
+                                </VStack>
+                              </HStack>
+                            </Link>
+                          </Td>
+                          <Td textAlign="right">
+                            <Text fontSize="xs" color="gray.500">
+                              {formatFileSize(doc.metadata.size)}
+                            </Text>
+                          </Td>
+                        </Tr>
+                      );
+                    })}
+                  </Tbody>
+                </Table>
+              ) : (
+                <Center minH="xs">
+                  <VStack spacing={2}>
+                    <Icon as={FiFolder} boxSize={12} color="gray.400" />
+                    <Text color="gray.500" textAlign="center">
+                      This folder is empty
+                    </Text>
+                    <Text fontSize="sm" color="gray.400" textAlign="center">
+                      Documents will appear here when added to the team folder
+                    </Text>
+                  </VStack>
+                </Center>
+              )
+            ) : (
+              <Center minH="xs">
+                <VStack spacing={4}>
+                  <Icon as={FiFolder} boxSize={12} color="gray.400" />
+                  <Text color="gray.500" textAlign="center">
+                    No documents folder configured
+                  </Text>
+                  <Text fontSize="sm" color="gray.400" textAlign="center">
+                    Edit the team to set up a documents folder
+                  </Text>
+                </VStack>
+              </Center>
+            )}
           </TabPanel>
         </TabPanels>
       </Tabs>

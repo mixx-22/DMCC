@@ -33,7 +33,7 @@ import {
 import { useNavigate, useParams } from "react-router-dom";
 import { toast } from "sonner";
 import Swal from "sweetalert2";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import PermissionsCheckboxGroup from "../../components/PermissionsCheckboxGroup";
 import PageHeader from "../../components/PageHeader";
 import PageFooter from "../../components/PageFooter";
@@ -54,7 +54,15 @@ const RolePage = () => {
     description: "",
     permissions: {
       users: { c: 0, r: 0, u: 0, d: 0 },
-      teams: { c: 0, r: 0, u: 0, d: 0 },
+      teams: {
+        c: 0,
+        r: 0,
+        u: 0,
+        d: 0,
+        permission: {
+          objective: { c: 0, r: 0, u: 0, d: 0 },
+        },
+      },
       document: {
         c: 0,
         r: 0,
@@ -92,7 +100,7 @@ const RolePage = () => {
   const [validationErrors, setValidationErrors] = useState({});
 
   // Helper function to normalize permissions structure (convert "permissions" to "permission")
-  const normalizePermissions = (perms) => {
+  const normalizePermissions = useCallback((perms) => {
     if (!perms || typeof perms !== "object") return perms;
 
     const normalized = { ...perms };
@@ -118,7 +126,7 @@ const RolePage = () => {
     });
 
     return normalized;
-  };
+  }, []);
 
   useEffect(() => {
     if (role && !isNewRole) {
@@ -129,7 +137,7 @@ const RolePage = () => {
         isSystemRole: role.isSystemRole || false,
       });
     }
-  }, [role, isNewRole]);
+  }, [role, isNewRole, normalizePermissions]);
 
   const handleFieldChange = (field, value) => {
     setFormData((prev) => ({
