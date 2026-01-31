@@ -39,7 +39,11 @@ const COMPLIANCE_DISPLAY = {
   COMPLIANT: { label: "Compliant", color: "green" },
 };
 
-const PreviousAuditFindings = ({ auditScheduleId, isActive = false }) => {
+const PreviousAuditFindings = ({
+  schedule = {},
+  organization = {},
+  isActive = false,
+}) => {
   const [loading, setLoading] = useState(false);
   const [previousOrganizations, setPreviousOrganizations] = useState([]);
   const [error, setError] = useState(null);
@@ -49,8 +53,11 @@ const PreviousAuditFindings = ({ auditScheduleId, isActive = false }) => {
   const labelColor = useColorModeValue("gray.600", "gray.400");
   const objectiveBg = useColorModeValue("gray.50", "gray.700");
 
+  const { previousAudit = {} } = schedule;
+  const { team = {} } = organization;
+
   const fetchPreviousAuditFindings = useCallback(async () => {
-    if (!auditScheduleId) {
+    if (!previousAudit?.id) {
       return;
     }
 
@@ -78,7 +85,8 @@ const PreviousAuditFindings = ({ auditScheduleId, isActive = false }) => {
                   _id: "finding-1",
                   compliance: "MINOR_NC",
                   description: "Sample finding from previous audit",
-                  report: "This is a sample finding report from the previous audit cycle.",
+                  report:
+                    "This is a sample finding report from the previous audit cycle.",
                   objectives: ["obj-1"],
                   createdAt: "2023-12-02",
                 },
@@ -92,10 +100,14 @@ const PreviousAuditFindings = ({ auditScheduleId, isActive = false }) => {
     }
 
     try {
-      const response = await apiService.request(
-        `/organizations?auditScheduleId=${auditScheduleId}`,
-        { method: "GET" }
-      );
+      const params = {
+        auditScheduleId: previousAudit?.id,
+        teamId: team?.id,
+      };
+      const response = await apiService.request(`/organizations`, {
+        method: "GET",
+        params,
+      });
       setPreviousOrganizations(response.data || []);
     } catch (error) {
       console.error("Failed to fetch previous audit findings:", error);
@@ -103,14 +115,14 @@ const PreviousAuditFindings = ({ auditScheduleId, isActive = false }) => {
     } finally {
       setLoading(false);
     }
-  }, [auditScheduleId]);
+  }, [previousAudit]);
 
   useEffect(() => {
-    // Only fetch if component is active and we have an auditScheduleId
-    if (isActive && auditScheduleId) {
+    // Only fetch if component is active and we have an previousAudit
+    if (isActive && previousAudit?.id) {
       fetchPreviousAuditFindings();
     }
-  }, [isActive, auditScheduleId, fetchPreviousAuditFindings]);
+  }, [isActive, previousAudit, fetchPreviousAuditFindings]);
 
   // Helper to get all findings from all visits
   const getAllFindings = (organization) => {
@@ -154,7 +166,7 @@ const PreviousAuditFindings = ({ auditScheduleId, isActive = false }) => {
 
   // Filter organizations that have findings
   const organizationsWithFindings = previousOrganizations.filter(
-    (org) => getAllFindings(org).length > 0
+    (org) => getAllFindings(org).length > 0,
   );
 
   if (organizationsWithFindings.length === 0) {
@@ -177,15 +189,24 @@ const PreviousAuditFindings = ({ auditScheduleId, isActive = false }) => {
         {organizationsWithFindings.map((organization) => {
           const findings = getAllFindings(organization);
           return (
-            <AccordionItem key={organization._id} border="1px" borderColor={borderColor} mb={2}>
+            <AccordionItem
+              key={organization._id}
+              border="1px"
+              borderColor={borderColor}
+              mb={2}
+            >
               <AccordionButton>
                 <HStack flex="1" textAlign="left" spacing={2}>
-                  <Avatar size="sm" name={organization.team?.name || "Unknown"} />
+                  <Avatar
+                    size="sm"
+                    name={organization.team?.name || "Unknown"}
+                  />
                   <Text fontWeight="medium">
                     {organization.team?.name || "Unknown Team"}
                   </Text>
                   <Badge colorScheme="gray" fontSize="xs">
-                    {findings.length} {findings.length === 1 ? "Finding" : "Findings"}
+                    {findings.length}{" "}
+                    {findings.length === 1 ? "Finding" : "Findings"}
                   </Badge>
                 </HStack>
                 <AccordionIcon />
@@ -208,12 +229,17 @@ const PreviousAuditFindings = ({ auditScheduleId, isActive = false }) => {
                           <VStack align="stretch" spacing={2}>
                             {/* Header with compliance badge */}
                             <HStack justify="space-between">
-                              <Badge colorScheme={complianceInfo.color} fontSize="xs">
+                              <Badge
+                                colorScheme={complianceInfo.color}
+                                fontSize="xs"
+                              >
                                 {complianceInfo.label}
                               </Badge>
                               {finding.visitDate && (
                                 <Text fontSize="xs" color={labelColor}>
-                                  {moment(finding.visitDate.start).format("MMM D, YYYY")}
+                                  {moment(finding.visitDate.start).format(
+                                    "MMM D, YYYY",
+                                  )}
                                   {finding.visitDate.end &&
                                     ` - ${moment(finding.visitDate.end).format("MMM D, YYYY")}`}
                                 </Text>
@@ -221,26 +247,29 @@ const PreviousAuditFindings = ({ auditScheduleId, isActive = false }) => {
                             </HStack>
 
                             {/* Objectives */}
-                            {finding.objectives && finding.objectives.length > 0 && (
-                              <Box>
-                                <Text fontSize="xs" color={labelColor} mb={1}>
-                                  Related Objectives:
-                                </Text>
-                                <Wrap>
-                                  {finding.objectives.map((objective, idx) => (
-                                    <WrapItem key={idx}>
-                                      <Badge
-                                        bg={objectiveBg}
-                                        color={labelColor}
-                                        fontSize="xs"
-                                      >
-                                        {objective.name || objective}
-                                      </Badge>
-                                    </WrapItem>
-                                  ))}
-                                </Wrap>
-                              </Box>
-                            )}
+                            {finding.objectives &&
+                              finding.objectives.length > 0 && (
+                                <Box>
+                                  <Text fontSize="xs" color={labelColor} mb={1}>
+                                    Related Objectives:
+                                  </Text>
+                                  <Wrap>
+                                    {finding.objectives.map(
+                                      (objective, idx) => (
+                                        <WrapItem key={idx}>
+                                          <Badge
+                                            bg={objectiveBg}
+                                            color={labelColor}
+                                            fontSize="xs"
+                                          >
+                                            {objective.name || objective}
+                                          </Badge>
+                                        </WrapItem>
+                                      ),
+                                    )}
+                                  </Wrap>
+                                </Box>
+                              )}
 
                             {/* Description */}
                             {finding.description && (
@@ -288,7 +317,9 @@ const PreviousAuditFindings = ({ auditScheduleId, isActive = false }) => {
                                     <HStack spacing={2}>
                                       <Badge
                                         colorScheme={
-                                          finding.corrected === 1 ? "green" : "red"
+                                          finding.corrected === 1
+                                            ? "green"
+                                            : "red"
                                         }
                                         fontSize="xs"
                                       >
@@ -298,7 +329,11 @@ const PreviousAuditFindings = ({ auditScheduleId, isActive = false }) => {
                                       </Badge>
                                     </HStack>
                                     {finding.verification && (
-                                      <Text fontSize="sm" mt={2} whiteSpace="pre-wrap">
+                                      <Text
+                                        fontSize="sm"
+                                        mt={2}
+                                        whiteSpace="pre-wrap"
+                                      >
                                         {finding.verification}
                                       </Text>
                                     )}

@@ -101,6 +101,7 @@ const OrganizationCard = ({
   onEdit = () => {},
   isExpanded = false,
   onToggleExpanded = () => {},
+  schedule = {},
 }) => {
   const { deleteOrganization, updateOrganization, dispatch } =
     useOrganizations();
@@ -148,7 +149,11 @@ const OrganizationCard = ({
 
   useEffect(() => {
     // Only fetch documents if organization is expanded AND user is on Other Documents tab
-    if (organization?.team?.folderId && isExpanded && activeTabIndex === TAB_INDICES.OTHER_DOCUMENTS) {
+    if (
+      organization?.team?.folderId &&
+      isExpanded &&
+      activeTabIndex === TAB_INDICES.OTHER_DOCUMENTS
+    ) {
       fetchDocuments(organization?.team?.folderId);
     }
   }, [
@@ -1117,7 +1122,10 @@ const OrganizationCard = ({
                       <TeamQualityDocuments
                         readOnly
                         teamId={team._id || team.id}
-                        isActive={isExpanded && activeTabIndex === TAB_INDICES.QUALITY_DOCUMENTS}
+                        isActive={
+                          isExpanded &&
+                          activeTabIndex === TAB_INDICES.QUALITY_DOCUMENTS
+                        }
                       />
                     ) : (
                       <Center minH="xs">
@@ -1163,8 +1171,12 @@ const OrganizationCard = ({
                   {/* Previous Audit Findings Tab */}
                   <TabPanel px={0} pt={0}>
                     <PreviousAuditFindings
+                      {...{ schedule, organization }}
                       auditScheduleId={organization?.auditScheduleId}
-                      isActive={isExpanded && activeTabIndex === TAB_INDICES.PREVIOUS_AUDIT_FINDINGS}
+                      isActive={
+                        isExpanded &&
+                        activeTabIndex === TAB_INDICES.PREVIOUS_AUDIT_FINDINGS
+                      }
                     />
                   </TabPanel>
                 </TabPanels>
