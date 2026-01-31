@@ -128,7 +128,6 @@ const MOCK_ORGANIZATIONS = [
   },
 ];
 
-import Timestamp from "../../../components/Timestamp";
 import { GridView } from "../../../components/Document/GridView";
 import { formatDateRange } from "../../../utils/helpers";
 import DocumentDrawer from "../../../components/Document/DocumentDrawer";
