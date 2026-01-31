@@ -40,6 +40,22 @@ const MOCK_SCHEDULES = [
     createdAt: "2024-03-10T11:30:00Z",
     updatedAt: "2024-03-10T11:30:00Z",
   },
+  {
+    _id: "schedule-4",
+    title: "Annual Financial Audit 2025",
+    description: "Follow-up audit of financial statements and controls",
+    auditCode: "AUD-2025-001",
+    auditType: "financial",
+    standard: "ISO 9001",
+    status: 0, // Ongoing
+    previousAudit: {
+      _id: "schedule-1",
+      title: "Annual Financial Audit 2024",
+      auditCode: "AUD-2024-001"
+    },
+    createdAt: "2025-01-15T10:00:00Z",
+    updatedAt: "2025-01-15T10:00:00Z",
+  },
 ];
 
 // Filter function for search

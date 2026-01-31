@@ -69,6 +69,29 @@ import SetVerdictModal from "./SetVerdictModal";
 import { calculateOrganizationVerdict } from "../../../utils/helpers";
 import TeamQualityDocuments from "../../../components/TeamQualityDocuments";
 import ResponsiveTabs from "../../../components/ResponsiveTabs";
+import PreviousAuditFindings from "./PreviousAuditFindings";
+
+// Tab indices for better maintainability
+const TAB_INDICES = {
+  VISITS: 0,
+  AUDITORS: 1,
+  TEAM_DETAILS: 2,
+  QUALITY_DOCUMENTS: 3,
+  OTHER_DOCUMENTS: 4,
+  PREVIOUS_AUDIT_FINDINGS: 5,
+};
+
+const COMPLIANCE_DISPLAY = {
+  OBSERVATIONS: { label: "Observations", color: "brandPrimary" },
+  OPPORTUNITIES_FOR_IMPROVEMENTS: {
+    label: "Opportunities for Improvements",
+    color: "brandSecondary",
+  },
+  NON_CONFORMITY: { label: "Non-Conformity", color: "warning" },
+  MINOR_NC: { label: "Minor Non-Conformity", color: "warning" },
+  MAJOR_NC: { label: "Major Non-Conformity", color: "error" },
+  COMPLIANT: { label: "Compliant", color: "green" },
+};
 
 const OrganizationCard = ({
   loading = false,
@@ -78,6 +101,7 @@ const OrganizationCard = ({
   onEdit = () => {},
   isExpanded = false,
   onToggleExpanded = () => {},
+  schedule = {},
 }) => {
   const { deleteOrganization, updateOrganization, dispatch } =
     useOrganizations();
@@ -104,18 +128,6 @@ const OrganizationCard = ({
     high: "red",
   };
 
-  const COMPLIANCE_DISPLAY = {
-    OBSERVATIONS: { label: "Observations", color: "brandPrimary" },
-    OPPORTUNITIES_FOR_IMPROVEMENTS: {
-      label: "Opportunities for Improvements",
-      color: "brandSecondary",
-    },
-    NON_CONFORMITY: { label: "Non-Conformity", color: "warning" },
-    MINOR_NC: { label: "Minor Non-Conformity", color: "warning" },
-    MAJOR_NC: { label: "Major Non-Conformity", color: "error" },
-    COMPLIANT: { label: "Compliant", color: "green" },
-  };
-
   // State to track which visit's finding form is shown (visitIndex -> boolean)
   const [showFindingFormFor, setShowFindingFormFor] = useState(new Set());
 
@@ -136,8 +148,12 @@ const OrganizationCard = ({
   const calculatedVerdict = calculateOrganizationVerdict(organization);
 
   useEffect(() => {
-    // Only fetch documents if organization is expanded AND user is on Other Documents tab (index 4)
-    if (organization?.team?.folderId && isExpanded && activeTabIndex === 4) {
+    // Only fetch documents if organization is expanded AND user is on Other Documents tab
+    if (
+      organization?.team?.folderId &&
+      isExpanded &&
+      activeTabIndex === TAB_INDICES.OTHER_DOCUMENTS
+    ) {
       fetchDocuments(organization?.team?.folderId);
     }
   }, [
@@ -532,6 +548,14 @@ const OrganizationCard = ({
                   >
                     <HStack spacing={1}>
                       <Text>Other Documents</Text>
+                    </HStack>
+                  </Tab>
+                  <Tab
+                    sx={{ [$tabColor.variable]: tabColor }}
+                    fontWeight={"normal"}
+                  >
+                    <HStack spacing={1}>
+                      <Text>Previous Findings</Text>
                     </HStack>
                   </Tab>
                 </TabList>
@@ -1164,6 +1188,18 @@ const OrganizationCard = ({
                         </Text>
                       </Center>
                     )}
+                  </TabPanel>
+
+                  {/* Previous Audit Findings Tab */}
+                  <TabPanel px={0} pt={0}>
+                    <PreviousAuditFindings
+                      {...{ schedule, organization }}
+                      auditScheduleId={organization?.auditScheduleId}
+                      isActive={
+                        isExpanded &&
+                        activeTabIndex === TAB_INDICES.PREVIOUS_AUDIT_FINDINGS
+                      }
+                    />
                   </TabPanel>
                 </TabPanels>
               </ResponsiveTabs>

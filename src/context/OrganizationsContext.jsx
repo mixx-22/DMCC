@@ -10,17 +10,173 @@ const USE_API = import.meta.env.VITE_USE_API !== "false";
 const MOCK_ORGANIZATIONS = [
   {
     _id: "org-1",
-    auditScheduleId: "schedule-mock-1",
-    team: "team-1",
+    auditScheduleId: "schedule-1",
+    team: {
+      _id: "team-1",
+      id: "team-1",
+      name: "Engineering Team",
+      description: "Software engineering and development team",
+    },
     status: 0,
     documents: [],
-    auditors: ["user-1", "user-2"],
+    auditors: [
+      {
+        _id: "user-1",
+        id: "user-1",
+        name: "John Doe",
+        email: "john@example.com",
+      },
+      {
+        _id: "user-2",
+        id: "user-2",
+        name: "Jane Smith",
+        email: "jane@example.com",
+      },
+    ],
     visits: [
       {
         date: {
           start: "2024-02-15",
           end: "2024-02-16",
         },
+        findings: [
+          {
+            _id: "finding-1",
+            compliance: "MINOR_NC",
+            description: "Documentation not up to date",
+            report: "Some technical documentation was found to be outdated.",
+            objectives: ["Documentation"],
+          },
+        ],
+      },
+    ],
+  },
+  // Mock previous audit organizations
+  {
+    _id: "org-prev-1",
+    auditScheduleId: "schedule-1",
+    teamId: "team-1",
+    team: {
+      _id: "team-1",
+      name: "Engineering Team",
+      description: "Software development team",
+    },
+    status: 1,
+    documents: [],
+    auditors: ["user-1"],
+    visits: [
+      {
+        date: {
+          start: "2023-06-10",
+          end: "2023-06-12",
+        },
+        findings: [
+          {
+            _id: "finding-1",
+            title: "Documentation Gap",
+            details: "Missing technical documentation for the API endpoints",
+            compliance: "MINOR_NC",
+            objectives: [
+              {
+                _id: "obj-1",
+                title: "Documentation Quality",
+                description: "Maintain comprehensive documentation",
+              },
+            ],
+            report: {
+              reportNo: "NC-001",
+              details: "Several API endpoints lack proper documentation",
+              date: "2023-06-11",
+              auditor: ["John Auditor"],
+              auditee: ["Jane Engineer"],
+            },
+            corrected: 2,
+            correctionDate: "2023-07-15",
+            currentCompliance: "COMPLIANT",
+            remarks: "Documentation has been updated and reviewed",
+          },
+          {
+            _id: "finding-2",
+            title: "Code Review Process",
+            details: "Inconsistent code review practices observed",
+            compliance: "OPPORTUNITIES_FOR_IMPROVEMENTS",
+            objectives: [
+              {
+                _id: "obj-2",
+                title: "Code Quality",
+                description: "Maintain high code quality standards",
+              },
+            ],
+            corrected: -1,
+          },
+        ],
+      },
+    ],
+  },
+  {
+    _id: "org-prev-2",
+    auditScheduleId: "schedule-2",
+    teamId: "team-2",
+    team: {
+      _id: "team-2",
+      name: "Finance Team",
+      description: "Financial operations team",
+    },
+    status: 1,
+    documents: [],
+    auditors: ["user-2"],
+    visits: [
+      {
+        date: {
+          start: "2024-02-01",
+          end: "2024-02-03",
+        },
+        findings: [
+          {
+            _id: "finding-3",
+            title: "Audit Trail Issue",
+            details: "Some transactions lack complete audit trails",
+            compliance: "MAJOR_NC",
+            objectives: [
+              {
+                _id: "obj-3",
+                title: "Audit Compliance",
+                description: "Maintain complete audit trails",
+              },
+            ],
+            report: {
+              reportNo: "NC-002",
+              details: "Critical transactions missing audit trail data",
+              date: "2024-02-02",
+              auditor: ["Sarah Auditor"],
+              auditee: ["Bob Finance"],
+            },
+            corrected: -1,
+          },
+        ],
+      },
+    ],
+  },
+  // Current audit organization for schedule-4 (2025 audit)
+  {
+    _id: "org-current-1",
+    auditScheduleId: "schedule-4",
+    teamId: "team-1",
+    team: {
+      _id: "team-1",
+      name: "Engineering Team",
+      description: "Software development team",
+    },
+    status: 0,
+    documents: [],
+    auditors: ["user-1", "user-2"],
+    visits: [
+      {
+        date: {
+          start: "2025-06-15",
+          end: "2025-06-17",
+        },
+        findings: [],
       },
     ],
   },

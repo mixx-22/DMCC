@@ -7,18 +7,61 @@ import { ScheduleProfileContext } from "./_contexts";
 const SCHEDULES_ENDPOINT = "/schedules";
 const USE_API = import.meta.env.VITE_USE_API !== "false";
 
-// Mock schedule for development
-const MOCK_SCHEDULE = {
-  _id: "schedule-mock-1",
-  title: "Annual Financial Audit 2024",
-  description: "Comprehensive audit of financial statements and controls",
-  auditCode: "AUD-2024-001",
-  auditType: "financial",
-  standard: "ISO 9001",
-  status: 0,
-  createdAt: "2024-01-15T10:00:00Z",
-  updatedAt: "2024-01-15T10:00:00Z",
-};
+// Mock schedules for development - import from SchedulesContext
+const MOCK_SCHEDULES = [
+  {
+    _id: "schedule-1",
+    title: "Annual Financial Audit 2024",
+    description: "Comprehensive audit of financial statements and controls",
+    auditCode: "AUD-2024-001",
+    auditType: "financial",
+    standard: "ISO 9001",
+    status: 0,
+    createdAt: "2024-01-15T10:00:00Z",
+    updatedAt: "2024-01-15T10:00:00Z",
+  },
+  {
+    _id: "schedule-2",
+    title: "Q1 Compliance Audit",
+    description: "Quarterly compliance review for regulatory requirements",
+    auditCode: "AUD-2024-002",
+    auditType: "compliance",
+    standard: "SOX",
+    status: 1,
+    createdAt: "2024-02-01T09:00:00Z",
+    updatedAt: "2024-03-30T16:00:00Z",
+  },
+  {
+    _id: "schedule-3",
+    title: "IT Security Audit",
+    description: "Security assessment of information systems and infrastructure",
+    auditCode: "AUD-2024-003",
+    auditType: "internal",
+    standard: "ISO 27001",
+    status: 0,
+    createdAt: "2024-03-10T11:30:00Z",
+    updatedAt: "2024-03-10T11:30:00Z",
+  },
+  {
+    _id: "schedule-4",
+    title: "Annual Financial Audit 2025",
+    description: "Follow-up audit of financial statements and controls",
+    auditCode: "AUD-2025-001",
+    auditType: "financial",
+    standard: "ISO 9001",
+    status: 0,
+    previousAudit: {
+      _id: "schedule-1",
+      title: "Annual Financial Audit 2024",
+      auditCode: "AUD-2024-001"
+    },
+    createdAt: "2025-01-15T10:00:00Z",
+    updatedAt: "2025-01-15T10:00:00Z",
+  },
+];
+
+// Mock schedule for development (fallback)
+const MOCK_SCHEDULE = MOCK_SCHEDULES[0];
 
 // Initial data structure for a new schedule
 const initialScheduleData = {
@@ -67,9 +110,10 @@ export const ScheduleProfileProvider = ({ children }) => {
     dispatch({ type: "FETCHING" });
 
     if (!USE_API) {
-      // Mock mode
+      // Mock mode - find schedule by ID
       await new Promise((resolve) => setTimeout(resolve, 500));
-      dispatch({ type: "FETCHED", payload: MOCK_SCHEDULE });
+      const schedule = MOCK_SCHEDULES.find(s => s._id === scheduleId) || MOCK_SCHEDULE;
+      dispatch({ type: "FETCHED", payload: schedule });
       return;
     }
 
