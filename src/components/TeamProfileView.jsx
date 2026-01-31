@@ -17,7 +17,6 @@ import {
   Td,
   Link,
   Badge,
-  Tabs,
   TabList,
   TabPanels,
   Tab,
@@ -38,6 +37,7 @@ import { useDocuments, useLayout } from "../context/_useContext";
 import { GridView } from "./Document/GridView";
 import DocumentDrawer from "./Document/DocumentDrawer";
 import TeamQualityDocuments from "./TeamQualityDocuments";
+import ResponsiveTabs from "./ResponsiveTabs";
 
 const TeamProfileView = ({ team, isValidDate, onManageObjectives }) => {
   const borderColor = useColorModeValue("white", "gray.700");
@@ -122,7 +122,7 @@ const TeamProfileView = ({ team, isValidDate, onManageObjectives }) => {
           </CardBody>
         </Card>
 
-        <Tabs
+        <ResponsiveTabs
           colorScheme="brandPrimary"
           index={tabIndex}
           onChange={handleTabsChange}
@@ -493,7 +493,7 @@ const TeamProfileView = ({ team, isValidDate, onManageObjectives }) => {
               )}
             </TabPanel>
           </TabPanels>
-        </Tabs>
+        </ResponsiveTabs>
       </Box>
       <DocumentDrawer
         document={selectedDocument}

@@ -16,7 +16,6 @@ import {
   Wrap,
   WrapItem,
   Button,
-  Tabs,
   TabList,
   Tab,
   TabPanels,
@@ -39,6 +38,7 @@ import moment from "moment";
 import FindingsForm from "./FindingsForm";
 import ActionPlanForm from "./ActionPlanForm";
 import VerificationForm from "./VerificationForm";
+import ResponsiveTabs from "../../../components/ResponsiveTabs";
 
 // Map compliance values to display names and colors
 const COMPLIANCE_DISPLAY = {
@@ -311,7 +311,7 @@ const FindingCard = ({
 
               {/* Tabs for Report, Action Plan, and Verification - Only for MINOR_NC/MAJOR_NC with report */}
               {shouldShowActionPlan ? (
-                <Tabs colorScheme="brandPrimary">
+                <ResponsiveTabs colorScheme="brandPrimary">
                   <TabList>
                     <Tab>
                       <HStack spacing={2}>
@@ -646,7 +646,7 @@ const FindingCard = ({
                       )}
                     </TabPanel>
                   </TabPanels>
-                </Tabs>
+                </ResponsiveTabs>
               ) : (
                 /* Report Section - For findings without tabs (non-NC or without report) */
                 finding.report && (

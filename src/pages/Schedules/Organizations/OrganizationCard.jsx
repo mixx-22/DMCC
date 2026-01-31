@@ -18,7 +18,6 @@ import {
   WrapItem,
   Flex,
   Collapse,
-  Tabs,
   TabList,
   TabPanels,
   Tab,
@@ -59,7 +58,6 @@ import {
   useLayout,
 } from "../../../context/_useContext";
 import Timestamp from "../../../components/Timestamp";
-
 import { GridView } from "../../../components/Document/GridView";
 import { formatDateRange } from "../../../utils/helpers";
 import DocumentDrawer from "../../../components/Document/DocumentDrawer";
@@ -70,6 +68,7 @@ import VisitComplianceForm from "./VisitComplianceForm";
 import SetVerdictModal from "./SetVerdictModal";
 import { calculateOrganizationVerdict } from "../../../utils/helpers";
 import TeamQualityDocuments from "../../../components/TeamQualityDocuments";
+import ResponsiveTabs from "../../../components/ResponsiveTabs";
 import PreviousAuditFindings from "./PreviousAuditFindings";
 
 // Tab indices for better maintainability
@@ -144,6 +143,7 @@ const OrganizationCard = ({
 
   // State to track verdict modal
   const [isVerdictModalOpen, setIsVerdictModalOpen] = useState(false);
+
   // Calculate the organization verdict
   const calculatedVerdict = calculateOrganizationVerdict(organization);
 
@@ -377,33 +377,58 @@ const OrganizationCard = ({
             _hover={{ bg: headerHoverBg }}
             transition="background 0.2s"
           >
-            <HStack align="center" spacing={2}>
-              <Avatar size="sm" name={team.name} />
-              <Text fontWeight="bold" fontSize="lg">
-                {team?.name || "Unknown Team"}
-              </Text>
-              {loading && <Spinner size="sm" />}
-            </HStack>
+            <Stack>
+              <Hide above="sm">
+                {organization.verdict && (
+                  <Box>
+                    <Tooltip
+                      label={`${team?.name || "Organization"} Final Verdict`}
+                    >
+                      <Badge
+                        colorScheme={
+                          COMPLIANCE_DISPLAY[organization.verdict]?.color ||
+                          "gray"
+                        }
+                        fontSize="xs"
+                      >
+                        {COMPLIANCE_DISPLAY[organization.verdict]?.label ||
+                          organization.verdict}
+                      </Badge>
+                    </Tooltip>
+                  </Box>
+                )}
+              </Hide>
+              <HStack align="center" spacing={2}>
+                <Avatar size="sm" name={team.name} />
+                <Text fontWeight="bold" fontSize="lg" noOfLines={1}>
+                  {team?.name || "Unknown Team"}
+                </Text>
+                {loading && <Spinner size="sm" />}
+              </HStack>
+            </Stack>
             <HStack align="center" spacing={0}>
-              {/* Display verdict badge */}
-              {organization.verdict && (
-                <Tooltip label="Organization Final Verdict">
-                  <Badge
-                    colorScheme={
-                      COMPLIANCE_DISPLAY[organization.verdict]?.color || "gray"
-                    }
-                    fontSize="xs"
+              <Hide below="md">
+                {/* Display verdict badge */}
+                {organization.verdict && (
+                  <Tooltip
+                    label={`${team?.name || "Organization"} Final Verdict`}
                   >
-                    {COMPLIANCE_DISPLAY[organization.verdict]?.label ||
-                      organization.verdict}
-                  </Badge>
-                </Tooltip>
-              )}
-              {organization.verdict && !isExpanded && (
-                <Box px={2}> &middot; </Box>
-              )}
-              {!isExpanded && (
-                <Hide below="md">
+                    <Badge
+                      colorScheme={
+                        COMPLIANCE_DISPLAY[organization.verdict]?.color ||
+                        "gray"
+                      }
+                      fontSize="xs"
+                    >
+                      {COMPLIANCE_DISPLAY[organization.verdict]?.label ||
+                        organization.verdict}
+                    </Badge>
+                  </Tooltip>
+                )}
+                {organization.verdict && !isExpanded && (
+                  <Box px={2}> &middot; </Box>
+                )}
+                {!isExpanded && (
                   <Badge
                     colorScheme={
                       COMPLIANCE_DISPLAY[organization.verdict]?.color || "gray"
@@ -412,8 +437,8 @@ const OrganizationCard = ({
                   >
                     {latestVisitDate}
                   </Badge>
-                </Hide>
-              )}
+                )}
+              </Hide>
               <IconButton
                 icon={isExpanded ? <FiChevronUp /> : <FiChevronDown />}
                 size="sm"
@@ -475,7 +500,7 @@ const OrganizationCard = ({
           <Collapse in={isExpanded} animateOpacity>
             <Box pt={0}>
               {/* Tabs Section */}
-              <Tabs
+              <ResponsiveTabs
                 colorScheme="brandPrimary"
                 onChange={(index) => setActiveTabIndex(index)}
               >
@@ -1122,10 +1147,7 @@ const OrganizationCard = ({
                       <TeamQualityDocuments
                         readOnly
                         teamId={team._id || team.id}
-                        isActive={
-                          isExpanded &&
-                          activeTabIndex === TAB_INDICES.QUALITY_DOCUMENTS
-                        }
+                        isActive={isExpanded && activeTabIndex === 3}
                       />
                     ) : (
                       <Center minH="xs">
@@ -1180,7 +1202,7 @@ const OrganizationCard = ({
                     />
                   </TabPanel>
                 </TabPanels>
-              </Tabs>
+              </ResponsiveTabs>
             </Box>
           </Collapse>
         </CardBody>
