@@ -71,7 +71,7 @@ const Organizations = ({ schedule = {}, setFormData = () => {} }) => {
               auditors={org.auditors || []}
               isExpanded={expandedOrgIds.has(org._id)}
               onToggleExpanded={() => toggleExpanded(org._id)}
-              {...{ schedule }}
+              schedule={schedule}
             />
           ))}
         </VStack>

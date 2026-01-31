@@ -59,6 +59,7 @@ import {
   useLayout,
 } from "../../../context/_useContext";
 import Timestamp from "../../../components/Timestamp";
+
 import { GridView } from "../../../components/Document/GridView";
 import { formatDateRange } from "../../../utils/helpers";
 import DocumentDrawer from "../../../components/Document/DocumentDrawer";
@@ -143,7 +144,6 @@ const OrganizationCard = ({
 
   // State to track verdict modal
   const [isVerdictModalOpen, setIsVerdictModalOpen] = useState(false);
-
   // Calculate the organization verdict
   const calculatedVerdict = calculateOrganizationVerdict(organization);
 
@@ -530,7 +530,7 @@ const OrganizationCard = ({
                     fontWeight={"normal"}
                   >
                     <HStack spacing={1}>
-                      <Text>Previous Audit Findings</Text>
+                      <Text>Previous Findings</Text>
                     </HStack>
                   </Tab>
                 </TabList>
