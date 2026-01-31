@@ -490,7 +490,16 @@ const OrganizationCard = ({
                                               zIndex={2}
                                               boxSize={6}
                                               borderRadius="full"
-                                              colorScheme="purple"
+                                              colorScheme={
+                                                {
+                                                  COMPLIANT: "green",
+                                                  MAJOR_NC: "red",
+                                                  MINOR_NC: "orange",
+                                                }[visit.compliance] ||
+                                                (hasMajorNC && "error") ||
+                                                (hasMinorNC && "warning") ||
+                                                "purple"
+                                              }
                                               justifyContent="center"
                                               alignItems="center"
                                               display="flex"
@@ -500,11 +509,13 @@ const OrganizationCard = ({
                                           </Box>
                                           <Badge
                                             colorScheme={
-                                              hasMajorNC
-                                                ? "error"
-                                                : hasMinorNC
-                                                  ? "warning"
-                                                  : undefined
+                                              {
+                                                COMPLIANT: "green",
+                                                MAJOR_NC: "red",
+                                                MINOR_NC: "orange",
+                                              }[visit.compliance] ||
+                                              (hasMajorNC && "error") ||
+                                              (hasMinorNC && "warning")
                                             }
                                           >
                                             {formatDateRange(
@@ -515,24 +526,29 @@ const OrganizationCard = ({
 
                                           {/* Visit Compliance Badge */}
                                           {visit?.compliance && (
-                                            <Badge
-                                              colorScheme={
-                                                visit.compliance === "COMPLIANT"
-                                                  ? "green"
-                                                  : visit.compliance ===
-                                                      "MAJOR_NC"
-                                                    ? "red"
+                                            <>
+                                              {" "}
+                                              &middot;{" "}
+                                              <Badge
+                                                colorScheme={
+                                                  visit.compliance ===
+                                                  "COMPLIANT"
+                                                    ? "green"
                                                     : visit.compliance ===
-                                                        "MINOR_NC"
-                                                      ? "orange"
-                                                      : "blue"
-                                              }
-                                              fontSize="xs"
-                                            >
-                                              {visit.compliance === "COMPLIANT"
-                                                ? "✓ COMPLIANT"
-                                                : COMPLIANCE_DISPLAY[visit.compliance]?.label || visit.compliance}
-                                            </Badge>
+                                                        "MAJOR_NC"
+                                                      ? "red"
+                                                      : visit.compliance ===
+                                                          "MINOR_NC"
+                                                        ? "orange"
+                                                        : "blue"
+                                                }
+                                                fontSize="xs"
+                                              >
+                                                {COMPLIANCE_DISPLAY[
+                                                  visit.compliance
+                                                ]?.label || visit.compliance}
+                                              </Badge>
+                                            </>
                                           )}
 
                                           <Spacer />
