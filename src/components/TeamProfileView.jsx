@@ -37,6 +37,7 @@ import { Link as RouterLink } from "react-router-dom";
 import { useDocuments, useLayout } from "../context/_useContext";
 import { GridView } from "./Document/GridView";
 import DocumentDrawer from "./Document/DocumentDrawer";
+import TeamQualityDocuments from "./TeamQualityDocuments";
 
 const TeamProfileView = ({ team, isValidDate, onManageObjectives }) => {
   const borderColor = useColorModeValue("white", "gray.700");
@@ -130,6 +131,7 @@ const TeamProfileView = ({ team, isValidDate, onManageObjectives }) => {
             <Tab>Info</Tab>
             <Tab>Objectives</Tab>
             <Tab>Documents</Tab>
+            <Tab>Quality Documents</Tab>
           </TabList>
 
           <TabPanels>
@@ -482,6 +484,10 @@ const TeamProfileView = ({ team, isValidDate, onManageObjectives }) => {
                   </VStack>
                 </Center>
               )}
+            </TabPanel>
+
+            <TabPanel>
+              <TeamQualityDocuments teamId={team._id || team.id} />
             </TabPanel>
           </TabPanels>
         </Tabs>
