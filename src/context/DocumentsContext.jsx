@@ -568,7 +568,7 @@ export const DocumentsProvider = ({ children }) => {
    * @param {Object} document - The document to publish
    * @returns {Promise<Object>} - The updated document
    */
-  const publishDocument = async (document) => {
+  const publishDocument = async (document, metadata = {}) => {
     const validation = validateTransition(document, "publish");
     if (!validation.valid) {
       throw new Error(validation.message);
@@ -577,13 +577,22 @@ export const DocumentsProvider = ({ children }) => {
     const requestId = document?.requestData?.requestId || document?.requestId;
 
     try {
-      const response = await apiService.publishDocument(requestId);
+      const response = await apiService.publishDocument(requestId, metadata);
 
       if (response.success !== false) {
         const expectedState = getExpectedState("publish");
 
-        // Update the document with new lifecycle state
-        const updatedDoc = await updateDocument(document, expectedState);
+        // Update the document with new lifecycle state and metadata
+        const updatedDoc = await updateDocument(document, {
+          ...expectedState,
+          metadata: {
+            ...document.metadata,
+            version: metadata.version,
+            documentNumber: metadata.documentNumber,
+            issuedDate: metadata.issuedDate,
+            effectivityDate: metadata.effectivityDate,
+          },
+        });
         return updatedDoc;
       } else {
         throw new Error(response.message || "Failed to publish document");

@@ -30,10 +30,11 @@ import { Select } from "chakra-react-select";
 import { useDropzone } from "react-dropzone";
 import { FiUploadCloud, FiFile, FiX, FiEdit } from "react-icons/fi";
 import { toast } from "sonner";
-import { useDocuments } from "../../../context/_useContext";
+import { useDocuments, useUser } from "../../../context/_useContext";
 import apiService from "../../../services/api";
 
 const FILE_TYPES_ENDPOINT = "/file-types";
+const TEAMS_ENDPOINT = import.meta.env.VITE_API_PACKAGE_TEAMS || "/teams";
 const USE_API = import.meta.env.VITE_USE_API !== "false";
 
 const MOCK_FILE_TYPES = [
@@ -46,21 +47,26 @@ const MOCK_FILE_TYPES = [
 
 const QualityDocumentUploadModal = ({ isOpen, onClose, parentId, path }) => {
   const { createDocument } = useDocuments();
+  const { user: currentUser } = useUser();
   const [files, setFiles] = useState([]);
   const [fileTypes, setFileTypes] = useState([]);
+  const [teams, setTeams] = useState([]);
   const [loadingFileTypes, setLoadingFileTypes] = useState(false);
+  const [loadingTeams, setLoadingTeams] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [editingMetadata, setEditingMetadata] = useState(null);
   const [tempMetadata, setTempMetadata] = useState({
     documentNumber: "",
     issuedDate: "",
     effectivityDate: "",
+    team: null,
   });
 
   // Fetch file types when modal opens
   useEffect(() => {
     if (isOpen) {
       fetchFileTypes();
+      fetchTeams();
     } else {
       // Reset files when modal closes
       setFiles([]);
@@ -97,6 +103,49 @@ const QualityDocumentUploadModal = ({ isOpen, onClose, parentId, path }) => {
     }
   };
 
+  const fetchTeams = async () => {
+    setLoadingTeams(true);
+    try {
+      if (!USE_API) {
+        setTeams([]);
+        setLoadingTeams(false);
+        return;
+      }
+
+      const data = await apiService.request(TEAMS_ENDPOINT, {
+        method: "GET",
+        params: {
+          limit: 100,
+        },
+      });
+
+      const fetchedTeams = data.data || data.teams || [];
+
+      // Filter teams where user is a member or leader
+      const userId = currentUser?.id || currentUser?._id;
+      const userTeams = fetchedTeams.filter((team) => {
+        const isMember = team.members?.some(
+          (member) => (member.id || member._id) === userId,
+        );
+        const isLeader = team.leaders?.some(
+          (leader) => (leader.id || leader._id) === userId,
+        );
+        return isMember || isLeader;
+      });
+
+      setTeams(userTeams);
+    } catch (error) {
+      console.error("Failed to fetch teams:", error);
+      toast.error("Failed to Load Teams", {
+        description: "Could not load teams. Please try again.",
+        duration: 3000,
+      });
+      setTeams([]);
+    } finally {
+      setLoadingTeams(false);
+    }
+  };
+
   const onDrop = useCallback((acceptedFiles) => {
     const newFiles = acceptedFiles.map((file) => ({
       file,
@@ -104,6 +153,7 @@ const QualityDocumentUploadModal = ({ isOpen, onClose, parentId, path }) => {
       documentNumber: "",
       issuedDate: "",
       effectivityDate: "",
+      team: null,
       id: Math.random().toString(36).substring(2, 11),
     }));
     setFiles((prev) => [...prev, ...newFiles]);
@@ -151,6 +201,7 @@ const QualityDocumentUploadModal = ({ isOpen, onClose, parentId, path }) => {
       documentNumber: fileItem.documentNumber || "",
       issuedDate: fileItem.issuedDate || "",
       effectivityDate: fileItem.effectivityDate || "",
+      team: fileItem.team || null,
     });
   };
 
@@ -160,6 +211,7 @@ const QualityDocumentUploadModal = ({ isOpen, onClose, parentId, path }) => {
       documentNumber: "",
       issuedDate: "",
       effectivityDate: "",
+      team: null,
     });
   };
 
@@ -195,6 +247,74 @@ const QualityDocumentUploadModal = ({ isOpen, onClose, parentId, path }) => {
       return;
     }
 
+    // Validation: Check if all files have required metadata for Request Quality Documents
+    if (path === "/request") {
+      const filesWithMissingMetadata = files.filter(
+        (f) =>
+          !f.documentNumber || !f.team || !f.issuedDate || !f.effectivityDate,
+      );
+      if (filesWithMissingMetadata.length > 0) {
+        toast.error("Validation Error", {
+          description:
+            "All files must have Document Number, Team, Issued Date, and Effectivity Date. Please edit metadata for each file before uploading.",
+          duration: 5000,
+        });
+        return;
+      }
+
+      // Check for duplicate document numbers in the batch
+      const documentNumbers = files
+        .map((f) => f.documentNumber)
+        .filter((num) => num);
+      const duplicates = documentNumbers.filter(
+        (num, index) => documentNumbers.indexOf(num) !== index,
+      );
+      if (duplicates.length > 0) {
+        toast.error("Validation Error", {
+          description: `Duplicate document numbers found: ${[...new Set(duplicates)].join(", ")}. Each document must have a unique document number.`,
+          duration: 5000,
+        });
+        return;
+      }
+
+      // Check for duplicate document numbers in the system
+      try {
+        const checkPromises = files.map(async (f) => {
+          const response = await apiService.request("/documents/quality", {
+            method: "GET",
+            params: {
+              documentNumber: f.documentNumber,
+              limit: 1,
+            },
+          });
+          return {
+            documentNumber: f.documentNumber,
+            exists: response.data && response.data.length > 0,
+          };
+        });
+
+        const results = await Promise.all(checkPromises);
+        const existingDocNumbers = results
+          .filter((r) => r.exists)
+          .map((r) => r.documentNumber);
+
+        if (existingDocNumbers.length > 0) {
+          toast.error("Validation Error", {
+            description: `Document number(s) already exist in the system: ${existingDocNumbers.join(", ")}. Please use unique document numbers.`,
+            duration: 5000,
+          });
+          return;
+        }
+      } catch (error) {
+        console.error("Error checking for duplicate document numbers:", error);
+        toast.warning("Warning", {
+          description:
+            "Could not verify document numbers. Please ensure they are unique.",
+          duration: 3000,
+        });
+      }
+    }
+
     setUploading(true);
 
     try {
@@ -218,10 +338,27 @@ const QualityDocumentUploadModal = ({ isOpen, onClose, parentId, path }) => {
               documentNumber: fileItem.documentNumber || "",
               issuedDate: fileItem.issuedDate || "",
               effectivityDate: fileItem.effectivityDate || "",
+              team: fileItem.team?.id || fileItem.team?._id || "",
             },
           });
           return { success: true, filename: fileItem.file.name };
         } catch (error) {
+          console.error("Upload error:", error);
+
+          // Handle duplicate document number error specifically
+          if (
+            error?.documentNumber ||
+            error?.message?.includes("already exists")
+          ) {
+            return {
+              success: false,
+              filename: fileItem.file.name,
+              documentNumber: error?.documentNumber || fileItem.documentNumber,
+              error: error?.message || "Document number already exists",
+              isDuplicate: true,
+            };
+          }
+
           return {
             success: false,
             filename: fileItem.file.name,
@@ -233,6 +370,18 @@ const QualityDocumentUploadModal = ({ isOpen, onClose, parentId, path }) => {
       const results = await Promise.all(uploadPromises);
       const successful = results.filter((r) => r.success);
       const failed = results.filter((r) => !r.success);
+      const duplicates = failed.filter((r) => r.isDuplicate);
+
+      if (duplicates.length > 0) {
+        const duplicateDocNumbers = [
+          ...new Set(duplicates.map((r) => r.documentNumber)),
+        ];
+        toast.error("Upload Failed - Duplicate Document Numbers", {
+          description: `Document number(s) already exist: ${duplicateDocNumbers.join(", ")}. Please use unique document numbers.`,
+          duration: 6000,
+        });
+        return;
+      }
 
       if (successful.length > 0 && failed.length === 0) {
         toast.success("Quality Documents Uploaded Successfully", {
@@ -607,6 +756,46 @@ const QualityDocumentUploadModal = ({ isOpen, onClose, parentId, path }) => {
                     })
                   }
                   placeholder="Enter document number"
+                />
+              </FormControl>
+              <FormControl>
+                <FormLabel>Team</FormLabel>
+                <Select
+                  value={
+                    tempMetadata.team
+                      ? {
+                          value: tempMetadata.team.id || tempMetadata.team._id,
+                          label: tempMetadata.team.name,
+                        }
+                      : null
+                  }
+                  onChange={(option) =>
+                    setTempMetadata({
+                      ...tempMetadata,
+                      team: option
+                        ? {
+                            id: option.value,
+                            _id: option.value,
+                            name: option.label,
+                          }
+                        : null,
+                    })
+                  }
+                  options={teams.map((team) => ({
+                    value: team.id || team._id,
+                    label: team.name,
+                  }))}
+                  placeholder="Select team..."
+                  isClearable
+                  isLoading={loadingTeams}
+                  isDisabled={loadingTeams}
+                  size="md"
+                  colorScheme="purple"
+                  useBasicStyles
+                  menuPortalTarget={document.body}
+                  styles={{
+                    menuPortal: (base) => ({ ...base, zIndex: 9999 }),
+                  }}
                 />
               </FormControl>
               <FormControl>

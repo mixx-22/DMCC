@@ -273,7 +273,15 @@ const QualityDocumentActions = ({ document, onUpdate }) => {
       case "publish":
         handleAction(
           "publish",
-          publishDocument,
+          () =>
+            publishDocument(document, {
+              version: suggestedVersion,
+              documentNumber,
+              issuedDate,
+              effectivityDate,
+              finalCopyFile,
+              documentId: document.id || document._id,
+            }),
           `Document published successfully as version ${suggestedVersion}`,
         );
         break;
@@ -316,11 +324,12 @@ const QualityDocumentActions = ({ document, onUpdate }) => {
   // Determine which buttons should be visible based on specific state combinations
   const showSubmit =
     status === -1 && checkedOut === 1 && (mode === "NEW" || mode === "DISCARD");
-  const showDiscard = status === -1 && checkedOut === 1 && mode === "REJECT";
+  const showDiscard =
+    status === -1 && checkedOut === 1 && (mode === "NEW" || mode === "REJECT");
   const showApprove = status === 0 && checkedOut === 0 && mode === "TEAM";
   const showReject = status === 0 && checkedOut === 0 && mode === "TEAM";
   const showPublish = status === 0 && checkedOut === 0 && mode === "CONTROLLER";
-  const showCheckOut = status === 2 && checkedOut === 0 && mode === "PUBLISH";
+  const showCheckOut = status === 2 && checkedOut === 0;
 
   // Don't render anything if no buttons should be visible
   const hasAnyVisibleButton =
@@ -613,49 +622,22 @@ const QualityDocumentActions = ({ document, onUpdate }) => {
                 </AlertDescription>
               </Alert>
 
-              {/* Current File Info */}
-              <Box>
-                <Text fontWeight="semibold" mb={2}>
-                  Current File:
+              {/* Version Summary */}
+              <Box
+                p={3}
+                bg="purple.50"
+                borderRadius="md"
+                borderWidth="1px"
+                borderColor="purple.200"
+              >
+                <Text fontSize="sm" fontWeight="semibold" mb={1}>
+                  Publishing as Version: {suggestedVersion}
                 </Text>
-                <HStack
-                  spacing={3}
-                  p={3}
-                  bg="gray.50"
-                  borderRadius="md"
-                  borderWidth="1px"
-                >
-                  <Icon as={FiFile} boxSize={5} color="gray.600" />
-                  <VStack align="start" spacing={0} flex={1}>
-                    <Text fontSize="sm" fontWeight="medium">
-                      {document?.metadata?.filename ||
-                        document?.title ||
-                        "Document"}
-                    </Text>
-                    <Text fontSize="xs" color="gray.600">
-                      {document?.metadata?.filename
-                        ?.toLowerCase()
-                        .endsWith(".pdf") ? (
-                        <Badge colorScheme="green" size="sm">
-                          PDF - Ready to publish
-                        </Badge>
-                      ) : (
-                        <Badge colorScheme="orange" size="sm">
-                          Non-PDF - Final copy required
-                        </Badge>
-                      )}
-                    </Text>
-                  </VStack>
-                  <Button
-                    size="sm"
-                    leftIcon={<FiDownload />}
-                    onClick={handleDownloadCurrentFile}
-                    isLoading={isDownloading}
-                    variant="outline"
-                  >
-                    Download
-                  </Button>
-                </HStack>
+                {changeDescription && (
+                  <Text fontSize="xs" color="gray.700">
+                    Changes: {changeDescription}
+                  </Text>
+                )}
               </Box>
 
               {/* Metadata Fields */}
@@ -703,6 +685,51 @@ const QualityDocumentActions = ({ document, onUpdate }) => {
                 </VStack>
               </Box>
 
+              {/* Current File Info */}
+              <Box>
+                <Text fontWeight="semibold" mb={2}>
+                  Current File:
+                </Text>
+                <HStack
+                  spacing={3}
+                  p={3}
+                  bg="gray.50"
+                  borderRadius="md"
+                  borderWidth="1px"
+                >
+                  <Icon as={FiFile} boxSize={5} color="gray.600" />
+                  <VStack align="start" spacing={0} flex={1}>
+                    <Text fontSize="sm" fontWeight="medium">
+                      {document?.metadata?.filename ||
+                        document?.title ||
+                        "Document"}
+                    </Text>
+                    <Text fontSize="xs" color="gray.600">
+                      {document?.metadata?.filename
+                        ?.toLowerCase()
+                        .endsWith(".pdf") ? (
+                        <Badge colorScheme="green" size="sm">
+                          PDF - Ready to publish
+                        </Badge>
+                      ) : (
+                        <Badge colorScheme="orange" size="sm">
+                          Non-PDF - Final copy required
+                        </Badge>
+                      )}
+                    </Text>
+                  </VStack>
+                  <Button
+                    size="sm"
+                    leftIcon={<FiDownload />}
+                    onClick={handleDownloadCurrentFile}
+                    isLoading={isDownloading}
+                    variant="outline"
+                  >
+                    Download
+                  </Button>
+                </HStack>
+              </Box>
+
               {/* Upload Final Copy */}
               <FormControl>
                 <FormLabel fontWeight="semibold">
@@ -730,24 +757,6 @@ const QualityDocumentActions = ({ document, onUpdate }) => {
                     : "Optional: Upload a new PDF version to replace the current file"}
                 </Text>
               </FormControl>
-
-              {/* Version Summary */}
-              <Box
-                p={3}
-                bg="purple.50"
-                borderRadius="md"
-                borderWidth="1px"
-                borderColor="purple.200"
-              >
-                <Text fontSize="sm" fontWeight="semibold" mb={1}>
-                  Publishing as Version: {suggestedVersion}
-                </Text>
-                {changeDescription && (
-                  <Text fontSize="xs" color="gray.700">
-                    Changes: {changeDescription}
-                  </Text>
-                )}
-              </Box>
             </VStack>
           </ModalBody>
           <ModalFooter>

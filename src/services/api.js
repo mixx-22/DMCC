@@ -376,16 +376,45 @@ export const apiService = {
   /**
    * Publish a document
    * @param {string} requestId - The request ID from the document
+   * @param {Object} metadata - Metadata including version, documentNumber, dates, and file
    * @returns {Promise<Object>}
    */
-  async publishDocument(requestId) {
+  async publishDocument(requestId, metadata = {}) {
     if (!USE_API) {
       // Mock mode
       return { success: true };
     }
 
+    // Prepare form data if there's a file
+    let body;
+    let headers = {};
+
+    if (metadata.finalCopyFile) {
+      const formData = new FormData();
+      formData.append("file", metadata.finalCopyFile);
+      formData.append("version", metadata.version || "");
+      formData.append("documentNumber", metadata.documentNumber || "");
+      formData.append("issuedDate", metadata.issuedDate || "");
+      formData.append("effectivityDate", metadata.effectivityDate || "");
+      if (metadata.documentId) {
+        formData.append("documentId", metadata.documentId);
+      }
+      body = formData;
+      // Don't set Content-Type header, let browser set it with boundary
+    } else {
+      body = JSON.stringify({
+        version: metadata.version,
+        documentNumber: metadata.documentNumber,
+        issuedDate: metadata.issuedDate,
+        effectivityDate: metadata.effectivityDate,
+        documentId: metadata.documentId,
+      });
+    }
+
     const response = await this.request(`/request/${requestId}?type=publish`, {
       method: "PUT",
+      body,
+      headers,
     });
 
     return response;

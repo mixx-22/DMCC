@@ -216,7 +216,18 @@ const Sidebar = () => {
           // { path: "/documents?status=pending", label: "Pending Approval" },
         ],
       },
-      { id: "request", path: "/request", label: "Requests", icon: FiClock },
+      {
+        id: "request",
+        path: "/request",
+        label: "Requests",
+        icon: FiClock,
+        children: [
+          { path: "/request?tab=0", label: "My Requests" },
+          { path: "/request?tab=1", label: "For Approval" },
+          { path: "/request?tab=2", label: "For Publish" },
+          { path: "/request?tab=3", label: "Request History" },
+        ],
+      },
       // { id: "archive", path: "/archive", label: "Archive", icon: FiArchive },
       // {
       //   id: "certifications",
