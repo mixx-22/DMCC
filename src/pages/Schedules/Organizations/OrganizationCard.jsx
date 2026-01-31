@@ -481,6 +481,7 @@ const OrganizationCard = ({
                 index={activeTabIndex}
                 colorScheme="brandPrimary"
                 onChange={(index) => setActiveTabIndex(index)}
+                triggerUpdate={isExpanded}
               >
                 <ResponsiveTabList>
                   <ResponsiveTab

@@ -44,6 +44,7 @@ export const ResponsiveTabs = ({
   index,
   onChange,
   colorScheme = "brandPrimary",
+  triggerUpdate, // Optional: External trigger to force indicator recalculation (e.g., when parent Collapse opens)
   ...props
 }) => {
   const bg = useColorModeValue(`${colorScheme}.600`, `${colorScheme}.200`);
@@ -60,6 +61,16 @@ export const ResponsiveTabs = ({
     const timer = setTimeout(() => setMounted(true), 0);
     return () => clearTimeout(timer);
   }, []);
+
+  // Re-trigger mounted state when triggerUpdate changes (e.g., when Collapse opens)
+  useEffect(() => {
+    if (triggerUpdate !== undefined) {
+      // Reset and re-mount indicator to recalculate dimensions
+      setMounted(false);
+      const timer = setTimeout(() => setMounted(true), 300); // Wait for Collapse animation (default 300ms)
+      return () => clearTimeout(timer);
+    }
+  }, [triggerUpdate]);
 
   // Extract tab labels and panels from children - memoized to prevent unnecessary recalculation
   const { tabs, tabListElement, tabPanelsElement } = useMemo(() => {
