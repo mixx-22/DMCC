@@ -115,7 +115,7 @@ const PreviousAuditFindings = ({
     } finally {
       setLoading(false);
     }
-  }, [previousAudit]);
+  }, [previousAudit, team]);
 
   useEffect(() => {
     // Only fetch if component is active and we have an previousAudit
