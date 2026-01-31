@@ -18,11 +18,6 @@ import {
   WrapItem,
   Flex,
   Collapse,
-  Tabs,
-  TabList,
-  TabPanels,
-  Tab,
-  TabPanel,
   Button,
   Center,
   Stack,
@@ -71,6 +66,12 @@ import SetVerdictModal from "./SetVerdictModal";
 import { calculateOrganizationVerdict } from "../../../utils/helpers";
 import TeamQualityDocuments from "../../../components/TeamQualityDocuments";
 import PreviousAuditFindings from "./PreviousAuditFindings";
+import ResponsiveTabs, {
+  ResponsiveTab,
+  ResponsiveTabList,
+  ResponsiveTabPanel,
+  ResponsiveTabPanels,
+} from "../../../components/common/ResponsiveTabs";
 
 // Tab indices for better maintainability
 const TAB_INDICES = {
@@ -386,24 +387,25 @@ const OrganizationCard = ({
             </HStack>
             <HStack align="center" spacing={0}>
               {/* Display verdict badge */}
-              {organization.verdict && (
-                <Tooltip label="Organization Final Verdict">
-                  <Badge
-                    colorScheme={
-                      COMPLIANCE_DISPLAY[organization.verdict]?.color || "gray"
-                    }
-                    fontSize="xs"
-                  >
-                    {COMPLIANCE_DISPLAY[organization.verdict]?.label ||
-                      organization.verdict}
-                  </Badge>
-                </Tooltip>
-              )}
-              {organization.verdict && !isExpanded && (
-                <Box px={2}> &middot; </Box>
-              )}
-              {!isExpanded && (
-                <Hide below="md">
+              <Hide below="md">
+                {organization.verdict && (
+                  <Tooltip label="Organization Final Verdict">
+                    <Badge
+                      colorScheme={
+                        COMPLIANCE_DISPLAY[organization.verdict]?.color ||
+                        "gray"
+                      }
+                      fontSize="xs"
+                    >
+                      {COMPLIANCE_DISPLAY[organization.verdict]?.label ||
+                        organization.verdict}
+                    </Badge>
+                  </Tooltip>
+                )}
+                {organization.verdict && !isExpanded && (
+                  <Box px={2}> &middot; </Box>
+                )}
+                {!isExpanded && (
                   <Badge
                     colorScheme={
                       COMPLIANCE_DISPLAY[organization.verdict]?.color || "gray"
@@ -412,8 +414,8 @@ const OrganizationCard = ({
                   >
                     {latestVisitDate}
                   </Badge>
-                </Hide>
-              )}
+                )}
+              </Hide>
               <IconButton
                 icon={isExpanded ? <FiChevronUp /> : <FiChevronDown />}
                 size="sm"
@@ -475,28 +477,30 @@ const OrganizationCard = ({
           <Collapse in={isExpanded} animateOpacity>
             <Box pt={0}>
               {/* Tabs Section */}
-              <Tabs
+              <ResponsiveTabs
+                index={activeTabIndex}
                 colorScheme="brandPrimary"
                 onChange={(index) => setActiveTabIndex(index)}
+                triggerUpdate={isExpanded}
               >
-                <TabList>
-                  <Tab
+                <ResponsiveTabList>
+                  <ResponsiveTab
                     sx={{ [$tabColor.variable]: tabColor }}
                     fontWeight={"normal"}
                   >
                     <HStack spacing={1}>
                       <Text>Visits</Text>
                     </HStack>
-                  </Tab>
-                  <Tab
+                  </ResponsiveTab>
+                  <ResponsiveTab
                     sx={{ [$tabColor.variable]: tabColor }}
                     fontWeight={"normal"}
                   >
                     <HStack spacing={1}>
                       <Text>Auditors</Text>
                     </HStack>
-                  </Tab>
-                  <Tab
+                  </ResponsiveTab>
+                  <ResponsiveTab
                     sx={{ [$tabColor.variable]: tabColor }}
                     fontWeight={"normal"}
                   >
@@ -508,36 +512,36 @@ const OrganizationCard = ({
                         <Text>Details</Text>
                       </Hide>
                     </HStack>
-                  </Tab>
-                  <Tab
+                  </ResponsiveTab>
+                  <ResponsiveTab
                     sx={{ [$tabColor.variable]: tabColor }}
                     fontWeight={"normal"}
                   >
                     <HStack spacing={1}>
                       <Text>Quality Documents</Text>
                     </HStack>
-                  </Tab>
-                  <Tab
+                  </ResponsiveTab>
+                  <ResponsiveTab
                     sx={{ [$tabColor.variable]: tabColor }}
                     fontWeight={"normal"}
                   >
                     <HStack spacing={1}>
                       <Text>Other Documents</Text>
                     </HStack>
-                  </Tab>
-                  <Tab
+                  </ResponsiveTab>
+                  <ResponsiveTab
                     sx={{ [$tabColor.variable]: tabColor }}
                     fontWeight={"normal"}
                   >
                     <HStack spacing={1}>
                       <Text>Previous Findings</Text>
                     </HStack>
-                  </Tab>
-                </TabList>
+                  </ResponsiveTab>
+                </ResponsiveTabList>
 
-                <TabPanels>
+                <ResponsiveTabPanels>
                   {/* Visit Details Tab */}
-                  <TabPanel p={0}>
+                  <ResponsiveTabPanel p={0}>
                     {!showVisitForm && (
                       <>
                         {organization?.visits?.length > 0 ? (
@@ -945,9 +949,9 @@ const OrganizationCard = ({
                         </Flex>
                       )}
                     </Box>
-                  </TabPanel>
+                  </ResponsiveTabPanel>
                   {/* Team Details Tab */}
-                  <TabPanel>
+                  <ResponsiveTabPanel>
                     {/* Auditors Section - Always Visible */}
                     <Box mb={4}>
                       <Text fontSize="sm" color="gray.500" mb={2}>
@@ -1016,9 +1020,9 @@ const OrganizationCard = ({
                         </Text>
                       )}
                     </Box>
-                  </TabPanel>
+                  </ResponsiveTabPanel>
                   {/* Team Details Tab */}
-                  <TabPanel>
+                  <ResponsiveTabPanel>
                     <VStack align="stretch" spacing={4}>
                       {/* Team Description */}
                       {team?.description && (
@@ -1114,10 +1118,9 @@ const OrganizationCard = ({
                         </Box>
                       )}
                     </VStack>
-                  </TabPanel>
-
+                  </ResponsiveTabPanel>
                   {/* Quality Documents Tab */}
-                  <TabPanel pt={0} px={0}>
+                  <ResponsiveTabPanel pt={0} px={0}>
                     {team?._id || team?.id ? (
                       <TeamQualityDocuments
                         readOnly
@@ -1134,10 +1137,9 @@ const OrganizationCard = ({
                         </Text>
                       </Center>
                     )}
-                  </TabPanel>
-
+                  </ResponsiveTabPanel>
                   {/* Other Documents Tab */}
-                  <TabPanel px={4}>
+                  <ResponsiveTabPanel px={4}>
                     {organization?.team?.folderId ? (
                       documentsLoading ? (
                         <Center minH="xs">
@@ -1166,10 +1168,9 @@ const OrganizationCard = ({
                         </Text>
                       </Center>
                     )}
-                  </TabPanel>
-
+                  </ResponsiveTabPanel>
                   {/* Previous Audit Findings Tab */}
-                  <TabPanel px={0} pt={0}>
+                  <ResponsiveTabPanel px={0} pt={0}>
                     <PreviousAuditFindings
                       {...{ schedule, organization }}
                       auditScheduleId={organization?.auditScheduleId}
@@ -1178,9 +1179,9 @@ const OrganizationCard = ({
                         activeTabIndex === TAB_INDICES.PREVIOUS_AUDIT_FINDINGS
                       }
                     />
-                  </TabPanel>
-                </TabPanels>
-              </Tabs>
+                  </ResponsiveTabPanel>
+                </ResponsiveTabPanels>
+              </ResponsiveTabs>
             </Box>
           </Collapse>
         </CardBody>

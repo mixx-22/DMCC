@@ -17,11 +17,6 @@ import {
   Td,
   Link,
   Badge,
-  Tabs,
-  TabList,
-  TabPanels,
-  Tab,
-  TabPanel,
   Button,
   Center,
   Stack,
@@ -30,6 +25,12 @@ import {
   Spacer,
   Tooltip,
 } from "@chakra-ui/react";
+import ResponsiveTabs, {
+  ResponsiveTabList,
+  ResponsiveTab,
+  ResponsiveTabPanels,
+  ResponsiveTabPanel,
+} from "./common/ResponsiveTabs";
 import { FiUsers, FiTarget, FiFolder, FiExternalLink } from "react-icons/fi";
 import { useState, useEffect } from "react";
 import Timestamp from "./Timestamp";
@@ -87,14 +88,14 @@ const TeamProfileView = ({ team, isValidDate, onManageObjectives }) => {
   return (
     <>
       <Box>
-        <Card mb={6} overflow="hidden">
+        <Card mb={{ base: 2, md: 6 }} overflow="hidden">
           <Box h="120px" bg={headerBg} position="relative" />
 
           <CardBody mt="-60px" position="relative">
             <Flex
               direction={{ base: "column", md: "row" }}
               align={{ base: "center", md: "flex-start" }}
-              gap={6}
+              gap={{ base: 2, md: 6 }}
             >
               <Box position="relative">
                 <Avatar
@@ -122,27 +123,27 @@ const TeamProfileView = ({ team, isValidDate, onManageObjectives }) => {
           </CardBody>
         </Card>
 
-        <Tabs
-          colorScheme="brandPrimary"
+        <ResponsiveTabs
           index={tabIndex}
+          colorScheme="brandPrimary"
           onChange={handleTabsChange}
         >
-          <TabList>
-            <Tab>Info</Tab>
-            <Tab>Objectives</Tab>
-            <Tab>Quality Documents</Tab>
-            <Tab>Other Documents</Tab>
-          </TabList>
+          <ResponsiveTabList>
+            <ResponsiveTab>Members</ResponsiveTab>
+            <ResponsiveTab>Objectives</ResponsiveTab>
+            <ResponsiveTab>Quality Documents</ResponsiveTab>
+            <ResponsiveTab>Other Documents</ResponsiveTab>
+          </ResponsiveTabList>
 
-          <TabPanels>
-            <TabPanel px={0}>
+          <ResponsiveTabPanels>
+            <ResponsiveTabPanel px={0}>
               <Flex
-                gap={6}
+                gap={{ base: 2, md: 6 }}
                 flexWrap={{ base: "wrap", lg: "nowrap" }}
                 alignItems={"flex-start"}
               >
                 <Flex
-                  gap={6}
+                  gap={{ base: 2, md: 6 }}
                   flexWrap="wrap"
                   w={{ base: "full", lg: "xs" }}
                   flexDir={{ base: "column-reverse", lg: "column" }}
@@ -236,7 +237,10 @@ const TeamProfileView = ({ team, isValidDate, onManageObjectives }) => {
                   </Card>
                   <Card w="full" flex={1}>
                     <CardBody>
-                      <Flex gap={6} flexDir={{ base: "row", lg: "column" }}>
+                      <Flex
+                        gap={{ base: 2, md: 6 }}
+                        flexDir={{ base: "row", lg: "column" }}
+                      >
                         {isValidDate(team.createdAt) && (
                           <Box>
                             <Text fontSize="sm" color="gray.500" mb={1}>
@@ -344,9 +348,9 @@ const TeamProfileView = ({ team, isValidDate, onManageObjectives }) => {
                   </CardBody>
                 </Card>
               </Flex>
-            </TabPanel>
+            </ResponsiveTabPanel>
 
-            <TabPanel px={0}>
+            <ResponsiveTabPanel px={0}>
               <Flex justify="flex-end" mb={4}>
                 <Button
                   leftIcon={<FiTarget />}
@@ -413,16 +417,16 @@ const TeamProfileView = ({ team, isValidDate, onManageObjectives }) => {
                   </VStack>
                 </CardBody>
               </Card>
-            </TabPanel>
+            </ResponsiveTabPanel>
 
-            <TabPanel px={0}>
+            <ResponsiveTabPanel px={0}>
               <TeamQualityDocuments
                 teamId={team._id || team.id}
                 isActive={tabIndex === 2}
               />
-            </TabPanel>
+            </ResponsiveTabPanel>
 
-            <TabPanel px={0} pt={0}>
+            <ResponsiveTabPanel px={0} pt={0}>
               {team.folderId && (
                 <HStack px={0} py={4} alignItems="center">
                   <Text fontSize="sm" color="gray.500">
@@ -491,9 +495,9 @@ const TeamProfileView = ({ team, isValidDate, onManageObjectives }) => {
                   </VStack>
                 </Center>
               )}
-            </TabPanel>
-          </TabPanels>
-        </Tabs>
+            </ResponsiveTabPanel>
+          </ResponsiveTabPanels>
+        </ResponsiveTabs>
       </Box>
       <DocumentDrawer
         document={selectedDocument}
