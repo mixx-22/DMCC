@@ -48,6 +48,7 @@ import {
   FiExternalLink,
   FiPlus,
   FiCalendar,
+  FiCheckCircle,
 } from "react-icons/fi";
 import { useEffect, useState } from "react";
 import { Link as RouterLink } from "react-router-dom";
@@ -65,6 +66,8 @@ import FindingsForm from "./FindingsForm";
 import FindingsList from "./FindingsList";
 import VisitManager from "./VisitManager";
 import VisitComplianceForm from "./VisitComplianceForm";
+import SetVerdictModal from "./SetVerdictModal";
+import { calculateOrganizationVerdict } from "../../../utils/helpers";
 
 const OrganizationCard = ({
   loading = false,
@@ -123,6 +126,12 @@ const OrganizationCard = ({
   // State to track which visit's compliance form is shown (visitIndex)
   const [editingVisitComplianceFor, setEditingVisitComplianceFor] =
     useState(null);
+
+  // State to track verdict modal
+  const [isVerdictModalOpen, setIsVerdictModalOpen] = useState(false);
+
+  // Calculate the organization verdict
+  const calculatedVerdict = calculateOrganizationVerdict(organization);
 
   useEffect(() => {
     // Only fetch documents if organization is expanded AND user is on Documents tab (index 3)
@@ -296,6 +305,30 @@ const OrganizationCard = ({
     }
   };
 
+  const handleSetVerdict = async (verdict) => {
+    // Update organization with new verdict
+    dispatch({
+      type: "UPDATE_ORGANIZATION",
+      payload: {
+        ...organization,
+        verdict,
+        teamId: organization.teamId || team,
+      },
+    });
+
+    try {
+      // Persist to server
+      await updateOrganization(organization._id, {
+        ...organization,
+        verdict,
+        teamId: organization.teamId || team,
+      });
+    } catch (error) {
+      console.error("Failed to set organization verdict:", error);
+      throw error;
+    }
+  };
+
   const latestVisitDate = (() => {
     const { visits = [] } = organization;
     if (!visits?.length) return "";
@@ -330,6 +363,20 @@ const OrganizationCard = ({
                 {team?.name || "Unknown Team"}
               </Text>
               {loading && <Spinner size="sm" />}
+              {/* Display verdict badge */}
+              {organization.verdict && (
+                <Tooltip label="Organization Final Verdict">
+                  <Badge
+                    colorScheme={
+                      COMPLIANCE_DISPLAY[organization.verdict]?.color || "gray"
+                    }
+                    fontSize="xs"
+                  >
+                    {COMPLIANCE_DISPLAY[organization.verdict]?.label ||
+                      organization.verdict}
+                  </Badge>
+                </Tooltip>
+              )}
             </HStack>
             <HStack align="center" spacing={0}>
               {!isExpanded && (
@@ -357,6 +404,15 @@ const OrganizationCard = ({
                   onClick={(e) => e.stopPropagation()}
                 />
                 <MenuList>
+                  <MenuItem
+                    icon={<FiCheckCircle />}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setIsVerdictModalOpen(true);
+                    }}
+                  >
+                    {organization.verdict ? "Change Verdict" : "Set Verdict"}
+                  </MenuItem>
                   <MenuItem
                     icon={<FiEdit />}
                     onClick={(e) => {
@@ -1051,6 +1107,13 @@ const OrganizationCard = ({
         document={selectedDocument}
         isOpen={!!selectedDocument}
         onClose={closeDocumentDrawer}
+      />
+      <SetVerdictModal
+        isOpen={isVerdictModalOpen}
+        onClose={() => setIsVerdictModalOpen(false)}
+        organization={organization}
+        calculatedVerdict={calculatedVerdict}
+        onSave={handleSetVerdict}
       />
     </>
   );
