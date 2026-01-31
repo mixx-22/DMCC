@@ -47,6 +47,7 @@ const TeamQualityDocuments = ({ teamId }) => {
           page,
           limit: ITEMS_PER_PAGE,
           teamId, // Use object property shorthand
+          published: 0,
         };
 
         const response = await apiService.request("/documents/quality", {
