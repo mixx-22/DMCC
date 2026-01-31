@@ -11,16 +11,17 @@ import {
   Button,
   Box,
   useBreakpointValue,
+  Portal,
 } from "@chakra-ui/react";
 import { FiChevronDown } from "react-icons/fi";
 import { Children, cloneElement, useMemo } from "react";
 
 /**
  * ResponsiveTabs - A responsive tabs component
- * 
+ *
  * On mobile (base): Displays a dropdown menu to select tabs
  * On desktop (md+): Displays normal tabs with horizontal scrolling
- * 
+ *
  * Usage:
  * <ResponsiveTabs index={tabIndex} onChange={handleChange}>
  *   <ResponsiveTabList>
@@ -36,17 +37,26 @@ import { Children, cloneElement, useMemo } from "react";
  * </ResponsiveTabs>
  */
 
-export const ResponsiveTabs = ({ children, index, onChange, colorScheme = "brandPrimary", ...props }) => {
-  const isMobile = useBreakpointValue({ base: true, md: false }, { ssr: false });
+export const ResponsiveTabs = ({
+  children,
+  index,
+  onChange,
+  colorScheme = "brandPrimary",
+  ...props
+}) => {
+  const isMobile = useBreakpointValue(
+    { base: true, md: false },
+    { ssr: false },
+  );
 
   // Extract tab labels and panels from children - memoized to prevent unnecessary recalculation
   const { tabs, tabListElement, tabPanelsElement } = useMemo(() => {
     const childArray = Children.toArray(children);
     const tabListEl = childArray.find(
-      (child) => child.type === ResponsiveTabList
+      (child) => child.type === ResponsiveTabList,
     );
     const tabPanelsEl = childArray.find(
-      (child) => child.type === ResponsiveTabPanels
+      (child) => child.type === ResponsiveTabPanels,
     );
 
     const tabsArray = tabListEl
@@ -68,6 +78,7 @@ export const ResponsiveTabs = ({ children, index, onChange, colorScheme = "brand
 
   return (
     <Tabs
+      isLazy
       index={index}
       onChange={handleTabsChange}
       colorScheme={colorScheme}
@@ -75,30 +86,29 @@ export const ResponsiveTabs = ({ children, index, onChange, colorScheme = "brand
     >
       {/* Mobile Dropdown Menu */}
       {isMobile === true && (
-        <Box mb={4}>
-          <Menu>
+        <Box>
+          <Menu isLazy matchWidth>
             <MenuButton
               as={Button}
               rightIcon={<FiChevronDown />}
-              width="100%"
-              textAlign="left"
-              colorScheme={colorScheme}
-              variant="outline"
+              variant="tabBtn"
             >
               {tabs[index]?.props?.children || `Tab ${index + 1}`}
             </MenuButton>
-            <MenuList>
-              {tabs.map((tab, idx) => (
-                <MenuItem
-                  key={idx}
-                  onClick={() => handleTabsChange(idx)}
-                  bg={index === idx ? `${colorScheme}.50` : "transparent"}
-                  fontWeight={index === idx ? "semibold" : "normal"}
-                >
-                  {tab.props.children}
-                </MenuItem>
-              ))}
-            </MenuList>
+            <Portal>
+              <MenuList>
+                {tabs.map((tab, idx) => (
+                  <MenuItem
+                    key={idx}
+                    onClick={() => handleTabsChange(idx)}
+                    bg={index === idx ? `${colorScheme}.50` : "transparent"}
+                    fontWeight={index === idx ? "semibold" : "normal"}
+                  >
+                    {tab.props.children}
+                  </MenuItem>
+                ))}
+              </MenuList>
+            </Portal>
           </Menu>
         </Box>
       )}

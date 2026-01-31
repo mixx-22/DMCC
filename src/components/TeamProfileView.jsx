@@ -88,14 +88,14 @@ const TeamProfileView = ({ team, isValidDate, onManageObjectives }) => {
   return (
     <>
       <Box>
-        <Card mb={6} overflow="hidden">
+        <Card mb={{ base: 2, md: 6 }} overflow="hidden">
           <Box h="120px" bg={headerBg} position="relative" />
 
           <CardBody mt="-60px" position="relative">
             <Flex
               direction={{ base: "column", md: "row" }}
               align={{ base: "center", md: "flex-start" }}
-              gap={6}
+              gap={{ base: 2, md: 6 }}
             >
               <Box position="relative">
                 <Avatar
@@ -124,25 +124,26 @@ const TeamProfileView = ({ team, isValidDate, onManageObjectives }) => {
         </Card>
 
         <ResponsiveTabs
-          colorScheme="brandPrimary"
           index={tabIndex}
+          colorScheme="brandPrimary"
           onChange={handleTabsChange}
         >
           <ResponsiveTabList>
             <ResponsiveTab>Members</ResponsiveTab>
             <ResponsiveTab>Objectives</ResponsiveTab>
-            <ResponsiveTab>Documents</ResponsiveTab>
+            <ResponsiveTab>Quality Documents</ResponsiveTab>
+            <ResponsiveTab>Other Documents</ResponsiveTab>
           </ResponsiveTabList>
 
           <ResponsiveTabPanels>
             <ResponsiveTabPanel px={0}>
               <Flex
-                gap={6}
+                gap={{ base: 2, md: 6 }}
                 flexWrap={{ base: "wrap", lg: "nowrap" }}
                 alignItems={"flex-start"}
               >
                 <Flex
-                  gap={6}
+                  gap={{ base: 2, md: 6 }}
                   flexWrap="wrap"
                   w={{ base: "full", lg: "xs" }}
                   flexDir={{ base: "column-reverse", lg: "column" }}
@@ -236,7 +237,10 @@ const TeamProfileView = ({ team, isValidDate, onManageObjectives }) => {
                   </Card>
                   <Card w="full" flex={1}>
                     <CardBody>
-                      <Flex gap={6} flexDir={{ base: "row", lg: "column" }}>
+                      <Flex
+                        gap={{ base: 2, md: 6 }}
+                        flexDir={{ base: "row", lg: "column" }}
+                      >
                         {isValidDate(team.createdAt) && (
                           <Box>
                             <Text fontSize="sm" color="gray.500" mb={1}>
