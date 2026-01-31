@@ -71,6 +71,28 @@ import { calculateOrganizationVerdict } from "../../../utils/helpers";
 import TeamQualityDocuments from "../../../components/TeamQualityDocuments";
 import PreviousAuditFindings from "./PreviousAuditFindings";
 
+// Tab indices for better maintainability
+const TAB_INDICES = {
+  VISITS: 0,
+  AUDITORS: 1,
+  TEAM_DETAILS: 2,
+  QUALITY_DOCUMENTS: 3,
+  OTHER_DOCUMENTS: 4,
+  PREVIOUS_AUDIT_FINDINGS: 5,
+};
+
+const COMPLIANCE_DISPLAY = {
+  OBSERVATIONS: { label: "Observations", color: "brandPrimary" },
+  OPPORTUNITIES_FOR_IMPROVEMENTS: {
+    label: "Opportunities for Improvements",
+    color: "brandSecondary",
+  },
+  NON_CONFORMITY: { label: "Non-Conformity", color: "warning" },
+  MINOR_NC: { label: "Minor Non-Conformity", color: "warning" },
+  MAJOR_NC: { label: "Major Non-Conformity", color: "error" },
+  COMPLIANT: { label: "Compliant", color: "green" },
+};
+
 const OrganizationCard = ({
   loading = false,
   organization,
@@ -105,18 +127,6 @@ const OrganizationCard = ({
     high: "red",
   };
 
-  const COMPLIANCE_DISPLAY = {
-    OBSERVATIONS: { label: "Observations", color: "brandPrimary" },
-    OPPORTUNITIES_FOR_IMPROVEMENTS: {
-      label: "Opportunities for Improvements",
-      color: "brandSecondary",
-    },
-    NON_CONFORMITY: { label: "Non-Conformity", color: "warning" },
-    MINOR_NC: { label: "Minor Non-Conformity", color: "warning" },
-    MAJOR_NC: { label: "Major Non-Conformity", color: "error" },
-    COMPLIANT: { label: "Compliant", color: "green" },
-  };
-
   // State to track which visit's finding form is shown (visitIndex -> boolean)
   const [showFindingFormFor, setShowFindingFormFor] = useState(new Set());
 
@@ -137,8 +147,8 @@ const OrganizationCard = ({
   const calculatedVerdict = calculateOrganizationVerdict(organization);
 
   useEffect(() => {
-    // Only fetch documents if organization is expanded AND user is on Other Documents tab (index 4)
-    if (organization?.team?.folderId && isExpanded && activeTabIndex === 4) {
+    // Only fetch documents if organization is expanded AND user is on Other Documents tab
+    if (organization?.team?.folderId && isExpanded && activeTabIndex === TAB_INDICES.OTHER_DOCUMENTS) {
       fetchDocuments(organization?.team?.folderId);
     }
   }, [
@@ -1107,7 +1117,7 @@ const OrganizationCard = ({
                       <TeamQualityDocuments
                         readOnly
                         teamId={team._id || team.id}
-                        isActive={isExpanded && activeTabIndex === 3}
+                        isActive={isExpanded && activeTabIndex === TAB_INDICES.QUALITY_DOCUMENTS}
                       />
                     ) : (
                       <Center minH="xs">
@@ -1154,7 +1164,7 @@ const OrganizationCard = ({
                   <TabPanel px={0} pt={0}>
                     <PreviousAuditFindings
                       auditScheduleId={organization?.auditScheduleId}
-                      isActive={isExpanded && activeTabIndex === 5}
+                      isActive={isExpanded && activeTabIndex === TAB_INDICES.PREVIOUS_AUDIT_FINDINGS}
                     />
                   </TabPanel>
                 </TabPanels>
