@@ -19,7 +19,7 @@ import apiService from "../services/api";
 
 const ITEMS_PER_PAGE = 10;
 
-const TeamQualityDocuments = ({ teamId, readOnly = false }) => {
+const TeamQualityDocuments = ({ teamId, readOnly = false, isActive = true }) => {
   const [documents, setDocuments] = useState([]);
   const [selectedDocument, setSelectedDocument] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -79,10 +79,10 @@ const TeamQualityDocuments = ({ teamId, readOnly = false }) => {
   );
 
   useEffect(() => {
-    if (teamId) {
+    if (teamId && isActive) {
       fetchQualityDocuments(currentPage);
     }
-  }, [currentPage, teamId, fetchQualityDocuments]);
+  }, [currentPage, teamId, fetchQualityDocuments, isActive]);
 
   const handleDocumentClick = (doc) => {
     setSelectedDocument(doc);

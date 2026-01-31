@@ -1098,6 +1098,7 @@ const OrganizationCard = ({
                       <TeamQualityDocuments
                         readOnly
                         teamId={team._id || team.id}
+                        isActive={isExpanded && activeTabIndex === 3}
                       />
                     ) : (
                       <Center minH="xs">

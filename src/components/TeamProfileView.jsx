@@ -63,7 +63,7 @@ const TeamProfileView = ({ team, isValidDate, onManageObjectives }) => {
 
   useEffect(() => {
     const loadFolderContents = async () => {
-      if (team?.folderId && tabIndex === 2) {
+      if (team?.folderId && tabIndex === 3) {
         setLoadingFolder(true);
         try {
           await fetchDocuments(team.folderId);
@@ -416,7 +416,10 @@ const TeamProfileView = ({ team, isValidDate, onManageObjectives }) => {
             </TabPanel>
 
             <TabPanel px={0}>
-              <TeamQualityDocuments teamId={team._id || team.id} />
+              <TeamQualityDocuments
+                teamId={team._id || team.id}
+                isActive={tabIndex === 2}
+              />
             </TabPanel>
 
             <TabPanel px={0} pt={0}>
