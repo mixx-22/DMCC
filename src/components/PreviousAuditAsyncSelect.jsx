@@ -1,10 +1,4 @@
-import {
-  Box,
-  FormControl,
-  FormLabel,
-  VStack,
-  Text,
-} from "@chakra-ui/react";
+import { Box, FormControl, FormLabel, VStack, Text } from "@chakra-ui/react";
 import { AsyncSelect } from "chakra-react-select";
 import { useCallback, useRef, useEffect } from "react";
 import apiService from "../services/api";
@@ -79,12 +73,11 @@ const PreviousAuditAsyncSelect = ({
               if (currentScheduleId && scheduleId === currentScheduleId) {
                 return false;
               }
-              
+
               const title = (schedule.title || "").toLowerCase();
               const auditCode = (schedule.auditCode || "").toLowerCase();
               return (
-                title.includes(searchLower) ||
-                auditCode.includes(searchLower)
+                title.includes(searchLower) || auditCode.includes(searchLower)
               );
             });
             resolve(
@@ -112,7 +105,7 @@ const PreviousAuditAsyncSelect = ({
               const scheduleId = getScheduleId(schedule);
               return !currentScheduleId || scheduleId !== currentScheduleId;
             });
-            
+
             resolve(
               filtered.map((schedule) => ({
                 value: getScheduleId(schedule),
@@ -167,7 +160,7 @@ const PreviousAuditAsyncSelect = ({
   return (
     <FormControl isInvalid={isInvalid} {...props}>
       <FormLabel>{label}</FormLabel>
-      <Box>
+      <Box pos="relative">
         <AsyncSelect
           value={selectedValue}
           onChange={handleChange}
@@ -186,12 +179,8 @@ const PreviousAuditAsyncSelect = ({
           colorScheme="brandPrimary"
           useBasicStyles
           menuPortalTarget={document.body}
-          chakraStyles={{
+          styles={{
             menuPortal: (provided) => ({
-              ...provided,
-              zIndex: 1500,
-            }),
-            menu: (provided) => ({
               ...provided,
               zIndex: 1500,
             }),
