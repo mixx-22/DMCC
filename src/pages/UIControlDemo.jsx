@@ -18,9 +18,9 @@ import {
   Code,
   useColorModeValue,
 } from "@chakra-ui/react";
-import UIControl from "../../components/UIControl";
-import { useUIControl } from "../../hooks/useUIControl";
-import { ITEM_TYPES, AUDIT_STATUS, ORG_STATUS } from "../../config/uiControlConfig";
+import UIControl from "../components/UIControl";
+import { getControlStates, buildContext } from "../helpers/uiControlHelpers";
+import { ITEM_TYPES, AUDIT_STATUS, ORG_STATUS } from "../config/uiControlConfig";
 
 /**
  * Demo page for UIControl component
@@ -318,10 +318,14 @@ const UIControlDemo = () => {
  */
 function DemoStateDisplay({ schedule, organization, itemType }) {
   const bgColor = useColorModeValue("gray.50", "gray.700");
-  const controls = useUIControl(itemType, {
+  
+  // Use helper function directly instead of hook (no context required)
+  const context = buildContext({
     auditSchedule: schedule,
     organization,
+    itemType,
   });
+  const controls = getControlStates(context);
 
   return (
     <Box p={3} bg={bgColor} borderRadius="md" fontSize="sm">
