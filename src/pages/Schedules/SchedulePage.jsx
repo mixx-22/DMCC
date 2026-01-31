@@ -48,15 +48,18 @@ import {
   FiChevronRight,
   FiChevronLeft,
   FiEdit,
+  FiCheckCircle,
 } from "react-icons/fi";
 import { useNavigate, useParams } from "react-router-dom";
 import { useState, useEffect, useRef } from "react";
 import Swal from "sweetalert2";
 import PageHeader from "../../components/PageHeader";
 import PageFooter from "../../components/PageFooter";
-import { useScheduleProfile } from "../../context/_useContext";
+import { useScheduleProfile, useOrganizations } from "../../context/_useContext";
 import { getAuditTypeLabel } from "../../utils/auditHelpers";
+import { validateAuditScheduleClosure } from "../../utils/helpers";
 import EditAuditDetailsModal from "./EditAuditDetailsModal";
+import CloseAuditModal from "./CloseAuditModal";
 import { OrganizationsProvider } from "../../context/OrganizationsContext";
 import Timestamp from "../../components/Timestamp";
 import Organizations from "./Organizations";
@@ -74,6 +77,9 @@ const SchedulePageContent = () => {
     deleteSchedule,
   } = useScheduleProfile();
 
+  // Get organizations from context
+  const { organizations } = useOrganizations();
+
   const errorColor = useColorModeValue("error.600", "error.400");
   const summaryCardBg = useColorModeValue("gray.50", "gray.700");
 
@@ -90,6 +96,15 @@ const SchedulePageContent = () => {
     onOpen: onEditDetailsOpen,
     onClose: onEditDetailsClose,
   } = useDisclosure();
+
+  // Modal state for closing audit
+  const {
+    isOpen: isCloseAuditOpen,
+    onOpen: onCloseAuditOpen,
+    onClose: onCloseAuditClose,
+  } = useDisclosure();
+
+  const [isClosingAudit, setIsClosingAudit] = useState(false);
 
   const steps = [
     { title: "Basic Information", fields: ["title", "description"] },
@@ -298,6 +313,46 @@ const SchedulePageContent = () => {
       // Don't close modal on error so user can retry
     }
   };
+
+  const handleCloseAudit = async () => {
+    setIsClosingAudit(true);
+    try {
+      const updatePayload = buildUpdatePayload({ status: 1 });
+      const updatedSchedule = await updateSchedule(id, updatePayload);
+      setFormData((prev) => ({ ...prev, ...updatedSchedule }));
+      onCloseAuditClose();
+    } catch (error) {
+      console.error("Failed to close audit schedule:", error);
+    } finally {
+      setIsClosingAudit(false);
+    }
+  };
+
+  const handleReopenAudit = async () => {
+    const result = await Swal.fire({
+      title: "Reopen Audit Schedule?",
+      text: "This will set the audit schedule status back to Ongoing.",
+      icon: "question",
+      showCancelButton: true,
+      confirmButtonColor: "#3085d6",
+      cancelButtonColor: "#d33",
+      confirmButtonText: "Yes, reopen it",
+      cancelButtonText: "Cancel",
+    });
+
+    if (result.isConfirmed) {
+      try {
+        const updatePayload = buildUpdatePayload({ status: 0 });
+        const updatedSchedule = await updateSchedule(id, updatePayload);
+        setFormData((prev) => ({ ...prev, ...updatedSchedule }));
+      } catch (error) {
+        console.error("Failed to reopen audit schedule:", error);
+      }
+    }
+  };
+
+  // Validate if audit can be closed
+  const auditValidation = validateAuditScheduleClosure(organizations);
 
   if (loading) {
     return (
@@ -767,6 +822,53 @@ const SchedulePageContent = () => {
                 </VStack>
               </CardBody>
             </Card>
+
+            {/* Close Audit Schedule Card */}
+            <Card>
+              <CardBody>
+                <VStack align="stretch" spacing={3}>
+                  <Flex justify="space-between" align="center">
+                    <Text fontWeight="semibold">Audit Status</Text>
+                    {formData.status === 1 ? (
+                      <Badge colorScheme="green" fontSize="sm">
+                        Closed
+                      </Badge>
+                    ) : (
+                      <Badge colorScheme="warning" fontSize="sm">
+                        Ongoing
+                      </Badge>
+                    )}
+                  </Flex>
+
+                  <Text fontSize="sm" color="gray.600">
+                    {formData.status === 1
+                      ? "This audit schedule has been closed. All findings have been resolved and verdicts have been set."
+                      : "Close this audit schedule when all findings are resolved and verdicts are set for all organizations."}
+                  </Text>
+
+                  {formData.status === 1 ? (
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      colorScheme="brandPrimary"
+                      leftIcon={<FiEdit />}
+                      onClick={handleReopenAudit}
+                    >
+                      Reopen Audit Schedule
+                    </Button>
+                  ) : (
+                    <Button
+                      size="sm"
+                      colorScheme="green"
+                      leftIcon={<FiCheckCircle />}
+                      onClick={onCloseAuditOpen}
+                    >
+                      Close Audit Schedule
+                    </Button>
+                  )}
+                </VStack>
+              </CardBody>
+            </Card>
           </Stack>
 
           {/* Right Column - Organizations */}
@@ -808,6 +910,15 @@ const SchedulePageContent = () => {
         onSave={handleSaveAuditDetails}
         isSaving={loading}
         currentScheduleId={id}
+      />
+
+      {/* Close Audit Modal */}
+      <CloseAuditModal
+        isOpen={isCloseAuditOpen}
+        onClose={onCloseAuditClose}
+        validation={auditValidation}
+        onConfirmClose={handleCloseAudit}
+        isClosing={isClosingAudit}
       />
     </>
   );
