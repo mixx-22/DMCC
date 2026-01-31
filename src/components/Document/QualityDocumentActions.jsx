@@ -323,9 +323,19 @@ const QualityDocumentActions = ({ document, onUpdate }) => {
 
   // Determine which buttons should be visible based on specific state combinations
   const showSubmit =
-    status === -1 && checkedOut === 1 && (mode === "NEW" || mode === "DISCARD");
+    status === -1 &&
+    checkedOut === 1 &&
+    (mode === "NEW" ||
+      mode === "REVISE" ||
+      mode === "DISCARD" ||
+      mode === "CHECKOUT");
   const showDiscard =
-    status === -1 && checkedOut === 1 && (mode === "NEW" || mode === "REJECT");
+    status === -1 &&
+    checkedOut === 1 &&
+    (mode === "NEW" ||
+      mode === "REVISE" ||
+      mode === "REJECT" ||
+      mode === "CHECKOUT");
   const showApprove = status === 0 && checkedOut === 0 && mode === "TEAM";
   const showReject = status === 0 && checkedOut === 0 && mode === "TEAM";
   const showPublish = status === 0 && checkedOut === 0 && mode === "CONTROLLER";

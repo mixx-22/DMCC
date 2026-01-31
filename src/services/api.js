@@ -425,15 +425,26 @@ export const apiService = {
    * @param {string} requestId - The request ID from the document
    * @returns {Promise<Object>}
    */
-  async checkoutDocument(requestId) {
+  async checkoutDocument(documentId, documentData) {
     if (!USE_API) {
       // Mock mode
       return { success: true };
     }
 
-    const response = await this.request(`/documents/${requestId}/checkout`, {
-      method: "PUT",
-    });
+    const response = await this.request(
+      `/request/${documentId}?type=checkout`,
+      {
+        method: "PUT",
+        body: JSON.stringify({
+          title: documentData.title,
+          documentType: documentData.type, // Send as documentType, not type
+          metadata: {
+            ...documentData.metadata,
+            checkedOut: 1, // Ensure checkedOut is set to 1
+          },
+        }),
+      },
+    );
 
     return response;
   },

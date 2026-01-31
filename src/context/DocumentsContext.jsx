@@ -617,14 +617,16 @@ export const DocumentsProvider = ({ children }) => {
     try {
       const response = await apiService.checkoutDocument(
         document.id || document._id,
+        {
+          title: document.title,
+          type: document.type || "file",
+          metadata: document.metadata,
+        },
       );
 
       if (response.success !== false) {
-        const expectedState = getExpectedState("checkout");
-
-        // Update the document with new lifecycle state
-        const updatedDoc = await updateDocument(document, expectedState);
-        return updatedDoc;
+        // Backend has already updated the document, just return the response
+        return response.data || response;
       } else {
         throw new Error(response.message || "Failed to checkout document");
       }

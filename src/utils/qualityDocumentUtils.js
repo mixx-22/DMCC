@@ -115,9 +115,10 @@ export const validateTransition = (document, action) => {
       return { valid: true, message: "" };
 
     case "discard":
-      // Allow discard in two scenarios:
+      // Allow discard in multiple scenarios:
       // 1. REJECTED: (status: -1, checkedOut: 0, requestId: !== null, mode: TEAM)
       // 2. NEW WITH REJECT MODE: (status: -1, checkedOut: 1, mode: REJECT)
+      // 3. CHECKOUT MODE: (status: -1, mode: CHECKOUT)
       if (status !== LIFECYCLE_STATUS.WORKING) {
         return {
           valid: false,
@@ -125,8 +126,8 @@ export const validateTransition = (document, action) => {
         };
       }
 
-      // Allow discard if mode is REJECT (regardless of checkedOut status)
-      if (mode === "REJECT") {
+      // Allow discard if mode is REJECT or CHECKOUT (regardless of checkedOut status)
+      if (mode === "REJECT" || mode === "CHECKOUT") {
         return { valid: true, message: "" };
       }
 
@@ -212,7 +213,7 @@ export const validateTransition = (document, action) => {
       return { valid: true, message: "" };
 
     case "checkout":
-      // PUBLISHED: (status: 2, checkedOut: 0, requestId: null) - Check Out allowed
+      // PUBLISHED: (status: 2, checkedOut: 0) - Check Out allowed
       if (status !== LIFECYCLE_STATUS.PUBLISHED) {
         return {
           valid: false,
@@ -221,12 +222,6 @@ export const validateTransition = (document, action) => {
       }
       if (checkedOut !== CHECKOUT_STATUS.CHECKED_IN) {
         return { valid: false, message: "Document is already checked out" };
-      }
-      if (requestId !== null) {
-        return {
-          valid: false,
-          message: "Cannot checkout document with active request",
-        };
       }
       return { valid: true, message: "" };
 

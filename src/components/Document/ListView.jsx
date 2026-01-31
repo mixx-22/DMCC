@@ -258,6 +258,15 @@ export const ListView = ({
                 </Text>
               )}
             </Td>
+            <Td whiteSpace="nowrap">
+              {doc?.version ? (
+                <Text fontSize="sm">{doc.version}</Text>
+              ) : (
+                <Text fontSize="sm" color="gray.400">
+                  -
+                </Text>
+              )}
+            </Td>
           </>
         )}
         {isQualityDocumentsView && (
@@ -378,6 +387,7 @@ export const ListView = ({
                   <>
                     <Th>Requested By</Th>
                     <Th>Requested For</Th>
+                    <Th>Version</Th>
                     {showRequestStatus && <Th>Status</Th>}
                   </>
                 ) : (
@@ -428,6 +438,7 @@ export const ListView = ({
                         <>
                           <Th>Requested By</Th>
                           <Th>Requested For</Th>
+                          <Th>Version</Th>
                           {showRequestStatus && <Th>Status</Th>}
                         </>
                       ) : (
@@ -476,6 +487,7 @@ export const ListView = ({
                       <>
                         <Th>Requested By</Th>
                         <Th>Requested For</Th>
+                        <Th>Version</Th>
                         {showRequestStatus && <Th>Status</Th>}
                       </>
                     ) : (
