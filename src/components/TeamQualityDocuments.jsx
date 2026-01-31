@@ -19,7 +19,7 @@ import apiService from "../services/api";
 
 const ITEMS_PER_PAGE = 10;
 
-const TeamQualityDocuments = ({ teamId }) => {
+const TeamQualityDocuments = ({ teamId, readOnly = false }) => {
   const [documents, setDocuments] = useState([]);
   const [selectedDocument, setSelectedDocument] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -95,17 +95,19 @@ const TeamQualityDocuments = ({ teamId }) => {
   return (
     <>
       <VStack align="stretch" spacing={4}>
-        <Flex justify="flex-end">
-          <Button
-            variant="outline"
-            leftIcon={<FiPlus />}
-            colorScheme="brandPrimary"
-            onClick={onQualityDocumentModalOpen}
-            size="sm"
-          >
-            New Quality Document
-          </Button>
-        </Flex>
+        {!readOnly && (
+          <Flex justify="flex-end">
+            <Button
+              variant="outline"
+              leftIcon={<FiPlus />}
+              colorScheme="brandPrimary"
+              onClick={onQualityDocumentModalOpen}
+              size="sm"
+            >
+              New Quality Document
+            </Button>
+          </Flex>
+        )}
 
         <Stack spacing={{ base: 4, lg: 6 }}>
           {loading ? (

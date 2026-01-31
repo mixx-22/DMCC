@@ -1093,9 +1093,12 @@ const OrganizationCard = ({
                   </TabPanel>
 
                   {/* Quality Documents Tab */}
-                  <TabPanel px={4}>
+                  <TabPanel pt={0} px={0}>
                     {team?._id || team?.id ? (
-                      <TeamQualityDocuments teamId={team._id || team.id} />
+                      <TeamQualityDocuments
+                        readOnly
+                        teamId={team._id || team.id}
+                      />
                     ) : (
                       <Center minH="xs">
                         <Text color="gray.500" textAlign="center">
