@@ -287,6 +287,7 @@ const SchedulePageContent = () => {
         auditCode: detailsData.auditCode,
         auditType: detailsData.auditType,
         standard: detailsData.standard,
+        previousAudit: detailsData.previousAudit,
       });
       const updatedSchedule = await updateSchedule(id, updatePayload);
       setFormData((prev) => ({ ...prev, ...updatedSchedule }));
@@ -753,6 +754,18 @@ const SchedulePageContent = () => {
                       {formData.standard || "-"}
                     </Text>
                   </Box>
+                  <Box>
+                    <Text fontSize="sm" color="gray.600">
+                      Previous Audit
+                    </Text>
+                    <Text fontSize="sm" mt={1} fontWeight="medium">
+                      {formData.previousAudit
+                        ? formData.previousAudit.title ||
+                          formData.previousAudit.auditCode ||
+                          "-"
+                        : "-"}
+                    </Text>
+                  </Box>
                 </VStack>
               </CardBody>
             </Card>
@@ -796,6 +809,7 @@ const SchedulePageContent = () => {
         auditData={formData}
         onSave={handleSaveAuditDetails}
         isSaving={loading}
+        currentScheduleId={id}
       />
     </>
   );

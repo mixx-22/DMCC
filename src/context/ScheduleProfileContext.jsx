@@ -27,6 +27,7 @@ const initialScheduleData = {
   auditCode: "",
   auditType: "",
   standard: "",
+  previousAudit: null,
   status: 0,
 };
 
