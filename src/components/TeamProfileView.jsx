@@ -79,132 +79,140 @@ const TeamProfileView = ({ team, isValidDate, onManageObjectives }) => {
         </CardBody>
       </Card>
 
-      <Flex
-        gap={6}
-        flexWrap={{ base: "wrap", lg: "nowrap" }}
-        alignItems={"flex-start"}
-      >
-        <Flex
-          gap={6}
-          flexWrap="wrap"
-          w={{ base: "full", lg: "xs" }}
-          flexDir={{ base: "column-reverse", lg: "column" }}
-        >
-          <Card w="full" flex={1}>
-            <CardHeader pb={0}>
-              <Heading size="md">Leaders</Heading>
-            </CardHeader>
-            <CardBody px={0}>
-              {team.leaders && team.leaders.length > 0 ? (
-                <Table
-                  variant="simple"
-                  size="sm"
-                  border="none"
-                  sx={{ td: { px: 5 } }}
-                >
-                  <Tbody>
-                    {team.leaders.map((leader, leaderIndex) => {
-                      const leaderId = leader.id || leader._id || leader.userId;
-                      const fullName = `${leader.firstName || ""} ${
-                        leader.lastName || ""
-                      }`.trim();
-                      return (
-                        <Tr key={`leader-${leaderIndex}-${leaderId}`}>
-                          <Td>
-                            {leaderId ? (
-                              <Link
-                                as={RouterLink}
-                                to={`/users/${leaderId}`}
-                                _hover={{ textDecoration: "none" }}
-                              >
-                                <HStack spacing={3} _hover={{ opacity: 0.8 }}>
-                                  <Avatar
-                                    size="sm"
-                                    name={fullName}
-                                    src={leader.profilePicture}
-                                  />
-                                  <VStack align="start" spacing={0}>
-                                    <Text fontSize="sm" fontWeight="medium">
-                                      {fullName || "Leader"}
-                                    </Text>
-                                    <Text fontSize="xs" color="gray.500">
-                                      {leader.employeeId || "-"}
-                                    </Text>
-                                  </VStack>
-                                </HStack>
-                              </Link>
-                            ) : (
-                              <HStack spacing={3}>
-                                <Avatar
-                                  size="sm"
-                                  name={fullName}
-                                  src={leader.profilePicture}
-                                />
-                                <VStack align="start" spacing={0}>
-                                  <Text fontSize="sm" fontWeight="medium">
-                                    {fullName || "Leader"}
-                                  </Text>
-                                  <Text fontSize="xs" color="gray.500">
-                                    {leader.employeeId || "-"}
-                                  </Text>
-                                </VStack>
-                              </HStack>
-                            )}
-                          </Td>
-                          <Td></Td>
-                        </Tr>
-                      );
-                    })}
-                  </Tbody>
-                </Table>
-              ) : (
-                <Text color="gray.500" py={4} textAlign="center">
-                  No leaders assigned
-                </Text>
-              )}
-            </CardBody>
-          </Card>
-          <Card w="full" flex={1}>
-            <CardBody>
-              <Flex gap={6} flexDir={{ base: "row", lg: "column" }}>
-                {isValidDate(team.createdAt) && (
-                  <Box>
-                    <Text fontSize="sm" color="gray.500" mb={1}>
-                      Team Created
-                    </Text>
-                    <Text fontWeight="medium" fontSize="sm">
-                      <Timestamp date={team.createdAt} />
-                    </Text>
-                  </Box>
-                )}
-                {isValidDate(team.updatedAt) && (
-                  <Box>
-                    <Text fontSize="sm" color="gray.500" mb={1}>
-                      Last Updated
-                    </Text>
-                    <Text fontWeight="medium" fontSize="sm">
-                      <Timestamp date={team.updatedAt} />
-                    </Text>
-                  </Box>
-                )}
+      <Tabs colorScheme="brandPrimary">
+        <TabList>
+          <Tab>Info</Tab>
+          <Tab>Objectives</Tab>
+          <Tab>Documents</Tab>
+        </TabList>
+
+        <TabPanels>
+          <TabPanel px={0}>
+            <Flex
+              gap={6}
+              flexWrap={{ base: "wrap", lg: "nowrap" }}
+              alignItems={"flex-start"}
+            >
+              <Flex
+                gap={6}
+                flexWrap="wrap"
+                w={{ base: "full", lg: "xs" }}
+                flexDir={{ base: "column-reverse", lg: "column" }}
+              >
+                <Card w="full" flex={1}>
+                  <CardHeader pb={0}>
+                    <Heading size="md">Leaders</Heading>
+                  </CardHeader>
+                  <CardBody px={0}>
+                    {team.leaders && team.leaders.length > 0 ? (
+                      <Table
+                        variant="simple"
+                        size="sm"
+                        border="none"
+                        sx={{ td: { px: 5 } }}
+                      >
+                        <Tbody>
+                          {team.leaders.map((leader, leaderIndex) => {
+                            const leaderId = leader.id || leader._id || leader.userId;
+                            const fullName = `${leader.firstName || ""} ${
+                              leader.lastName || ""
+                            }`.trim();
+                            return (
+                              <Tr key={`leader-${leaderIndex}-${leaderId}`}>
+                                <Td>
+                                  {leaderId ? (
+                                    <Link
+                                      as={RouterLink}
+                                      to={`/users/${leaderId}`}
+                                      _hover={{ textDecoration: "none" }}
+                                    >
+                                      <HStack spacing={3} _hover={{ opacity: 0.8 }}>
+                                        <Avatar
+                                          size="sm"
+                                          name={fullName}
+                                          src={leader.profilePicture}
+                                        />
+                                        <VStack align="start" spacing={0}>
+                                          <Text fontSize="sm" fontWeight="medium">
+                                            {fullName || "Leader"}
+                                          </Text>
+                                          <Text fontSize="xs" color="gray.500">
+                                            {leader.employeeId || "-"}
+                                          </Text>
+                                        </VStack>
+                                      </HStack>
+                                    </Link>
+                                  ) : (
+                                    <HStack spacing={3}>
+                                      <Avatar
+                                        size="sm"
+                                        name={fullName}
+                                        src={leader.profilePicture}
+                                      />
+                                      <VStack align="start" spacing={0}>
+                                        <Text fontSize="sm" fontWeight="medium">
+                                          {fullName || "Leader"}
+                                        </Text>
+                                        <Text fontSize="xs" color="gray.500">
+                                          {leader.employeeId || "-"}
+                                        </Text>
+                                      </VStack>
+                                    </HStack>
+                                  )}
+                                </Td>
+                                <Td></Td>
+                              </Tr>
+                            );
+                          })}
+                        </Tbody>
+                      </Table>
+                    ) : (
+                      <Text color="gray.500" py={4} textAlign="center">
+                        No leaders assigned
+                      </Text>
+                    )}
+                  </CardBody>
+                </Card>
+                <Card w="full" flex={1}>
+                  <CardBody>
+                    <Flex gap={6} flexDir={{ base: "row", lg: "column" }}>
+                      {isValidDate(team.createdAt) && (
+                        <Box>
+                          <Text fontSize="sm" color="gray.500" mb={1}>
+                            Team Created
+                          </Text>
+                          <Text fontWeight="medium" fontSize="sm">
+                            <Timestamp date={team.createdAt} />
+                          </Text>
+                        </Box>
+                      )}
+                      {isValidDate(team.updatedAt) && (
+                        <Box>
+                          <Text fontSize="sm" color="gray.500" mb={1}>
+                            Last Updated
+                          </Text>
+                          <Text fontWeight="medium" fontSize="sm">
+                            <Timestamp date={team.updatedAt} />
+                          </Text>
+                        </Box>
+                      )}
+                    </Flex>
+                  </CardBody>
+                </Card>
               </Flex>
-            </CardBody>
-          </Card>
-        </Flex>
 
-        <Box flex={1}>
-          <Card w="full">
-            <Tabs colorScheme="brandPrimary">
-              <TabList>
-                <Tab>Members</Tab>
-                <Tab>Objectives</Tab>
-                <Tab>Documents</Tab>
-              </TabList>
-
-              <TabPanels>
-                <TabPanel px={0} pt={0}>
+              <Card flex={1} w="full">
+                <CardHeader pb={0}>
+                  <Heading size="md">Members</Heading>
+                </CardHeader>
+                <CardBody px={0}>
                   {team.members && team.members.length > 0 ? (
-                    <Table variant="simple" size="sm" border="none">
+                    <Table
+                      variant="simple"
+                      size="sm"
+                      border="none"
+                      sx={{ td: { px: 5 } }}
+                    >
                       <Tbody>
                         {team.members.map((member, memberIndex) => {
                           const memberId =
@@ -269,63 +277,18 @@ const TeamProfileView = ({ team, isValidDate, onManageObjectives }) => {
                       No members assigned
                     </Text>
                   )}
-                </TabPanel>
+                </CardBody>
+              </Card>
+            </Flex>
+          </TabPanel>
 
-                <TabPanel>
-                  <VStack align="stretch" spacing={4}>
-                    {team.objectives && team.objectives.length > 0 ? (
-                      <>
-                        <Flex justify="flex-end">
-                          <Button
-                            leftIcon={<FiTarget />}
-                            variant="outline"
-                            colorScheme="brandPrimary"
-                            onClick={onManageObjectives}
-                            size="sm"
-                          >
-                            Manage Objectives
-                          </Button>
-                        </Flex>
-                        <Stack spacing={4}>
-                          {team.objectives.map((objective, index) => (
-                            <Box key={objective.id || `objective-${index}`}>
-                              <Box
-                                p={4}
-                                borderWidth={1}
-                                borderRadius="md"
-                                borderColor={borderColor}
-                                bg={objectiveBg}
-                              >
-                                <Flex
-                                  justify="space-between"
-                                  align="start"
-                                  mb={2}
-                                >
-                                  <Text fontWeight="bold" fontSize="md">
-                                    {objective.title}
-                                  </Text>
-                                  <Badge
-                                    colorScheme={
-                                      WEIGHT_COLORS[objective.weight]
-                                    }
-                                    ml={2}
-                                  >
-                                    {objective.weight}
-                                  </Badge>
-                                </Flex>
-                                <Text fontSize="sm" color="gray.600">
-                                  {objective.description}
-                                </Text>
-                              </Box>
-                            </Box>
-                          ))}
-                        </Stack>
-                      </>
-                    ) : (
-                      <Center flexDir="column" gap={2} minH="xs">
-                        <Text color="gray.500" textAlign="center">
-                          No objectives defined
-                        </Text>
+          <TabPanel>
+            <Card w="full">
+              <CardBody>
+                <VStack align="stretch" spacing={4}>
+                  {team.objectives && team.objectives.length > 0 ? (
+                    <>
+                      <Flex justify="flex-end">
                         <Button
                           leftIcon={<FiTarget />}
                           variant="outline"
@@ -335,23 +298,76 @@ const TeamProfileView = ({ team, isValidDate, onManageObjectives }) => {
                         >
                           Manage Objectives
                         </Button>
-                      </Center>
-                    )}
-                  </VStack>
-                </TabPanel>
+                      </Flex>
+                      <Stack spacing={4}>
+                        {team.objectives.map((objective, index) => (
+                          <Box key={objective.id || `objective-${index}`}>
+                            <Box
+                              p={4}
+                              borderWidth={1}
+                              borderRadius="md"
+                              borderColor={borderColor}
+                              bg={objectiveBg}
+                            >
+                              <Flex
+                                justify="space-between"
+                                align="start"
+                                mb={2}
+                              >
+                                <Text fontWeight="bold" fontSize="md">
+                                  {objective.title}
+                                </Text>
+                                <Badge
+                                  colorScheme={
+                                    WEIGHT_COLORS[objective.weight]
+                                  }
+                                  ml={2}
+                                >
+                                  {objective.weight}
+                                </Badge>
+                              </Flex>
+                              <Text fontSize="sm" color="gray.600">
+                                {objective.description}
+                              </Text>
+                            </Box>
+                          </Box>
+                        ))}
+                      </Stack>
+                    </>
+                  ) : (
+                    <Center flexDir="column" gap={2} minH="xs">
+                      <Text color="gray.500" textAlign="center">
+                        No objectives defined
+                      </Text>
+                      <Button
+                        leftIcon={<FiTarget />}
+                        variant="outline"
+                        colorScheme="brandPrimary"
+                        onClick={onManageObjectives}
+                        size="sm"
+                      >
+                        Manage Objectives
+                      </Button>
+                    </Center>
+                  )}
+                </VStack>
+              </CardBody>
+            </Card>
+          </TabPanel>
 
-                <TabPanel>
-                  <Center minH="xs">
-                    <Text color="gray.500" textAlign="center" py={8}>
-                      Documents section coming soon
-                    </Text>
-                  </Center>
-                </TabPanel>
-              </TabPanels>
-            </Tabs>
-          </Card>
-        </Box>
-      </Flex>
+          <TabPanel>
+            <Card w="full">
+              <CardBody>
+                <Center minH="xs">
+                  <Text color="gray.500" textAlign="center" py={8}>
+                    Documents section coming soon
+                  </Text>
+                </Center>
+              </CardBody>
+            </Card>
+          </TabPanel>
+        </TabPanels>
+      </Tabs>
     </Box>
   );
 };
