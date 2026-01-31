@@ -41,7 +41,46 @@ const baseStyle = definePartsStyle(() => {
       px: 4,
       py: 2,
     },
+    tabpanel: {
+      p: 4,
+    },
   };
 });
 
-export const tabsTheme = defineMultiStyleConfig({ baseStyle });
+// Define variants - ensuring the line variant has an indicator
+const variants = {
+  line: definePartsStyle((props) => {
+    const { colorScheme: c } = props;
+    return {
+      tablist: {
+        borderBottom: "2px solid",
+        borderColor: "inherit",
+      },
+      tab: {
+        borderBottom: "2px solid",
+        borderColor: "transparent",
+        mb: "-2px",
+        _selected: {
+          color: `${c}.600`,
+          borderColor: "currentColor",
+        },
+        _active: {
+          bg: "gray.100",
+        },
+        _disabled: {
+          opacity: 0.4,
+          cursor: "not-allowed",
+        },
+      },
+    };
+  }),
+};
+
+export const tabsTheme = defineMultiStyleConfig({ 
+  baseStyle,
+  variants,
+  defaultProps: {
+    variant: "line",
+    colorScheme: "brandPrimary",
+  },
+});
