@@ -335,14 +335,12 @@ const DocumentDrawer = ({ document, isOpen, onClose }) => {
                       Type
                     </Text>
                     <Text fontSize="sm">
-                      {document?.type === "auditSchedule"
-                        ? "Audit Schedule"
-                        : document?.type === "formTemplate"
-                          ? "Form Template"
-                          : document?.type
-                            ? document.type.charAt(0).toUpperCase() +
-                              document.type.slice(1)
-                            : "Unknown"}
+                      {document?.type === "formTemplate"
+                        ? "Form Template"
+                        : document?.type
+                          ? document.type.charAt(0).toUpperCase() +
+                            document.type.slice(1)
+                          : "Unknown"}
                     </Text>
                   </Box>
 
@@ -586,62 +584,6 @@ const DocumentDrawer = ({ document, isOpen, onClose }) => {
                             ? "Enabled"
                             : "Disabled"}
                         </Badge>
-                      </Box>
-                    </VStack>
-                  </Box>
-                </>
-              )}
-
-              {/* Audit Schedule-specific metadata */}
-              {document?.type === "auditSchedule" && (
-                <>
-                  <Divider />
-                  <Box>
-                    <Text fontWeight="semibold" mb={2}>
-                      Audit Details
-                    </Text>
-                    <VStack align="stretch" spacing={2}>
-                      {document?.metadata?.code && (
-                        <Box>
-                          <Text fontSize="sm" color="gray.600">
-                            Code
-                          </Text>
-                          <Text fontSize="sm">{document.metadata.code}</Text>
-                        </Box>
-                      )}
-                      {document?.metadata?.type && (
-                        <Box>
-                          <Text fontSize="sm" color="gray.600">
-                            Audit Type
-                          </Text>
-                          <Text fontSize="sm">
-                            {document.metadata.type
-                              .split("-")
-                              .map(
-                                (word) =>
-                                  word.charAt(0).toUpperCase() + word.slice(1),
-                              )
-                              .join(" ")}
-                          </Text>
-                        </Box>
-                      )}
-                      {document.metadata.standard && (
-                        <Box>
-                          <Text fontSize="sm" color="gray.600">
-                            Standard
-                          </Text>
-                          <Text fontSize="sm">
-                            {document.metadata.standard}
-                          </Text>
-                        </Box>
-                      )}
-                      <Box>
-                        <Text fontSize="sm" color="gray.600">
-                          Auditors
-                        </Text>
-                        <Text fontSize="sm">
-                          {document.metadata.auditors.length} assigned
-                        </Text>
                       </Box>
                     </VStack>
                   </Box>
