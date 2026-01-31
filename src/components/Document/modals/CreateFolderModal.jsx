@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Modal,
   ModalOverlay,
@@ -19,13 +19,33 @@ import {
 import { toast } from "sonner";
 import { useDocuments } from "../../../context/_useContext";
 
-const CreateFolderModal = ({ isOpen, onClose, parentId, path }) => {
+const CreateFolderModal = ({
+  isOpen,
+  onClose,
+  parentId,
+  path,
+  initialTitle = "",
+  onFolderCreated,
+}) => {
   const { createDocument } = useDocuments();
   const [formData, setFormData] = useState({
     title: "",
     description: "",
     allowInheritance: false,
   });
+
+  // Set initial title when modal opens, reset when it closes
+  useEffect(() => {
+    if (isOpen && initialTitle) {
+      setFormData((prev) => ({ ...prev, title: initialTitle }));
+    } else if (!isOpen) {
+      setFormData({
+        title: "",
+        description: "",
+        allowInheritance: false,
+      });
+    }
+  }, [isOpen, initialTitle]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -39,7 +59,7 @@ const CreateFolderModal = ({ isOpen, onClose, parentId, path }) => {
     }
 
     try {
-      await createDocument({
+      const createdFolder = await createDocument({
         title: formData.title,
         description: formData.description,
         type: "folder",
@@ -61,6 +81,12 @@ const CreateFolderModal = ({ isOpen, onClose, parentId, path }) => {
         description: "",
         allowInheritance: false,
       });
+
+      // Call the callback if provided
+      if (onFolderCreated && createdFolder) {
+        onFolderCreated(createdFolder);
+      }
+
       onClose();
     } catch (error) {
       toast.error("Failed to Create Folder", {
