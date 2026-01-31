@@ -81,31 +81,36 @@ const FindingsForm = ({
       } else if (initialData.objective) {
         // Old format: single objective - convert to array with snapshot
         const matchingObj = teamObjectives.find(
-          obj => (obj._id || obj.title) === initialData.objective
+          (obj) => (obj._id || obj.title) === initialData.objective,
         );
         if (matchingObj) {
-          objectives = [{
-            _id: matchingObj._id || matchingObj.title,
-            title: matchingObj.title,
-            teamUpdatedAt: team?.updatedAt || new Date().toISOString(),
-          }];
+          objectives = [
+            {
+              _id: matchingObj._id || matchingObj.title,
+              title: matchingObj.title,
+              teamUpdatedAt: team?.updatedAt || new Date().toISOString(),
+            },
+          ];
         }
       }
-      
+
       return {
         _id: initialData._id,
         title: initialData.title || "",
         details: initialData.details || "",
         objectives: objectives, // NEW: Array of objective snapshots
         compliance: initialData.compliance || "",
-        currentCompliance: initialData.currentCompliance || initialData.compliance || "",
+        currentCompliance:
+          initialData.currentCompliance || initialData.compliance || "",
         corrected: (() => {
           // Handle backward compatibility: convert old corrected value (1) to new system (2)
           if (initialData.corrected === 1) return 2; // Old "corrected" becomes new "corrected"
           if (initialData.corrected !== undefined) return initialData.corrected;
           return -1; // Default for new findings
         })(),
-        correctionDate: initialData.correctionDate ? new Date(initialData.correctionDate) : null,
+        correctionDate: initialData.correctionDate
+          ? new Date(initialData.correctionDate)
+          : null,
         remarks: initialData.remarks || "",
         report: initialData.report
           ? {
@@ -193,7 +198,7 @@ const FindingsForm = ({
       newErrors.details = "Details are required";
     }
     if (!formData.objectives || formData.objectives.length === 0) {
-      newErrors.objectives = "At least one objective is required";
+      newErrors.objectives = "At least one clause is required";
     }
     if (!formData.compliance) {
       newErrors.compliance = "Compliance type is required";
@@ -229,17 +234,15 @@ const FindingsForm = ({
   const handleSubmit = async () => {
     if (validateForm()) {
       // Calculate currentCompliance based on corrected status
-      const calculatedCurrentCompliance = 
-        formData.corrected === 2 
-          ? "COMPLIANT" 
-          : formData.compliance;
+      const calculatedCurrentCompliance =
+        formData.corrected === 2 ? "COMPLIANT" : formData.compliance;
 
       const findingData = {
         _id: formData._id || generateFindingId(), // Use existing ID in edit mode or generate new for add mode
         id: formData.id || generateFindingId(), // Backup ID field
         ...formData,
         currentCompliance: calculatedCurrentCompliance,
-        correctionDate: formData.correctionDate 
+        correctionDate: formData.correctionDate
           ? formData.correctionDate.toISOString().split("T")[0]
           : null,
         createdAt: formData.createdAt || new Date().toISOString(), // Preserve existing or add new timestamp
@@ -307,26 +310,31 @@ const FindingsForm = ({
         </HStack>
         {/* Objectives Multi-Select */}
         <FormControl isInvalid={!!errors.objectives}>
-          <FormLabel fontSize="sm">Objectives</FormLabel>
+          <FormLabel fontSize="sm">Clause/s</FormLabel>
           <Select
             isMulti
             size="sm"
-            value={formData.objectives.map(obj => ({
+            value={formData.objectives.map((obj) => ({
               value: obj._id,
               label: obj.title,
             }))}
             onChange={(selectedOptions) => {
               // Create snapshot of selected objectives with team updatedAt
-              const objectivesSnapshot = (selectedOptions || []).map(option => {
-                const matchingObj = teamObjectives.find(
-                  obj => (obj._id || obj.title) === option.value
-                );
-                return {
-                  _id: option.value,
-                  title: option.label,
-                  teamUpdatedAt: team?.updatedAt || matchingObj?.updatedAt || new Date().toISOString(),
-                };
-              });
+              const objectivesSnapshot = (selectedOptions || []).map(
+                (option) => {
+                  const matchingObj = teamObjectives.find(
+                    (obj) => (obj._id || obj.title) === option.value,
+                  );
+                  return {
+                    _id: option.value,
+                    title: option.label,
+                    teamUpdatedAt:
+                      team?.updatedAt ||
+                      matchingObj?.updatedAt ||
+                      new Date().toISOString(),
+                  };
+                },
+              );
               handleChange("objectives", objectivesSnapshot);
             }}
             options={teamObjectives.map((obj) => ({

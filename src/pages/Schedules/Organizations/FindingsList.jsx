@@ -204,19 +204,14 @@ const FindingCard = ({
                   </Badge>
                 )}
               </HStack>
+              <HStack spacing={2} flexWrap="wrap">
+                <Text fontWeight="semibold" fontSize="md">
+                  {finding.title}
+                </Text>
+              </HStack>
               {/* Objectives Display */}
               {finding.objectives && finding.objectives.length > 0 && (
                 <Box>
-                  <Text fontSize="xs" color={labelColor} mb={1}>
-                    Objectives{" "}
-                    <Text as="span" fontSize="xs" color="gray.500" mt={1}>
-                      (Last updated:{" "}
-                      {moment(finding.objectives[0]?.teamUpdatedAt).format(
-                        "MMM DD, YYYY",
-                      )}
-                      )
-                    </Text>
-                  </Text>
                   <Wrap spacing={1}>
                     {finding.objectives.map((obj, idx) => (
                       <WrapItem key={`obj-${obj._id}-${idx}`}>
@@ -230,20 +225,22 @@ const FindingCard = ({
                         </Tooltip>
                       </WrapItem>
                     ))}
+                    <WrapItem>
+                      <Text as="span" fontSize="xs" color="gray.500" mt={1}>
+                        {moment(finding.objectives[0]?.teamUpdatedAt).format(
+                          "MMM DD, YYYY",
+                        )}
+                      </Text>
+                    </WrapItem>
                   </Wrap>
                 </Box>
               )}
               {/* Backward compatibility for old single objective */}
               {!finding.objectives && finding.objective && (
                 <Text fontSize="xs" color={labelColor}>
-                  Objective: {finding.objective}
+                  {finding.objective}
                 </Text>
               )}
-              <HStack spacing={2} flexWrap="wrap">
-                <Text fontWeight="semibold" fontSize="md">
-                  {finding.title}
-                </Text>
-              </HStack>
             </VStack>
             <HStack spacing={0}>
               {needsActionPlan && (
@@ -586,7 +583,9 @@ const FindingCard = ({
                           onCancel={handleCancelVerification}
                           readOnly={false}
                         />
-                      ) : (finding.corrected === 0 || finding.corrected === 2 || finding.corrected === 1) ? (
+                      ) : finding.corrected === 0 ||
+                        finding.corrected === 2 ||
+                        finding.corrected === 1 ? (
                         <Box>
                           <HStack justify="space-between" mb={2}>
                             <HStack spacing={2}>
@@ -599,7 +598,13 @@ const FindingCard = ({
                               icon={<FiEdit />}
                               size="xs"
                               variant="ghost"
-                              colorScheme={finding.corrected === 2 ? "green" : finding.corrected === 0 ? "red" : "orange"}
+                              colorScheme={
+                                finding.corrected === 2
+                                  ? "green"
+                                  : finding.corrected === 0
+                                    ? "red"
+                                    : "orange"
+                              }
                               onClick={() => setIsEditingVerification(true)}
                               aria-label="Edit verification"
                             />
