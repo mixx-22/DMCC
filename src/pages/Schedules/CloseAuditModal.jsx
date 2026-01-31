@@ -33,7 +33,7 @@ const CloseAuditModal = ({
   const handleConfirm = async () => {
     if (canClose) {
       await onConfirmClose();
-      onClose();
+      // Parent component will close the modal after successful operation
     }
   };
 
