@@ -16,7 +16,7 @@ import {
   useColorModeValue,
 } from "@chakra-ui/react";
 import { FiChevronDown } from "react-icons/fi";
-import { Children, cloneElement, useMemo } from "react";
+import { Children, cloneElement, useMemo, useEffect, useState } from "react";
 
 /**
  * ResponsiveTabs - A responsive tabs component
@@ -51,6 +51,15 @@ export const ResponsiveTabs = ({
     { base: true, md: false },
     { ssr: false },
   );
+
+  // Force re-render after mount to ensure TabIndicator calculates width correctly
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    // Slight delay to ensure DOM is fully rendered
+    const timer = setTimeout(() => setMounted(true), 0);
+    return () => clearTimeout(timer);
+  }, []);
 
   // Extract tab labels and panels from children - memoized to prevent unnecessary recalculation
   const { tabs, tabListElement, tabPanelsElement } = useMemo(() => {
@@ -119,7 +128,15 @@ export const ResponsiveTabs = ({
 
       {/* Desktop Tabs */}
       {isMobile === false && tabListElement && cloneElement(tabListElement)}
-      <TabIndicator bg={bg} h="2px" pos="relative !important" top={"-2px"} />
+      {/* TabIndicator - only render after mount to ensure proper width calculation */}
+      {mounted && isMobile === false && (
+        <TabIndicator
+          bg={bg}
+          h="2px"
+          borderRadius="1px"
+          transition="all 0.2s"
+        />
+      )}
       {/* Tab Panels (both mobile and desktop) */}
       {tabPanelsElement && cloneElement(tabPanelsElement)}
     </Tabs>

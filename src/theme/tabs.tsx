@@ -47,7 +47,7 @@ const baseStyle = definePartsStyle(() => {
   };
 });
 
-// Define variants - ensuring the line variant has an indicator
+// Define variants - ensuring the line variant works with TabIndicator
 const variants = {
   line: definePartsStyle((props) => {
     const { colorScheme: c } = props;
@@ -57,12 +57,10 @@ const variants = {
         borderColor: "inherit",
       },
       tab: {
-        borderBottom: "2px solid",
-        borderColor: "transparent",
-        mb: "-2px",
+        // Remove border-bottom since TabIndicator handles the indicator
+        mb: "0",
         _selected: {
           color: `${c}.600`,
-          borderColor: "currentColor",
         },
         _active: {
           bg: "gray.100",
