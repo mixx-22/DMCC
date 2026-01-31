@@ -13,6 +13,11 @@ import {
 import { ChevronDownIcon } from "@chakra-ui/icons";
 import { useState, useEffect, useRef, Children, cloneElement, isValidElement } from "react";
 
+// Constants for responsive behavior
+const TAB_GAP = 8; // Gap between tabs in pixels
+const OVERFLOW_MARGIN = 40; // Safety margin to detect overflow before it happens
+const DOM_READY_DELAY = 100; // Delay to ensure DOM is fully rendered before measuring
+
 /**
  * ResponsiveTabs - A mobile-friendly tabs component that collapses to a dropdown on narrow screens
  * 
@@ -35,6 +40,7 @@ const ResponsiveTabs = ({ children, index, onChange, ...tabsProps }) => {
   const [shouldCollapse, setShouldCollapse] = useState(false);
   
   // Determine if we should use mobile layout based on breakpoint
+  // ssr: false prevents hydration mismatches between server and client
   const isMobile = useBreakpointValue({ base: true, md: false }, { ssr: false });
 
   // Extract tab labels from TabList children
@@ -83,16 +89,16 @@ const ResponsiveTabs = ({ children, index, onChange, ...tabsProps }) => {
       }
 
       const tabsWidth = tabsArray.reduce(
-        (sum, tab) => sum + tab.offsetWidth + 8, // Add gap between tabs
+        (sum, tab) => sum + tab.offsetWidth + TAB_GAP,
         0
       );
 
-      // Collapse if tabs overflow with some margin
-      setShouldCollapse(tabsWidth > containerWidth - 40);
+      // Collapse if tabs overflow with safety margin
+      setShouldCollapse(tabsWidth > containerWidth - OVERFLOW_MARGIN);
     };
 
     // Small delay to ensure DOM is ready
-    const timer = setTimeout(checkOverflow, 100);
+    const timer = setTimeout(checkOverflow, DOM_READY_DELAY);
     
     const resizeObserver = new ResizeObserver(checkOverflow);
     if (tabListRef.current) {
