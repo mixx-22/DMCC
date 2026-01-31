@@ -17,11 +17,6 @@ import {
   Td,
   Link,
   Badge,
-  Tabs,
-  TabList,
-  TabPanels,
-  Tab,
-  TabPanel,
   Button,
   Center,
   Stack,
@@ -30,6 +25,12 @@ import {
   Spacer,
   Tooltip,
 } from "@chakra-ui/react";
+import ResponsiveTabs, {
+  ResponsiveTabList,
+  ResponsiveTab,
+  ResponsiveTabPanels,
+  ResponsiveTabPanel,
+} from "./common/ResponsiveTabs";
 import { FiUsers, FiTarget, FiFolder, FiExternalLink } from "react-icons/fi";
 import { useState, useEffect } from "react";
 import Timestamp from "./Timestamp";
@@ -234,19 +235,19 @@ const TeamProfileView = ({ team, isValidDate, onManageObjectives }) => {
 
         <Box flex={1}>
           <Card w="full">
-            <Tabs
+            <ResponsiveTabs
               colorScheme="brandPrimary"
-              index={tabIndex}
+              defaultIndex={tabIndex}
               onChange={handleTabsChange}
             >
-              <TabList>
-                <Tab>Members</Tab>
-                <Tab>Objectives</Tab>
-                <Tab>Documents</Tab>
-              </TabList>
+              <ResponsiveTabList>
+                <ResponsiveTab>Members</ResponsiveTab>
+                <ResponsiveTab>Objectives</ResponsiveTab>
+                <ResponsiveTab>Documents</ResponsiveTab>
+              </ResponsiveTabList>
 
-              <TabPanels>
-                <TabPanel px={0} pt={0}>
+              <ResponsiveTabPanels>
+                <ResponsiveTabPanel px={0} pt={0}>
                   {team.members && team.members.length > 0 ? (
                     <Table variant="simple" size="sm" border="none">
                       <Tbody>
@@ -313,9 +314,9 @@ const TeamProfileView = ({ team, isValidDate, onManageObjectives }) => {
                       No members assigned
                     </Text>
                   )}
-                </TabPanel>
+                </ResponsiveTabPanel>
 
-                <TabPanel>
+                <ResponsiveTabPanel>
                   <VStack align="stretch" spacing={4}>
                     {team.objectives && team.objectives.length > 0 ? (
                       <>
@@ -386,9 +387,9 @@ const TeamProfileView = ({ team, isValidDate, onManageObjectives }) => {
                       </Center>
                     )}
                   </VStack>
-                </TabPanel>
+                </ResponsiveTabPanel>
 
-                <TabPanel px={0} pt={0}>
+                <ResponsiveTabPanel px={0} pt={0}>
                   {team.folderId && (
                     <HStack px={4} pt={4} pb={2} alignItems="center">
                       <Text fontSize="sm" color="gray.500">
@@ -493,9 +494,9 @@ const TeamProfileView = ({ team, isValidDate, onManageObjectives }) => {
                       </VStack>
                     </Center>
                   )}
-                </TabPanel>
-              </TabPanels>
-            </Tabs>
+                </ResponsiveTabPanel>
+              </ResponsiveTabPanels>
+            </ResponsiveTabs>
           </Card>
         </Box>
       </Flex>
