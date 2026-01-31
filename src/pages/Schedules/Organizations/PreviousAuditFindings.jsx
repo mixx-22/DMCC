@@ -9,7 +9,6 @@ import {
   useColorModeValue,
   Divider,
   Avatar,
-  Stack,
   Wrap,
   WrapItem,
   Center,
@@ -20,7 +19,7 @@ import {
   AccordionPanel,
   AccordionIcon,
 } from "@chakra-ui/react";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { FiAlertCircle } from "react-icons/fi";
 import moment from "moment";
 import apiService from "../../../services/api";
@@ -50,14 +49,7 @@ const PreviousAuditFindings = ({ auditScheduleId, isActive = false }) => {
   const labelColor = useColorModeValue("gray.600", "gray.400");
   const objectiveBg = useColorModeValue("gray.50", "gray.700");
 
-  useEffect(() => {
-    // Only fetch if component is active and we have an auditScheduleId
-    if (isActive && auditScheduleId) {
-      fetchPreviousAuditFindings();
-    }
-  }, [isActive, auditScheduleId]);
-
-  const fetchPreviousAuditFindings = async () => {
+  const fetchPreviousAuditFindings = useCallback(async () => {
     if (!auditScheduleId) {
       return;
     }
@@ -111,7 +103,14 @@ const PreviousAuditFindings = ({ auditScheduleId, isActive = false }) => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [auditScheduleId]);
+
+  useEffect(() => {
+    // Only fetch if component is active and we have an auditScheduleId
+    if (isActive && auditScheduleId) {
+      fetchPreviousAuditFindings();
+    }
+  }, [isActive, auditScheduleId, fetchPreviousAuditFindings]);
 
   // Helper to get all findings from all visits
   const getAllFindings = (organization) => {

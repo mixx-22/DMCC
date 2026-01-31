@@ -10,17 +10,34 @@ const USE_API = import.meta.env.VITE_USE_API !== "false";
 const MOCK_ORGANIZATIONS = [
   {
     _id: "org-1",
-    auditScheduleId: "schedule-mock-1",
-    team: "team-1",
+    auditScheduleId: "schedule-1",
+    team: {
+      _id: "team-1",
+      id: "team-1",
+      name: "Engineering Team",
+      description: "Software engineering and development team",
+    },
     status: 0,
     documents: [],
-    auditors: ["user-1", "user-2"],
+    auditors: [
+      { _id: "user-1", id: "user-1", name: "John Doe", email: "john@example.com" },
+      { _id: "user-2", id: "user-2", name: "Jane Smith", email: "jane@example.com" },
+    ],
     visits: [
       {
         date: {
           start: "2024-02-15",
           end: "2024-02-16",
         },
+        findings: [
+          {
+            _id: "finding-1",
+            compliance: "MINOR_NC",
+            description: "Documentation not up to date",
+            report: "Some technical documentation was found to be outdated.",
+            objectives: ["Documentation"],
+          },
+        ],
       },
     ],
   },
