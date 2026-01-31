@@ -306,13 +306,15 @@ const OrganizationCard = ({
   };
 
   const handleSetVerdict = async (verdict) => {
+    const teamId = organization.teamId || team;
+    
     // Update organization with new verdict
     dispatch({
       type: "UPDATE_ORGANIZATION",
       payload: {
         ...organization,
         verdict,
-        teamId: organization.teamId || team,
+        teamId,
       },
     });
 
@@ -321,7 +323,7 @@ const OrganizationCard = ({
       await updateOrganization(organization._id, {
         ...organization,
         verdict,
-        teamId: organization.teamId || team,
+        teamId,
       });
     } catch (error) {
       console.error("Failed to set organization verdict:", error);
