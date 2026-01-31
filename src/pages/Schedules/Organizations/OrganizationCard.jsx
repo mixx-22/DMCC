@@ -88,6 +88,7 @@ const OrganizationCard = ({
   const { selectedDocument, closeDocumentDrawer, handleDocumentClick } =
     useLayout();
   const cardBg = useColorModeValue("white", "gray.700");
+  const verdictColor = useColorModeValue("success.600", "success.400");
   const errorColor = useColorModeValue("error.600", "error.400");
   const borderColor = useColorModeValue("gray.200", "gray.600");
   const hoverBg = useColorModeValue("gray.50", "gray.600");
@@ -307,7 +308,7 @@ const OrganizationCard = ({
 
   const handleSetVerdict = async (verdict) => {
     const teamId = organization.teamId || team;
-    
+
     // Update organization with new verdict
     dispatch({
       type: "UPDATE_ORGANIZATION",
@@ -365,6 +366,8 @@ const OrganizationCard = ({
                 {team?.name || "Unknown Team"}
               </Text>
               {loading && <Spinner size="sm" />}
+            </HStack>
+            <HStack align="center" spacing={0}>
               {/* Display verdict badge */}
               {organization.verdict && (
                 <Tooltip label="Organization Final Verdict">
@@ -379,11 +382,19 @@ const OrganizationCard = ({
                   </Badge>
                 </Tooltip>
               )}
-            </HStack>
-            <HStack align="center" spacing={0}>
+              {organization.verdict && !isExpanded && (
+                <Box px={2}> &middot; </Box>
+              )}
               {!isExpanded && (
                 <Hide below="md">
-                  <Badge>{latestVisitDate}</Badge>
+                  <Badge
+                    colorScheme={
+                      COMPLIANCE_DISPLAY[organization.verdict]?.color || "gray"
+                    }
+                    fontSize="xs"
+                  >
+                    {latestVisitDate}
+                  </Badge>
                 </Hide>
               )}
               <IconButton
@@ -407,13 +418,16 @@ const OrganizationCard = ({
                 />
                 <MenuList>
                   <MenuItem
+                    color={verdictColor}
                     icon={<FiCheckCircle />}
                     onClick={(e) => {
                       e.stopPropagation();
                       setIsVerdictModalOpen(true);
                     }}
                   >
-                    {organization.verdict ? "Change Verdict" : "Set Verdict"}
+                    {organization.verdict
+                      ? "Change Final Verdict"
+                      : "Set Final Verdict"}
                   </MenuItem>
                   <MenuItem
                     icon={<FiEdit />}
@@ -422,8 +436,9 @@ const OrganizationCard = ({
                       onEdit(organization);
                     }}
                   >
-                    Edit
+                    Edit Organization
                   </MenuItem>
+                  <Divider />
                   <MenuItem
                     icon={<FiTrash2 />}
                     onClick={(e) => {

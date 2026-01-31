@@ -71,7 +71,7 @@ const SetVerdictModal = ({
   useEffect(() => {
     if (isOpen && calculatedVerdict) {
       const defaultOption = VERDICT_OPTIONS.find(
-        (opt) => opt.value === calculatedVerdict
+        (opt) => opt.value === calculatedVerdict,
       );
       setSelectedVerdict(defaultOption || null);
     }
@@ -99,7 +99,7 @@ const SetVerdictModal = ({
   };
 
   const selectedOption = VERDICT_OPTIONS.find(
-    (opt) => opt.value === selectedVerdict?.value
+    (opt) => opt.value === selectedVerdict?.value,
   );
 
   return (
@@ -114,18 +114,23 @@ const SetVerdictModal = ({
               <AlertIcon />
               <VStack align="start" spacing={1}>
                 <AlertTitle fontSize="sm">
-                  Set Final Verdict for {organization?.team?.name || "Organization"}
+                  Set Final Verdict for{" "}
+                  {organization?.team?.name || "Organization"}
                 </AlertTitle>
                 <AlertDescription fontSize="xs">
                   Based on all visits and findings, the recommended verdict is:{" "}
                   <Badge
                     colorScheme={
                       VERDICT_OPTIONS.find(
-                        (opt) => opt.value === calculatedVerdict
+                        (opt) => opt.value === calculatedVerdict,
                       )?.color || "gray"
                     }
                   >
-                    {calculatedVerdict}
+                    {
+                      VERDICT_OPTIONS.find(
+                        (opt) => opt.value === calculatedVerdict,
+                      )?.label
+                    }
                   </Badge>
                 </AlertDescription>
               </VStack>
