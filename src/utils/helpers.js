@@ -57,3 +57,59 @@ export function formatDateRange(startDate, endDate) {
   // January 29, 2026 - December 31, 2027
   return `${formatMonthDayYear(start)} - ${formatMonthDayYear(end)}`;
 }
+
+/**
+ * Calculate the organization verdict based on all visits and findings
+ * Returns the highest level of non-conformity or COMPLIANT if none found
+ */
+export function calculateOrganizationVerdict(organization) {
+  const { visits = [] } = organization;
+
+  // Compliance severity order (highest to lowest)
+  const severityOrder = [
+    "MAJOR_NC",
+    "MINOR_NC",
+    "OPPORTUNITIES_FOR_IMPROVEMENTS",
+    "OBSERVATIONS",
+    "COMPLIANT",
+  ];
+
+  let highestSeverity = "COMPLIANT"; // Default to compliant
+
+  // Check all visits and their findings
+  visits.forEach((visit) => {
+    // Check visit-level compliance
+    if (visit.compliance) {
+      const visitSeverityIndex = severityOrder.indexOf(visit.compliance);
+      const currentSeverityIndex = severityOrder.indexOf(highestSeverity);
+
+      if (
+        visitSeverityIndex !== -1 &&
+        visitSeverityIndex < currentSeverityIndex
+      ) {
+        highestSeverity = visit.compliance;
+      }
+    }
+
+    // Check findings-level compliance
+    if (visit.findings && Array.isArray(visit.findings)) {
+      visit.findings.forEach((finding) => {
+        // Use currentCompliance if available (for corrected findings), otherwise use compliance
+        const findingCompliance =
+          finding.currentCompliance || finding.compliance;
+
+        const findingSeverityIndex = severityOrder.indexOf(findingCompliance);
+        const currentSeverityIndex = severityOrder.indexOf(highestSeverity);
+
+        if (
+          findingSeverityIndex !== -1 &&
+          findingSeverityIndex < currentSeverityIndex
+        ) {
+          highestSeverity = findingCompliance;
+        }
+      });
+    }
+  });
+
+  return highestSeverity;
+}
