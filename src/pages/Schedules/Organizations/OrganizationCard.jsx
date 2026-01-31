@@ -68,6 +68,7 @@ import VisitManager from "./VisitManager";
 import VisitComplianceForm from "./VisitComplianceForm";
 import SetVerdictModal from "./SetVerdictModal";
 import { calculateOrganizationVerdict } from "../../../utils/helpers";
+import TeamQualityDocuments from "../../../components/TeamQualityDocuments";
 
 const OrganizationCard = ({
   loading = false,
@@ -135,8 +136,8 @@ const OrganizationCard = ({
   const calculatedVerdict = calculateOrganizationVerdict(organization);
 
   useEffect(() => {
-    // Only fetch documents if organization is expanded AND user is on Documents tab (index 3)
-    if (organization?.team?.folderId && isExpanded && activeTabIndex === 3) {
+    // Only fetch documents if organization is expanded AND user is on Other Documents tab (index 4)
+    if (organization?.team?.folderId && isExpanded && activeTabIndex === 4) {
       fetchDocuments(organization?.team?.folderId);
     }
   }, [
@@ -497,7 +498,15 @@ const OrganizationCard = ({
                     fontWeight={"normal"}
                   >
                     <HStack spacing={1}>
-                      <Text>Documents</Text>
+                      <Text>Quality Documents</Text>
+                    </HStack>
+                  </Tab>
+                  <Tab
+                    sx={{ [$tabColor.variable]: tabColor }}
+                    fontWeight={"normal"}
+                  >
+                    <HStack spacing={1}>
+                      <Text>Other Documents</Text>
                     </HStack>
                   </Tab>
                 </TabList>
@@ -1083,7 +1092,24 @@ const OrganizationCard = ({
                     </VStack>
                   </TabPanel>
 
-                  {/* Documents Tab */}
+                  {/* Quality Documents Tab */}
+                  <TabPanel pt={0} px={0}>
+                    {team?._id || team?.id ? (
+                      <TeamQualityDocuments
+                        readOnly
+                        teamId={team._id || team.id}
+                        isActive={isExpanded && activeTabIndex === 3}
+                      />
+                    ) : (
+                      <Center minH="xs">
+                        <Text color="gray.500" textAlign="center">
+                          No team assigned to this organization
+                        </Text>
+                      </Center>
+                    )}
+                  </TabPanel>
+
+                  {/* Other Documents Tab */}
                   <TabPanel px={4}>
                     {organization?.team?.folderId ? (
                       documentsLoading ? (
