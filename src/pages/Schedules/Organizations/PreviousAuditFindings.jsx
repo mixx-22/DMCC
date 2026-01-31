@@ -99,8 +99,8 @@ const FindingCard = ({ finding, borderColor, cardBg, labelColor, objectiveBg }) 
                     </Text>
                     <Wrap>
                       {finding.objectives.map(
-                        (objective, idx) => (
-                          <WrapItem key={idx}>
+                        (objective) => (
+                          <WrapItem key={objective._id || objective.id || objective.title || objective}>
                             <Badge
                               bg={objectiveBg}
                               color={labelColor}
@@ -170,8 +170,8 @@ const FindingCard = ({ finding, borderColor, cardBg, labelColor, objectiveBg }) 
                             Auditee(s):
                           </Text>
                           <Wrap>
-                            {finding.report.auditee.map((person, idx) => (
-                              <WrapItem key={idx}>
+                            {finding.report.auditee.map((person) => (
+                              <WrapItem key={person._id || person.id || `${person.firstName}-${person.lastName}-${person.employeeId}`}>
                                 <Badge colorScheme="blue" fontSize="xs">
                                   {person.firstName} {person.lastName}
                                   {person.employeeId && ` (${person.employeeId})`}
@@ -187,8 +187,8 @@ const FindingCard = ({ finding, borderColor, cardBg, labelColor, objectiveBg }) 
                             Auditor(s):
                           </Text>
                           <Wrap>
-                            {finding.report.auditor.map((person, idx) => (
-                              <WrapItem key={idx}>
+                            {finding.report.auditor.map((person) => (
+                              <WrapItem key={person._id || person.id || `${person.firstName}-${person.lastName}-${person.employeeId}`}>
                                 <Badge colorScheme="purple" fontSize="xs">
                                   {person.firstName} {person.lastName}
                                   {person.employeeId && ` (${person.employeeId})`}
@@ -248,8 +248,8 @@ const FindingCard = ({ finding, borderColor, cardBg, labelColor, objectiveBg }) 
                             Owner(s):
                           </Text>
                           <Wrap>
-                            {finding.actionPlan.owner.map((person, idx) => (
-                              <WrapItem key={idx}>
+                            {finding.actionPlan.owner.map((person) => (
+                              <WrapItem key={person._id || person.id || `${person.firstName}-${person.lastName}-${person.employeeId}`}>
                                 <Badge colorScheme="green" fontSize="xs">
                                   {person.firstName} {person.lastName}
                                   {person.employeeId && ` (${person.employeeId})`}
@@ -265,8 +265,8 @@ const FindingCard = ({ finding, borderColor, cardBg, labelColor, objectiveBg }) 
                             Action Taken By:
                           </Text>
                           <Wrap>
-                            {finding.actionPlan.takenBy.map((person, idx) => (
-                              <WrapItem key={idx}>
+                            {finding.actionPlan.takenBy.map((person) => (
+                              <WrapItem key={person._id || person.id || `${person.firstName}-${person.lastName}-${person.employeeId}`}>
                                 <Badge colorScheme="teal" fontSize="xs">
                                   {person.firstName} {person.lastName}
                                   {person.employeeId && ` (${person.employeeId})`}
