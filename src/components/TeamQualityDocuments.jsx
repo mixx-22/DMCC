@@ -144,7 +144,7 @@ const TeamQualityDocuments = ({ teamId }) => {
             isOpen={isQualityDocumentModalOpen}
             onClose={handleQualityDocumentModalClose}
             parentId={null}
-            path={`/`}
+            path={`/`} // Document tree path (root level)
             teamId={teamId}
           />
           <DocumentDrawer
