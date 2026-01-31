@@ -8,6 +8,7 @@ import {
   VStack,
   Code,
 } from "@chakra-ui/react";
+import { useState } from "react";
 import ResponsiveTabs, {
   ResponsiveTabList,
   ResponsiveTab,
@@ -16,6 +17,9 @@ import ResponsiveTabs, {
 } from "../components/common/ResponsiveTabs";
 
 const ResponsiveTabsDemo = () => {
+  const [tab1Index, setTab1Index] = useState(0);
+  const [tab2Index, setTab2Index] = useState(0);
+
   return (
     <Container maxW="container.xl" py={8}>
       <VStack spacing={8} align="stretch">
@@ -34,7 +38,7 @@ const ResponsiveTabsDemo = () => {
             <Heading size="md" mb={4}>
               Example 1: Basic Tabs
             </Heading>
-            <ResponsiveTabs defaultIndex={0}>
+            <ResponsiveTabs index={tab1Index} onChange={setTab1Index}>
               <ResponsiveTabList>
                 <ResponsiveTab>Overview</ResponsiveTab>
                 <ResponsiveTab>Details</ResponsiveTab>
@@ -70,7 +74,7 @@ const ResponsiveTabsDemo = () => {
             <Heading size="md" mb={4}>
               Example 2: Many Tabs (Scrollable)
             </Heading>
-            <ResponsiveTabs defaultIndex={0} colorScheme="blue">
+            <ResponsiveTabs index={tab2Index} onChange={setTab2Index} colorScheme="blue">
               <ResponsiveTabList>
                 <ResponsiveTab>Dashboard</ResponsiveTab>
                 <ResponsiveTab>Analytics</ResponsiveTab>
@@ -139,7 +143,9 @@ const ResponsiveTabsDemo = () => {
                 <strong>Usage:</strong>
               </Text>
               <Code p={2} borderRadius="md" whiteSpace="pre">
-                {`<ResponsiveTabs defaultIndex={0} colorScheme="brandPrimary">
+                {`const [tabIndex, setTabIndex] = useState(0);
+
+<ResponsiveTabs index={tabIndex} onChange={setTabIndex} colorScheme="brandPrimary">
   <ResponsiveTabList>
     <ResponsiveTab>Tab 1</ResponsiveTab>
     <ResponsiveTab>Tab 2</ResponsiveTab>

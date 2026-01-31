@@ -13,7 +13,7 @@ import {
   useBreakpointValue,
 } from "@chakra-ui/react";
 import { FiChevronDown } from "react-icons/fi";
-import { useState, Children, cloneElement } from "react";
+import { Children, cloneElement } from "react";
 
 /**
  * ResponsiveTabs - A responsive tabs component
@@ -22,7 +22,7 @@ import { useState, Children, cloneElement } from "react";
  * On desktop (md+): Displays normal tabs with horizontal scrolling
  * 
  * Usage:
- * <ResponsiveTabs defaultIndex={0}>
+ * <ResponsiveTabs index={tabIndex} onChange={handleChange}>
  *   <ResponsiveTabList>
  *     <ResponsiveTab>Tab 1</ResponsiveTab>
  *     <ResponsiveTab>Tab 2</ResponsiveTab>
@@ -36,8 +36,7 @@ import { useState, Children, cloneElement } from "react";
  * </ResponsiveTabs>
  */
 
-export const ResponsiveTabs = ({ children, defaultIndex = 0, colorScheme = "brandPrimary", ...props }) => {
-  const [tabIndex, setTabIndex] = useState(defaultIndex);
+export const ResponsiveTabs = ({ children, index, onChange, colorScheme = "brandPrimary", ...props }) => {
   const isMobile = useBreakpointValue({ base: true, md: false });
 
   // Extract tab labels and panels from children
@@ -53,16 +52,15 @@ export const ResponsiveTabs = ({ children, defaultIndex = 0, colorScheme = "bran
     ? Children.toArray(tabListElement.props.children)
     : [];
 
-  const handleTabsChange = (index) => {
-    setTabIndex(index);
-    if (props.onChange) {
-      props.onChange(index);
+  const handleTabsChange = (newIndex) => {
+    if (onChange) {
+      onChange(newIndex);
     }
   };
 
   return (
     <Tabs
-      index={tabIndex}
+      index={index}
       onChange={handleTabsChange}
       colorScheme={colorScheme}
       {...props}
@@ -79,15 +77,15 @@ export const ResponsiveTabs = ({ children, defaultIndex = 0, colorScheme = "bran
               colorScheme={colorScheme}
               variant="outline"
             >
-              {tabs[tabIndex]?.props?.children || `Tab ${tabIndex + 1}`}
+              {tabs[index]?.props?.children || `Tab ${index + 1}`}
             </MenuButton>
-            <MenuList width="full">
-              {tabs.map((tab, index) => (
+            <MenuList>
+              {tabs.map((tab, idx) => (
                 <MenuItem
-                  key={index}
-                  onClick={() => handleTabsChange(index)}
-                  bg={tabIndex === index ? `${colorScheme}.50` : "transparent"}
-                  fontWeight={tabIndex === index ? "semibold" : "normal"}
+                  key={idx}
+                  onClick={() => handleTabsChange(idx)}
+                  bg={index === idx ? `${colorScheme}.50` : "transparent"}
+                  fontWeight={index === idx ? "semibold" : "normal"}
                 >
                   {tab.props.children}
                 </MenuItem>

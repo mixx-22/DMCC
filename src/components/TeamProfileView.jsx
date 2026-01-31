@@ -237,7 +237,7 @@ const TeamProfileView = ({ team, isValidDate, onManageObjectives }) => {
           <Card w="full">
             <ResponsiveTabs
               colorScheme="brandPrimary"
-              defaultIndex={tabIndex}
+              index={tabIndex}
               onChange={handleTabsChange}
             >
               <ResponsiveTabList>
