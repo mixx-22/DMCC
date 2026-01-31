@@ -13,7 +13,7 @@ import {
   useBreakpointValue,
 } from "@chakra-ui/react";
 import { FiChevronDown } from "react-icons/fi";
-import { Children, cloneElement } from "react";
+import { Children, cloneElement, useMemo } from "react";
 
 /**
  * ResponsiveTabs - A responsive tabs component
@@ -37,20 +37,28 @@ import { Children, cloneElement } from "react";
  */
 
 export const ResponsiveTabs = ({ children, index, onChange, colorScheme = "brandPrimary", ...props }) => {
-  const isMobile = useBreakpointValue({ base: true, md: false });
+  const isMobile = useBreakpointValue({ base: true, md: false }, { ssr: false });
 
-  // Extract tab labels and panels from children
-  const childArray = Children.toArray(children);
-  const tabListElement = childArray.find(
-    (child) => child.type === ResponsiveTabList
-  );
-  const tabPanelsElement = childArray.find(
-    (child) => child.type === ResponsiveTabPanels
-  );
+  // Extract tab labels and panels from children - memoized to prevent unnecessary recalculation
+  const { tabs, tabListElement, tabPanelsElement } = useMemo(() => {
+    const childArray = Children.toArray(children);
+    const tabListEl = childArray.find(
+      (child) => child.type === ResponsiveTabList
+    );
+    const tabPanelsEl = childArray.find(
+      (child) => child.type === ResponsiveTabPanels
+    );
 
-  const tabs = tabListElement
-    ? Children.toArray(tabListElement.props.children)
-    : [];
+    const tabsArray = tabListEl
+      ? Children.toArray(tabListEl.props.children)
+      : [];
+
+    return {
+      tabs: tabsArray,
+      tabListElement: tabListEl,
+      tabPanelsElement: tabPanelsEl,
+    };
+  }, [children]);
 
   const handleTabsChange = (newIndex) => {
     if (onChange) {
@@ -66,7 +74,7 @@ export const ResponsiveTabs = ({ children, index, onChange, colorScheme = "brand
       {...props}
     >
       {/* Mobile Dropdown Menu */}
-      {isMobile && (
+      {isMobile === true && (
         <Box mb={4}>
           <Menu>
             <MenuButton
@@ -96,7 +104,7 @@ export const ResponsiveTabs = ({ children, index, onChange, colorScheme = "brand
       )}
 
       {/* Desktop Tabs */}
-      {!isMobile && tabListElement && cloneElement(tabListElement)}
+      {isMobile === false && tabListElement && cloneElement(tabListElement)}
 
       {/* Tab Panels (both mobile and desktop) */}
       {tabPanelsElement && cloneElement(tabPanelsElement)}
