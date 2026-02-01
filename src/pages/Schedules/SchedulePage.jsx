@@ -213,10 +213,12 @@ const SchedulePageContent = () => {
       text: `Are you sure you want to delete "${formData.title}"? This action cannot be undone.`,
       icon: "warning",
       showCancelButton: true,
-      confirmButtonColor: "#d33",
-      cancelButtonColor: "#3085d6",
+      buttonsStyling: false,
       confirmButtonText: "Yes, delete it",
       cancelButtonText: "Cancel",
+      customClass: {
+        popup: "danger",
+      },
     });
 
     if (result.isConfirmed) {
@@ -338,10 +340,12 @@ const SchedulePageContent = () => {
       text: "This will set the audit schedule status back to Ongoing.",
       icon: "question",
       showCancelButton: true,
-      confirmButtonColor: "#3085d6",
-      cancelButtonColor: "#d33",
+      buttonsStyling: false,
       confirmButtonText: "Yes, reopen it",
       cancelButtonText: "Cancel",
+      customClass: {
+        popup: "warning inverted",
+      },
     });
 
     if (result.isConfirmed) {

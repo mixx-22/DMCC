@@ -45,10 +45,12 @@ const Profile = () => {
       text: "Upon proceeding, you will be logged out of your session.",
       icon: "warning",
       showCancelButton: true,
-      confirmButtonColor: "#3085d6",
-      cancelButtonColor: "#d33",
+      buttonsStyling: false,
       confirmButtonText: "Yes, Log Out",
       cancelButtonText: "Cancel",
+      customClass: {
+        popup: "warning inverted",
+      },
     });
     if (result.isConfirmed) {
       logout();

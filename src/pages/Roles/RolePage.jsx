@@ -166,9 +166,12 @@ const RolePage = () => {
         text: "A delete permission was enabled. Do you want to make this a system role?",
         icon: "question",
         showCancelButton: true,
+        buttonsStyling: false,
         confirmButtonText: "Yes, make system role",
         cancelButtonText: "No, keep as is",
-        confirmButtonColor: "#3182ce",
+        customClass: {
+          popup: "info",
+        },
       });
 
       setFormData((prev) => ({
@@ -244,9 +247,12 @@ const RolePage = () => {
         text: "Do you want to allow delete permissions on all modules?",
         icon: "question",
         showCancelButton: true,
+        buttonsStyling: false,
         confirmButtonText: "Yes, allow delete",
         cancelButtonText: "No, keep current",
-        confirmButtonColor: "#3182ce",
+        customClass: {
+          popup: "info",
+        },
       });
 
       if (result.isConfirmed) {
@@ -367,11 +373,13 @@ const RolePage = () => {
       text: "This action is irreversible and cannot be undone.",
       icon: "warning",
       showCancelButton: true,
-      confirmButtonColor: "#E53E3E",
-      cancelButtonColor: "#718096",
+      buttonsStyling: false,
       confirmButtonText: "Delete",
       cancelButtonText: "Cancel",
       reverseButtons: true,
+      customClass: {
+        popup: "danger",
+      },
     });
 
     if (result.isConfirmed) {
