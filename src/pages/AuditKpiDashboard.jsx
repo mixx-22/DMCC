@@ -38,13 +38,16 @@ import {
   Tooltip,
   Container,
 } from "@chakra-ui/react";
-import { motion } from "framer-motion";
+import { motion } from "framer-motion"; // v10.16.16 - Used for smooth animations and transitions
 import { InfoIcon } from "@chakra-ui/icons";
 import apiService from "../services/api";
 import NcMetricsBarChart from "../components/NcMetricsBarChart";
 import NcContributionBarChart from "../components/NcContributionBarChart";
 
-// Create motion components
+// Constants
+const HIGH_FINDING_COUNT_THRESHOLD = 5; // Threshold for highlighting high finding counts
+
+// Create motion components for animations
 const MotionBox = motion(Box);
 const MotionCard = motion(Card);
 const MotionGridItem = motion(GridItem);
@@ -76,6 +79,7 @@ const staggerContainer = {
 };
 
 // Reusable KPI Card Component with brand colors and animations
+// Note: brandPrimary and brandSecondary colors are defined in src/theme/colors.tsx
 const KpiCard = ({
   label,
   value,
@@ -91,6 +95,7 @@ const KpiCard = ({
   const labelColor = useColorModeValue("gray.600", "gray.300");
   
   // Default gradient colors based on color scheme
+  // Maps to colors defined in theme configuration (src/theme/colors.tsx)
   const defaultGradients = {
     brandPrimary: { from: "#005AEE", to: "#4D8CFF" },
     brandSecondary: { from: "#FFD700", to: "#FFEF9E" },
@@ -718,7 +723,7 @@ const AuditKpiDashboard = () => {
             textAlign="center"
             py={12}
             boxShadow="lg"
-            bgGradient="linear(to-br, info.50, blue.50)"
+            bgGradient="linear(to-br, info.50, info.100)"
           >
             <AlertIcon boxSize="50px" mr={0} mb={4} />
             <AlertTitle fontSize="2xl" mb={2}>
@@ -1128,7 +1133,7 @@ const AuditKpiDashboard = () => {
                         </Td>
                         <Td isNumeric>
                           <Badge
-                            bgGradient={item.count > 5 ? "linear(to-r, error.500, error.600)" : "linear(to-r, brandPrimary.500, brandPrimary.600)"}
+                            bgGradient={item.count > HIGH_FINDING_COUNT_THRESHOLD ? "linear(to-r, error.500, error.600)" : "linear(to-r, brandPrimary.500, brandPrimary.600)"}
                             color="white"
                             fontSize="md"
                             px={3}
