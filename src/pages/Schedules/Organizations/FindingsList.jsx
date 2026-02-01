@@ -32,13 +32,13 @@ import {
   FiFileText,
   FiCheckCircle,
   FiPlus,
-  FiAlertCircle,
   FiTool,
 } from "react-icons/fi";
 import moment from "moment";
 import FindingsForm from "./FindingsForm";
 import ActionPlanForm from "./ActionPlanForm";
 import VerificationForm from "./VerificationForm";
+import NotifBadge from "../../../components/NotifBadge";
 
 // Map compliance values to display names and colors
 const COMPLIANCE_DISPLAY = {
@@ -60,6 +60,7 @@ const FindingCard = ({
   onEdit,
   onDelete,
   onSaveEdit,
+  isScheduleOngoing,
 }) => {
   const [isExpanded, setIsExpanded] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
@@ -244,22 +245,19 @@ const FindingCard = ({
               )}
             </VStack>
             <HStack spacing={0}>
-              {needsActionPlan && (
-                <Badge colorScheme="orange" fontSize="xs" mr={2}>
-                  <HStack spacing={1}>
-                    <FiAlertCircle />
-                    <Text>Action Plan Required</Text>
-                  </HStack>
-                </Badge>
-              )}
-              {needsVerification && (
-                <Badge colorScheme="orange" fontSize="xs" mr={2}>
-                  <HStack spacing={1}>
-                    <FiAlertCircle />
-                    <Text>Verification Pending</Text>
-                  </HStack>
-                </Badge>
-              )}
+              <Box>
+                <NotifBadge
+                  mr={2}
+                  show={needsActionPlan || needsVerification}
+                  message={
+                    needsVerification
+                      ? "Verification Pending"
+                      : needsActionPlan
+                        ? "Action Plan Required"
+                        : undefined
+                  }
+                />
+              </Box>
               <IconButton
                 icon={isExpanded ? <FiChevronUp /> : <FiChevronDown />}
                 size="sm"
@@ -267,7 +265,7 @@ const FindingCard = ({
                 onClick={() => setIsExpanded(!isExpanded)}
                 aria-label={isExpanded ? "Collapse" : "Expand"}
               />
-              {onEdit && (
+              {isScheduleOngoing && onEdit && (
                 <IconButton
                   icon={<FiEdit />}
                   size="sm"
@@ -277,7 +275,7 @@ const FindingCard = ({
                   aria-label="Edit finding"
                 />
               )}
-              {onDelete && (
+              {isScheduleOngoing && onDelete && (
                 <IconButton
                   icon={<FiTrash2 />}
                   size="sm"
@@ -322,24 +320,34 @@ const FindingCard = ({
                     </Tab>
                     <Tab>
                       <HStack spacing={2}>
-                        <FiTool />
+                        <Center position="relative">
+                          <FiTool />
+                          <NotifBadge
+                            bottom={-1}
+                            right={-1}
+                            boxSize={3}
+                            position="absolute"
+                            show={needsActionPlan}
+                            message={"Action Plan Required"}
+                          />
+                        </Center>
                         <Text>Action Plan</Text>
-                        {needsActionPlan && (
-                          <Badge colorScheme="orange" fontSize="xs">
-                            Required
-                          </Badge>
-                        )}
                       </HStack>
                     </Tab>
                     <Tab>
                       <HStack spacing={2}>
-                        <FiCheckCircle />
+                        <Center pos="relative">
+                          <FiCheckCircle />
+                          <NotifBadge
+                            bottom={-1}
+                            right={-1}
+                            boxSize={3}
+                            position="absolute"
+                            show={needsVerification}
+                            message={"Verification Pending"}
+                          />
+                        </Center>
                         <Text>Verification</Text>
-                        {needsVerification && (
-                          <Badge colorScheme="orange" fontSize="xs">
-                            Pending
-                          </Badge>
-                        )}
                       </HStack>
                     </Tab>
                   </TabList>
@@ -573,7 +581,21 @@ const FindingCard = ({
 
                     {/* Verification Tab Panel */}
                     <TabPanel px={0} py={4}>
-                      {isEditingVerification ? (
+                      {needsActionPlan ? (
+                        <Center w="full" flexDir="column" minH="xs">
+                          <Text
+                            mb={2}
+                            fontSize="xs"
+                            color="gray.500"
+                            textAlign="center"
+                          >
+                            No Action Plan Yet.
+                            <br />
+                            This organization still doesn&apos;t have an Action
+                            Plan set yet.
+                          </Text>
+                        </Center>
+                      ) : isEditingVerification ? (
                         <VerificationForm
                           initialData={{
                             corrected: finding.corrected,
@@ -604,7 +626,7 @@ const FindingCard = ({
                                   ? "green"
                                   : finding.corrected === 0
                                     ? "red"
-                                    : "orange"
+                                    : "warning"
                               }
                               onClick={() => setIsEditingVerification(true)}
                               aria-label="Edit verification"
@@ -633,6 +655,9 @@ const FindingCard = ({
                             <br />
                             Verify this finding now by clicking the button
                             below.
+                            <br />
+                            This action is irreversible to its pending status
+                            once saved
                           </Text>
                           <Button
                             size="sm"
@@ -641,7 +666,7 @@ const FindingCard = ({
                             variant="outline"
                             onClick={() => setIsEditingVerification(true)}
                           >
-                            Add Verification
+                            Set Verification
                           </Button>
                         </Center>
                       )}
@@ -808,6 +833,7 @@ const FindingsList = ({
   onEdit,
   onDelete,
   onSaveEdit,
+  isScheduleOngoing,
 }) => {
   if (!findings || findings.length === 0) {
     return null;
@@ -827,6 +853,7 @@ const FindingsList = ({
           onEdit={onEdit}
           onDelete={onDelete}
           onSaveEdit={onSaveEdit}
+          {...{ isScheduleOngoing }}
         />
       ))}
     </VStack>

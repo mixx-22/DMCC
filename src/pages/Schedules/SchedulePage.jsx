@@ -52,11 +52,14 @@ import {
   FiHelpCircle,
 } from "react-icons/fi";
 import { useNavigate, useParams } from "react-router-dom";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import Swal from "sweetalert2";
 import PageHeader from "../../components/PageHeader";
 import PageFooter from "../../components/PageFooter";
-import { useScheduleProfile, useOrganizations } from "../../context/_useContext";
+import {
+  useScheduleProfile,
+  useOrganizations,
+} from "../../context/_useContext";
 import { getAuditTypeLabel } from "../../utils/auditHelpers";
 import { validateAuditScheduleClosure } from "../../utils/helpers";
 import EditAuditDetailsModal from "./EditAuditDetailsModal";
@@ -78,6 +81,7 @@ const SchedulePageContent = () => {
     createSchedule,
     deleteSchedule,
   } = useScheduleProfile();
+  const isScheduleOngoing = useMemo(() => schedule?.status === 0, [schedule]);
 
   // Get organizations from context
   const { organizations } = useOrganizations();
@@ -663,6 +667,7 @@ const SchedulePageContent = () => {
               <CardBody>
                 <VStack align="stretch" spacing={4}>
                   <Editable
+                    isDisabled={!isScheduleOngoing}
                     key={`title-${schedule?.id || schedule?._id}`}
                     defaultValue={schedule?.title || "Untitled"}
                     onSubmit={handleTitleBlur}
@@ -714,6 +719,7 @@ const SchedulePageContent = () => {
                   {/* Editable Description */}
                   <Editable
                     w="full"
+                    isDisabled={!isScheduleOngoing}
                     key={`description-${schedule?.id || schedule?._id}`}
                     defaultValue={schedule?.description || ""}
                     onSubmit={handleDescriptionBlur}
@@ -786,15 +792,18 @@ const SchedulePageContent = () => {
               <CardBody>
                 <Flex justify="space-between" align="center" mb={4}>
                   <Text fontWeight="semibold">Audit Details</Text>
-                  <Button
-                    size="xs"
-                    variant="ghost"
-                    colorScheme="brandPrimary"
-                    leftIcon={<FiEdit />}
-                    onClick={onEditDetailsOpen}
-                  >
-                    Edit
-                  </Button>
+                  {isScheduleOngoing && (
+                    <Button
+                      size="xs"
+                      variant="ghost"
+                      colorScheme="brandPrimary"
+                      leftIcon={<FiEdit />}
+                      onClick={onEditDetailsOpen}
+                    >
+                      Edit
+                    </Button>
+                  )}
+>>>>>>> 67e73612d2f2b0c651f8b2d1213becb6e9779ab4
                 </Flex>
                 <VStack align="stretch" spacing={3}>
                   <Box>
