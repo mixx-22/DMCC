@@ -419,19 +419,23 @@ const Request = () => {
   // Handle modal close and refresh current tab
   const handleModalClose = () => {
     onQualityDocumentModalClose();
-    // Refresh the current active tab
+    // Refresh the current active tab (always fetch page 1 to see new request)
     switch (activeTab) {
       case 0:
-        fetchMyRequests(myRequestsPage);
+        setMyRequestsPage(1);
+        fetchMyRequests(1);
         break;
       case 1:
-        fetchForApproval(forApprovalPage);
+        setForApprovalPage(1);
+        fetchForApproval(1);
         break;
       case 2:
-        fetchForPublish(forPublishPage);
+        setForPublishPage(1);
+        fetchForPublish(1);
         break;
       case 3:
-        fetchRequestHistory(requestHistoryPage);
+        setRequestHistoryPage(1);
+        fetchRequestHistory(1);
         break;
       default:
         break;
