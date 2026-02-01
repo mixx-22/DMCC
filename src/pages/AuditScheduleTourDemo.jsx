@@ -36,6 +36,8 @@ import {
 } from "../utils/sampleAuditData";
 import { useAuditTourGuide } from "../hooks/useAuditTourGuide";
 
+import { OrganizationsContext } from "../context/_contexts";
+
 /**
  * Demo Organizations Context Provider
  * Provides sample data without API calls
@@ -76,9 +78,6 @@ const DemoOrganizationsContext = ({ children, organizations }) => {
       }
     },
   };
-
-  // Use the _contexts import pattern
-  const OrganizationsContext = require("../context/_contexts").OrganizationsContext;
 
   return (
     <OrganizationsContext.Provider value={contextValue}>

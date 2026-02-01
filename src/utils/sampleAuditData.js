@@ -50,6 +50,10 @@ export const generateSampleOrganizations = () => {
       visits: [
         {
           _id: "demo-visit-001",
+          date: {
+            start: "2024-02-01",
+            end: "2024-02-01",
+          },
           visitDate: new Date("2024-02-01").toISOString(),
           objective:
             "Review engineering processes, documentation standards, and quality control procedures for compliance with ISO 9001:2015",
@@ -127,6 +131,10 @@ export const generateSampleOrganizations = () => {
         },
         {
           _id: "demo-visit-002",
+          date: {
+            start: "2024-02-15",
+            end: "2024-02-15",
+          },
           visitDate: new Date("2024-02-15").toISOString(),
           objective:
             "Follow-up visit to verify implementation of corrective actions from first visit",
@@ -162,6 +170,10 @@ export const generateSampleOrganizations = () => {
       visits: [
         {
           _id: "demo-visit-003",
+          date: {
+            start: "2024-02-05",
+            end: "2024-02-05",
+          },
           visitDate: new Date("2024-02-05").toISOString(),
           objective:
             "Assess quality control measures, testing procedures, compliance reporting, and defect tracking processes",
@@ -198,6 +210,10 @@ export const generateSampleOrganizations = () => {
       visits: [
         {
           _id: "demo-visit-004",
+          date: {
+            start: "2024-02-08",
+            end: "2024-02-08",
+          },
           visitDate: new Date("2024-02-08").toISOString(),
           objective:
             "Review operational procedures, resource management, and process controls",
