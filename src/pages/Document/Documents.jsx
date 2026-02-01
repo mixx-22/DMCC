@@ -6,8 +6,6 @@ import {
   IconButton,
   Flex,
   useDisclosure,
-  Spinner,
-  Center,
   Stack,
   List,
   ListItem,
@@ -22,7 +20,6 @@ import PageHeader from "../../components/PageHeader";
 import PageFooter from "../../components/PageFooter";
 import SearchInput from "../../components/SearchInput";
 import CreateFolderModal from "../../components/Document/modals/CreateFolderModal";
-import CreateAuditScheduleModal from "../../components/Document/modals/CreateAuditScheduleModal";
 import QualityDocumentUploadModal from "../../components/Document/modals/QualityDocumentUploadModal";
 import DocumentDrawer from "../../components/Document/DocumentDrawer";
 import { GridView } from "../../components/Document/GridView";
@@ -30,6 +27,8 @@ import { ListView } from "../../components/Document/ListView";
 import { EmptyState } from "../../components/Document/EmptyState";
 import { ActionButton } from "../../components/Document/ActionButton";
 import Breadcrumbs from "../../components/Document/Breadcrumbs";
+import DocumentsGridSkeleton from "../../components/Document/DocumentsGridSkeleton";
+import DocumentsListSkeleton from "../../components/Document/DocumentsListSkeleton";
 import { useDocuments, useLayout } from "../../context/_useContext";
 
 const Documents = () => {
@@ -84,11 +83,6 @@ const Documents = () => {
     isOpen: isFolderModalOpen,
     onOpen: onFolderModalOpen,
     onClose: onFolderModalClose,
-  } = useDisclosure();
-  const {
-    isOpen: isAuditModalOpen,
-    onOpen: onAuditModalOpen,
-    onClose: onAuditModalClose,
   } = useDisclosure();
   const {
     isOpen: isQualityDocumentModalOpen,
@@ -220,7 +214,6 @@ const Documents = () => {
           <ActionButton
             onFileSelect={handleFileUpload}
             onFolderModalOpen={onFolderModalOpen}
-            onAuditModalOpen={onAuditModalOpen}
             onFormTemplateModalOpen={handleFormTemplateCreate}
             onQualityDocumentModalOpen={onQualityDocumentModalOpen}
           />
@@ -236,9 +229,11 @@ const Documents = () => {
           }
         />
         {loading ? (
-          <Center py={12}>
-            <Spinner size="xl" color="brandPrimary.500" />
-          </Center>
+          viewMode === "grid" ? (
+            <DocumentsGridSkeleton count={8} />
+          ) : (
+            <DocumentsListSkeleton rows={5} />
+          )
         ) : documents.length === 0 ? (
           <EmptyState
             currentFolderId={currentFolderId}
@@ -254,7 +249,7 @@ const Documents = () => {
             onDocumentClick={(doc) => {
               const result = handleDocumentClick(doc);
               if (result.isDoubleClick) {
-                if (doc.type === "folder" || doc.type === "auditSchedule") {
+                if (doc.type === "folder") {
                   navigate(`/documents/folders/${doc.id}`);
                 } else if (doc.type === "file" || doc.type === "formTemplate") {
                   const sourcePage = {
@@ -285,7 +280,7 @@ const Documents = () => {
             onDocumentClick={(doc) => {
               const result = handleDocumentClick(doc);
               if (result.isDoubleClick) {
-                if (doc.type === "folder" || doc.type === "auditSchedule") {
+                if (doc.type === "folder") {
                   navigate(`/documents/folders/${doc.id}`);
                 } else if (doc.type === "file" || doc.type === "formTemplate") {
                   const sourcePage = {
@@ -315,12 +310,6 @@ const Documents = () => {
       <CreateFolderModal
         isOpen={isFolderModalOpen}
         onClose={onFolderModalClose}
-        parentId={currentFolderId}
-        path={`/`}
-      />
-      <CreateAuditScheduleModal
-        isOpen={isAuditModalOpen}
-        onClose={onAuditModalClose}
         parentId={currentFolderId}
         path={`/`}
       />

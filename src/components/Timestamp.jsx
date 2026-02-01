@@ -41,14 +41,22 @@ const Timestamp = ({ date, showTime = true, ...textProps }) => {
   };
 
   if (!date) {
-    return <Text {...textProps}>N/A</Text>;
+    return (
+      <Text as="span" {...textProps}>
+        N/A
+      </Text>
+    );
   }
 
   const momentDate = moment(date);
 
   // Check if date is valid
   if (!momentDate.isValid()) {
-    return <Text {...textProps}>Invalid Date</Text>;
+    return (
+      <Text as="span" {...textProps}>
+        Invalid Date
+      </Text>
+    );
   }
 
   // Format the date based on display mode

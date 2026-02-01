@@ -45,7 +45,7 @@ const MOCK_FILE_TYPES = [
   { _id: "5", id: "5", name: "Procedure", isQualityDocument: true },
 ];
 
-const QualityDocumentUploadModal = ({ isOpen, onClose, parentId, path }) => {
+const QualityDocumentUploadModal = ({ isOpen, onClose, parentId, path, teamId }) => {
   const { createDocument } = useDocuments();
   const { user: currentUser } = useUser();
   const [files, setFiles] = useState([]);
@@ -325,6 +325,7 @@ const QualityDocumentUploadModal = ({ isOpen, onClose, parentId, path }) => {
             parentId,
             path,
             status: 0,
+            teamId,
             metadata: {
               file: fileItem.file,
               filename: fileItem.file.name,

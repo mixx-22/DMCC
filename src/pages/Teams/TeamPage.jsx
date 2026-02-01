@@ -21,6 +21,8 @@ import {
   Textarea,
   Stack,
   CardHeader,
+  useDisclosure,
+  Spacer,
 } from "@chakra-ui/react";
 import {
   FiEdit,
@@ -37,7 +39,9 @@ import Swal from "sweetalert2";
 import PageHeader from "../../components/PageHeader";
 import PageFooter from "../../components/PageFooter";
 import UserAsyncSelect from "../../components/UserAsyncSelect";
+import FolderAsyncSelect from "../../components/FolderAsyncSelect";
 import TeamProfileView from "../../components/TeamProfileView";
+import ObjectivesModal from "../../components/ObjectivesModal";
 import { useTeamProfile } from "../../context/_useContext";
 
 const isValidDate = (dateString) => {
@@ -65,6 +69,11 @@ const TeamPage = () => {
   const [isEditMode, setIsEditMode] = useState(isNewTeam);
   const [formData, setFormData] = useState(initialTeamData);
   const [validationErrors, setValidationErrors] = useState({});
+  const {
+    isOpen: isObjectivesModalOpen,
+    onOpen: onObjectivesModalOpen,
+    onClose: onObjectivesModalClose,
+  } = useDisclosure();
 
   useEffect(() => {
     if (team && !isNewTeam) {
@@ -73,6 +82,7 @@ const TeamPage = () => {
         ...team,
         leaders: normalizeUsers(team.leaders || []),
         members: normalizeUsers(team.members || []),
+        objectives: team.objectives || [],
       });
     }
   }, [team, isNewTeam, initialTeamData, normalizeUsers]);
@@ -102,6 +112,32 @@ const TeamPage = () => {
 
     setValidationErrors(errors);
     return Object.keys(errors).length === 0;
+  };
+
+  const handleObjectivesSave = async (objectives) => {
+    const updatedData = {
+      ...formData,
+      objectives,
+    };
+
+    setFormData(updatedData);
+
+    // If not in new mode, save directly
+    if (!isNewTeam) {
+      const result = await updateTeam(team._id || team.id, {
+        objectives,
+      });
+
+      if (result.success) {
+        toast.success("Objectives Updated", {
+          description: "Team objectives have been updated successfully",
+        });
+      } else {
+        toast.error("Update Failed", {
+          description: result.error || "Failed to update objectives",
+        });
+      }
+    }
   };
 
   const handleSave = async () => {
@@ -157,6 +193,7 @@ const TeamPage = () => {
           ...team,
           leaders: normalizeUsers(team.leaders || []),
           members: normalizeUsers(team.members || []),
+          objectives: team.objectives || [],
         });
       }
       setIsEditMode(false);
@@ -224,20 +261,18 @@ const TeamPage = () => {
         </Heading>
       </PageHeader>
       <PageFooter>
-        <Flex
-          gap={4}
-          flexWrap="wrap"
-          justifyContent={{ base: "stretch", sm: "flex-end" }}
-        >
+        <Flex w="full" gap={4}>
           {!isEditMode && !isNewTeam ? (
-            <Flex gap={2} w={{ base: "full", sm: "auto" }}>
+            <Flex gap={2} w="full">
               <Menu>
                 <MenuButton
-                  as={IconButton}
-                  icon={<FiMoreVertical />}
+                  as={Button}
+                  leftIcon={<FiMoreVertical />}
                   variant="outline"
                   aria-label="More options"
-                />
+                >
+                  More Options
+                </MenuButton>
                 <MenuList>
                   <MenuItem
                     icon={<FiTrash2 />}
@@ -248,23 +283,23 @@ const TeamPage = () => {
                   </MenuItem>
                 </MenuList>
               </Menu>
+              <Spacer />
               <Button
                 leftIcon={<FiEdit />}
                 colorScheme="brandPrimary"
                 onClick={handleEdit}
-                flex={{ base: 1, sm: "auto" }}
               >
                 Edit Team
               </Button>
             </Flex>
           ) : (
-            <Flex gap={2} w={{ base: "full", sm: "auto" }}>
+            <Flex gap={2} w="full">
+              <Spacer />
               <Button
                 leftIcon={<FiX />}
                 variant="outline"
                 onClick={handleCancel}
                 isDisabled={saving}
-                flex={{ base: 1, sm: "auto" }}
               >
                 Cancel
               </Button>
@@ -274,7 +309,6 @@ const TeamPage = () => {
                 onClick={handleSave}
                 isLoading={saving}
                 loadingText="Saving..."
-                flex={{ base: 1, sm: "auto" }}
               >
                 {isNewTeam ? "Create Team" : "Save Changes"}
               </Button>
@@ -284,7 +318,11 @@ const TeamPage = () => {
       </PageFooter>
 
       {!isEditMode && !isNewTeam && team && (
-        <TeamProfileView team={team} isValidDate={isValidDate} />
+        <TeamProfileView
+          team={team}
+          isValidDate={isValidDate}
+          onManageObjectives={onObjectivesModalOpen}
+        />
       )}
 
       {(isEditMode || isNewTeam) && (
@@ -362,9 +400,39 @@ const TeamPage = () => {
                 />
               </CardBody>
             </Card>
+            <Card>
+              <CardHeader pb={0}>
+                <Heading size="md">Documents Folder</Heading>
+              </CardHeader>
+              <CardBody>
+                <FolderAsyncSelect
+                  label=""
+                  value={
+                    formData.folderId
+                      ? {
+                          id: formData.folderId,
+                          title: formData.folderTitle || "Selected Folder",
+                        }
+                      : null
+                  }
+                  onChange={(folder) => {
+                    handleFieldChange("folderId", folder?.id || null);
+                    handleFieldChange("folderTitle", folder?.title || null);
+                  }}
+                  teamName={formData.name}
+                />
+              </CardBody>
+            </Card>
           </Stack>
         </Flex>
       )}
+
+      <ObjectivesModal
+        isOpen={isObjectivesModalOpen}
+        onClose={onObjectivesModalClose}
+        objectives={formData.objectives || []}
+        onSave={handleObjectivesSave}
+      />
     </Box>
   );
 };

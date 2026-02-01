@@ -4,17 +4,24 @@ import {
   Spinner,
   Center,
   Stack,
-  Heading,
   Text,
   Tabs,
   TabList,
   TabPanels,
   Tab,
   TabPanel,
+  Flex,
+  Button,
+  Hide,
+  useDisclosure,
 } from "@chakra-ui/react";
+import { FiPlus } from "react-icons/fi";
 import { toast } from "sonner";
 import PageHeader from "../components/PageHeader";
+import PageFooter from "../components/PageFooter";
+import SearchInput from "../components/SearchInput";
 import DocumentDrawer from "../components/Document/DocumentDrawer";
+import QualityDocumentUploadModal from "../components/Document/modals/QualityDocumentUploadModal";
 import { ListView } from "../components/Document/ListView";
 import Pagination from "../components/Pagination";
 import apiService from "../services/api";
@@ -32,7 +39,19 @@ const QualityDocuments = () => {
   const [obsoleteTotalCount, setObsoleteTotalCount] = useState(0);
   const [activeTab, setActiveTab] = useState(0);
 
-  // Fetch quality documents (active)
+  const {
+    isOpen: isQualityDocumentModalOpen,
+    onOpen: onQualityDocumentModalOpen,
+    onClose: onQualityDocumentModalClose,
+  } = useDisclosure();
+
+  const handleQualityDocumentModalClose = () => {
+    onQualityDocumentModalClose();
+    // Refresh the documents list after modal closes
+    fetchQualityDocuments(currentPage);
+  };
+
+  // Fetch quality documents
   const fetchQualityDocuments = useCallback(async (page = 1) => {
     setLoading(true);
     try {
@@ -175,9 +194,25 @@ const QualityDocuments = () => {
 
   return (
     <Box>
-      <PageHeader>
-        <Heading variant="pageTitle">Quality Documents</Heading>
-      </PageHeader>
+      <Hide below="md">
+        <PageHeader>
+          <Box w="full" maxW="xl" ml={-2}>
+            <SearchInput placeholder="Search documents..." header />
+          </Box>
+        </PageHeader>
+      </Hide>
+
+      <PageFooter>
+        <Flex gap={4} justifyContent="flex-end">
+          <Button
+            leftIcon={<FiPlus />}
+            colorScheme="brandPrimary"
+            onClick={onQualityDocumentModalOpen}
+          >
+            New Quality Document
+          </Button>
+        </Flex>
+      </PageFooter>
 
       <Tabs
         index={activeTab}
@@ -268,6 +303,12 @@ const QualityDocuments = () => {
         </TabPanels>
       </Tabs>
 
+      <QualityDocumentUploadModal
+        isOpen={isQualityDocumentModalOpen}
+        onClose={handleQualityDocumentModalClose}
+        parentId={null}
+        path={`/`}
+      />
       <DocumentDrawer
         document={selectedDocument}
         isOpen={!!selectedDocument}

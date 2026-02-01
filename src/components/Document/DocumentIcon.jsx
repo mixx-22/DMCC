@@ -1,6 +1,5 @@
 import {
   IoDocument,
-  IoCalendar,
   IoAlertCircle,
   IoDocumentText,
   IoImage,
@@ -10,6 +9,7 @@ import {
   IoArchive,
   IoClipboard,
 } from "react-icons/io5";
+import { LuCalendarDays } from "react-icons/lu";
 import { getFileExtension } from "../../utils/fileTypes";
 import AuptilyzeFolder from "../AuptilyzeFolder";
 import { Icon } from "@chakra-ui/react";
@@ -151,15 +151,6 @@ export const getDocumentIcon = (doc, size = 24) => {
   switch (type) {
     case "folder":
       return <AuptilyzeFolder boxSize={`${size}px`} />;
-    case "auditSchedule":
-      return (
-        <Icon
-          as={IoCalendar}
-          boxSize={`${size}px`}
-          color="purple.600"
-          _dark={{ color: "purple.200" }}
-        />
-      );
     case "formTemplate":
       return (
         <Icon
@@ -176,6 +167,15 @@ export const getDocumentIcon = (doc, size = 24) => {
           boxSize={`${size}px`}
           color="green.600"
           _dark={{ color: "green.200" }}
+        />
+      );
+    case "auditSchedule":
+      return (
+        <Icon
+          as={LuCalendarDays}
+          boxSize={`${size}px`}
+          color="purple.600"
+          _dark={{ color: "purple.200" }}
         />
       );
     case "file": {
