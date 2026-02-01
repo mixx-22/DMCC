@@ -297,7 +297,10 @@ export const DocumentsProvider = ({ children }) => {
     if (updates.requestData) {
       const existingRequestData = data.requestData || {};
       payload.requestData = { ...existingRequestData, ...updates.requestData };
-      consolidatedData.requestData = { ...existingRequestData, ...updates.requestData };
+      consolidatedData.requestData = {
+        ...existingRequestData,
+        ...updates.requestData,
+      };
     }
 
     return { payload, consolidatedData };
@@ -456,7 +459,7 @@ export const DocumentsProvider = ({ children }) => {
    */
   const extractStateFromResponse = (response, action, requestId = null) => {
     // If response.data contains the new state values, use them
-    if (response.data && typeof response.data === "object") {
+    if (response && typeof response === "object") {
       const newState = {
         requestData: {},
         metadata: {},
@@ -464,28 +467,22 @@ export const DocumentsProvider = ({ children }) => {
       let hasChanges = false;
 
       // Extract status if present
-      if (typeof response.data.status !== "undefined") {
-        newState.status = response.data.status;
+      if (typeof response.status !== "undefined") {
+        newState.status = response.status;
         hasChanges = true;
       }
 
       // Extract mode if present
-      if (typeof response.data.mode !== "undefined") {
-        newState.requestData.mode = response.data.mode;
+      if (typeof response.mode !== "undefined") {
+        newState.requestData.mode = response.mode;
         hasChanges = true;
       }
 
       // Extract checkedOut from either direct property or metadata.checkedOut
-      const checkedOut = response.data.checkedOut ?? response.data.metadata?.checkedOut;
-      
+      const checkedOut = response.checkedOut ?? response.metadata?.checkedOut;
+
       if (typeof checkedOut !== "undefined") {
         newState.metadata.checkedOut = checkedOut;
-        hasChanges = true;
-      }
-
-      // Extract requestId if present
-      if (response.data.requestId) {
-        newState.requestData.requestId = response.data.requestId;
         hasChanges = true;
       }
 
@@ -552,7 +549,11 @@ export const DocumentsProvider = ({ children }) => {
 
       if (response.success || response.data) {
         const requestId = response.data?.requestId || response.requestId;
-        const newState = extractStateFromResponse(response, "submit", requestId);
+        const newState = extractStateFromResponse(
+          response,
+          "submit",
+          requestId,
+        );
 
         // Update the document in local state only (backend already updated it)
         const updatedDoc = updateDocumentInState(document, newState);
@@ -614,7 +615,11 @@ export const DocumentsProvider = ({ children }) => {
       const response = await apiService.endorseDocumentRequest(requestId);
 
       if (response.success !== false) {
-        const newState = extractStateFromResponse(response, "endorse", requestId);
+        const newState = extractStateFromResponse(
+          response,
+          "endorse",
+          requestId,
+        );
 
         // Update the document in local state only (backend already updated it)
         const updatedDoc = updateDocumentInState(document, newState);
@@ -645,7 +650,11 @@ export const DocumentsProvider = ({ children }) => {
       const response = await apiService.rejectDocumentRequest(requestId);
 
       if (response.success !== false) {
-        const newState = extractStateFromResponse(response, "reject", requestId);
+        const newState = extractStateFromResponse(
+          response,
+          "reject",
+          requestId,
+        );
 
         // Update the document in local state only (backend already updated it)
         const updatedDoc = updateDocumentInState(document, newState);
@@ -724,7 +733,7 @@ export const DocumentsProvider = ({ children }) => {
       if (response.success !== false) {
         // Extract state from response, or use the full response data if it contains the updated document
         const responseData = response.data || response;
-        
+
         // If response contains a full document object, return it directly
         if (responseData.id || responseData._id) {
           // Update the local state with the full document
@@ -737,7 +746,7 @@ export const DocumentsProvider = ({ children }) => {
           );
           return responseData;
         }
-        
+
         // Otherwise, extract state and update the document in local state only
         const newState = extractStateFromResponse(response, "checkout");
         const updatedDoc = updateDocumentInState(document, newState);
