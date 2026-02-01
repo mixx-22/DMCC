@@ -20,7 +20,6 @@ import {
   Badge,
   Heading,
   Avatar,
-  Icon,
   Menu,
   MenuButton,
   MenuList,
@@ -42,6 +41,7 @@ import {
   CheckboxGroup,
   FormControl,
   FormLabel,
+  Wrap,
 } from "@chakra-ui/react";
 import { Select as ChakraSelect } from "chakra-react-select";
 import { SingleDatepicker } from "chakra-dayzed-datepicker";
@@ -50,7 +50,6 @@ import {
   FiMove,
   FiEdit,
   FiMoreVertical,
-  FiLock,
   FiSave,
 } from "react-icons/fi";
 import PageHeader from "../../components/PageHeader";
@@ -665,8 +664,10 @@ const DocumentDetail = () => {
                         />
                       </Editable>
                       <HStack spacing={2}>
-                        <DocumentBadges data={document} {...{ isValid }} />
-                        <QualityDocumentBadges document={document} />
+                        <Wrap>
+                          <DocumentBadges data={document} {...{ isValid }} />
+                          <QualityDocumentBadges document={document} />
+                        </Wrap>
                       </HStack>
                     </VStack>
                   </HStack>
@@ -817,6 +818,74 @@ const DocumentDetail = () => {
               </CardBody>
             </Card>
 
+            {document?.type === "folder" && (
+              <Card>
+                <CardBody>
+                  <Text fontWeight="semibold" mb={4}>
+                    Folder Settings
+                  </Text>
+                  <HStack justify="space-between">
+                    <Text fontSize="sm" color="gray.600">
+                      Privacy Inheritance
+                    </Text>
+                    <Badge
+                      colorScheme={
+                        document?.metadata?.allowInheritance ? "green" : "gray"
+                      }
+                    >
+                      {document?.metadata?.allowInheritance
+                        ? "Enabled"
+                        : "Disabled"}
+                    </Badge>
+                  </HStack>
+                </CardBody>
+              </Card>
+            )}
+
+            {document?.type === "formResponse" && (
+              <Card>
+                <CardBody>
+                  <VStack align="stretch" spacing={4}>
+                    <Text fontSize="sm" color="gray.600">
+                      This is a response to a template. Click the button below
+                      to view the original form template.
+                    </Text>
+                    {document?.metadata?.templateId && (
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        colorScheme="brandPrimary"
+                        leftIcon={<FiEdit />}
+                        onClick={() =>
+                          navigate(`/document/${document.metadata.templateId}`)
+                        }
+                        w="full"
+                      >
+                        View Form Template
+                      </Button>
+                    )}
+                  </VStack>
+                </CardBody>
+              </Card>
+            )}
+          </Stack>
+          <Stack spacing={4} flex={1}>
+            {/* Version Control - Quality Documents */}
+            {["file"].includes(document?.type) &&
+              document?.metadata?.fileType?.isQualityDocument && (
+                <Card>
+                  <CardBody>
+                    <Text fontWeight="semibold" mb={4}>
+                      Version Control
+                    </Text>
+                    <QualityDocumentActions
+                      document={document}
+                      onUpdate={handleQualityDocumentUpdate}
+                    />
+                  </CardBody>
+                </Card>
+              )}
+
             {/* File/Folder Specific Details */}
             {document?.type === "file" && (
               <Card>
@@ -956,165 +1025,6 @@ const DocumentDetail = () => {
                         </Text>
                         <Text fontSize="sm" mt={2}>
                           {formatFileSize(document.metadata.size)}
-                        </Text>
-                      </Box>
-                    )}
-                  </VStack>
-                </CardBody>
-              </Card>
-            )}
-
-            {document?.type === "folder" && (
-              <Card>
-                <CardBody>
-                  <Text fontWeight="semibold" mb={4}>
-                    Folder Settings
-                  </Text>
-                  <HStack justify="space-between">
-                    <Text fontSize="sm" color="gray.600">
-                      Privacy Inheritance
-                    </Text>
-                    <Badge
-                      colorScheme={
-                        document?.metadata?.allowInheritance ? "green" : "gray"
-                      }
-                    >
-                      {document?.metadata?.allowInheritance
-                        ? "Enabled"
-                        : "Disabled"}
-                    </Badge>
-                  </HStack>
-                </CardBody>
-              </Card>
-            )}
-
-            {document?.type === "formResponse" && (
-              <Card>
-                <CardBody>
-                  <VStack align="stretch" spacing={4}>
-                    <Text fontSize="sm" color="gray.600">
-                      This is a response to a template. Click the button below
-                      to view the original form template.
-                    </Text>
-                    {document?.metadata?.templateId && (
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        colorScheme="brandPrimary"
-                        leftIcon={<FiEdit />}
-                        onClick={() =>
-                          navigate(`/document/${document.metadata.templateId}`)
-                        }
-                        w="full"
-                      >
-                        View Form Template
-                      </Button>
-                    )}
-                  </VStack>
-                </CardBody>
-              </Card>
-            )}
-          </Stack>
-          <Stack spacing={4} flex={1}>
-            {/* Quality Document Lifecycle Status - Spans 4 columns, 2 rows */}
-            {["file"].includes(document?.type) &&
-              document?.metadata?.fileType?.isQualityDocument && (
-                <Card>
-                  <CardBody>
-                    <Text fontWeight="semibold" mb={4}>
-                      Lifecycle Status
-                    </Text>
-                    <VStack spacing={3} align="stretch">
-                      <HStack justify="space-between">
-                        <HStack spacing={2}>
-                          <Icon as={FiLock} color="gray.500" />
-                          <Text fontSize="sm">Document Status</Text>
-                        </HStack>
-                        <QualityDocumentBadges document={document} />
-                      </HStack>
-
-                      {document.requestId && (
-                        <HStack justify="space-between">
-                          <Text fontSize="sm" color="gray.600">
-                            Request ID
-                          </Text>
-                          <Text fontSize="sm" fontWeight="medium">
-                            {document.requestId}
-                          </Text>
-                        </HStack>
-                      )}
-
-                      <HStack justify="space-between">
-                        <Text fontSize="sm" color="gray.600">
-                          Editable
-                        </Text>
-                        <Badge
-                          colorScheme={documentCanBeEdited ? "green" : "red"}
-                        >
-                          {documentCanBeEdited ? "Yes" : "No"}
-                        </Badge>
-                      </HStack>
-                    </VStack>
-                  </CardBody>
-                </Card>
-              )}
-
-            {/* Version Control - Quality Documents */}
-            {["file"].includes(document?.type) &&
-              document?.metadata?.fileType?.isQualityDocument && (
-                <Card>
-                  <CardBody>
-                    <Text fontWeight="semibold" mb={4}>
-                      Version Control
-                    </Text>
-                    <QualityDocumentActions
-                      document={document}
-                      onUpdate={handleQualityDocumentUpdate}
-                    />
-                  </CardBody>
-                </Card>
-              )}
-
-            {document?.type === "auditSchedule" && (
-              <Card>
-                <CardBody>
-                  <Text fontWeight="semibold" mb={4}>
-                    Audit Details
-                  </Text>
-                  <VStack align="stretch" spacing={3}>
-                    {document?.metadata?.code && (
-                      <Box>
-                        <Text fontSize="sm" color="gray.600">
-                          Code
-                        </Text>
-                        <Text fontSize="sm" mt={1}>
-                          {document.metadata.code}
-                        </Text>
-                      </Box>
-                    )}
-                    {document?.metadata?.type && (
-                      <Box>
-                        <Text fontSize="sm" color="gray.600">
-                          Audit Type
-                        </Text>
-                        <Text fontSize="sm" mt={1}>
-                          {document.metadata.type
-                            .split("-")
-                            .map(
-                              (word) =>
-                                word.charAt(0).toUpperCase() + word.slice(1),
-                            )
-                            .join(" ")}
-                        </Text>
-                      </Box>
-                    )}
-                    {document?.metadata?.standard && (
-                      <Box>
-                        <Text fontSize="sm" color="gray.600">
-                          Standard
-                        </Text>
-                        <Text fontSize="sm" mt={1}>
-                          {document.metadata.standard}
                         </Text>
                       </Box>
                     )}

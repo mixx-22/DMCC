@@ -1,5 +1,5 @@
 import PropTypes from "prop-types";
-import { Badge, HStack, Tooltip } from "@chakra-ui/react";
+import { Badge, Tooltip, WrapItem } from "@chakra-ui/react";
 import {
   isQualityDocument,
   getStatusLabel,
@@ -17,7 +17,7 @@ const QualityDocumentBadges = ({ document }) => {
   }
 
   const { status, checkedOut, mode } = document;
-  
+
   // Determine status badge color
   const getStatusColor = () => {
     switch (status) {
@@ -47,30 +47,32 @@ const QualityDocumentBadges = ({ document }) => {
   };
 
   return (
-    <HStack spacing={2}>
+    <>
       {/* Status Badge */}
-      <Tooltip label={`Lifecycle Status: ${getStatusLabel(status)}`}>
-        <Badge colorScheme={getStatusColor()}>
-          {getStatusLabel(status)}
-        </Badge>
-      </Tooltip>
+      <WrapItem>
+        <Tooltip label={`Lifecycle Status: ${getStatusLabel(status)}`}>
+          <Badge colorScheme={getStatusColor()}>{getStatusLabel(status)}</Badge>
+        </Tooltip>
+      </WrapItem>
 
       {/* Checkout Status Badge */}
       {checkedOut === 0 && (
-        <Tooltip label="Document is checked in (read-only)">
-          <Badge colorScheme="red">Checked In</Badge>
-        </Tooltip>
+        <WrapItem>
+          <Tooltip label="Document is checked in (read-only)">
+            <Badge colorScheme="red">Checked In</Badge>
+          </Tooltip>
+        </WrapItem>
       )}
 
       {/* Mode Badge */}
       {mode && (
-        <Tooltip label={`Current Review Mode: ${getModeLabel(mode)}`}>
-          <Badge colorScheme={getModeColor()}>
-            {getModeLabel(mode)}
-          </Badge>
-        </Tooltip>
+        <WrapItem>
+          <Tooltip label={`Current Review Mode: ${getModeLabel(mode)}`}>
+            <Badge colorScheme={getModeColor()}>{getModeLabel(mode)}</Badge>
+          </Tooltip>
+        </WrapItem>
       )}
-    </HStack>
+    </>
   );
 };
 
