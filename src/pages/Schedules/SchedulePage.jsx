@@ -49,6 +49,7 @@ import {
   FiChevronLeft,
   FiEdit,
   FiCheckCircle,
+  FiHelpCircle,
 } from "react-icons/fi";
 import { useNavigate, useParams } from "react-router-dom";
 import { useState, useEffect, useRef } from "react";
@@ -63,6 +64,7 @@ import CloseAuditModal from "./CloseAuditModal";
 import { OrganizationsProvider } from "../../context/OrganizationsContext";
 import Timestamp from "../../components/Timestamp";
 import Organizations from "./Organizations";
+import { useAuditTourGuide } from "../../hooks/useAuditTourGuide";
 
 // Inner component that uses organizations context
 const SchedulePageContent = () => {
@@ -105,6 +107,9 @@ const SchedulePageContent = () => {
   } = useDisclosure();
 
   const [isClosingAudit, setIsClosingAudit] = useState(false);
+
+  // Initialize tour guide
+  const { startTour } = useAuditTourGuide(!isNewSchedule);
 
   const steps = [
     { title: "Basic Information", fields: ["title", "description"] },
@@ -631,8 +636,17 @@ const SchedulePageContent = () => {
               aria-label="Back to schedules"
               variant="ghost"
             />
-            <Heading variant="pageTitle">{formData.title}</Heading>
+            <Heading variant="pageTitle" data-tour="audit-title">
+              {formData.title}
+            </Heading>
           </HStack>
+          <IconButton
+            icon={<FiHelpCircle />}
+            onClick={startTour}
+            aria-label="Start tour guide"
+            variant="ghost"
+            size="md"
+          />
         </Flex>
       </PageHeader>
 
@@ -645,7 +659,7 @@ const SchedulePageContent = () => {
           {/* Left Column - Main Audit Information */}
           <Stack spacing={4} w="full" maxW={{ base: "unset", lg: "xs" }}>
             {/* Main Audit Info Card */}
-            <Card>
+            <Card data-tour="audit-info">
               <CardBody>
                 <VStack align="stretch" spacing={4}>
                   <Editable
@@ -768,7 +782,7 @@ const SchedulePageContent = () => {
             </Card>
 
             {/* Audit Details Card */}
-            <Card>
+            <Card data-tour="audit-details">
               <CardBody>
                 <Flex justify="space-between" align="center" mb={4}>
                   <Text fontWeight="semibold">Audit Details</Text>
@@ -824,7 +838,7 @@ const SchedulePageContent = () => {
             </Card>
 
             {/* Close Audit Schedule Card */}
-            <Card>
+            <Card data-tour="audit-status">
               <CardBody>
                 <VStack align="stretch" spacing={3}>
                   <Flex justify="space-between" align="center">
