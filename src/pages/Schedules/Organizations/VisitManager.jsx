@@ -177,6 +177,11 @@ const VisitManager = ({
           </HStack>
         ) : (
           <Flex gap={1}>
+            {onCancel !== null && (
+              <Button size="sm" onClick={onCancel} variant="ghost" w={24}>
+                Close
+              </Button>
+            )}
             <Button
               flex={1}
               size="sm"
@@ -187,11 +192,6 @@ const VisitManager = ({
             >
               Add Visit
             </Button>
-            {onCancel !== null && (
-              <Button size="sm" onClick={onCancel} variant="ghost">
-                Cancel
-              </Button>
-            )}
           </Flex>
         )}
       </VStack>

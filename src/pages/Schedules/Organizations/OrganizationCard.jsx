@@ -45,7 +45,7 @@ import {
   FiCalendar,
   FiCheckCircle,
 } from "react-icons/fi";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Link as RouterLink } from "react-router-dom";
 import Swal from "sweetalert2";
 import {
@@ -72,6 +72,7 @@ import ResponsiveTabs, {
   ResponsiveTabPanel,
   ResponsiveTabPanels,
 } from "../../../components/common/ResponsiveTabs";
+import NotifBadge from "../../../components/NotifBadge";
 
 // Tab indices for better maintainability
 const TAB_INDICES = {
@@ -92,7 +93,7 @@ const COMPLIANCE_DISPLAY = {
   NON_CONFORMITY: { label: "Non-Conformity", color: "warning" },
   MINOR_NC: { label: "Minor Non-Conformity", color: "warning" },
   MAJOR_NC: { label: "Major Non-Conformity", color: "error" },
-  COMPLIANT: { label: "Compliant", color: "green" },
+  COMPLIANT: { label: "Compliant", color: "success" },
 };
 
 const OrganizationCard = ({
@@ -125,9 +126,9 @@ const OrganizationCard = ({
   const $tabColor = cssVar("tabs-color");
 
   const WEIGHT_COLORS = {
-    low: "green",
-    medium: "yellow",
-    high: "red",
+    low: "success",
+    medium: "brandSecondary",
+    high: "error",
   };
 
   // State to track which visit's finding form is shown (visitIndex -> boolean)
@@ -180,7 +181,7 @@ const OrganizationCard = ({
       try {
         const orgId = organization?._id || organization?.id;
         await deleteOrganization(orgId);
-        // Context reducer handles updating the organizations list
+        // Context errorucer handles updating the organizations list
       } catch (error) {
         console.error("Failed to delete organization:", error);
       }
@@ -277,9 +278,6 @@ const OrganizationCard = ({
         teamId: organization.teamId || team,
         visits: newVisits,
       });
-
-      // Hide form after successful add
-      setShowVisitForm(false);
     } catch (error) {
       console.error("Failed to add visit:", error);
     }
@@ -350,26 +348,52 @@ const OrganizationCard = ({
     }
   };
 
-  const latestVisitDate = (() => {
+  const nextOngoingVisitDate = (() => {
     const { visits = [] } = organization;
-    if (!visits?.length) return "";
+    if (!visits.length) return "";
 
-    const latestVisit = visits[visits.length - 1];
-    const { start, end } = latestVisit.date;
+    const ongoingVisits = visits.filter((visit) => visit?.compliance === null);
 
-    const isOngoing = latestVisit.compliance === null;
+    if (!ongoingVisits.length) return "";
 
-    const formatted = formatDateRange(start, isOngoing ? new Date() : end);
+    const nextVisit = ongoingVisits.sort(
+      (a, b) => new Date(a.date.start) - new Date(b.date.start),
+    )[0];
 
-    return isOngoing ? `${formatted} (Ongoing)` : formatted;
+    const { start, end } = nextVisit.date;
+
+    const date = formatDateRange(start, end);
+    if (date?.length) return null;
+    return date;
   })();
+
+  const canSetCompliance = useCallback((visit) => {
+    const { findings = [] } = visit;
+
+    if (!findings.length) {
+      return { can: false, message: "No findings recorded yet." };
+    }
+
+    const allResolved = findings.every((f) => {
+      const isMajorOrMinor = ["MAJOR_NC", "MINOR_NC"].includes(f.compliance);
+      return !isMajorOrMinor || Boolean(f.correctionDate);
+    });
+
+    if (!allResolved) {
+      return { can: false, message: "Some findings are unresolved yet." };
+    }
+
+    return { can: true, message: "" };
+  }, []);
 
   return (
     <>
       <Card bg={cardBg} borderWidth="1px" borderColor={borderColor} shadow="sm">
         <CardHeader p={0}>
           <HStack
-            p={4}
+            py={4}
+            pl={4}
+            pr={2}
             spacing={4}
             align="center"
             cursor="pointer"
@@ -391,29 +415,31 @@ const OrganizationCard = ({
                 {organization.verdict && (
                   <Tooltip label="Organization Final Verdict">
                     <Badge
+                      mr={2}
+                      fontSize="xs"
                       colorScheme={
                         COMPLIANCE_DISPLAY[organization.verdict]?.color ||
                         "gray"
                       }
-                      fontSize="xs"
                     >
                       {COMPLIANCE_DISPLAY[organization.verdict]?.label ||
                         organization.verdict}
                     </Badge>
                   </Tooltip>
                 )}
-                {organization.verdict && !isExpanded && (
-                  <Box px={2}> &middot; </Box>
-                )}
-                {!isExpanded && (
-                  <Badge
-                    colorScheme={
-                      COMPLIANCE_DISPLAY[organization.verdict]?.color || "gray"
-                    }
-                    fontSize="xs"
-                  >
-                    {latestVisitDate}
-                  </Badge>
+                {!isExpanded && nextOngoingVisitDate && (
+                  <Tooltip label="Organization Final Verdict">
+                    <Badge
+                      mr={2}
+                      fontSize="xs"
+                      colorScheme={
+                        COMPLIANCE_DISPLAY[organization.verdict]?.color ||
+                        "gray"
+                      }
+                    >
+                      {nextOngoingVisitDate}
+                    </Badge>
+                  </Tooltip>
                 )}
               </Hide>
               <IconButton
@@ -602,9 +628,9 @@ const OrganizationCard = ({
                                               borderRadius="full"
                                               colorScheme={
                                                 {
-                                                  COMPLIANT: "green",
-                                                  MAJOR_NC: "red",
-                                                  MINOR_NC: "orange",
+                                                  COMPLIANT: "success",
+                                                  MAJOR_NC: "error",
+                                                  MINOR_NC: "warning",
                                                 }[visit.compliance] ||
                                                 (hasMajorNC && "error") ||
                                                 (hasMinorNC && "warning") ||
@@ -615,14 +641,27 @@ const OrganizationCard = ({
                                               display="flex"
                                             >
                                               #{index + 1}
+                                              <NotifBadge
+                                                show={
+                                                  !canSetCompliance(visit).can
+                                                }
+                                                message={
+                                                  canSetCompliance(visit)
+                                                    .message
+                                                }
+                                                pos="absolute"
+                                                right={-0.5}
+                                                bottom={-0.5}
+                                                boxSize={3}
+                                              />
                                             </Badge>
                                           </Box>
                                           <Badge
                                             colorScheme={
                                               {
-                                                COMPLIANT: "green",
-                                                MAJOR_NC: "red",
-                                                MINOR_NC: "orange",
+                                                COMPLIANT: "success",
+                                                MAJOR_NC: "error",
+                                                MINOR_NC: "warning",
                                               }[visit.compliance] ||
                                               (hasMajorNC && "error") ||
                                               (hasMinorNC && "warning")
@@ -643,13 +682,13 @@ const OrganizationCard = ({
                                                 colorScheme={
                                                   visit.compliance ===
                                                   "COMPLIANT"
-                                                    ? "green"
+                                                    ? "success"
                                                     : visit.compliance ===
                                                         "MAJOR_NC"
-                                                      ? "red"
+                                                      ? "error"
                                                       : visit.compliance ===
                                                           "MINOR_NC"
-                                                        ? "orange"
+                                                        ? "warning"
                                                         : "blue"
                                                 }
                                                 fontSize="xs"
@@ -715,54 +754,71 @@ const OrganizationCard = ({
                                                 fontSize="sm"
                                                 fontWeight="semibold"
                                                 color="gray.500"
-                                                mb={2}
+                                                mb={1}
                                               >
                                                 Visit Compliance
                                               </Text>
 
-                                              {editingVisitComplianceFor ===
-                                              index ? (
-                                                <VisitComplianceForm
-                                                  visit={visit}
-                                                  onSave={(complianceData) => {
-                                                    handleSaveVisitCompliance(
-                                                      index,
-                                                      complianceData,
-                                                    );
-                                                  }}
-                                                  onCancel={() => {
-                                                    setEditingVisitComplianceFor(
-                                                      null,
-                                                    );
-                                                  }}
-                                                  readOnly={false}
-                                                />
-                                              ) : visit?.compliance ? (
-                                                <VisitComplianceForm
-                                                  visit={visit}
-                                                  onSave={() => {}}
-                                                  onCancel={() => {
-                                                    setEditingVisitComplianceFor(
-                                                      index,
-                                                    );
-                                                  }}
-                                                  readOnly={true}
-                                                />
+                                              {canSetCompliance(visit).can ? (
+                                                <>
+                                                  {editingVisitComplianceFor ===
+                                                  index ? (
+                                                    <VisitComplianceForm
+                                                      visit={visit}
+                                                      onSave={(
+                                                        complianceData,
+                                                      ) => {
+                                                        handleSaveVisitCompliance(
+                                                          index,
+                                                          complianceData,
+                                                        );
+                                                      }}
+                                                      onCancel={() => {
+                                                        setEditingVisitComplianceFor(
+                                                          null,
+                                                        );
+                                                      }}
+                                                      readOnly={false}
+                                                    />
+                                                  ) : visit?.compliance ? (
+                                                    <VisitComplianceForm
+                                                      visit={visit}
+                                                      onSave={() => {}}
+                                                      onCancel={() => {
+                                                        setEditingVisitComplianceFor(
+                                                          index,
+                                                        );
+                                                      }}
+                                                      readOnly={true}
+                                                    />
+                                                  ) : (
+                                                    <Button
+                                                      size="sm"
+                                                      leftIcon={<FiPlus />}
+                                                      colorScheme="success"
+                                                      variant="outline"
+                                                      onClick={() => {
+                                                        setEditingVisitComplianceFor(
+                                                          index,
+                                                        );
+                                                      }}
+                                                      w="full"
+                                                    >
+                                                      Set Visit Compliance
+                                                    </Button>
+                                                  )}
+                                                </>
                                               ) : (
-                                                <Button
-                                                  size="sm"
-                                                  leftIcon={<FiPlus />}
-                                                  colorScheme="green"
-                                                  variant="outline"
-                                                  onClick={() => {
-                                                    setEditingVisitComplianceFor(
-                                                      index,
-                                                    );
-                                                  }}
-                                                  w="full"
+                                                <Text
+                                                  fontSize="sm"
+                                                  color="gray.500"
+                                                  opacity={0.8}
                                                 >
-                                                  Set Visit Compliance
-                                                </Button>
+                                                  {
+                                                    canSetCompliance(visit)
+                                                      ?.message
+                                                  }
+                                                </Text>
                                               )}
                                             </Box>
 
@@ -917,10 +973,19 @@ const OrganizationCard = ({
                             })}
                           </Accordion>
                         ) : (
-                          <Center minH="xs">
+                          <Center minH="xs" flexDir="column" gap={2}>
                             <Text color="gray.500" textAlign="center">
-                              No visits scheduled
+                              No Visits Scheduled
                             </Text>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              colorScheme="purple"
+                              leftIcon={<FiCalendar />}
+                              onClick={() => setShowVisitForm(true)}
+                            >
+                              Manage Visits
+                            </Button>
                           </Center>
                         )}
                       </>
@@ -936,17 +1001,19 @@ const OrganizationCard = ({
                           onCancel={() => setShowVisitForm(false)}
                         />
                       ) : (
-                        <Flex justifyContent="flex-end">
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            colorScheme="purple"
-                            leftIcon={<FiCalendar />}
-                            onClick={() => setShowVisitForm(true)}
-                          >
-                            Add Visit
-                          </Button>
-                        </Flex>
+                        organization?.visits?.length > 0 && (
+                          <Flex justifyContent="flex-end">
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              colorScheme="purple"
+                              leftIcon={<FiCalendar />}
+                              onClick={() => setShowVisitForm(true)}
+                            >
+                              Manage Visits
+                            </Button>
+                          </Flex>
+                        )
                       )}
                     </Box>
                   </ResponsiveTabPanel>
