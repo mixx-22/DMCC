@@ -7,7 +7,7 @@ import {
   Text,
   Button,
 } from "@chakra-ui/react";
-import { useState, useCallback } from "react";
+import { useState, useCallback, useMemo } from "react";
 import { FiPlus } from "react-icons/fi";
 import OrganizationCard from "./OrganizationCard";
 import { useOrganizations } from "../../../context/_useContext";
@@ -16,6 +16,7 @@ import OrganizationForm from "./OrganizationForm";
 
 const Organizations = ({ schedule = {}, setFormData = () => {} }) => {
   const { loading, organizations } = useOrganizations();
+  const isScheduleOngoing = useMemo(() => schedule?.status === 0, [schedule]);
 
   // Track which organization cards are expanded (by ID)
   // This preserves expanded state across re-renders when organizations update
@@ -78,22 +79,26 @@ const Organizations = ({ schedule = {}, setFormData = () => {} }) => {
       )}
 
       {/* Show form or Add Organization button */}
-      {loading || !shouldShowForm ? (
-        <Button
-          leftIcon={<FiPlus />}
-          onClick={() => setShowOrgForm(true)}
-          colorScheme="brandPrimary"
-          variant="outline"
-          size="md"
-        >
-          Add Organization
-        </Button>
-      ) : (
-        <OrganizationForm
-          {...{ schedule, setFormData }}
-          onCancel={() => setShowOrgForm(false)}
-          onSuccess={() => setShowOrgForm(false)}
-        />
+      {isScheduleOngoing && (
+        <>
+          {loading || !shouldShowForm ? (
+            <Button
+              leftIcon={<FiPlus />}
+              onClick={() => setShowOrgForm(true)}
+              colorScheme="brandPrimary"
+              variant="outline"
+              size="md"
+            >
+              Add Organization
+            </Button>
+          ) : (
+            <OrganizationForm
+              {...{ schedule, setFormData }}
+              onCancel={() => setShowOrgForm(false)}
+              onSuccess={() => setShowOrgForm(false)}
+            />
+          )}
+        </>
       )}
     </VStack>
   );
