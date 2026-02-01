@@ -272,8 +272,9 @@ export const DocumentsProvider = ({ children }) => {
     }
 
     if (updates.metadata) {
-      const payloadMeta = { ...updates.metadata };
-      const consolidatedMeta = { ...updates.metadata };
+      // Merge with existing metadata instead of replacing
+      const payloadMeta = { ...data.metadata, ...updates.metadata };
+      const consolidatedMeta = { ...data.metadata, ...updates.metadata };
 
       if (typeof updates.metadata.documentNumber === "string") {
         const trimmedDocNumber =
@@ -289,6 +290,13 @@ export const DocumentsProvider = ({ children }) => {
 
       payload.metadata = payloadMeta;
       consolidatedData.metadata = consolidatedMeta;
+    }
+
+    // Merge requestData if present instead of replacing
+    if (updates.requestData) {
+      const existingRequestData = data.requestData || {};
+      payload.requestData = { ...existingRequestData, ...updates.requestData };
+      consolidatedData.requestData = { ...existingRequestData, ...updates.requestData };
     }
 
     return { payload, consolidatedData };
