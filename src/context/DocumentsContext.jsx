@@ -439,6 +439,62 @@ export const DocumentsProvider = ({ children }) => {
   // Quality Document Lifecycle Methods
 
   /**
+   * Extract actual state from API response data
+   * @param {Object} response - The API response
+   * @param {string} action - The action performed (for fallback)
+   * @param {string} requestId - The request ID (for fallback)
+   * @returns {Object} - The new state to apply to the document
+   */
+  const extractStateFromResponse = (response, action, requestId = null) => {
+    // If response.data contains the new state values, use them
+    if (response.data && typeof response.data === "object") {
+      const newState = {};
+
+      // Extract status if present
+      if (typeof response.data.status !== "undefined") {
+        newState.status = response.data.status;
+      }
+
+      // Extract mode if present
+      if (typeof response.data.mode !== "undefined") {
+        newState.requestData = {
+          ...(newState.requestData || {}),
+          mode: response.data.mode,
+        };
+      }
+
+      // Extract checkedOut from either direct property or metadata.checkedOut
+      const checkedOut = 
+        typeof response.data.checkedOut !== "undefined" 
+          ? response.data.checkedOut 
+          : response.data.metadata?.checkedOut;
+      
+      if (typeof checkedOut !== "undefined") {
+        newState.metadata = {
+          ...(newState.metadata || {}),
+          checkedOut: checkedOut,
+        };
+      }
+
+      // Extract requestId if present
+      if (response.data.requestId) {
+        newState.requestData = {
+          ...(newState.requestData || {}),
+          requestId: response.data.requestId,
+        };
+      }
+
+      // If we have at least one of the key properties, return the new state
+      if (Object.keys(newState).length > 0) {
+        return newState;
+      }
+    }
+
+    // Fallback to expected state if response doesn't contain the data
+    return getExpectedState(action, requestId);
+  };
+
+  /**
    * Submit a quality document for review
    * @param {Object} document - The document to submit
    * @returns {Promise<Object>} - The updated document
@@ -456,10 +512,10 @@ export const DocumentsProvider = ({ children }) => {
 
       if (response.success || response.data) {
         const requestId = response.data?.requestId || response.requestId;
-        const expectedState = getExpectedState("submit", requestId);
+        const newState = extractStateFromResponse(response, "submit", requestId);
 
         // Update the document with new lifecycle state
-        const updatedDoc = await updateDocument(document, expectedState);
+        const updatedDoc = await updateDocument(document, newState);
         return updatedDoc;
       } else {
         throw new Error(response.message || "Failed to submit document");
@@ -487,10 +543,10 @@ export const DocumentsProvider = ({ children }) => {
       const response = await apiService.discardDocumentRequest(requestId);
 
       if (response.success !== false) {
-        const expectedState = getExpectedState("discard");
+        const newState = extractStateFromResponse(response, "discard");
 
         // Update the document with new lifecycle state
-        const updatedDoc = await updateDocument(document, expectedState);
+        const updatedDoc = await updateDocument(document, newState);
         return updatedDoc;
       } else {
         throw new Error(response.message || "Failed to discard request");
@@ -518,10 +574,10 @@ export const DocumentsProvider = ({ children }) => {
       const response = await apiService.endorseDocumentRequest(requestId);
 
       if (response.success !== false) {
-        const expectedState = getExpectedState("endorse", requestId);
+        const newState = extractStateFromResponse(response, "endorse", requestId);
 
         // Update the document with new lifecycle state
-        const updatedDoc = await updateDocument(document, expectedState);
+        const updatedDoc = await updateDocument(document, newState);
         return updatedDoc;
       } else {
         throw new Error(response.message || "Failed to endorse document");
@@ -549,10 +605,10 @@ export const DocumentsProvider = ({ children }) => {
       const response = await apiService.rejectDocumentRequest(requestId);
 
       if (response.success !== false) {
-        const expectedState = getExpectedState("reject", requestId);
+        const newState = extractStateFromResponse(response, "reject", requestId);
 
         // Update the document with new lifecycle state
-        const updatedDoc = await updateDocument(document, expectedState);
+        const updatedDoc = await updateDocument(document, newState);
         return updatedDoc;
       } else {
         throw new Error(response.message || "Failed to reject document");
@@ -580,13 +636,14 @@ export const DocumentsProvider = ({ children }) => {
       const response = await apiService.publishDocument(requestId, metadata);
 
       if (response.success !== false) {
-        const expectedState = getExpectedState("publish");
+        const newState = extractStateFromResponse(response, "publish");
 
         // Update the document with new lifecycle state and metadata
         const updatedDoc = await updateDocument(document, {
-          ...expectedState,
+          ...newState,
           metadata: {
             ...document.metadata,
+            ...newState.metadata,
             version: metadata.version,
             documentNumber: metadata.documentNumber,
             issuedDate: metadata.issuedDate,
@@ -625,8 +682,18 @@ export const DocumentsProvider = ({ children }) => {
       );
 
       if (response.success !== false) {
-        // Backend has already updated the document, just return the response
-        return response.data || response;
+        // Extract state from response, or use the full response data if it contains the updated document
+        const responseData = response.data || response;
+        
+        // If response contains a full document object, return it directly
+        if (responseData.id || responseData._id) {
+          return responseData;
+        }
+        
+        // Otherwise, extract state and update the document
+        const newState = extractStateFromResponse(response, "checkout");
+        const updatedDoc = await updateDocument(document, newState);
+        return updatedDoc;
       } else {
         throw new Error(response.message || "Failed to checkout document");
       }
