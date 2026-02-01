@@ -31,6 +31,7 @@ import DocumentDrawer from "../../components/Document/DocumentDrawer";
 import DocumentsFolderSkeleton from "../../components/Document/DocumentsFolderSkeleton";
 import DocumentsGridSkeleton from "../../components/Document/DocumentsGridSkeleton";
 import DocumentsListSkeleton from "../../components/Document/DocumentsListSkeleton";
+import { getDashboardBackground } from "../../theme";
 
 const MotionBox = motion(Box);
 
@@ -63,6 +64,10 @@ const Layout = () => {
   const greetingColor = useColorModeValue("gray.500", "gray.300");
   const dateColor = useColorModeValue("gray.400", "gray.400");
   const headingColor = useColorModeValue("gray.700", "gray.200");
+
+  // Get background gradient configuration
+  const isDarkMode = useColorModeValue(false, true);
+  const bgConfig = getDashboardBackground("mainDashboard", isDarkMode);
 
   const fetched = useRef();
 
@@ -282,6 +287,13 @@ const Layout = () => {
 
   return (
     <>
+      {/* Gradient Background Layer */}
+      <Box sx={bgConfig.base}>
+        <Box sx={{ ...bgConfig.blob1, _before: bgConfig.blob1 }} />
+        <Box sx={{ ...bgConfig.blob2, _before: bgConfig.blob2 }} />
+        <Box sx={{ ...bgConfig.blob3, _before: bgConfig.blob3 }} />
+      </Box>
+
       <PageHeader>
         <Box />
       </PageHeader>
