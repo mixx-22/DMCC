@@ -4,7 +4,6 @@
  */
 
 import Swal from "sweetalert2";
-import { colors } from "../theme/colors";
 
 // Base configuration for all alerts
 const baseConfig = {
