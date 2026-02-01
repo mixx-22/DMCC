@@ -43,6 +43,7 @@ import FormResponse from "./pages/Document/FormResponse";
 import QualityDocuments from "./pages/QualityDocuments";
 import ResponsiveTabsDemo from "./pages/ResponsiveTabsDemo";
 import OrganizationTabsDemo from "./pages/OrganizationTabsDemo";
+import AuditScheduleTourDemo from "./pages/AuditScheduleTourDemo";
 
 const ProtectedRoute = ({ children }) => {
   const { currentUser } = useApp();
@@ -79,6 +80,10 @@ function App() {
           <Route
             path="/demo/organization-tabs"
             element={<OrganizationTabsDemo />}
+          />
+          <Route
+            path="/demo/audit-schedule-tour"
+            element={<AuditScheduleTourDemo />}
           />
           <Route
             path="/*"
