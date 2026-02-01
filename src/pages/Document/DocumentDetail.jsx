@@ -908,14 +908,19 @@ const DocumentDetail = () => {
                               {document.metadata.fileType.name ||
                                 "Unknowon File Type"}
                             </Badge>
-                            <Button
-                              size="xs"
-                              variant="ghost"
-                              colorScheme="brandPrimary"
-                              onClick={onFileTypeOpen}
-                            >
-                              Change
-                            </Button>
+                            {((document.metadata.fileType.isQualityDocument &&
+                              document.metadata.checkedOut === 1) ||
+                              !document.metadata.fileType
+                                .isQualityDocument) && (
+                              <Button
+                                size="xs"
+                                variant="ghost"
+                                colorScheme="brandPrimary"
+                                onClick={onFileTypeOpen}
+                              >
+                                Change
+                              </Button>
+                            )}
                           </HStack>
                           {document?.metadata?.fileType?.isQualityDocument ? (
                             <VStack align="stretch" spacing={2} mt={2} w="full">
@@ -965,27 +970,37 @@ const DocumentDetail = () => {
                                   </Text>
                                 </HStack>
                               )}
-                              <Button
-                                size="xs"
-                                variant="link"
-                                colorScheme="brandPrimary"
-                                onClick={onMetadataOpen}
-                                alignSelf="flex-start"
-                              >
-                                Update Metadata
-                              </Button>
+                              {((document.metadata.fileType.isQualityDocument &&
+                                document.metadata.checkedOut === 1) ||
+                                !document.metadata.fileType
+                                  .isQualityDocument) && (
+                                <Button
+                                  size="xs"
+                                  variant="link"
+                                  colorScheme="brandPrimary"
+                                  onClick={onMetadataOpen}
+                                  alignSelf="flex-start"
+                                >
+                                  Update Metadata
+                                </Button>
+                              )}
                             </VStack>
                           ) : (
-                            <Button
-                              mt={2}
-                              w="full"
-                              size="xs"
-                              variant="outline"
-                              colorScheme="brandPrimary"
-                              onClick={onMetadataOpen}
-                            >
-                              Add Metadata
-                            </Button>
+                            ((document.metadata.fileType.isQualityDocument &&
+                              document.metadata.checkedOut === 1) ||
+                              !document.metadata.fileType
+                                .isQualityDocument) && (
+                              <Button
+                                mt={2}
+                                w="full"
+                                size="xs"
+                                variant="outline"
+                                colorScheme="brandPrimary"
+                                onClick={onMetadataOpen}
+                              >
+                                Add Metadata
+                              </Button>
+                            )
                           )}
                         </>
                       ) : (
