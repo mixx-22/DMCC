@@ -36,16 +36,6 @@ const getRequestStatus = (request) => {
   const checkedOut = Number(request.metadata?.checkedOut);
   const mode = request.mode;
 
-  // Debug logging
-  console.log("Request status debug:", {
-    status,
-    checkedOut,
-    mode,
-    originalStatus: request.status,
-    originalCheckedOut: request.metadata?.checkedOut,
-    fullRequest: request,
-  });
-
   // Discarded
   if (status === -1 && checkedOut === 1 && mode === "DISCARD") {
     return { label: "Discarded", colorScheme: "gray" };
@@ -449,7 +439,6 @@ const Request = () => {
         </Center>
       ) : (
         <>
-          {console.log(documents)}
           <ListView
             documents={documents}
             selectedDocument={selectedDocument}
