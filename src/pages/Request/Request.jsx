@@ -126,8 +126,8 @@ const Request = () => {
       return {
         ...request,
         type: "file",
-        id: request.documentId,
-        _id: request.documentId,
+        id: request?.documentData?.id || request?.documentData?._id,
+        _id: request?.documentData?.id || request?.documentData?._id,
         requestStatus: statusInfo,
         requestedBy: request.requestedBy
           ? {
@@ -314,6 +314,7 @@ const Request = () => {
     if (tabFromUrl >= 0 && tabFromUrl <= 3 && tabFromUrl !== activeTab) {
       setActiveTab(tabFromUrl);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchParams]);
 
   useEffect(() => {
@@ -448,6 +449,7 @@ const Request = () => {
         </Center>
       ) : (
         <>
+          {console.log(documents)}
           <ListView
             documents={documents}
             selectedDocument={selectedDocument}
