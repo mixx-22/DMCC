@@ -555,6 +555,14 @@ export const DocumentsProvider = ({ children }) => {
           requestId,
         );
 
+        // Add requestId to requestData if it exists
+        if (requestId) {
+          newState.requestData = {
+            ...(newState.requestData || {}),
+            requestId,
+          };
+        }
+
         // Update the document in local state only (backend already updated it)
         const updatedDoc = updateDocumentInState(document, newState);
         return updatedDoc;
