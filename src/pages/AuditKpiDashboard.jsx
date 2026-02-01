@@ -1,13 +1,8 @@
-import { useEffect, useState } from "react";
-import { useParams, useLocation } from "react-router-dom";
+import { useEffect, useState, useMemo } from "react";
+import { useParams, useLocation, useNavigate } from "react-router-dom";
 import {
   Box,
   SimpleGrid,
-  Stat,
-  StatLabel,
-  StatNumber,
-  StatHelpText,
-  Progress,
   Badge,
   Table,
   Thead,
@@ -29,95 +24,269 @@ import {
   HStack,
   Divider,
   useColorModeValue,
-  Select,
-  FormControl,
-  FormLabel,
+  Grid,
+  GridItem,
+  Icon,
+  Tooltip,
+  Container,
+  Stack,
+  ButtonGroup,
+  Menu,
+  MenuButton,
+  Button,
+  MenuList,
+  MenuItem,
+  Center,
+  InputGroup,
+  Input,
+  IconButton,
+  InputLeftElement,
+  TableContainer,
 } from "@chakra-ui/react";
+import { motion } from "framer-motion"; // v10.16.16 - Used for smooth animations and transitions
+import { InfoIcon, ChevronDownIcon } from "@chakra-ui/icons";
+import { FiSearch } from "react-icons/fi";
+import { format } from "date-fns";
+import { useUser } from "../context/_useContext";
 import apiService from "../services/api";
 import NcMetricsBarChart from "../components/NcMetricsBarChart";
 import NcContributionBarChart from "../components/NcContributionBarChart";
 
-// Reusable KPI Card Component
+// Constants
+const HIGH_FINDING_COUNT_THRESHOLD = 5; // Threshold for highlighting high finding counts
+
+// Create motion components for animations
+const MotionBox = motion(Box);
+const MotionCard = motion(Card);
+const MotionGridItem = motion(GridItem);
+
+// Animation variants
+const cardVariants = {
+  hidden: { opacity: 0, y: 20 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: { duration: 0.4, ease: "easeOut" },
+  },
+  hover: {
+    y: -4,
+    boxShadow: "0 12px 24px rgba(0, 90, 238, 0.15)",
+    transition: { duration: 0.2 },
+  },
+};
+
+const staggerContainer = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.1,
+      delayChildren: 0.1,
+    },
+  },
+};
+
+// Reusable KPI Card Component with brand colors and animations
+// Note: brandPrimary and brandSecondary colors are defined in src/theme/colors.tsx
 const KpiCard = ({
   label,
   value,
   unit = "",
   helpText = "",
-  colorScheme = "blue",
+  colorScheme = "brandPrimary",
+  gradientFrom,
+  gradientTo,
+  description = "",
 }) => {
-  const cardBg = useColorModeValue("white", "gray.700");
-  const borderColor = useColorModeValue("gray.200", "gray.600");
+  const cardBg = useColorModeValue("white", "gray.800");
+  const textColor = useColorModeValue("gray.700", "gray.100");
+  const labelColor = useColorModeValue("gray.600", "gray.300");
+
+  // Default gradient colors based on color scheme
+  // Maps to colors defined in theme configuration (src/theme/colors.tsx)
+  const defaultGradients = {
+    brandPrimary: { from: "#005AEE", to: "#4D8CFF" },
+    brandSecondary: { from: "#FFD700", to: "#FFEF9E" },
+    success: { from: "#10B981", to: "#6EE7B7" },
+    warning: { from: "#F59E0B", to: "#FBBF24" },
+    error: { from: "#F43F5E", to: "#FDA4AF" },
+    purple: { from: "#805AD5", to: "#B794F4" },
+    blue: { from: "#3182CE", to: "#63B3ED" },
+  };
+
+  const gradient =
+    defaultGradients[colorScheme] || defaultGradients.brandPrimary;
+  const fromColor = gradientFrom || gradient.from;
+  const toColor = gradientTo || gradient.to;
 
   return (
-    <Card
+    <MotionCard
       bg={cardBg}
-      borderWidth="1px"
-      borderColor={borderColor}
-      boxShadow="sm"
+      borderRadius="xl"
+      overflow="hidden"
+      position="relative"
+      boxShadow="md"
+      variants={cardVariants}
+      whileHover="hover"
+      initial="hidden"
+      animate="visible"
+      h="full"
     >
-      <CardBody>
-        <Stat>
-          <StatLabel color="gray.500" fontSize="sm" fontWeight="medium">
-            {label}
-          </StatLabel>
-          <StatNumber
-            color={`${colorScheme}.600`}
-            fontSize="3xl"
-            fontWeight="bold"
-            mt={2}
-          >
-            {value}
+      {/* Gradient accent bar */}
+      <Box
+        position="absolute"
+        top={0}
+        left={0}
+        right={0}
+        h="4px"
+        bgGradient={`linear(to-r, ${fromColor}, ${toColor})`}
+      />
+
+      <CardBody pt={6}>
+        <VStack align="stretch" spacing={3}>
+          <HStack justify="space-between" align="start">
+            <Text
+              color={labelColor}
+              fontSize="sm"
+              fontWeight="600"
+              letterSpacing="wide"
+              textTransform="uppercase"
+              noOfLines={2}
+              flex="1"
+            >
+              {label}
+            </Text>
+            {description && (
+              <Tooltip label={description} placement="top" hasArrow>
+                <Icon as={InfoIcon} color={labelColor} boxSize={3} mt={0.5} />
+              </Tooltip>
+            )}
+          </HStack>
+
+          <HStack align="baseline" spacing={1}>
+            <Text
+              color={textColor}
+              fontSize="4xl"
+              fontWeight="bold"
+              lineHeight="1"
+            >
+              {value}
+            </Text>
             {unit && (
-              <Text as="span" fontSize="lg" ml={1}>
+              <Text color={labelColor} fontSize="xl" fontWeight="semibold">
                 {unit}
               </Text>
             )}
-          </StatNumber>
+          </HStack>
+
           {helpText && (
-            <StatHelpText fontSize="xs" mt={1}>
+            <Text fontSize="xs" color={labelColor} noOfLines={2}>
               {helpText}
-            </StatHelpText>
+            </Text>
           )}
-        </Stat>
+        </VStack>
       </CardBody>
-    </Card>
+    </MotionCard>
   );
 };
 
-// Progress Bar with Color Logic
-const ProgressWithColor = ({ value, label }) => {
-  // Determine color based on value
-  const getColorScheme = () => {
-    if (value >= 90) return "green";
-    if (value >= 70) return "yellow";
-    return "red";
-  };
-
-  const colorScheme = getColorScheme();
+// Section Header Component
+const SectionHeader = ({ title, description, icon }) => {
+  const titleColor = useColorModeValue("gray.800", "white");
+  const descColor = useColorModeValue("gray.600", "gray.300");
 
   return (
-    <Box>
-      <HStack justify="space-between" mb={2}>
-        <Text fontSize="sm" fontWeight="medium">
-          {label}
+    <MotionBox
+      variants={cardVariants}
+      initial="hidden"
+      animate="visible"
+      mb={6}
+    >
+      <HStack spacing={3} mb={2}>
+        {icon && <Icon as={icon} boxSize={6} color="brandPrimary.500" />}
+        <Heading
+          size="lg"
+          color={titleColor}
+          fontWeight="700"
+          letterSpacing="tight"
+        >
+          {title}
+        </Heading>
+      </HStack>
+      {description && (
+        <Text color={descColor} fontSize="md" maxW="3xl">
+          {description}
         </Text>
-        <Badge colorScheme={colorScheme} fontSize="sm">
+      )}
+    </MotionBox>
+  );
+};
+
+// Progress Bar with Color Logic and modern styling
+const ProgressWithColor = ({ value, label, description, progressBarBg }) => {
+  const labelColor = useColorModeValue("gray.700", "gray.200");
+  const descColor = useColorModeValue("gray.600", "gray.400");
+
+  // Determine color based on value
+  const getColorScheme = () => {
+    if (value >= 90)
+      return { scheme: "success", from: "#10B981", to: "#6EE7B7" };
+    if (value >= 70)
+      return { scheme: "warning", from: "#F59E0B", to: "#FBBF24" };
+    return { scheme: "error", from: "#F43F5E", to: "#FDA4AF" };
+  };
+
+  const { from, to } = getColorScheme();
+
+  return (
+    <MotionBox variants={cardVariants} initial="hidden" animate="visible">
+      <HStack justify="space-between" mb={3}>
+        <VStack align="start" spacing={0} flex="1">
+          <Text fontSize="sm" fontWeight="600" color={labelColor}>
+            {label}
+          </Text>
+          {description && (
+            <Text fontSize="xs" color={descColor} noOfLines={1}>
+              {description}
+            </Text>
+          )}
+        </VStack>
+        <Badge
+          bgGradient={`linear(to-r, ${from}, ${to})`}
+          color="white"
+          fontSize="md"
+          px={3}
+          py={1}
+          borderRadius="full"
+          fontWeight="bold"
+        >
           {value.toFixed(1)}%
         </Badge>
       </HStack>
-      <Progress
-        value={value}
-        colorScheme={colorScheme}
-        size="lg"
-        borderRadius="md"
-      />
-    </Box>
+      <Box
+        position="relative"
+        overflow="hidden"
+        borderRadius="full"
+        bg={progressBarBg}
+      >
+        <MotionBox
+          h="12px"
+          bgGradient={`linear(to-r, ${from}, ${to})`}
+          borderRadius="full"
+          initial={{ width: 0 }}
+          animate={{ width: `${value}%` }}
+          transition={{ duration: 1, ease: "easeOut", delay: 0.3 }}
+        />
+      </Box>
+    </MotionBox>
   );
 };
 
 const AuditKpiDashboard = () => {
   const { auditScheduleId } = useParams();
   const location = useLocation();
+  const navigate = useNavigate();
+  const { user: currentUser } = useUser();
   const [kpiData, setKpiData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -132,9 +301,74 @@ const AuditKpiDashboard = () => {
   const [teamsMap, setTeamsMap] = useState({}); // Map of team IDs to team names
   const [objectivesMap, setObjectivesMap] = useState({}); // Map of objective titles to descriptions
 
-  const cardBg = useColorModeValue("white", "gray.700");
-  const borderColor = useColorModeValue("gray.200", "gray.600");
+  // Header states (matching main dashboard)
+  const [greeting, setGreeting] = useState("");
+  const [searchKeyword, setSearchKeyword] = useState("");
+
+  // Color mode values - extracted to avoid inline usage
   const tableHeaderBg = useColorModeValue("gray.50", "gray.600");
+  const greetingColor = useColorModeValue("gray.500", "gray.300");
+  const dateColor = useColorModeValue("gray.400", "gray.400");
+  const whiteBg = useColorModeValue("white", "gray.800");
+  const progressBarBg = useColorModeValue("gray.100", "gray.700");
+  const textPrimaryColor = useColorModeValue("gray.700", "gray.200");
+  const textSecondaryColor = useColorModeValue("gray.500", "gray.400");
+  const textTertiaryColor = useColorModeValue("gray.600", "gray.400");
+  const headingColor = useColorModeValue("gray.700", "gray.100");
+  const tableHoverBg = useColorModeValue("gray.50", "gray.700");
+  const tableTextColor = useColorModeValue("gray.600", "gray.300");
+  const clauseColor = useColorModeValue("brandPrimary.600", "brandPrimary.300");
+
+  const currentDate = format(new Date(), "EEEE, MMMM d");
+
+  // Route constants
+  const AUDIT_SCHEDULES_ROUTE = "/audit-schedules";
+
+  // Set greeting based on time of day (matching main dashboard)
+  useEffect(() => {
+    const hour = new Date().getHours();
+    const greetings = [
+      { range: [0, 5], text: "Good night" },
+      { range: [5, 12], text: "Good morning" },
+      { range: [12, 17], text: "Good afternoon" },
+      { range: [17, 22], text: "Good evening" },
+      { range: [22, 24], text: "Good night" },
+    ];
+
+    const currentGreeting = greetings.find(
+      (g) => hour >= g.range[0] && hour < g.range[1],
+    );
+    setGreeting(currentGreeting?.text || "Hello");
+  }, []);
+
+  // Handle search
+  const handleSearch = () => {
+    if (searchKeyword.trim()) {
+      navigate(
+        `${AUDIT_SCHEDULES_ROUTE}?keyword=${encodeURIComponent(searchKeyword.trim())}`,
+      );
+    }
+  };
+
+  const handleKeyDown = (e) => {
+    if (e.key === "Enter") {
+      handleSearch();
+    }
+  };
+
+  // Get selected year name for display
+  const selectedYearDisplay = useMemo(
+    () => selectedYear || "Select Year",
+    [selectedYear],
+  );
+
+  // Get selected schedule name for display
+  const selectedScheduleDisplay = useMemo(() => {
+    if (!selectedSchedule) return "Select Schedule";
+    if (selectedSchedule === "all") return "All Schedules";
+    const schedule = schedules.find((s) => s._id === selectedSchedule);
+    return schedule?.title || schedule?.auditCode || "Selected Schedule";
+  }, [selectedSchedule, schedules]);
 
   // Fetch teams data to map IDs to names and objectives
   useEffect(() => {
@@ -466,361 +700,646 @@ const AuditKpiDashboard = () => {
   // Loading State
   if (loading) {
     return (
-      <Box
-        p={8}
-        display="flex"
-        justifyContent="center"
-        alignItems="center"
-        minH="400px"
-      >
-        <VStack spacing={4}>
-          <Spinner size="xl" color="blue.500" thickness="4px" />
-          <Text color="gray.500">Loading KPI data...</Text>
-        </VStack>
-      </Box>
+      <Container maxW="container.2xl" py={8}>
+        <MotionBox
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          display="flex"
+          flexDirection="column"
+          justifyContent="center"
+          alignItems="center"
+          minH="60vh"
+        >
+          <VStack spacing={6}>
+            <Box position="relative">
+              <Spinner
+                size="xl"
+                thickness="4px"
+                speed="0.8s"
+                color="brandPrimary.500"
+              />
+              <Box
+                position="absolute"
+                top="50%"
+                left="50%"
+                transform="translate(-50%, -50%)"
+              >
+                <Spinner
+                  size="lg"
+                  thickness="3px"
+                  speed="1.2s"
+                  color="brandSecondary.500"
+                />
+              </Box>
+            </Box>
+            <VStack spacing={2}>
+              <Text color={textPrimaryColor} fontSize="lg" fontWeight="600">
+                Loading KPI Dashboard
+              </Text>
+              <Text color={textSecondaryColor} fontSize="sm">
+                Fetching audit performance data...
+              </Text>
+            </VStack>
+          </VStack>
+        </MotionBox>
+      </Container>
     );
   }
 
   // Error State
   if (error) {
     return (
-      <Box p={8}>
-        <Alert status="error" borderRadius="md">
-          <AlertIcon />
-          <Box>
-            <AlertTitle>Error Loading KPIs</AlertTitle>
-            <AlertDescription>{error}</AlertDescription>
-          </Box>
-        </Alert>
-      </Box>
+      <Container maxW="container.2xl" py={8}>
+        <MotionBox
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4 }}
+        >
+          <Alert
+            status="error"
+            borderRadius="xl"
+            flexDirection="column"
+            alignItems="center"
+            justifyContent="center"
+            textAlign="center"
+            py={12}
+            boxShadow="lg"
+          >
+            <AlertIcon boxSize="50px" mr={0} mb={4} />
+            <AlertTitle fontSize="2xl" mb={2}>
+              Error Loading Dashboard
+            </AlertTitle>
+            <AlertDescription fontSize="md" maxW="md">
+              {error}
+            </AlertDescription>
+          </Alert>
+        </MotionBox>
+      </Container>
     );
   }
 
   // Empty State
   if (!kpiData) {
     return (
-      <Box p={8}>
-        <Alert status="info" borderRadius="md">
-          <AlertIcon />
-          <Box>
-            <AlertTitle>No Data Available</AlertTitle>
-            <AlertDescription>
-              No KPI data found for this audit schedule.
+      <Container maxW="container.2xl" py={8}>
+        <MotionBox
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4 }}
+        >
+          <Alert
+            status="info"
+            borderRadius="xl"
+            flexDirection="column"
+            alignItems="center"
+            justifyContent="center"
+            textAlign="center"
+            py={12}
+            boxShadow="lg"
+            bgGradient="linear(to-br, info.50, info.100)"
+          >
+            <AlertIcon boxSize="50px" mr={0} mb={4} />
+            <AlertTitle fontSize="2xl" mb={2}>
+              No Data Available
+            </AlertTitle>
+            <AlertDescription fontSize="md" maxW="md">
+              No KPI data found for this audit schedule. Please select a
+              different year or schedule.
             </AlertDescription>
-          </Box>
-        </Alert>
-      </Box>
+          </Alert>
+        </MotionBox>
+      </Container>
     );
   }
 
   return (
-    <Box p={8}>
-      {/* Page Header */}
-      <VStack align="stretch" spacing={6}>
-        <Box>
-          <Heading size="lg" mb={2}>
-            Audit KPI Dashboard
-          </Heading>
-          <Text color="gray.500">
-            Key Performance Indicators for Audit Schedule
-            {kpiData?.metadata?.scheduleTitle && (
-              <Text as="span" fontWeight="medium" ml={2}>
-                • {kpiData.metadata.scheduleTitle}
-              </Text>
-            )}
-          </Text>
-        </Box>
-
-        {/* Filters Section */}
-        <Card
-          bg={cardBg}
-          borderWidth="1px"
-          borderColor={borderColor}
-          boxShadow="sm"
+    <Container maxW="container.2xl" py={8} px={{ base: 4, md: 6, lg: 8 }}>
+      {/* Page Header - Matching Main Dashboard Style */}
+      <MotionBox
+        variants={cardVariants}
+        initial="hidden"
+        animate="visible"
+        mb={8}
+      >
+        <Stack
+          spacing={4}
+          flexDir="column"
+          alignItems="center"
+          justifyContent="center"
         >
-          <CardBody>
-            <SimpleGrid columns={{ base: 1, md: 2 }} spacing={4}>
+          {/* Greeting Section */}
+          <Center flexDir="column">
+            <Text
+              textAlign="center"
+              fontSize={{ base: "2xl", md: "3xl" }}
+              fontWeight="300"
+              color={greetingColor}
+            >
+              {greeting},{" "}
+              {currentUser?.firstName || currentUser?.name || "User"}
+            </Text>
+            <Text
+              textAlign="center"
+              fontSize={{ base: "md", md: "lg" }}
+              fontWeight="300"
+              color={dateColor}
+            >
+              {currentDate}
+            </Text>
+          </Center>
+
+          {/* Filters as Button Group (Team Stats Style) */}
+          <Box>
+            <ButtonGroup isAttached variant="teamStats" size="sm">
               {/* Year Filter */}
-              <FormControl>
-                <FormLabel fontSize="sm" fontWeight="medium">
-                  Filter by Year
-                </FormLabel>
-                <Select
-                  value={selectedYear}
-                  onChange={(e) => setSelectedYear(e.target.value)}
+              <Menu>
+                <MenuButton
+                  as={Button}
+                  rightIcon={<ChevronDownIcon />}
+                  borderRightRadius={0}
                   isDisabled={loadingYears}
                 >
+                  Year: {selectedYearDisplay}
+                </MenuButton>
+                <MenuList>
                   {years.length === 0 ? (
-                    <option>No years available</option>
+                    <MenuItem isDisabled>No years available</MenuItem>
                   ) : (
                     years.map((year) => (
-                      <option key={year} value={year}>
+                      <MenuItem
+                        key={year}
+                        onClick={() => setSelectedYear(year.toString())}
+                      >
                         {year}
-                      </option>
+                      </MenuItem>
                     ))
                   )}
-                </Select>
-              </FormControl>
+                </MenuList>
+              </Menu>
 
               {/* Schedule Filter */}
-              <FormControl>
-                <FormLabel fontSize="sm" fontWeight="medium">
-                  Select Schedule
-                </FormLabel>
-                <Select
-                  value={selectedSchedule}
-                  onChange={(e) => setSelectedSchedule(e.target.value)}
-                  isDisabled={loadingSchedules}
+              <Menu>
+                <MenuButton
+                  as={Button}
+                  rightIcon={<ChevronDownIcon />}
+                  borderRadius={
+                    selectedScheduleDisplay !== kpiData?.metadata?.scheduleTitle
+                      ? 0
+                      : "md"
+                  }
+                  isDisabled={loadingSchedules || !selectedYear}
                 >
+                  {selectedScheduleDisplay}
+                </MenuButton>
+                <MenuList>
                   {schedules.length === 0 ? (
-                    <option>No schedules available</option>
+                    <MenuItem isDisabled>No schedules available</MenuItem>
                   ) : (
                     <>
-                      <option value="all">All Schedules</option>
+                      <MenuItem onClick={() => setSelectedSchedule("all")}>
+                        All Schedules
+                      </MenuItem>
                       {schedules.map((schedule) => (
-                        <option key={schedule._id} value={schedule._id}>
+                        <MenuItem
+                          key={schedule._id}
+                          onClick={() => setSelectedSchedule(schedule._id)}
+                        >
                           {schedule.title ||
                             schedule.auditCode ||
                             "Untitled Schedule"}
-                        </option>
+                        </MenuItem>
                       ))}
                     </>
                   )}
-                </Select>
-              </FormControl>
-            </SimpleGrid>
-          </CardBody>
-        </Card>
+                </MenuList>
+              </Menu>
 
-        <Divider />
+              {/* Stats Display */}
+              {selectedScheduleDisplay !== kpiData?.metadata?.scheduleTitle && (
+                <Button borderLeftRadius={0}>
+                  {kpiData?.metadata?.scheduleTitle || "Audit KPIs"}
+                </Button>
+              )}
+            </ButtonGroup>
+          </Box>
 
-        {/* KPI Summary Section - Top Metrics */}
-        <Box>
-          <Heading size="md" mb={4}>
-            Audit Performance Metrics
-          </Heading>
-          <SimpleGrid columns={{ base: 1, md: 2, lg: 4 }} spacing={6}>
-            {/* Audit Completion Rate - Percentage of audits completed */}
+          {/* Search Input */}
+          <Box w="full" maxW="md">
+            <InputGroup w="full">
+              <Input
+                value={searchKeyword}
+                onChange={(e) => setSearchKeyword(e.target.value)}
+                onKeyDown={handleKeyDown}
+                placeholder="Search audit schedules..."
+                variant="search"
+              />
+              <InputLeftElement>
+                <IconButton
+                  isRound
+                  icon={<FiSearch />}
+                  onClick={handleSearch}
+                  aria-label="Search"
+                  variant="ghost"
+                  size="sm"
+                />
+              </InputLeftElement>
+            </InputGroup>
+          </Box>
+        </Stack>
+      </MotionBox>
+
+      {/* Main KPI Grid - Bento Layout */}
+      <MotionBox variants={staggerContainer} initial="hidden" animate="visible">
+        {/* KPI Summary Section - Bento Grid */}
+        <SectionHeader
+          title="Performance Metrics"
+          description="Key performance indicators tracking audit completion and execution rates"
+        />
+
+        {/* Asymmetric Bento Grid */}
+        <Grid
+          templateColumns={{
+            base: "1fr",
+            md: "repeat(2, 1fr)",
+            lg: "repeat(4, 1fr)",
+          }}
+          gap={6}
+          mb={8}
+        >
+          {/* Audit Completion Rate */}
+          <MotionGridItem colSpan={{ base: 1, lg: 1 }} variants={cardVariants}>
             <KpiCard
               label="Audit Completion Rate"
               value={kpiData.auditCompletionRate?.toFixed(1) || 0}
               unit="%"
               helpText="Audits completed vs planned"
               colorScheme={
-                kpiData.auditCompletionRate >= 90 ? "green" : "orange"
+                kpiData.auditCompletionRate >= 90 ? "success" : "warning"
               }
+              description="Percentage of scheduled audits that have been completed"
             />
+          </MotionGridItem>
 
-            {/* Audit Execution Rate - Percentage of audits executed */}
+          {/* Audit Execution Rate */}
+          <MotionGridItem colSpan={{ base: 1, lg: 1 }} variants={cardVariants}>
             <KpiCard
               label="Audit Execution Rate"
               value={kpiData.auditExecutionRate?.toFixed(1) || 0}
               unit="%"
               helpText="Audits executed vs scheduled"
               colorScheme={
-                kpiData.auditExecutionRate >= 90 ? "green" : "orange"
+                kpiData.auditExecutionRate >= 90 ? "success" : "warning"
               }
+              description="Percentage of audits that have been executed"
             />
+          </MotionGridItem>
 
-            {/* Average Audit Duration - Average days to complete */}
+          {/* Average Audit Duration - Taller card */}
+          <MotionGridItem colSpan={{ base: 1, lg: 1 }} variants={cardVariants}>
             <KpiCard
-              label="Average Audit Duration"
+              label="Average Duration"
               value={kpiData.averageAuditDuration?.toFixed(1) || 0}
               unit="days"
               helpText="Average time per audit"
               colorScheme="blue"
+              description="Mean time taken to complete an audit"
             />
+          </MotionGridItem>
 
-            {/* Total Findings - Count of all findings */}
+          {/* Total Findings */}
+          <MotionGridItem colSpan={{ base: 1, lg: 1 }} variants={cardVariants}>
             <KpiCard
               label="Total Findings"
               value={kpiData.totalFindings || 0}
               helpText="All findings recorded"
               colorScheme="purple"
+              description="Total number of audit findings across all schedules"
             />
-          </SimpleGrid>
-        </Box>
+          </MotionGridItem>
+        </Grid>
 
-        {/* Non-Conformity Rate */}
-        <Box>
-          <Heading size="md" mb={4}>
-            Non-Conformity Analysis
-          </Heading>
-          <SimpleGrid columns={{ base: 1, lg: 2 }} spacing={6}>
+        {/* Non-Conformity Analysis - Wide card */}
+        <SectionHeader
+          title="Non-Conformity Analysis"
+          description="Detailed breakdown of non-conformity rates and their impact on overall quality"
+        />
+
+        <Grid
+          templateColumns={{ base: "1fr", lg: "repeat(3, 1fr)" }}
+          gap={6}
+          mb={8}
+        >
+          {/* NC Rate - Takes 1 column */}
+          <MotionGridItem colSpan={{ base: 1, lg: 1 }} variants={cardVariants}>
             <KpiCard
+              h="full"
               label="Non-Conformity Rate"
               value={kpiData.nonConformityRate?.toFixed(1) || 0}
               unit="%"
               helpText="NC findings vs total findings"
-              colorScheme={kpiData.nonConformityRate > 10 ? "red" : "green"}
+              colorScheme={kpiData.nonConformityRate > 10 ? "error" : "success"}
+              description="Percentage of findings that are non-conformities"
             />
-          </SimpleGrid>
-        </Box>
+          </MotionGridItem>
 
-        {/* Findings Breakdown Section */}
-        <Box>
-          <Heading size="md" mb={4}>
-            Findings Breakdown
-          </Heading>
-          <Card
-            bg={cardBg}
-            borderWidth="1px"
-            borderColor={borderColor}
-            boxShadow="sm"
-          >
-            <CardHeader>
-              <Heading size="sm">Major vs Minor Non-Conformities</Heading>
-            </CardHeader>
-            <CardBody>
-              <VStack align="stretch" spacing={4}>
-                {/* Major and Minor NC Counts */}
-                <HStack spacing={6}>
-                  <Box>
-                    <Text fontSize="sm" color="gray.500" mb={1}>
-                      Major Non-Conformity
+          {/* Major/Minor NC Breakdown - Takes 2 columns */}
+          <MotionGridItem colSpan={{ base: 1, lg: 2 }} variants={cardVariants}>
+            <MotionCard
+              bg={whiteBg}
+              borderRadius="xl"
+              boxShadow="md"
+              overflow="hidden"
+              whileHover={{
+                y: -4,
+                boxShadow: "0 12px 24px rgba(0, 90, 238, 0.15)",
+              }}
+              transition={{ duration: 0.2 }}
+            >
+              <Box bgGradient="linear(to-r, error.500, error.400)" h="4px" />
+              <CardHeader pb={2}>
+                <HStack justify="space-between">
+                  <VStack align="start" spacing={0}>
+                    <Heading size="sm" color={headingColor}>
+                      Findings Breakdown
+                    </Heading>
+                    <Text fontSize="xs" color={textTertiaryColor}>
+                      Distribution of major and minor non-conformities
                     </Text>
-                    <Badge
-                      colorScheme="red"
-                      fontSize="2xl"
-                      px={4}
-                      py={2}
-                      borderRadius="md"
+                  </VStack>
+                </HStack>
+              </CardHeader>
+              <CardBody pt={2}>
+                <HStack spacing={6} justify="space-around">
+                  <VStack spacing={2}>
+                    <Text
+                      fontSize="xs"
+                      color={textTertiaryColor}
+                      fontWeight="600"
+                      textTransform="uppercase"
+                    >
+                      Major NC
+                    </Text>
+                    <Box
+                      bgGradient="linear(to-br, error.500, error.600)"
+                      color="white"
+                      fontSize="3xl"
+                      fontWeight="bold"
+                      px={6}
+                      py={3}
+                      borderRadius="xl"
+                      boxShadow="md"
                     >
                       {kpiData.majorVsMinorCount?.MAJOR_NC || 0}
-                    </Badge>
-                  </Box>
-                  <Box>
-                    <Text fontSize="sm" color="gray.500" mb={1}>
-                      Minor Non-Conformity
+                    </Box>
+                  </VStack>
+
+                  <Divider orientation="vertical" h="80px" />
+
+                  <VStack spacing={2}>
+                    <Text
+                      fontSize="xs"
+                      color={textTertiaryColor}
+                      fontWeight="600"
+                      textTransform="uppercase"
+                    >
+                      Minor NC
                     </Text>
-                    <Badge
-                      colorScheme="orange"
-                      fontSize="2xl"
-                      px={4}
-                      py={2}
-                      borderRadius="md"
+                    <Box
+                      bgGradient="linear(to-br, warning.500, warning.600)"
+                      color="white"
+                      fontSize="3xl"
+                      fontWeight="bold"
+                      px={6}
+                      py={3}
+                      borderRadius="xl"
+                      boxShadow="md"
                     >
                       {kpiData.majorVsMinorCount?.MINOR_NC || 0}
-                    </Badge>
-                  </Box>
+                    </Box>
+                  </VStack>
+
+                  <Divider orientation="vertical" h="80px" />
+
+                  <VStack spacing={2}>
+                    <Text
+                      fontSize="xs"
+                      color={textTertiaryColor}
+                      fontWeight="600"
+                      textTransform="uppercase"
+                    >
+                      Observations
+                    </Text>
+                    <Box
+                      bgGradient="linear(to-br, info.500, info.600)"
+                      color="white"
+                      fontSize="3xl"
+                      fontWeight="bold"
+                      px={6}
+                      py={3}
+                      borderRadius="xl"
+                      boxShadow="md"
+                    >
+                      {kpiData.majorVsMinorCount?.OBSERVATIONS || 0}
+                    </Box>
+                  </VStack>
                 </HStack>
+              </CardBody>
+            </MotionCard>
+          </MotionGridItem>
+        </Grid>
 
-                <Divider />
-
-                {/* Corrective Action Closure Rate */}
-                <Box>
-                  <ProgressWithColor
-                    value={kpiData.correctiveActionClosureRate || 0}
-                    label="Corrective Action Closure Rate"
-                  />
-                  <Text fontSize="xs" color="gray.500" mt={2}>
-                    Percentage of corrective actions completed
-                  </Text>
-                </Box>
-              </VStack>
-            </CardBody>
-          </Card>
-        </Box>
+        {/* Corrective Action Closure Rate */}
+        <MotionCard
+          variants={cardVariants}
+          bg={whiteBg}
+          borderRadius="xl"
+          boxShadow="md"
+          overflow="hidden"
+          mb={8}
+        >
+          <Box bgGradient="linear(to-r, success.500, success.400)" h="3px" />
+          <CardBody p={6}>
+            <ProgressWithColor
+              value={kpiData.correctiveActionClosureRate || 0}
+              label="Corrective Action Closure Rate"
+              description="Percentage of corrective actions that have been completed and closed"
+              progressBarBg={progressBarBg}
+            />
+          </CardBody>
+        </MotionCard>
 
         {/* Clause-Based Findings Table */}
-        <Box>
-          <Heading size="md" mb={4}>
-            Findings by ISO Clause
-          </Heading>
-          <Card
-            bg={cardBg}
-            borderWidth="1px"
-            borderColor={borderColor}
-            boxShadow="sm"
-          >
-            <CardBody p={0}>
-              {kpiData.findingsPerClause &&
-              kpiData.findingsPerClause.length > 0 ? (
-                <Box overflowX="auto">
-                  <Table variant="simple">
-                    <Thead bg={tableHeaderBg}>
-                      <Tr>
-                        <Th>ISO Clause</Th>
-                        <Th>Description</Th>
-                        <Th isNumeric>Finding Count</Th>
-                      </Tr>
-                    </Thead>
-                    <Tbody>
-                      {kpiData.findingsPerClause.map((item, index) => (
-                        <Tr
-                          key={index}
-                          _hover={{
-                            bg: useColorModeValue("gray.50", "gray.600"),
-                          }}
-                        >
-                          <Td fontWeight="medium">{item.clause || "N/A"}</Td>
-                          <Td>{item.description || "N/A"}</Td>
-                          <Td isNumeric>
-                            <Badge
-                              colorScheme={item.count > 5 ? "red" : "blue"}
-                              fontSize="md"
-                            >
-                              {item.count}
-                            </Badge>
-                          </Td>
-                        </Tr>
-                      ))}
-                    </Tbody>
-                  </Table>
-                </Box>
-              ) : (
-                <Box p={8} textAlign="center">
-                  <Text color="gray.500">No findings recorded</Text>
-                </Box>
-              )}
-            </CardBody>
-          </Card>
-        </Box>
+        <SectionHeader
+          title="Findings by ISO Clause"
+          description="Detailed breakdown of findings mapped to specific ISO standard clauses"
+        />
 
-        {/* NC and Findings per Team Chart */}
-        {kpiData.ncMetricsPerTeam && kpiData.ncMetricsPerTeam.length > 0 && (
-          <Box>
-            <Heading size="md" mb={4}>
-              Non-Conformities and Findings per Team
-            </Heading>
-            <Card
-              bg={cardBg}
-              borderWidth="1px"
-              borderColor={borderColor}
-              boxShadow="sm"
+        <MotionCard
+          variants={cardVariants}
+          bg={whiteBg}
+          borderRadius="xl"
+          boxShadow="md"
+          overflow="hidden"
+          mb={8}
+        >
+          <Box
+            bgGradient="linear(to-r, brandPrimary.500, purple.500)"
+            h="3px"
+          />
+          <CardBody p={0}>
+            {kpiData.findingsPerClause &&
+            kpiData.findingsPerClause.length > 0 ? (
+              <TableContainer maxH="500px" overflowY="auto" tabIndex={0}>
+                <Table variant="simple">
+                  <Thead
+                    bg={tableHeaderBg}
+                    position="sticky"
+                    top={0}
+                    zIndex={1}
+                  >
+                    <Tr>
+                      <Th
+                        fontWeight="700"
+                        textTransform="uppercase"
+                        fontSize="xs"
+                        letterSpacing="wider"
+                      >
+                        ISO Clause
+                      </Th>
+                      <Th
+                        fontWeight="700"
+                        textTransform="uppercase"
+                        fontSize="xs"
+                        letterSpacing="wider"
+                      >
+                        Description
+                      </Th>
+                      <Th
+                        isNumeric
+                        fontWeight="700"
+                        textTransform="uppercase"
+                        fontSize="xs"
+                        letterSpacing="wider"
+                      >
+                        Count
+                      </Th>
+                    </Tr>
+                  </Thead>
+                  <Tbody>
+                    {kpiData.findingsPerClause.map((item, index) => (
+                      <Tr
+                        key={index}
+                        _hover={{
+                          bg: tableHoverBg,
+                        }}
+                        transition="background 0.2s"
+                      >
+                        <Td fontWeight="600" color={clauseColor}>
+                          {item.clause || "N/A"}
+                        </Td>
+                        <Td
+                          color={tableTextColor}
+                          maxW="400px"
+                          isTruncated
+                          title={item.description}
+                        >
+                          {item.description || "N/A"}
+                        </Td>
+                        <Td isNumeric>
+                          <Badge
+                            bgGradient={
+                              item.count > HIGH_FINDING_COUNT_THRESHOLD
+                                ? "linear(to-r, error.500, error.600)"
+                                : "linear(to-r, brandPrimary.500, brandPrimary.600)"
+                            }
+                            color="white"
+                            fontSize="md"
+                            px={3}
+                            py={1}
+                            borderRadius="full"
+                            fontWeight="bold"
+                          >
+                            {item.count}
+                          </Badge>
+                        </Td>
+                      </Tr>
+                    ))}
+                  </Tbody>
+                </Table>
+              </TableContainer>
+            ) : (
+              <Box p={12} textAlign="center">
+                <Text color={textSecondaryColor} fontSize="lg">
+                  No findings recorded for selected schedules
+                </Text>
+              </Box>
+            )}
+          </CardBody>
+        </MotionCard>
+
+        <SimpleGrid
+          columns={
+            kpiData.ncMetricsPerTeam && kpiData.ncMetricsPerTeam.length > 0
+              ? [1, 1, 1, 2]
+              : 1
+          }
+          gap={6}
+        >
+          {/* NC and Findings per Team Chart */}
+          {kpiData.ncMetricsPerTeam && kpiData.ncMetricsPerTeam.length > 0 && (
+            <Stack>
+              <SectionHeader
+                title="Team Performance Metrics"
+                description="Non-conformities and findings breakdown by team"
+              />
+
+              <MotionCard
+                variants={cardVariants}
+                bg={whiteBg}
+                borderRadius="xl"
+                boxShadow="md"
+                overflow="hidden"
+                h="full"
+              >
+                <Box bgGradient="linear(to-r, blue.500, purple.500)" h="3px" />
+                <CardBody p={6}>
+                  <NcMetricsBarChart
+                    data={kpiData.ncMetricsPerTeam}
+                    loading={loading}
+                  />
+                </CardBody>
+              </MotionCard>
+            </Stack>
+          )}
+
+          {/* Team Contribution Chart */}
+          <Stack>
+            <SectionHeader
+              title="Team Contribution Analysis"
+              description="Each team's contribution to the overall non-conformity percentage"
+            />
+
+            <MotionCard
+              variants={cardVariants}
+              bg={whiteBg}
+              borderRadius="xl"
+              boxShadow="md"
+              overflow="hidden"
+              h="full"
             >
-              <CardBody>
-                <NcMetricsBarChart
-                  data={kpiData.ncMetricsPerTeam}
+              <Box bgGradient="linear(to-r, purple.500, pink.500)" h="3px" />
+              <CardBody p={6}>
+                <NcContributionBarChart
+                  overallNcPercentage={kpiData.overallNcPercentage}
+                  data={kpiData.ncContributionPerTeam}
                   loading={loading}
                 />
               </CardBody>
-            </Card>
-          </Box>
-        )}
-
-        {/* Team Contribution to Overall Non-Conformity Percentage Chart */}
-        <Box>
-          <Heading size="md" mb={4}>
-            Team Contribution to Overall Non-Conformity Percentage
-          </Heading>
-          <Card
-            bg={cardBg}
-            borderWidth="1px"
-            borderColor={borderColor}
-            boxShadow="sm"
-          >
-            <CardBody>
-              <NcContributionBarChart
-                overallNcPercentage={kpiData.overallNcPercentage}
-                data={kpiData.ncContributionPerTeam}
-                loading={loading}
-              />
-            </CardBody>
-          </Card>
-        </Box>
-      </VStack>
-    </Box>
+            </MotionCard>
+          </Stack>
+        </SimpleGrid>
+      </MotionBox>
+    </Container>
   );
 };
 
