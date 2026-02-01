@@ -60,6 +60,7 @@ const FindingCard = ({
   onEdit,
   onDelete,
   onSaveEdit,
+  isScheduleOngoing,
 }) => {
   const [isExpanded, setIsExpanded] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
@@ -263,7 +264,7 @@ const FindingCard = ({
                 onClick={() => setIsExpanded(!isExpanded)}
                 aria-label={isExpanded ? "Collapse" : "Expand"}
               />
-              {onEdit && (
+              {isScheduleOngoing && onEdit && (
                 <IconButton
                   icon={<FiEdit />}
                   size="sm"
@@ -273,7 +274,7 @@ const FindingCard = ({
                   aria-label="Edit finding"
                 />
               )}
-              {onDelete && (
+              {isScheduleOngoing && onDelete && (
                 <IconButton
                   icon={<FiTrash2 />}
                   size="sm"

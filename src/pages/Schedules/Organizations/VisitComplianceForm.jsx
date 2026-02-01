@@ -58,7 +58,13 @@ const COMPLIANCE_DISPLAY = {
   COMPLIANT: { label: "COMPLIANT", color: "green" },
 };
 
-const VisitComplianceForm = ({ visit, onSave, onCancel, readOnly = false }) => {
+const VisitComplianceForm = ({
+  visit,
+  onSave,
+  onCancel,
+  readOnly = false,
+  isScheduleOngoing = false,
+}) => {
   const bg = useColorModeValue("green.50", "green.900");
   const borderColor = useColorModeValue("green.200", "green.700");
   const labelColor = useColorModeValue("gray.600", "gray.400");
@@ -160,15 +166,17 @@ const VisitComplianceForm = ({ visit, onSave, onCancel, readOnly = false }) => {
               {complianceInfo.label}
             </Badge>
           </Box>
-          <Button
-            size="sm"
-            leftIcon={<FiEdit />}
-            onClick={onCancel}
-            variant="ghost"
-            colorScheme="green"
-          >
-            Edit
-          </Button>
+          {isScheduleOngoing && (
+            <Button
+              size="sm"
+              leftIcon={<FiEdit />}
+              onClick={onCancel}
+              variant="ghost"
+              colorScheme="green"
+            >
+              Edit
+            </Button>
+          )}
         </HStack>
 
         <SimpleGrid columns={[1, 1, 2]}>

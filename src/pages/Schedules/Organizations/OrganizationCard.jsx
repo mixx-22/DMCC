@@ -45,7 +45,7 @@ import {
   FiCalendar,
   FiCheckCircle,
 } from "react-icons/fi";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { Link as RouterLink } from "react-router-dom";
 import Swal from "sweetalert2";
 import {
@@ -124,6 +124,8 @@ const OrganizationCard = ({
   const objectiveBg = useColorModeValue("gray.50", "gray.700");
   const [tabColor] = useToken("colors", ["gray.500"]);
   const $tabColor = cssVar("tabs-color");
+
+  const isScheduleOngoing = useMemo(() => schedule?.status === 0, [schedule]);
 
   const WEIGHT_COLORS = {
     low: "success",
@@ -515,7 +517,9 @@ const OrganizationCard = ({
                       e.stopPropagation();
                       setIsVerdictModalOpen(true);
                     }}
-                    isDisabled={!canSetVerdict(organization).can}
+                    isDisabled={
+                      !isScheduleOngoing || !canSetVerdict(organization).can
+                    }
                   >
                     {organization.verdict
                       ? "Change Final Verdict"
@@ -527,6 +531,7 @@ const OrganizationCard = ({
                       e.stopPropagation();
                       onEdit(organization);
                     }}
+                    isDisabled={!isScheduleOngoing}
                   >
                     Edit Organization
                   </MenuItem>
@@ -537,6 +542,7 @@ const OrganizationCard = ({
                       e.stopPropagation();
                       handleDeleteOrganization(organization);
                     }}
+                    isDisabled={!isScheduleOngoing}
                     color={errorColor}
                   >
                     Delete
@@ -804,8 +810,9 @@ const OrganizationCard = ({
 
                                               {canSetCompliance(visit).can ? (
                                                 <>
-                                                  {editingVisitComplianceFor ===
-                                                  index ? (
+                                                  {isScheduleOngoing &&
+                                                  editingVisitComplianceFor ===
+                                                    index ? (
                                                     <VisitComplianceForm
                                                       visit={visit}
                                                       onSave={(
@@ -822,6 +829,7 @@ const OrganizationCard = ({
                                                         );
                                                       }}
                                                       readOnly={false}
+                                                      {...{ isScheduleOngoing }}
                                                     />
                                                   ) : visit?.compliance ? (
                                                     <VisitComplianceForm
@@ -833,6 +841,7 @@ const OrganizationCard = ({
                                                         );
                                                       }}
                                                       readOnly={true}
+                                                      {...{ isScheduleOngoing }}
                                                     />
                                                   ) : (
                                                     <Button
@@ -846,6 +855,9 @@ const OrganizationCard = ({
                                                         );
                                                       }}
                                                       w="full"
+                                                      isDisabled={
+                                                        !isScheduleOngoing
+                                                      }
                                                     >
                                                       Set Visit Compliance
                                                     </Button>
@@ -870,6 +882,7 @@ const OrganizationCard = ({
                                             {visit.findings &&
                                               visit.findings.length > 0 && (
                                                 <FindingsList
+                                                  {...{ isScheduleOngoing }}
                                                   findings={visit.findings}
                                                   teamObjectives={
                                                     team?.objectives || []
@@ -986,25 +999,27 @@ const OrganizationCard = ({
                                                 }
                                               />
                                             ) : (
-                                              <Button
-                                                size="sm"
-                                                leftIcon={<FiPlus />}
-                                                onClick={() => {
-                                                  setShowFindingFormFor(
-                                                    (prev) => {
-                                                      const newSet = new Set(
-                                                        prev,
-                                                      );
-                                                      newSet.add(index);
-                                                      return newSet;
-                                                    },
-                                                  );
-                                                }}
-                                                colorScheme="brandPrimary"
-                                                variant="outline"
-                                              >
-                                                Add Finding
-                                              </Button>
+                                              isScheduleOngoing && (
+                                                <Button
+                                                  size="sm"
+                                                  leftIcon={<FiPlus />}
+                                                  onClick={() => {
+                                                    setShowFindingFormFor(
+                                                      (prev) => {
+                                                        const newSet = new Set(
+                                                          prev,
+                                                        );
+                                                        newSet.add(index);
+                                                        return newSet;
+                                                      },
+                                                    );
+                                                  }}
+                                                  colorScheme="brandPrimary"
+                                                  variant="outline"
+                                                >
+                                                  Add Finding
+                                                </Button>
+                                              )
                                             )}
                                           </Stack>
                                         </Flex>
@@ -1020,15 +1035,17 @@ const OrganizationCard = ({
                             <Text color="gray.500" textAlign="center">
                               No Visits Scheduled
                             </Text>
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              colorScheme="purple"
-                              leftIcon={<FiCalendar />}
-                              onClick={() => setShowVisitForm(true)}
-                            >
-                              Manage Visits
-                            </Button>
+                            {isScheduleOngoing && (
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                colorScheme="purple"
+                                leftIcon={<FiCalendar />}
+                                onClick={() => setShowVisitForm(true)}
+                              >
+                                Manage Visits
+                              </Button>
+                            )}
                           </Center>
                         )}
                       </>
@@ -1036,7 +1053,7 @@ const OrganizationCard = ({
 
                     {/* Add Visit Section */}
                     <Box p={4} pt={2}>
-                      {showVisitForm ? (
+                      {showVisitForm && isScheduleOngoing ? (
                         <VisitManager
                           label=""
                           visits={organization.visits || []}
@@ -1044,6 +1061,7 @@ const OrganizationCard = ({
                           onCancel={() => setShowVisitForm(false)}
                         />
                       ) : (
+                        isScheduleOngoing &&
                         organization?.visits?.length > 0 && (
                           <Flex justifyContent="flex-end">
                             <Button
