@@ -1,13 +1,8 @@
-import { useEffect, useState, useMemo, useRef } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { useParams, useLocation, useNavigate } from "react-router-dom";
 import {
   Box,
   SimpleGrid,
-  Stat,
-  StatLabel,
-  StatNumber,
-  StatHelpText,
-  Progress,
   Badge,
   Table,
   Thead,
@@ -29,9 +24,6 @@ import {
   HStack,
   Divider,
   useColorModeValue,
-  Select,
-  FormControl,
-  FormLabel,
   Grid,
   GridItem,
   Icon,
@@ -244,7 +236,7 @@ const ProgressWithColor = ({ value, label, description, progressBarBg }) => {
     return { scheme: "error", from: "#F43F5E", to: "#FDA4AF" };
   };
 
-  const { scheme, from, to } = getColorScheme();
+  const { from, to } = getColorScheme();
 
   return (
     <MotionBox variants={cardVariants} initial="hidden" animate="visible">
@@ -314,8 +306,6 @@ const AuditKpiDashboard = () => {
   const [searchKeyword, setSearchKeyword] = useState("");
 
   // Color mode values - extracted to avoid inline usage
-  const cardBg = useColorModeValue("white", "gray.700");
-  const borderColor = useColorModeValue("gray.200", "gray.600");
   const tableHeaderBg = useColorModeValue("gray.50", "gray.600");
   const greetingColor = useColorModeValue("gray.500", "gray.300");
   const dateColor = useColorModeValue("gray.400", "gray.400");
@@ -743,17 +733,10 @@ const AuditKpiDashboard = () => {
               </Box>
             </Box>
             <VStack spacing={2}>
-              <Text
-                color={textPrimaryColor}
-                fontSize="lg"
-                fontWeight="600"
-              >
+              <Text color={textPrimaryColor} fontSize="lg" fontWeight="600">
                 Loading KPI Dashboard
               </Text>
-              <Text
-                color={textSecondaryColor}
-                fontSize="sm"
-              >
+              <Text color={textSecondaryColor} fontSize="sm">
                 Fetching audit performance data...
               </Text>
             </VStack>
@@ -1076,16 +1059,10 @@ const AuditKpiDashboard = () => {
               <CardHeader pb={2}>
                 <HStack justify="space-between">
                   <VStack align="start" spacing={0}>
-                    <Heading
-                      size="sm"
-                      color={headingColor}
-                    >
+                    <Heading size="sm" color={headingColor}>
                       Findings Breakdown
                     </Heading>
-                    <Text
-                      fontSize="xs"
-                      color={textTertiaryColor}
-                    >
+                    <Text fontSize="xs" color={textTertiaryColor}>
                       Distribution of major and minor non-conformities
                     </Text>
                   </VStack>
@@ -1214,7 +1191,12 @@ const AuditKpiDashboard = () => {
             kpiData.findingsPerClause.length > 0 ? (
               <TableContainer maxH="500px" overflowY="auto" tabIndex={0}>
                 <Table variant="simple">
-                  <Thead bg={tableHeaderBg} position="sticky" top={0} zIndex={1}>
+                  <Thead
+                    bg={tableHeaderBg}
+                    position="sticky"
+                    top={0}
+                    zIndex={1}
+                  >
                     <Tr>
                       <Th
                         fontWeight="700"
@@ -1252,10 +1234,7 @@ const AuditKpiDashboard = () => {
                         }}
                         transition="background 0.2s"
                       >
-                        <Td
-                          fontWeight="600"
-                          color={clauseColor}
-                        >
+                        <Td fontWeight="600" color={clauseColor}>
                           {item.clause || "N/A"}
                         </Td>
                         <Td
@@ -1290,10 +1269,7 @@ const AuditKpiDashboard = () => {
               </TableContainer>
             ) : (
               <Box p={12} textAlign="center">
-                <Text
-                  color={textSecondaryColor}
-                  fontSize="lg"
-                >
+                <Text color={textSecondaryColor} fontSize="lg">
                   No findings recorded for selected schedules
                 </Text>
               </Box>
@@ -1301,12 +1277,46 @@ const AuditKpiDashboard = () => {
           </CardBody>
         </MotionCard>
 
-        {/* NC and Findings per Team Chart */}
-        {kpiData.ncMetricsPerTeam && kpiData.ncMetricsPerTeam.length > 0 && (
-          <>
+        <SimpleGrid
+          columns={
+            kpiData.ncMetricsPerTeam && kpiData.ncMetricsPerTeam.length > 0
+              ? [1, 1, 1, 2]
+              : 1
+          }
+          gap={6}
+        >
+          {/* NC and Findings per Team Chart */}
+          {kpiData.ncMetricsPerTeam && kpiData.ncMetricsPerTeam.length > 0 && (
+            <Stack>
+              <SectionHeader
+                title="Team Performance Metrics"
+                description="Non-conformities and findings breakdown by team"
+              />
+
+              <MotionCard
+                variants={cardVariants}
+                bg={whiteBg}
+                borderRadius="xl"
+                boxShadow="md"
+                overflow="hidden"
+                h="full"
+              >
+                <Box bgGradient="linear(to-r, blue.500, purple.500)" h="3px" />
+                <CardBody p={6}>
+                  <NcMetricsBarChart
+                    data={kpiData.ncMetricsPerTeam}
+                    loading={loading}
+                  />
+                </CardBody>
+              </MotionCard>
+            </Stack>
+          )}
+
+          {/* Team Contribution Chart */}
+          <Stack>
             <SectionHeader
-              title="Team Performance Metrics"
-              description="Non-conformities and findings breakdown by team"
+              title="Team Contribution Analysis"
+              description="Each team's contribution to the overall non-conformity percentage"
             />
 
             <MotionCard
@@ -1315,41 +1325,19 @@ const AuditKpiDashboard = () => {
               borderRadius="xl"
               boxShadow="md"
               overflow="hidden"
-              mb={8}
+              h="full"
             >
-              <Box bgGradient="linear(to-r, blue.500, purple.500)" h="3px" />
+              <Box bgGradient="linear(to-r, purple.500, pink.500)" h="3px" />
               <CardBody p={6}>
-                <NcMetricsBarChart
-                  data={kpiData.ncMetricsPerTeam}
+                <NcContributionBarChart
+                  overallNcPercentage={kpiData.overallNcPercentage}
+                  data={kpiData.ncContributionPerTeam}
                   loading={loading}
                 />
               </CardBody>
             </MotionCard>
-          </>
-        )}
-
-        {/* Team Contribution Chart */}
-        <SectionHeader
-          title="Team Contribution Analysis"
-          description="Each team's contribution to the overall non-conformity percentage"
-        />
-
-        <MotionCard
-          variants={cardVariants}
-          bg={whiteBg}
-          borderRadius="xl"
-          boxShadow="md"
-          overflow="hidden"
-        >
-          <Box bgGradient="linear(to-r, purple.500, pink.500)" h="3px" />
-          <CardBody p={6}>
-            <NcContributionBarChart
-              overallNcPercentage={kpiData.overallNcPercentage}
-              data={kpiData.ncContributionPerTeam}
-              loading={loading}
-            />
-          </CardBody>
-        </MotionCard>
+          </Stack>
+        </SimpleGrid>
       </MotionBox>
     </Container>
   );
