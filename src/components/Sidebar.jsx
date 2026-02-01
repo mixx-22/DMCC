@@ -248,12 +248,23 @@ const Sidebar = () => {
       });
     }
     if (isSchedulesAllowed) {
+      const scheduleChildren = [];
+      scheduleChildren.push({
+        path: "/audit-schedules",
+        label: "All Schedules",
+      });
+      scheduleChildren.push({
+        path: "/schedules/latest/kpis",
+        label: "Audit KPIs",
+      });
+
       items.push({
         id: "schedules",
         path: "/audit-schedules",
         label: "Audit Schedules",
         icon: IoCalendarOutline,
         iconProps: { strokeWidth: "2px" },
+        children: scheduleChildren,
       });
     }
     if (isSettingsAllowed) {

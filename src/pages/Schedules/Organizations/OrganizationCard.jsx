@@ -44,6 +44,7 @@ import {
   FiPlus,
   FiCalendar,
   FiCheckCircle,
+  FiPrinter,
 } from "react-icons/fi";
 import { useEffect, useState } from "react";
 import { Link as RouterLink } from "react-router-dom";
@@ -350,6 +351,389 @@ const OrganizationCard = ({
     }
   };
 
+  const handlePrintAuditReport = () => {
+    try {
+      // Gather all audit data
+      const auditData = {
+        organization,
+        team,
+        schedule,
+        auditors,
+        calculatedVerdict,
+      };
+
+      // Create print window
+      const printWindow = window.open("", "_blank");
+
+      if (!printWindow) {
+        alert("Please allow popups to print the audit report");
+        return;
+      }
+
+      // Generate HTML content
+      const htmlContent = generateAuditReportHTML(auditData);
+
+      // Write to print window
+      printWindow.document.write(htmlContent);
+      printWindow.document.close();
+
+      // Wait for content to load then print
+      printWindow.onload = () => {
+        setTimeout(() => {
+          printWindow.print();
+        }, 250);
+      };
+    } catch (error) {
+      console.error("Error printing audit report:", error);
+      alert("Failed to generate print report: " + error.message);
+    }
+  };
+
+  const generateAuditReportHTML = ({
+    organization,
+    team,
+    schedule,
+    auditors,
+    calculatedVerdict,
+  }) => {
+    const currentDate = new Date().toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    });
+
+    // Calculate visit date range covering all visits
+    const visitDateRange =
+      organization?.visits && organization.visits.length > 0
+        ? (() => {
+            const dates = organization.visits
+              .filter((v) => v.date?.start)
+              .map((v) => ({
+                start: new Date(v.date.start),
+                end: v.date.end ? new Date(v.date.end) : new Date(v.date.start),
+              }));
+            if (dates.length === 0) return "N/A";
+            const earliestStart = new Date(
+              Math.min(...dates.map((d) => d.start)),
+            );
+            const latestEnd = new Date(Math.max(...dates.map((d) => d.end)));
+            return formatDateRange(earliestStart, latestEnd);
+          })()
+        : "N/A";
+
+    // Collect all findings from all visits
+    const allFindings =
+      organization?.visits?.flatMap((visit, visitIndex) =>
+        (visit.findings || []).map((finding) => ({
+          ...finding,
+          visitNumber: visitIndex + 1,
+          visitDate: formatDateRange(visit.date?.start, visit.date?.end),
+        })),
+      ) || [];
+
+    return `
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <title>Audit Report - ${team?.name || "Organization"}</title>
+          <style>
+            * {
+              margin: 0;
+              padding: 0;
+              box-sizing: border-box;
+            }
+            body {
+              font-family: Arial, sans-serif;
+              color: #000;
+              padding: 20px;
+              max-width: 210mm;
+              margin: 0 auto;
+              background: white;
+            }
+            .header-bar {
+              background: linear-gradient(135deg, #0D5F7F 0%, #1A7FA0 100%);
+              height: 35px;
+              margin: -20px -20px 20px -20px;
+            }
+            .title {
+              text-align: center;
+              font-size: 24px;
+              font-weight: bold;
+              margin: 30px 0 25px 0;
+              color: #000;
+            }
+            .info-section {
+              margin-bottom: 20px;
+            }
+            .info-row {
+              display: flex;
+              margin-bottom: 8px;
+              align-items: baseline;
+            }
+            .info-label {
+              font-weight: 600;
+              min-width: 150px;
+              color: #000;
+            }
+            .info-value {
+              flex: 1;
+              border-bottom: 1px solid #000;
+              padding-bottom: 2px;
+              color: #000;
+            }
+            table {
+              width: 100%;
+              border-collapse: collapse;
+              margin: 20px 0;
+              page-break-inside: avoid;
+            }
+            th {
+              background: linear-gradient(135deg, #3D4E87 0%, #4A5FA0 100%);
+              color: white;
+              padding: 10px;
+              text-align: center;
+              font-weight: bold;
+              border: 1px solid #2D3E77;
+            }
+            td {
+              border: 1px solid #ccc;
+              padding: 8px;
+              vertical-align: top;
+              color: #000;
+            }
+            .audit-table th:first-child {
+              width: 50%;
+            }
+            .findings-table th:first-child {
+              width: 40px;
+              text-align: center;
+            }
+            .findings-table th:nth-child(2) {
+              width: 25%;
+            }
+            .findings-table th:nth-child(3) {
+              width: 20%;
+            }
+            .findings-table th:nth-child(4) {
+              width: 15%;
+            }
+            .findings-table td:first-child {
+              text-align: center;
+            }
+            .conclusion-section {
+              margin: 20px 0;
+            }
+            .conclusion-label {
+              font-weight: 600;
+              margin-bottom: 5px;
+            }
+            .conclusion-box {
+              border: 1px solid #ccc;
+              min-height: 100px;
+              padding: 10px;
+              background: #fafafa;
+            }
+            .signature-section {
+              margin-top: 40px;
+            }
+            .signature-row {
+              display: flex;
+              margin-bottom: 8px;
+              align-items: baseline;
+            }
+            .signature-label {
+              font-weight: 600;
+              min-width: 200px;
+            }
+            .signature-line {
+              flex: 1;
+              border-bottom: 1px solid #000;
+              margin-left: 20px;
+            }
+            .footer-bar {
+              background: linear-gradient(135deg, #6B4423 0%, #8B5A3C 100%);
+              height: 30px;
+              margin: 40px -20px -20px -20px;
+            }
+            .badge {
+              display: inline-block;
+              padding: 2px 8px;
+              border-radius: 3px;
+              font-size: 11px;
+              font-weight: bold;
+            }
+            .badge-green { background-color: #d4edda; color: #155724; }
+            .badge-red { background-color: #f8d7da; color: #721c24; }
+            .badge-orange { background-color: #fff3cd; color: #856404; }
+            .badge-blue { background-color: #d1ecf1; color: #0c5460; }
+            @media print {
+              body {
+                padding: 10mm;
+              }
+              .header-bar {
+                margin: -10mm -10mm 20px -10mm;
+              }
+              .footer-bar {
+                margin: 40px -10mm -10mm -10mm;
+              }
+              table {
+                page-break-inside: auto;
+              }
+              tr {
+                page-break-inside: avoid;
+                page-break-after: auto;
+              }
+            }
+          </style>
+        </head>
+        <body>
+          <div class="header-bar"></div>
+          
+          <div class="title">Audit Report Template</div>
+          
+          <div class="info-section">
+            <div class="info-row">
+              <span class="info-label">Audit No :</span>
+              <span class="info-value" style="max-width: 200px;">${schedule?.auditNumber || organization?._id?.slice(-8) || ""}</span>
+              <span class="info-label" style="margin-left: 40px;">Date :</span>
+              <span class="info-value">${visitDateRange}</span>
+            </div>
+            <div class="info-row">
+              <span class="info-label">Audit Team :</span>
+              <span class="info-value">${auditors?.map((a) => `${a.firstName || ""} ${a.lastName || ""}`.trim() || a.name).join(", ") || "N/A"}</span>
+            </div>
+            <div class="info-row">
+              <span class="info-label">Audit Location :</span>
+              <span class="info-value">${team?.name || "N/A"}</span>
+            </div>
+          </div>
+
+          <table class="audit-table">
+            <tr>
+              <th>Audit Standard</th>
+              <th>Scope of Audit</th>
+            </tr>
+            <tr>
+              <td style="height: 60px;">${schedule?.standard || ""}</td>
+              <td>${schedule?.scope || team?.description || ""}</td>
+            </tr>
+          </table>
+
+          <table class="findings-table">
+            <tr>
+              <th># No</th>
+              <th>Area of Audit</th>
+              <th>Applicable Clause</th>
+              <th>Audit Status</th>
+              <th>Comments</th>
+            </tr>
+            ${
+              allFindings.length > 0
+                ? allFindings
+                    .map((finding, index) => {
+                      const objectives =
+                        finding.objectives && finding.objectives.length > 0
+                          ? finding.objectives
+                              .map((obj) => obj.title)
+                              .join(", ")
+                          : finding.objective || "";
+
+                      const statusText = finding.compliance
+                        ? COMPLIANCE_DISPLAY[finding.compliance]?.label ||
+                          finding.compliance
+                        : "";
+
+                      return `
+            <tr>
+              <td>${index + 1}</td>
+              <td>${finding.title || ""}</td>
+              <td>${objectives}</td>
+              <td>${statusText}</td>
+              <td>${finding.details || finding.recommendation || ""}</td>
+            </tr>`;
+                    })
+                    .join("")
+                : `
+            <tr>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+            </tr>
+            <tr>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+            </tr>
+            <tr>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+            </tr>
+            <tr>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+            </tr>
+            <tr>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+            </tr>`
+            }
+          </table>
+
+          <div class="conclusion-section">
+            <div class="conclusion-label">Conclusion :</div>
+            <div class="conclusion-box">
+              ${
+                organization?.verdict
+                  ? `Final Verdict: <strong>${COMPLIANCE_DISPLAY[organization.verdict]?.label || organization.verdict}</strong>`
+                  : calculatedVerdict
+                    ? `Calculated Verdict: <strong>${COMPLIANCE_DISPLAY[calculatedVerdict]?.label || calculatedVerdict}</strong>`
+                    : ""
+              }
+            </div>
+          </div>
+
+          <div class="signature-section">
+            <div class="signature-row">
+              <span class="signature-label">Auditee name and signature :</span>
+              <span class="signature-line"></span>
+            </div>
+            <div class="signature-row">
+              <span class="signature-label">Auditor name and signature :</span>
+              <span class="signature-line"></span>
+            </div>
+          </div>
+
+          <div class="footer-bar"></div>
+        </body>
+      </html>
+    `;
+  };
+
+  const getVerdictColorClass = (verdict) => {
+    const colorMap = {
+      COMPLIANT: "badge-green",
+      MAJOR_NC: "badge-red",
+      MINOR_NC: "badge-orange",
+      NON_CONFORMITY: "badge-orange",
+      OBSERVATIONS: "badge-blue",
+      OPPORTUNITIES_FOR_IMPROVEMENTS: "badge-purple",
+    };
+    return colorMap[verdict] || "badge-gray";
+  };
+
   const latestVisitDate = (() => {
     const { visits = [] } = organization;
     if (!visits?.length) return "";
@@ -456,6 +840,15 @@ const OrganizationCard = ({
                     }}
                   >
                     Edit Organization
+                  </MenuItem>
+                  <MenuItem
+                    icon={<FiPrinter />}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handlePrintAuditReport();
+                    }}
+                  >
+                    Print Audit Report
                   </MenuItem>
                   <Divider />
                   <MenuItem

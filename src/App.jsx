@@ -43,6 +43,7 @@ import FormResponse from "./pages/Document/FormResponse";
 import QualityDocuments from "./pages/QualityDocuments";
 import ResponsiveTabsDemo from "./pages/ResponsiveTabsDemo";
 import OrganizationTabsDemo from "./pages/OrganizationTabsDemo";
+import AuditKpiDashboard from "./pages/AuditKpiDashboard";
 
 const ProtectedRoute = ({ children }) => {
   const { currentUser } = useApp();
@@ -94,6 +95,18 @@ function App() {
                     <Route path="/menu" element={<Menu />} />
                     <Route path="/notifications" element={<Notifications />} />
                     <Route path="/profile" element={<Profile />} />
+                    <Route
+                      path="/schedules/:auditScheduleId/kpis"
+                      element={<AuditKpiDashboard />}
+                    />
+                    <Route
+                      path="/schedules/latest/kpis"
+                      element={<AuditKpiDashboard />}
+                    />
+                    <Route
+                      path="/schedules/latest/kpis"
+                      element={<AuditKpiDashboard />}
+                    />
                     <Route
                       path="/change-password"
                       element={<ChangePassword />}
