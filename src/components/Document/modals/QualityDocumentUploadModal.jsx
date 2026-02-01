@@ -144,7 +144,8 @@ const QualityDocumentUploadModal = ({ isOpen, onClose, parentId, path }) => {
       // Reset files when modal closes
       setFiles([]);
     }
-  }, [fetchTeams, isOpen]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isOpen]);
 
   const onDrop = useCallback((acceptedFiles) => {
     const newFiles = acceptedFiles.map((file) => ({
@@ -193,8 +194,8 @@ const QualityDocumentUploadModal = ({ isOpen, onClose, parentId, path }) => {
     setEditingMetadata(fileItem.id);
     setTempMetadata({
       documentNumber: fileItem.documentNumber || "",
-      issuedDate: fileItem.issuedDate || "",
-      effectivityDate: fileItem.effectivityDate || "",
+      issuedDate: fileItem.issuedDate || new Date(),
+      effectivityDate: fileItem.effectivityDate || new Date(),
       team: fileItem.team || null,
     });
   };
@@ -203,8 +204,8 @@ const QualityDocumentUploadModal = ({ isOpen, onClose, parentId, path }) => {
     setEditingMetadata(null);
     setTempMetadata({
       documentNumber: "",
-      issuedDate: "",
-      effectivityDate: "",
+      issuedDate: new Date(),
+      effectivityDate: new Date(),
       team: null,
     });
   };
