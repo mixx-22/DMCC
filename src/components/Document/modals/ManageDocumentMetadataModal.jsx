@@ -20,6 +20,7 @@ import {
 import { toast } from "sonner";
 import { useDocuments } from "../../../context/_useContext";
 import { canEditDocument } from "../../../utils/qualityDocumentUtils";
+import { SingleDatepicker } from "chakra-dayzed-datepicker";
 
 const ManageDocumentMetadataModal = ({
   isOpen,
@@ -102,7 +103,7 @@ const ManageDocumentMetadataModal = ({
                 </AlertDescription>
               </Alert>
             )}
-            
+
             <Text fontSize="sm" color="gray.600" mb={2}>
               Manage metadata for &quot;{document.title}&quot;. These fields
               help track document details such as document number, issue date,
@@ -119,20 +120,26 @@ const ManageDocumentMetadataModal = ({
             </FormControl>
             <FormControl isDisabled={!documentCanBeEdited}>
               <FormLabel fontSize="sm">Issued Date</FormLabel>
-              <Input
-                type="date"
-                value={issuedDate}
-                onChange={(e) => setIssuedDate(e.target.value)}
-                size="md"
+              <SingleDatepicker
+                name="issuedDate"
+                date={issuedDate ? new Date(issuedDate) : new Date()}
+                configs={{
+                  dateFormat: "MMMM dd, yyyy",
+                }}
+                propsConfigs={{ triggerBtnProps: { w: "full" } }}
+                onDateChange={(date) => setIssuedDate(date)}
               />
             </FormControl>
             <FormControl isDisabled={!documentCanBeEdited}>
               <FormLabel fontSize="sm">Effectivity Date</FormLabel>
-              <Input
-                type="date"
-                value={effectivityDate}
-                onChange={(e) => setEffectivityDate(e.target.value)}
-                size="md"
+              <SingleDatepicker
+                name="effectivityDate"
+                date={effectivityDate ? new Date(effectivityDate) : new Date()}
+                configs={{
+                  dateFormat: "MMMM dd, yyyy",
+                }}
+                propsConfigs={{ triggerBtnProps: { w: "full" } }}
+                onDateChange={(date) => setEffectivityDate(date)}
               />
             </FormControl>
           </VStack>
@@ -142,8 +149,8 @@ const ManageDocumentMetadataModal = ({
           <Button variant="ghost" mr={3} onClick={onClose}>
             Cancel
           </Button>
-          <Button 
-            colorScheme="brandPrimary" 
+          <Button
+            colorScheme="brandPrimary"
             onClick={handleSave}
             isDisabled={!documentCanBeEdited}
           >
