@@ -508,6 +508,34 @@ export const DocumentsProvider = ({ children }) => {
   };
 
   /**
+   * Update document in local state only (no API call)
+   * Used after lifecycle API calls that already updated the document on the backend
+   * @param {Object} document - The original document
+   * @param {Object} updates - The updates to apply
+   * @returns {Object} - The updated document
+   */
+  const updateDocumentInState = (document, updates) => {
+    const id = document?.id || document?._id;
+    const { consolidatedData } = formatUpdatesForAPI(document, updates);
+
+    // Create the updated document object
+    const updatedDoc = {
+      ...document,
+      ...consolidatedData,
+      updatedAt: new Date().toISOString(),
+    };
+
+    // Update the documents state
+    setDocuments((prevDocs) =>
+      prevDocs.map((doc) =>
+        doc.id === id || doc._id === id ? updatedDoc : doc,
+      ),
+    );
+
+    return updatedDoc;
+  };
+
+  /**
    * Submit a quality document for review
    * @param {Object} document - The document to submit
    * @returns {Promise<Object>} - The updated document
@@ -527,8 +555,8 @@ export const DocumentsProvider = ({ children }) => {
         const requestId = response.data?.requestId || response.requestId;
         const newState = extractStateFromResponse(response, "submit", requestId);
 
-        // Update the document with new lifecycle state
-        const updatedDoc = await updateDocument(document, newState);
+        // Update the document in local state only (backend already updated it)
+        const updatedDoc = updateDocumentInState(document, newState);
         return updatedDoc;
       } else {
         throw new Error(response.message || "Failed to submit document");
@@ -558,8 +586,8 @@ export const DocumentsProvider = ({ children }) => {
       if (response.success !== false) {
         const newState = extractStateFromResponse(response, "discard");
 
-        // Update the document with new lifecycle state
-        const updatedDoc = await updateDocument(document, newState);
+        // Update the document in local state only (backend already updated it)
+        const updatedDoc = updateDocumentInState(document, newState);
         return updatedDoc;
       } else {
         throw new Error(response.message || "Failed to discard request");
@@ -589,8 +617,8 @@ export const DocumentsProvider = ({ children }) => {
       if (response.success !== false) {
         const newState = extractStateFromResponse(response, "endorse", requestId);
 
-        // Update the document with new lifecycle state
-        const updatedDoc = await updateDocument(document, newState);
+        // Update the document in local state only (backend already updated it)
+        const updatedDoc = updateDocumentInState(document, newState);
         return updatedDoc;
       } else {
         throw new Error(response.message || "Failed to endorse document");
@@ -620,8 +648,8 @@ export const DocumentsProvider = ({ children }) => {
       if (response.success !== false) {
         const newState = extractStateFromResponse(response, "reject", requestId);
 
-        // Update the document with new lifecycle state
-        const updatedDoc = await updateDocument(document, newState);
+        // Update the document in local state only (backend already updated it)
+        const updatedDoc = updateDocumentInState(document, newState);
         return updatedDoc;
       } else {
         throw new Error(response.message || "Failed to reject document");
@@ -651,8 +679,8 @@ export const DocumentsProvider = ({ children }) => {
       if (response.success !== false) {
         const newState = extractStateFromResponse(response, "publish");
 
-        // Update the document with new lifecycle state and metadata
-        const updatedDoc = await updateDocument(document, {
+        // Update the document in local state only (backend already updated it)
+        const updatedDoc = updateDocumentInState(document, {
           ...newState,
           metadata: {
             ...document.metadata,
@@ -700,12 +728,20 @@ export const DocumentsProvider = ({ children }) => {
         
         // If response contains a full document object, return it directly
         if (responseData.id || responseData._id) {
+          // Update the local state with the full document
+          setDocuments((prevDocs) =>
+            prevDocs.map((doc) =>
+              doc.id === responseData.id || doc._id === responseData._id
+                ? responseData
+                : doc,
+            ),
+          );
           return responseData;
         }
         
-        // Otherwise, extract state and update the document
+        // Otherwise, extract state and update the document in local state only
         const newState = extractStateFromResponse(response, "checkout");
-        const updatedDoc = await updateDocument(document, newState);
+        const updatedDoc = updateDocumentInState(document, newState);
         return updatedDoc;
       } else {
         throw new Error(response.message || "Failed to checkout document");
