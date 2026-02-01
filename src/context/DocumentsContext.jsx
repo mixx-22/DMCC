@@ -518,14 +518,13 @@ export const DocumentsProvider = ({ children }) => {
     const id = document?.id || document?._id;
     const { consolidatedData } = formatUpdatesForAPI(document, updates);
 
-    // Create the updated document object
+    // Create the updated document object (preserve backend's updatedAt)
     const updatedDoc = {
       ...document,
       ...consolidatedData,
-      updatedAt: new Date().toISOString(),
     };
 
-    // Update the documents state
+    // Update the documents state asynchronously
     setDocuments((prevDocs) =>
       prevDocs.map((doc) =>
         doc.id === id || doc._id === id ? updatedDoc : doc,
