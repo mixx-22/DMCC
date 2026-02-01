@@ -19,6 +19,10 @@ import Teams from "./pages/Teams";
 import TeamPage from "./pages/Teams/TeamPage";
 import { TeamsProvider } from "./context/TeamsContext";
 import { TeamProfileProvider } from "./context/TeamProfileContext";
+import Schedules from "./pages/Schedules";
+import SchedulePage from "./pages/Schedules/SchedulePage";
+import { SchedulesProvider } from "./context/SchedulesContext";
+import { ScheduleProfileProvider } from "./context/ScheduleProfileContext";
 import Archive from "./pages/Archive";
 import Roles from "./pages/Roles";
 import RolePage from "./pages/Roles/RolePage";
@@ -37,6 +41,8 @@ import { UserProfileProvider } from "./context/UserProfileContext";
 import FormTemplateBuilder from "./pages/FormTemplateBuilder";
 import FormResponse from "./pages/Document/FormResponse";
 import QualityDocuments from "./pages/QualityDocuments";
+import ResponsiveTabsDemo from "./pages/ResponsiveTabsDemo";
+import OrganizationTabsDemo from "./pages/OrganizationTabsDemo";
 
 const ProtectedRoute = ({ children }) => {
   const { currentUser } = useApp();
@@ -65,6 +71,14 @@ function App() {
             element={
               currentUser ? <Navigate to="/dashboard" replace /> : <Login />
             }
+          />
+          <Route
+            path="/demo/responsive-tabs"
+            element={<ResponsiveTabsDemo />}
+          />
+          <Route
+            path="/demo/organization-tabs"
+            element={<OrganizationTabsDemo />}
           />
           <Route
             path="/*"
@@ -147,6 +161,22 @@ function App() {
                         <TeamProfileProvider>
                           <TeamPage />
                         </TeamProfileProvider>
+                      }
+                    />
+                    <Route
+                      path="/audit-schedules"
+                      element={
+                        <SchedulesProvider>
+                          <Schedules />
+                        </SchedulesProvider>
+                      }
+                    />
+                    <Route
+                      path="/audit-schedule/:id"
+                      element={
+                        <ScheduleProfileProvider>
+                          <SchedulePage />
+                        </ScheduleProfileProvider>
                       }
                     />
                     <Route
