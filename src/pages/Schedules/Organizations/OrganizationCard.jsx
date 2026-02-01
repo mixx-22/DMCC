@@ -122,7 +122,7 @@ const OrganizationCard = ({
   const hoverBg = useColorModeValue("gray.50", "gray.600");
   const headerHoverBg = useColorModeValue("gray.100", "gray.650");
   const objectiveBg = useColorModeValue("gray.50", "gray.700");
-  const [tabColor] = useToken("colors", ["gray.500"]);
+  const [tabColor] = useToken("colors", ["gray.500", errorColor]);
   const $tabColor = cssVar("tabs-color");
 
   const isScheduleOngoing = useMemo(() => schedule?.status === 0, [schedule]);
@@ -175,7 +175,7 @@ const OrganizationCard = ({
       showCancelButton: true,
       confirmButtonColor: "#d33",
       cancelButtonColor: "#3085d6",
-      confirmButtonText: "Yes, delete it",
+      confirmButtonText: "Yes, Delete Organization",
       cancelButtonText: "Cancel",
     });
 
@@ -185,43 +185,55 @@ const OrganizationCard = ({
         await deleteOrganization(orgId);
         // Context errorucer handles updating the organizations list
       } catch (error) {
-        console.error("Failed to delete organization:", error);
+        console.error("Failed to Delete Organization:", error);
       }
     }
   };
 
   const handleDeleteFinding = async (finding, visitIndex) => {
-    // Calculate updated visits without the deleted finding
-    const updatedVisits = organization.visits.map((v, i) => {
-      if (i === visitIndex) {
-        return {
-          ...v,
-          findings: (v.findings || []).filter((f) => f._id !== finding._id),
-        };
-      }
-      return v;
+    const result = await Swal.fire({
+      title: `Deleting Finding #${visitIndex + 1}`,
+      text: "Are you sure you want to delete this finding? Upon proceeding, this finding will no longer be recorded. This action is irreversible.",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#d33",
+      cancelButtonColor: "#3085d6",
+      confirmButtonText: "Yes, Delete Finding",
+      cancelButtonText: "Cancel",
     });
-
-    // Update organization in context
-    dispatch({
-      type: "UPDATE_ORGANIZATION",
-      payload: {
-        ...organization,
-        visits: updatedVisits,
-        team,
-      },
-    });
-
-    try {
-      // Persist to server
-      await updateOrganization(organization._id, {
-        ...organization,
-        teamId: organization.teamId || team,
-        visits: updatedVisits,
+    if (result.isConfirmed) {
+      // Calculate updated visits without the deleted finding
+      const updatedVisits = organization.visits.map((v, i) => {
+        if (i === visitIndex) {
+          return {
+            ...v,
+            findings: (v.findings || []).filter((f) => f._id !== finding._id),
+          };
+        }
+        return v;
       });
-    } catch (error) {
-      console.error("Failed to delete finding:", error);
-      // Could refetch or show error
+
+      // Update organization in context
+      dispatch({
+        type: "UPDATE_ORGANIZATION",
+        payload: {
+          ...organization,
+          visits: updatedVisits,
+          team,
+        },
+      });
+
+      try {
+        // Persist to server
+        await updateOrganization(organization._id, {
+          ...organization,
+          teamId: organization.teamId || team,
+          visits: updatedVisits,
+        });
+      } catch (error) {
+        console.error("Failed to delete finding:", error);
+        // Could refetch or show error
+      }
     }
   };
 
