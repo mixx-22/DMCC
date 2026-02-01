@@ -515,6 +515,7 @@ const OrganizationCard = ({
                       e.stopPropagation();
                       setIsVerdictModalOpen(true);
                     }}
+                    isDisabled={!canSetVerdict(organization).can}
                   >
                     {organization.verdict
                       ? "Change Final Verdict"
@@ -673,11 +674,9 @@ const OrganizationCard = ({
                                               boxSize={6}
                                               borderRadius="full"
                                               colorScheme={
-                                                {
-                                                  COMPLIANT: "success",
-                                                  MAJOR_NC: "error",
-                                                  MINOR_NC: "warning",
-                                                }[visit.compliance] ||
+                                                COMPLIANCE_DISPLAY[
+                                                  visit.compliance
+                                                ]?.color ||
                                                 (hasMajorNC && "error") ||
                                                 (hasMinorNC && "warning") ||
                                                 "purple"
@@ -704,13 +703,12 @@ const OrganizationCard = ({
                                           </Box>
                                           <Badge
                                             colorScheme={
-                                              {
-                                                COMPLIANT: "success",
-                                                MAJOR_NC: "error",
-                                                MINOR_NC: "warning",
-                                              }[visit.compliance] ||
+                                              COMPLIANCE_DISPLAY[
+                                                visit.compliance
+                                              ]?.color ||
                                               (hasMajorNC && "error") ||
-                                              (hasMinorNC && "warning")
+                                              (hasMinorNC && "warning") ||
+                                              "purple"
                                             }
                                           >
                                             {formatDateRange(
@@ -718,9 +716,8 @@ const OrganizationCard = ({
                                               visit?.date?.end,
                                             )}
                                           </Badge>
-
                                           {/* Visit Compliance Badge */}
-                                          {visit?.compliance && (
+                                          {!isExpanded && visit?.compliance && (
                                             <>
                                               {" "}
                                               &middot;{" "}

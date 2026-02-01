@@ -10,8 +10,9 @@ import {
   Button,
   useColorModeValue,
   Flex,
+  Tooltip,
 } from "@chakra-ui/react";
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import { FiPlus, FiX } from "react-icons/fi";
 import { SingleDatepicker } from "chakra-dayzed-datepicker";
 import moment from "moment/moment";
@@ -64,6 +65,33 @@ const VisitManager = ({
 
   // Show form if no visits exist or if user clicked "Add Visit"
   const shouldShowForm = visits.length === 0 || showAddForm;
+
+  const canAddVisitDate = useCallback(() => {
+    for (const [index, visit] of visits.entries()) {
+      const { findings = [] } = visit;
+
+      if (!findings.length) {
+        return {
+          can: false,
+          message: `Visit #${index + 1} - ${formatDateRange(visit.date.start, visit.date.end) || visit._id} has no findings.`,
+        };
+      }
+
+      const allResolved = findings.every((f) => {
+        const isMajorOrMinor = ["MAJOR_NC", "MINOR_NC"].includes(f.compliance);
+        return !isMajorOrMinor || Boolean(f.correctionDate);
+      });
+
+      if (!allResolved) {
+        return {
+          can: false,
+          message: `Visit #${index + 1} - ${formatDateRange(visit.date.start, visit.date.end) || visit._id} has unresolved findings.`,
+        };
+      }
+    }
+
+    return { can: true, message: "" };
+  }, [visits]);
 
   return (
     <FormControl>
@@ -154,15 +182,18 @@ const VisitManager = ({
                 portalRef={pageRef}
               />
             </Box>
-            <Button
-              size="sm"
-              colorScheme="purple"
-              w={{ base: "full", md: "fit-content" }}
-              onClick={handleAddVisit}
-              leftIcon={<FiPlus />}
-            >
-              Add Visit
-            </Button>
+            <Tooltip label={canAddVisitDate().message}>
+              <Button
+                size="sm"
+                colorScheme="purple"
+                w={{ base: "full", md: "fit-content" }}
+                onClick={handleAddVisit}
+                leftIcon={<FiPlus />}
+                isDisabled={!canAddVisitDate().can}
+              >
+                Add Visit
+              </Button>
+            </Tooltip>
             {visits.length > 0 && (
               <Button
                 size="sm"
@@ -182,16 +213,19 @@ const VisitManager = ({
                 Close
               </Button>
             )}
-            <Button
-              flex={1}
-              size="sm"
-              leftIcon={<FiPlus />}
-              onClick={() => setShowAddForm(true)}
-              colorScheme="purple"
-              variant="outline"
-            >
-              Add Visit
-            </Button>
+            <Tooltip label={canAddVisitDate().message}>
+              <Button
+                flex={1}
+                size="sm"
+                leftIcon={<FiPlus />}
+                onClick={() => setShowAddForm(true)}
+                colorScheme="purple"
+                variant="outline"
+                isDisabled={!canAddVisitDate().can}
+              >
+                Add Visit
+              </Button>
+            </Tooltip>
           </Flex>
         )}
       </VStack>
