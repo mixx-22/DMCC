@@ -313,13 +313,13 @@ const AuditKpiDashboard = () => {
   const greetingColor = useColorModeValue("gray.500", "gray.300");
   const dateColor = useColorModeValue("gray.400", "gray.400");
   
-  const fetched = useRef();
   const currentDate = format(new Date(), "EEEE, MMMM d");
+  
+  // Route constants
+  const AUDIT_SCHEDULES_ROUTE = "/audit-schedules";
 
   // Set greeting based on time of day (matching main dashboard)
   useEffect(() => {
-    if (fetched.current) return;
-    fetched.current = true;
     const hour = new Date().getHours();
     const greetings = [
       { range: [0, 5], text: "Good night" },
@@ -338,7 +338,7 @@ const AuditKpiDashboard = () => {
   // Handle search
   const handleSearch = () => {
     if (searchKeyword.trim()) {
-      navigate(`/audit-schedules?keyword=${encodeURIComponent(searchKeyword.trim())}`);
+      navigate(`${AUDIT_SCHEDULES_ROUTE}?keyword=${encodeURIComponent(searchKeyword.trim())}`);
     }
   };
 
