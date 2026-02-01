@@ -522,10 +522,11 @@ const AuditKpiDashboard = () => {
   return (
     <Box p={8}>
       {/* Gradient Background Layer */}
-      <Box sx={bgConfig.base}>
-        <Box sx={{ ...bgConfig.blob1, _before: bgConfig.blob1 }} />
-        <Box sx={{ ...bgConfig.blob2, _before: bgConfig.blob2 }} />
-        <Box sx={{ ...bgConfig.blob3, _before: bgConfig.blob3 }} />
+      <Box sx={bgConfig.container}>
+        <Box sx={bgConfig.base} />
+        <Box sx={bgConfig.blob1} />
+        <Box sx={bgConfig.blob2} />
+        <Box sx={bgConfig.blob3} />
       </Box>
 
       {/* Page Header */}

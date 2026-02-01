@@ -8,8 +8,8 @@
 export const backgroundGradients = {
   // Main Dashboard gradient configuration
   mainDashboard: {
-    // Base gradient overlay
-    base: {
+    // Container for background
+    container: {
       position: "fixed",
       top: 0,
       left: 0,
@@ -17,11 +17,19 @@ export const backgroundGradients = {
       bottom: 0,
       zIndex: -1,
       pointerEvents: "none",
+      overflow: "hidden",
+    },
+    // Base gradient overlay
+    base: {
+      position: "absolute",
+      top: 0,
+      left: 0,
+      right: 0,
+      bottom: 0,
       background: "linear-gradient(135deg, rgba(0, 90, 238, 0.03) 0%, rgba(255, 215, 0, 0.02) 100%)",
     },
     // Top-left gradient blob
     blob1: {
-      content: '""',
       position: "absolute",
       top: "-20%",
       left: "-10%",
@@ -34,7 +42,6 @@ export const backgroundGradients = {
     },
     // Bottom-right gradient blob
     blob2: {
-      content: '""',
       position: "absolute",
       bottom: "-15%",
       right: "-10%",
@@ -47,7 +54,6 @@ export const backgroundGradients = {
     },
     // Center accent gradient blob
     blob3: {
-      content: '""',
       position: "absolute",
       top: "30%",
       right: "20%",
@@ -62,8 +68,8 @@ export const backgroundGradients = {
 
   // Audit Dashboard gradient configuration
   auditDashboard: {
-    // Base gradient overlay
-    base: {
+    // Container for background
+    container: {
       position: "fixed",
       top: 0,
       left: 0,
@@ -71,11 +77,19 @@ export const backgroundGradients = {
       bottom: 0,
       zIndex: -1,
       pointerEvents: "none",
+      overflow: "hidden",
+    },
+    // Base gradient overlay
+    base: {
+      position: "absolute",
+      top: 0,
+      left: 0,
+      right: 0,
+      bottom: 0,
       background: "linear-gradient(160deg, rgba(16, 185, 129, 0.03) 0%, rgba(139, 92, 246, 0.03) 50%, rgba(244, 63, 94, 0.02) 100%)",
     },
     // Top-left gradient blob (success green)
     blob1: {
-      content: '""',
       position: "absolute",
       top: "-15%",
       left: "-8%",
@@ -88,7 +102,6 @@ export const backgroundGradients = {
     },
     // Middle-right gradient blob (info purple/blue)
     blob2: {
-      content: '""',
       position: "absolute",
       top: "25%",
       right: "-12%",
@@ -101,7 +114,6 @@ export const backgroundGradients = {
     },
     // Bottom-center gradient blob (error/warning)
     blob3: {
-      content: '""',
       position: "absolute",
       bottom: "-10%",
       left: "30%",
@@ -164,6 +176,7 @@ export const getDashboardBackground = (dashboardType, isDarkMode = false) => {
   const darkConfig = isDarkMode ? backgroundGradients.darkMode[dashboardType] : {};
 
   return {
+    container: baseConfig.container,
     base: { ...baseConfig.base, ...darkConfig.base },
     blob1: { ...baseConfig.blob1, ...darkConfig.blob1 },
     blob2: { ...baseConfig.blob2, ...darkConfig.blob2 },
