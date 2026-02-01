@@ -1212,7 +1212,7 @@ const AuditKpiDashboard = () => {
           <CardBody p={0}>
             {kpiData.findingsPerClause &&
             kpiData.findingsPerClause.length > 0 ? (
-              <TableContainer maxH="500px" overflowY="auto">
+              <TableContainer maxH="500px" overflowY="auto" tabIndex={0}>
                 <Table variant="simple">
                   <Thead bg={tableHeaderBg} position="sticky" top={0} zIndex={1}>
                     <Tr>
