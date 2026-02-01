@@ -10,11 +10,17 @@ A comprehensive document management system with certification and permit monitor
 - **Contextual Help**: Tour automatically adapts to show only relevant steps based on available data
 - **Easy Access**: Click the help (?) button in any audit schedule page to start the tour
 - **Smart Navigation**: Auto-scrolls and highlights key interface elements during the tour
+- **Demo Page Available**: Try the tour with pre-populated sample data at `/demo/audit-schedule-tour`
 
 To use the tour guide:
 1. Navigate to any audit schedule page (e.g., `/audit-schedule/:id`)
 2. Click the help icon (?) button in the page header
 3. Follow the interactive tour steps to learn about audit management features
+
+Or try the **interactive demo**:
+1. Navigate to `/demo/audit-schedule-tour` (no login required)
+2. Click "Start Tour" or "Start Interactive Tour" button
+3. Experience the complete audit workflow with pre-populated sample data
 
 The tour guide is powered by [@sjmc11/tourguidejs](https://tourguidejs.com/) and integrates seamlessly with the Chakra UI theme.
 
