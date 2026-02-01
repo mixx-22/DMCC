@@ -386,6 +386,42 @@ const OrganizationCard = ({
     return { can: true, message: "" };
   }, []);
 
+  const canSetVerdict = useCallback((organization) => {
+    const { visits = [] } = organization;
+
+    if (!visits.length) {
+      return {
+        can: false,
+        message: "No visits recorded for this organization.",
+      };
+    }
+
+    for (const [index, visit] of visits.entries()) {
+      const { findings = [] } = visit;
+
+      if (!findings.length) {
+        return {
+          can: false,
+          message: `Visit #${index + 1} - ${formatDateRange(visit.date.start, visit.date.end) || visit._id} has no findings.`,
+        };
+      }
+
+      const allResolved = findings.every((f) => {
+        const isMajorOrMinor = ["MAJOR_NC", "MINOR_NC"].includes(f.compliance);
+        return !isMajorOrMinor || Boolean(f.correctionDate);
+      });
+
+      if (!allResolved) {
+        return {
+          can: false,
+          message: `Visit #${index + 1} - ${formatDateRange(visit.date.start, visit.date.end) || visit._id} has unresolved findings.`,
+        };
+      }
+    }
+
+    return { can: true, message: "" };
+  }, []);
+
   return (
     <>
       <Card bg={cardBg} borderWidth="1px" borderColor={borderColor} shadow="sm">
@@ -403,7 +439,17 @@ const OrganizationCard = ({
             transition="background 0.2s"
           >
             <HStack align="center" spacing={2}>
-              <Avatar size="sm" name={team.name} />
+              <Box pos="relative" boxSize={8}>
+                <Avatar size="sm" name={team.name} />
+                <NotifBadge
+                  boxSize={3}
+                  right={-0.5}
+                  bottom={-0.5}
+                  pos="absolute"
+                  show={!canSetVerdict(organization).can}
+                  message={canSetVerdict(organization).message}
+                />
+              </Box>
               <Text fontWeight="bold" fontSize="lg">
                 {team?.name || "Unknown Team"}
               </Text>

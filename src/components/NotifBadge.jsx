@@ -30,7 +30,7 @@ const NotifBadge = ({
   ...props
 }) => {
   const notifColor = useColorModeValue("error.600", "error.200");
-  const defBorderColor = useColorModeValue("white", "error.200");
+  const defBorderColor = useColorModeValue("white", "gray.700");
 
   if (!show || !message) return null;
 
@@ -40,7 +40,7 @@ const NotifBadge = ({
   const stagger = burstDuration / ripples;
 
   return (
-    <Tooltip hasArrow label={message}>
+    <Tooltip hasArrow label={message} textAlign="center">
       <Center boxSize={boxSize} {...props}>
         <Box
           position="relative"
