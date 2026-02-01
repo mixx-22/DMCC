@@ -44,7 +44,7 @@ const Organizations = ({ schedule = {}, setFormData = () => {} }) => {
   const shouldShowForm = organizations?.length === 0 || showOrgForm;
 
   return (
-    <VStack align="stretch" spacing={4}>
+    <VStack align="stretch" spacing={4} data-tour="organizations-section">
       <Flex justify="space-between" align="center">
         <Heading size="md">Organizations</Heading>
         <Spacer />
@@ -88,6 +88,7 @@ const Organizations = ({ schedule = {}, setFormData = () => {} }) => {
               colorScheme="brandPrimary"
               variant="outline"
               size="md"
+              data-tour="add-organization"
             >
               Add Organization
             </Button>

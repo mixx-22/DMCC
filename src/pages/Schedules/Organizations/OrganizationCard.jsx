@@ -438,7 +438,13 @@ const OrganizationCard = ({
 
   return (
     <>
-      <Card bg={cardBg} borderWidth="1px" borderColor={borderColor} shadow="sm">
+      <Card
+        bg={cardBg}
+        borderWidth="1px"
+        borderColor={borderColor}
+        shadow="sm"
+        data-tour="organization-card"
+      >
         <CardHeader p={0}>
           <HStack
             py={4}
@@ -532,6 +538,7 @@ const OrganizationCard = ({
                     isDisabled={
                       !isScheduleOngoing || !canSetVerdict(organization).can
                     }
+                    data-tour="set-verdict"
                   >
                     {organization.verdict
                       ? "Change Final Verdict"
@@ -578,6 +585,7 @@ const OrganizationCard = ({
                   <ResponsiveTab
                     sx={{ [$tabColor.variable]: tabColor }}
                     fontWeight={"normal"}
+                    data-tour="visits-tab"
                   >
                     <HStack spacing={1}>
                       <Text>Visits</Text>
@@ -586,6 +594,7 @@ const OrganizationCard = ({
                   <ResponsiveTab
                     sx={{ [$tabColor.variable]: tabColor }}
                     fontWeight={"normal"}
+                    data-tour="auditors-tab"
                   >
                     <HStack spacing={1}>
                       <Text>Auditors</Text>
@@ -594,6 +603,7 @@ const OrganizationCard = ({
                   <ResponsiveTab
                     sx={{ [$tabColor.variable]: tabColor }}
                     fontWeight={"normal"}
+                    data-tour="team-details-tab"
                   >
                     <HStack spacing={1}>
                       <Hide below="md">
@@ -607,6 +617,7 @@ const OrganizationCard = ({
                   <ResponsiveTab
                     sx={{ [$tabColor.variable]: tabColor }}
                     fontWeight={"normal"}
+                    data-tour="documents-tab"
                   >
                     <HStack spacing={1}>
                       <Text>Quality Documents</Text>

@@ -182,6 +182,7 @@ const FindingCard = ({
       borderColor={borderColor}
       bg={cardBg}
       boxShadow="none"
+      data-tour="finding-item"
     >
       <CardBody>
         <VStack align="stretch" spacing={3}>
