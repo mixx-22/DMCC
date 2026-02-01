@@ -106,16 +106,20 @@ const PrivacyDisplay = ({
         {generateSummary({ users, teams })}
       </Text>
       {/* Manage Access Button */}
-      <Box>
-        <Button
-          size={buttonSize ?? size}
-          colorScheme="brandPrimary"
-          variant="link"
-          onClick={onManageAccess}
-        >
-          Manage Access
-        </Button>
-      </Box>
+      {((document.metadata.fileType.isQualityDocument &&
+        document.metadata.checkedOut === 1) ||
+        !document.metadata.fileType.isQualityDocument) && (
+        <Box>
+          <Button
+            size={buttonSize ?? size}
+            colorScheme="brandPrimary"
+            variant="link"
+            onClick={onManageAccess}
+          >
+            Manage Access
+          </Button>
+        </Box>
+      )}
     </VStack>
   );
 };

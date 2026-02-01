@@ -21,15 +21,20 @@ import {
   Td,
   IconButton,
   Spinner,
+  FormControl,
+  FormLabel,
+  Input,
 } from "@chakra-ui/react";
 import { Select } from "chakra-react-select";
 import { useDropzone } from "react-dropzone";
-import { FiUploadCloud, FiFile, FiX } from "react-icons/fi";
+import { FiUploadCloud, FiFile, FiX, FiEdit } from "react-icons/fi";
 import { toast } from "sonner";
-import { useDocuments } from "../../../context/_useContext";
+import { useDocuments, useUser } from "../../../context/_useContext";
 import apiService from "../../../services/api";
+import { SingleDatepicker } from "chakra-dayzed-datepicker";
 
 const FILE_TYPES_ENDPOINT = "/file-types";
+const TEAMS_ENDPOINT = import.meta.env.VITE_API_PACKAGE_TEAMS || "/teams";
 const USE_API = import.meta.env.VITE_USE_API !== "false";
 
 const MOCK_FILE_TYPES = [
@@ -42,20 +47,20 @@ const MOCK_FILE_TYPES = [
 
 const QualityDocumentUploadModal = ({ isOpen, onClose, parentId, path, teamId }) => {
   const { createDocument } = useDocuments();
+  const { user: currentUser } = useUser();
   const [files, setFiles] = useState([]);
   const [fileTypes, setFileTypes] = useState([]);
+  const [teams, setTeams] = useState([]);
   const [loadingFileTypes, setLoadingFileTypes] = useState(false);
+  const [loadingTeams, setLoadingTeams] = useState(false);
   const [uploading, setUploading] = useState(false);
-
-  // Fetch file types when modal opens
-  useEffect(() => {
-    if (isOpen) {
-      fetchFileTypes();
-    } else {
-      // Reset files when modal closes
-      setFiles([]);
-    }
-  }, [isOpen]);
+  const [editingMetadata, setEditingMetadata] = useState(null);
+  const [tempMetadata, setTempMetadata] = useState({
+    documentNumber: "",
+    issuedDate: new Date(),
+    effectivityDate: new Date(),
+    team: null,
+  });
 
   const fetchFileTypes = async () => {
     setLoadingFileTypes(true);
@@ -87,10 +92,69 @@ const QualityDocumentUploadModal = ({ isOpen, onClose, parentId, path, teamId })
     }
   };
 
+  const fetchTeams = useCallback(async () => {
+    setLoadingTeams(true);
+    try {
+      if (!USE_API) {
+        setTeams([]);
+        setLoadingTeams(false);
+        return;
+      }
+
+      const data = await apiService.request(TEAMS_ENDPOINT, {
+        method: "GET",
+        params: {
+          limit: 100,
+        },
+      });
+
+      const fetchedTeams = data.data || data.teams || [];
+
+      // Filter teams where user is a member or leader
+      const userId = currentUser?.id || currentUser?._id;
+      const userTeams = fetchedTeams.filter((team) => {
+        const isMember = team.members?.some(
+          (member) => (member.id || member._id) === userId,
+        );
+        const isLeader = team.leaders?.some(
+          (leader) => (leader.id || leader._id) === userId,
+        );
+        return isMember || isLeader;
+      });
+
+      setTeams(userTeams);
+    } catch (error) {
+      console.error("Failed to fetch teams:", error);
+      toast.error("Failed to Load Teams", {
+        description: "Could not load teams. Please try again.",
+        duration: 3000,
+      });
+      setTeams([]);
+    } finally {
+      setLoadingTeams(false);
+    }
+  }, [currentUser]);
+
+  // Fetch file types when modal opens
+  useEffect(() => {
+    if (isOpen) {
+      fetchFileTypes();
+      fetchTeams();
+    } else {
+      // Reset files when modal closes
+      setFiles([]);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isOpen]);
+
   const onDrop = useCallback((acceptedFiles) => {
     const newFiles = acceptedFiles.map((file) => ({
       file,
       fileType: null,
+      documentNumber: "",
+      issuedDate: "",
+      effectivityDate: "",
+      team: null,
       id: Math.random().toString(36).substring(2, 11),
     }));
     setFiles((prev) => [...prev, ...newFiles]);
@@ -126,6 +190,37 @@ const QualityDocumentUploadModal = ({ isOpen, onClose, parentId, path, teamId })
     );
   };
 
+  const handleOpenMetadataModal = (fileItem) => {
+    setEditingMetadata(fileItem.id);
+    setTempMetadata({
+      documentNumber: fileItem.documentNumber || "",
+      issuedDate: fileItem.issuedDate || new Date(),
+      effectivityDate: fileItem.effectivityDate || new Date(),
+      team: fileItem.team || null,
+    });
+  };
+
+  const handleCloseMetadataModal = () => {
+    setEditingMetadata(null);
+    setTempMetadata({
+      documentNumber: "",
+      issuedDate: new Date(),
+      effectivityDate: new Date(),
+      team: null,
+    });
+  };
+
+  const handleSaveMetadata = () => {
+    if (editingMetadata) {
+      setFiles((prev) =>
+        prev.map((f) =>
+          f.id === editingMetadata ? { ...f, ...tempMetadata } : f,
+        ),
+      );
+      handleCloseMetadataModal();
+    }
+  };
+
   const handleSubmit = async () => {
     // Validation: Check if there are files
     if (files.length === 0) {
@@ -145,6 +240,74 @@ const QualityDocumentUploadModal = ({ isOpen, onClose, parentId, path, teamId })
         duration: 4000,
       });
       return;
+    }
+
+    // Validation: Check if all files have required metadata for Request Quality Documents
+    if (path === "/request") {
+      const filesWithMissingMetadata = files.filter(
+        (f) =>
+          !f.documentNumber || !f.team || !f.issuedDate || !f.effectivityDate,
+      );
+      if (filesWithMissingMetadata.length > 0) {
+        toast.error("Validation Error", {
+          description:
+            "All files must have Document Number, Team, Issued Date, and Effectivity Date. Please edit metadata for each file before uploading.",
+          duration: 5000,
+        });
+        return;
+      }
+
+      // Check for duplicate document numbers in the batch
+      const documentNumbers = files
+        .map((f) => f.documentNumber)
+        .filter((num) => num);
+      const duplicates = documentNumbers.filter(
+        (num, index) => documentNumbers.indexOf(num) !== index,
+      );
+      if (duplicates.length > 0) {
+        toast.error("Validation Error", {
+          description: `Duplicate document numbers found: ${[...new Set(duplicates)].join(", ")}. Each document must have a unique document number.`,
+          duration: 5000,
+        });
+        return;
+      }
+
+      // Check for duplicate document numbers in the system
+      try {
+        const checkPromises = files.map(async (f) => {
+          const response = await apiService.request("/documents/quality", {
+            method: "GET",
+            params: {
+              documentNumber: f.documentNumber,
+              limit: 1,
+            },
+          });
+          return {
+            documentNumber: f.documentNumber,
+            exists: response.data && response.data.length > 0,
+          };
+        });
+
+        const results = await Promise.all(checkPromises);
+        const existingDocNumbers = results
+          .filter((r) => r.exists)
+          .map((r) => r.documentNumber);
+
+        if (existingDocNumbers.length > 0) {
+          toast.error("Validation Error", {
+            description: `Document number(s) already exist in the system: ${existingDocNumbers.join(", ")}. Please use unique document numbers.`,
+            duration: 5000,
+          });
+          return;
+        }
+      } catch (error) {
+        console.error("Error checking for duplicate document numbers:", error);
+        toast.warning("Warning", {
+          description:
+            "Could not verify document numbers. Please ensure they are unique.",
+          duration: 3000,
+        });
+      }
     }
 
     setUploading(true);
@@ -168,10 +331,30 @@ const QualityDocumentUploadModal = ({ isOpen, onClose, parentId, path, teamId })
               filename: fileItem.file.name,
               size: fileItem.file.size,
               fileType: fileItem.fileType.id,
+              documentNumber: fileItem.documentNumber || "",
+              issuedDate: fileItem.issuedDate || "",
+              effectivityDate: fileItem.effectivityDate || "",
+              team: fileItem.team?.id || fileItem.team?._id || "",
             },
           });
           return { success: true, filename: fileItem.file.name };
         } catch (error) {
+          console.error("Upload error:", error);
+
+          // Handle duplicate document number error specifically
+          if (
+            error?.documentNumber ||
+            error?.message?.includes("already exists")
+          ) {
+            return {
+              success: false,
+              filename: fileItem.file.name,
+              documentNumber: error?.documentNumber || fileItem.documentNumber,
+              error: error?.message || "Document number already exists",
+              isDuplicate: true,
+            };
+          }
+
           return {
             success: false,
             filename: fileItem.file.name,
@@ -183,6 +366,18 @@ const QualityDocumentUploadModal = ({ isOpen, onClose, parentId, path, teamId })
       const results = await Promise.all(uploadPromises);
       const successful = results.filter((r) => r.success);
       const failed = results.filter((r) => !r.success);
+      const duplicates = failed.filter((r) => r.isDuplicate);
+
+      if (duplicates.length > 0) {
+        const duplicateDocNumbers = [
+          ...new Set(duplicates.map((r) => r.documentNumber)),
+        ];
+        toast.error("Upload Failed - Duplicate Document Numbers", {
+          description: `Document number(s) already exist: ${duplicateDocNumbers.join(", ")}. Please use unique document numbers.`,
+          duration: 6000,
+        });
+        return;
+      }
 
       if (successful.length > 0 && failed.length === 0) {
         toast.success("Quality Documents Uploaded Successfully", {
@@ -232,105 +427,240 @@ const QualityDocumentUploadModal = ({ isOpen, onClose, parentId, path, teamId })
   }));
 
   return (
-    <Modal
-      isOpen={isOpen}
-      onClose={handleClose}
-      size={{ base: "full", md: "4xl" }}
-    >
-      <ModalOverlay />
-      <ModalContent>
-        <ModalHeader>Upload Quality Documents</ModalHeader>
-        <ModalCloseButton />
-        <ModalBody>
-          <VStack spacing={4} align="stretch">
-            {/* File Drop Zone */}
-            <Box
-              {...getRootProps()}
-              border="2px dashed"
-              borderColor={isDragActive ? "info.400" : "gray.300"}
-              borderRadius="lg"
-              p={8}
-              textAlign="center"
-              cursor="pointer"
-              bg={isDragActive ? "info.50" : "gray.50"}
-              transition="all 0.2s"
-              _hover={{
-                borderColor: "info.400",
-                bg: "info.50",
-              }}
-            >
-              <input {...getInputProps()} />
-              <Center>
-                <Icon
-                  as={FiUploadCloud}
-                  w={12}
-                  h={12}
-                  color={isDragActive ? "info.500" : "gray.400"}
-                  mb={3}
-                />
-              </Center>
-              <Text fontSize="md" fontWeight="medium" mb={1}>
-                {isDragActive
-                  ? "Drop your files here"
-                  : "Drag & drop files here"}
-              </Text>
-              <Text fontSize="sm" color="gray.500">
-                or click to browse
-              </Text>
-            </Box>
-
-            {/* Files List */}
-            {loadingFileTypes ? (
-              <Center py={4}>
-                <Spinner size="md" color="brandPrimary.500" />
-                <Text ml={3} color="gray.600">
-                  Loading file types...
+    <>
+      <Modal
+        isOpen={isOpen}
+        onClose={handleClose}
+        size={{ base: "full", md: "4xl" }}
+      >
+        <ModalOverlay />
+        <ModalContent>
+          <ModalHeader>
+            {path === "/request"
+              ? "Request Quality Document"
+              : "Upload Quality Documents"}
+          </ModalHeader>
+          <ModalCloseButton />
+          <ModalBody>
+            <VStack spacing={4} align="stretch">
+              {/* File Drop Zone */}
+              <Box
+                {...getRootProps()}
+                border="2px dashed"
+                borderColor={isDragActive ? "info.400" : "gray.300"}
+                borderRadius="lg"
+                p={8}
+                textAlign="center"
+                cursor="pointer"
+                bg={isDragActive ? "info.50" : "gray.50"}
+                transition="all 0.2s"
+                _hover={{
+                  borderColor: "info.400",
+                  bg: "info.50",
+                }}
+              >
+                <input {...getInputProps()} />
+                <Center>
+                  <Icon
+                    as={FiUploadCloud}
+                    w={12}
+                    h={12}
+                    color={isDragActive ? "info.500" : "gray.400"}
+                    mb={3}
+                  />
+                </Center>
+                <Text fontSize="md" fontWeight="medium" mb={1}>
+                  {isDragActive
+                    ? "Drop your files here"
+                    : "Drag & drop files here"}
                 </Text>
-              </Center>
-            ) : files.length > 0 ? (
-              <>
-                {/* Desktop Table View */}
-                <Box overflowX="auto" display={{ base: "none", md: "block" }}>
-                  <Table size="sm" variant="simple">
-                    <Thead>
-                      <Tr>
-                        <Th>File Name</Th>
-                        <Th>Size</Th>
-                        <Th width="250px">File Type</Th>
-                        <Th width="60px"></Th>
-                      </Tr>
-                    </Thead>
-                    <Tbody>
-                      {files.map((fileItem) => {
-                        const selectedValue = fileItem.fileType
-                          ? {
-                              value: fileItem.fileType.id,
-                              label: fileItem.fileType.name,
-                              isQualityDocument:
-                                fileItem.fileType.isQualityDocument,
-                            }
-                          : null;
+                <Text fontSize="sm" color="gray.500">
+                  or click to browse
+                </Text>
+              </Box>
 
-                        return (
-                          <Tr key={fileItem.id}>
-                            <Td>
-                              <Box display="flex" alignItems="center">
+              {/* Files List */}
+              {loadingFileTypes ? (
+                <Center py={4}>
+                  <Spinner size="md" color="brandPrimary.500" />
+                  <Text ml={3} color="gray.600">
+                    Loading file types...
+                  </Text>
+                </Center>
+              ) : files.length > 0 ? (
+                <>
+                  {/* Desktop Table View */}
+                  <Box overflowX="auto" display={{ base: "none", md: "block" }}>
+                    <Table size="sm" variant="simple">
+                      <Thead>
+                        <Tr>
+                          <Th>File Name</Th>
+                          <Th>Size</Th>
+                          <Th width="250px">
+                            File Type {path !== "/request" && "Type"}
+                          </Th>
+                          {path === "/request" && (
+                            <Th width="100px">Metadata</Th>
+                          )}
+                          <Th width="60px"></Th>
+                        </Tr>
+                      </Thead>
+                      <Tbody>
+                        {files.map((fileItem) => {
+                          const selectedValue = fileItem.fileType
+                            ? {
+                                value: fileItem.fileType.id,
+                                label: fileItem.fileType.name,
+                                isQualityDocument:
+                                  fileItem.fileType.isQualityDocument,
+                              }
+                            : null;
+
+                          return (
+                            <Tr key={fileItem.id}>
+                              <Td>
+                                <Box display="flex" alignItems="center">
+                                  <Icon
+                                    as={FiFile}
+                                    color="brandPrimary.500"
+                                    mr={2}
+                                  />
+                                  <Text fontSize="sm" noOfLines={1}>
+                                    {fileItem.file.name}
+                                  </Text>
+                                </Box>
+                              </Td>
+                              <Td>
+                                <Text fontSize="xs" color="gray.600">
+                                  {formatFileSize(fileItem.file.size)}
+                                </Text>
+                              </Td>
+                              <Td>
+                                <Select
+                                  value={selectedValue}
+                                  onChange={(option) =>
+                                    handleFileTypeChange(fileItem.id, option)
+                                  }
+                                  options={fileTypeOptions}
+                                  placeholder="Select file type..."
+                                  isClearable
+                                  size="sm"
+                                  colorScheme="purple"
+                                  useBasicStyles
+                                  menuPortalTarget={document.body}
+                                  styles={{
+                                    menuPortal: (base) => ({
+                                      ...base,
+                                      zIndex: 9999,
+                                    }),
+                                  }}
+                                />
+                              </Td>
+                              {path === "/request" && (
+                                <Td>
+                                  <Button
+                                    size="sm"
+                                    leftIcon={<FiEdit />}
+                                    variant="ghost"
+                                    colorScheme="blue"
+                                    onClick={() =>
+                                      handleOpenMetadataModal(fileItem)
+                                    }
+                                  >
+                                    Edit
+                                  </Button>
+                                </Td>
+                              )}
+                              <Td>
+                                <IconButton
+                                  size="sm"
+                                  variant="ghost"
+                                  colorScheme="red"
+                                  icon={<FiX />}
+                                  onClick={() => handleFileRemove(fileItem.id)}
+                                  aria-label="Remove file"
+                                />
+                              </Td>
+                            </Tr>
+                          );
+                        })}
+                      </Tbody>
+                    </Table>
+                  </Box>
+
+                  {/* Mobile Card View */}
+                  <VStack
+                    spacing={3}
+                    display={{ base: "flex", md: "none" }}
+                    align="stretch"
+                  >
+                    {files.map((fileItem) => {
+                      const selectedValue = fileItem.fileType
+                        ? {
+                            value: fileItem.fileType.id,
+                            label: fileItem.fileType.name,
+                            isQualityDocument:
+                              fileItem.fileType.isQualityDocument,
+                          }
+                        : null;
+
+                      return (
+                        <Box
+                          key={fileItem.id}
+                          p={3}
+                          borderWidth="1px"
+                          borderRadius="md"
+                          bg="white"
+                        >
+                          <VStack spacing={3} align="stretch">
+                            <Box
+                              display="flex"
+                              alignItems="center"
+                              justifyContent="space-between"
+                            >
+                              <Box
+                                display="flex"
+                                alignItems="center"
+                                flex="1"
+                                minW="0"
+                              >
                                 <Icon
                                   as={FiFile}
                                   color="brandPrimary.500"
                                   mr={2}
+                                  flexShrink={0}
                                 />
-                                <Text fontSize="sm" noOfLines={1}>
+                                <Text
+                                  fontSize="sm"
+                                  noOfLines={1}
+                                  fontWeight="medium"
+                                >
                                   {fileItem.file.name}
                                 </Text>
                               </Box>
-                            </Td>
-                            <Td>
-                              <Text fontSize="xs" color="gray.600">
-                                {formatFileSize(fileItem.file.size)}
+                              <IconButton
+                                size="sm"
+                                variant="ghost"
+                                colorScheme="red"
+                                icon={<FiX />}
+                                onClick={() => handleFileRemove(fileItem.id)}
+                                aria-label="Remove file"
+                                flexShrink={0}
+                                ml={2}
+                              />
+                            </Box>
+                            <Text fontSize="xs" color="gray.600">
+                              {formatFileSize(fileItem.file.size)}
+                            </Text>
+                            <Box>
+                              <Text
+                                fontSize="xs"
+                                fontWeight="medium"
+                                mb={1}
+                                color="gray.700"
+                              >
+                                File {path !== "/request" && "Type"}
                               </Text>
-                            </Td>
-                            <Td>
                               <Select
                                 value={selectedValue}
                                 onChange={(option) =>
@@ -344,132 +674,181 @@ const QualityDocumentUploadModal = ({ isOpen, onClose, parentId, path, teamId })
                                 useBasicStyles
                                 menuPortalTarget={document.body}
                                 styles={{
-                                  menuPortal: (base) => ({ ...base, zIndex: 9999 }),
+                                  menuPortal: (base) => ({
+                                    ...base,
+                                    zIndex: 9999,
+                                  }),
                                 }}
                               />
-                            </Td>
-                            <Td>
-                              <IconButton
-                                size="sm"
-                                variant="ghost"
-                                colorScheme="red"
-                                icon={<FiX />}
-                                onClick={() => handleFileRemove(fileItem.id)}
-                                aria-label="Remove file"
-                              />
-                            </Td>
-                          </Tr>
-                        );
-                      })}
-                    </Tbody>
-                  </Table>
-                </Box>
-
-                {/* Mobile Card View */}
-                <VStack
-                  spacing={3}
-                  display={{ base: "flex", md: "none" }}
-                  align="stretch"
-                >
-                  {files.map((fileItem) => {
-                    const selectedValue = fileItem.fileType
-                      ? {
-                          value: fileItem.fileType.id,
-                          label: fileItem.fileType.name,
-                          isQualityDocument:
-                            fileItem.fileType.isQualityDocument,
-                        }
-                      : null;
-
-                    return (
-                      <Box
-                        key={fileItem.id}
-                        p={3}
-                        borderWidth="1px"
-                        borderRadius="md"
-                        bg="white"
-                      >
-                        <VStack spacing={3} align="stretch">
-                          <Box display="flex" alignItems="center" justifyContent="space-between">
-                            <Box display="flex" alignItems="center" flex="1" minW="0">
-                              <Icon
-                                as={FiFile}
-                                color="brandPrimary.500"
-                                mr={2}
-                                flexShrink={0}
-                              />
-                              <Text fontSize="sm" noOfLines={1} fontWeight="medium">
-                                {fileItem.file.name}
-                              </Text>
                             </Box>
-                            <IconButton
-                              size="sm"
-                              variant="ghost"
-                              colorScheme="red"
-                              icon={<FiX />}
-                              onClick={() => handleFileRemove(fileItem.id)}
-                              aria-label="Remove file"
-                              flexShrink={0}
-                              ml={2}
-                            />
-                          </Box>
-                          <Text fontSize="xs" color="gray.600">
-                            {formatFileSize(fileItem.file.size)}
-                          </Text>
-                          <Box>
-                            <Text fontSize="xs" fontWeight="medium" mb={1} color="gray.700">
-                              File Type
-                            </Text>
-                            <Select
-                              value={selectedValue}
-                              onChange={(option) =>
-                                handleFileTypeChange(fileItem.id, option)
-                              }
-                              options={fileTypeOptions}
-                              placeholder="Select file type..."
-                              isClearable
-                              size="sm"
-                              colorScheme="purple"
-                              useBasicStyles
-                              menuPortalTarget={document.body}
-                              styles={{
-                                menuPortal: (base) => ({ ...base, zIndex: 9999 }),
-                              }}
-                            />
-                          </Box>
-                        </VStack>
-                      </Box>
-                    );
-                  })}
-                </VStack>
-              </>
-            ) : (
-              <Text fontSize="sm" color="gray.500" textAlign="center" py={4}>
-                No files selected. Add files using the drop zone above.
-              </Text>
-            )}
-          </VStack>
-        </ModalBody>
-        <ModalFooter>
-          <Button
-            variant="ghost"
-            mr={3}
-            onClick={handleClose}
-            isDisabled={uploading}
-          >
-            Cancel
-          </Button>
-          <Button
-            colorScheme="brandPrimary"
-            onClick={handleSubmit}
-            isLoading={uploading}
-            isDisabled={files.length === 0 || loadingFileTypes}
-          >
-            Upload {files.length > 0 && `(${files.length})`}
-          </Button>
-        </ModalFooter>
-      </ModalContent>
-    </Modal>
+                            {path === "/request" && (
+                              <Button
+                                size="sm"
+                                leftIcon={<FiEdit />}
+                                variant="outline"
+                                colorScheme="blue"
+                                onClick={() =>
+                                  handleOpenMetadataModal(fileItem)
+                                }
+                                width="full"
+                              >
+                                Edit Metadata
+                              </Button>
+                            )}
+                          </VStack>
+                        </Box>
+                      );
+                    })}
+                  </VStack>
+                </>
+              ) : (
+                <Text fontSize="sm" color="gray.500" textAlign="center" py={4}>
+                  No files selected. Add files using the drop zone above.
+                </Text>
+              )}
+            </VStack>
+          </ModalBody>
+          <ModalFooter>
+            <Button
+              variant="ghost"
+              mr={3}
+              onClick={handleClose}
+              isDisabled={uploading}
+            >
+              Cancel
+            </Button>
+            <Button
+              colorScheme="brandPrimary"
+              onClick={handleSubmit}
+              isLoading={uploading}
+              isDisabled={files.length === 0 || loadingFileTypes}
+            >
+              Upload {files.length > 0 && `(${files.length})`}
+            </Button>
+          </ModalFooter>
+        </ModalContent>
+      </Modal>
+
+      {/* Metadata Edit Modal */}
+      <Modal
+        isOpen={!!editingMetadata}
+        onClose={handleCloseMetadataModal}
+        size="md"
+      >
+        <ModalOverlay />
+        <ModalContent>
+          <ModalHeader>Edit Metadata</ModalHeader>
+          <ModalCloseButton />
+          <ModalBody>
+            <VStack spacing={4} align="stretch">
+              <FormControl>
+                <FormLabel>Document Number</FormLabel>
+                <Input
+                  value={tempMetadata.documentNumber}
+                  onChange={(e) =>
+                    setTempMetadata({
+                      ...tempMetadata,
+                      documentNumber: e.target.value,
+                    })
+                  }
+                  placeholder="Enter document number"
+                />
+              </FormControl>
+              <FormControl>
+                <FormLabel>Team</FormLabel>
+                <Select
+                  value={
+                    tempMetadata.team
+                      ? {
+                          value: tempMetadata.team.id || tempMetadata.team._id,
+                          label: tempMetadata.team.name,
+                        }
+                      : null
+                  }
+                  onChange={(option) =>
+                    setTempMetadata({
+                      ...tempMetadata,
+                      team: option
+                        ? {
+                            id: option.value,
+                            _id: option.value,
+                            name: option.label,
+                          }
+                        : null,
+                    })
+                  }
+                  options={teams.map((team) => ({
+                    value: team.id || team._id,
+                    label: team.name,
+                  }))}
+                  placeholder="Select team..."
+                  isClearable
+                  isLoading={loadingTeams}
+                  isDisabled={loadingTeams}
+                  size="md"
+                  colorScheme="purple"
+                  useBasicStyles
+                  menuPortalTarget={document.body}
+                  styles={{
+                    menuPortal: (base) => ({ ...base, zIndex: 9999 }),
+                  }}
+                />
+              </FormControl>
+              <FormControl>
+                <FormLabel>Issued Date</FormLabel>
+                <SingleDatepicker
+                  name="issuedDate"
+                  date={
+                    tempMetadata?.issuedDate
+                      ? new Date(tempMetadata.issuedDate)
+                      : new Date()
+                  }
+                  configs={{
+                    dateFormat: "MMMM dd, yyyy",
+                  }}
+                  propsConfigs={{ triggerBtnProps: { w: "full" } }}
+                  onDateChange={(date) =>
+                    setTempMetadata({
+                      ...tempMetadata,
+                      issuedDate: date,
+                    })
+                  }
+                />
+              </FormControl>
+              <FormControl>
+                <FormLabel>Effectivity Date</FormLabel>
+                <SingleDatepicker
+                  name="effectivityDate"
+                  date={
+                    tempMetadata?.effectivityDate
+                      ? new Date(tempMetadata.effectivityDate)
+                      : new Date()
+                  }
+                  configs={{
+                    dateFormat: "MMMM dd, yyyy",
+                  }}
+                  propsConfigs={{ triggerBtnProps: { w: "full" } }}
+                  onDateChange={(date) =>
+                    setTempMetadata({
+                      ...tempMetadata,
+                      effectivityDate: date,
+                    })
+                  }
+                />
+              </FormControl>
+            </VStack>
+          </ModalBody>
+          <ModalFooter>
+            <Button variant="ghost" mr={3} onClick={handleCloseMetadataModal}>
+              Cancel
+            </Button>
+            <Button colorScheme="brandPrimary" onClick={handleSaveMetadata}>
+              Save
+            </Button>
+          </ModalFooter>
+        </ModalContent>
+      </Modal>
+    </>
   );
 };
 

@@ -13,10 +13,14 @@ import {
   Input,
   Textarea,
   VStack,
+  Alert,
+  AlertIcon,
+  AlertDescription,
 } from "@chakra-ui/react";
 import { toast } from "sonner";
 import { useDocuments } from "../../../context/_useContext";
 import FileTypeAsyncSelect from "../../FileTypeAsyncSelect";
+import { canEditDocument } from "../../../utils/qualityDocumentUtils";
 
 const EditDocumentModal = ({ isOpen, onClose, document }) => {
   const { updateDocument } = useDocuments();
@@ -39,6 +43,15 @@ const EditDocumentModal = ({ isOpen, onClose, document }) => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
+
+    // Check if document can be edited (quality document lifecycle check)
+    if (!canEditDocument(document)) {
+      toast.error("Edit Restricted", {
+        description: "This quality document is checked in and cannot be edited",
+        duration: 4000,
+      });
+      return;
+    }
 
     if (!formData.title.trim()) {
       toast.error("Validation Error", {
@@ -74,6 +87,8 @@ const EditDocumentModal = ({ isOpen, onClose, document }) => {
 
   if (!document) return null;
 
+  const documentCanBeEdited = canEditDocument(document);
+
   return (
     <Modal isOpen={isOpen} onClose={onClose} size="md">
       <ModalOverlay />
@@ -83,7 +98,17 @@ const EditDocumentModal = ({ isOpen, onClose, document }) => {
           <ModalCloseButton />
           <ModalBody>
             <VStack spacing={4}>
-              <FormControl isRequired>
+              {!documentCanBeEdited && (
+                <Alert status="warning">
+                  <AlertIcon />
+                  <AlertDescription>
+                    This quality document is checked in and cannot be edited.
+                    Please check it out first.
+                  </AlertDescription>
+                </Alert>
+              )}
+              
+              <FormControl isRequired isDisabled={!documentCanBeEdited}>
                 <FormLabel>Title</FormLabel>
                 <Input
                   value={formData.title}
@@ -96,7 +121,7 @@ const EditDocumentModal = ({ isOpen, onClose, document }) => {
                 />
               </FormControl>
 
-              <FormControl>
+              <FormControl isDisabled={!documentCanBeEdited}>
                 <FormLabel>Description</FormLabel>
                 <Textarea
                   value={formData.description}
@@ -120,6 +145,7 @@ const EditDocumentModal = ({ isOpen, onClose, document }) => {
                     setFormData((prev) => ({ ...prev, fileType }))
                   }
                   helperText="Type at least 2 characters to search for file types"
+                  isDisabled={!documentCanBeEdited}
                 />
               )}
             </VStack>
@@ -128,7 +154,11 @@ const EditDocumentModal = ({ isOpen, onClose, document }) => {
             <Button variant="ghost" mr={3} onClick={onClose}>
               Cancel
             </Button>
-            <Button colorScheme="brandPrimary" type="submit">
+            <Button 
+              colorScheme="brandPrimary" 
+              type="submit"
+              isDisabled={!documentCanBeEdited}
+            >
               Save Changes
             </Button>
           </ModalFooter>

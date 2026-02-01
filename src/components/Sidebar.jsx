@@ -32,6 +32,7 @@ import {
   FiBell,
   FiFolder,
   FiSearch,
+  FiClock,
 } from "react-icons/fi";
 import { HiOutlineUser, HiOutlineUserGroup } from "react-icons/hi2";
 import { IoCalendarOutline } from "react-icons/io5";
@@ -218,6 +219,18 @@ const Sidebar = () => {
           { path: "/documents", label: "All Documents" },
           { path: "/quality-documents", label: "Quality Documents" },
           // { path: "/documents?status=pending", label: "Pending Approval" },
+        ],
+      },
+      {
+        id: "request",
+        path: "/request",
+        label: "Requests",
+        icon: FiClock,
+        children: [
+          { path: "/request?tab=0", label: "My Requests" },
+          { path: "/request?tab=1", label: "For Approval" },
+          { path: "/request?tab=2", label: "For Publish" },
+          { path: "/request?tab=3", label: "Request History" },
         ],
       },
       // { id: "archive", path: "/archive", label: "Archive", icon: FiArchive },

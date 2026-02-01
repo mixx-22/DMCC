@@ -20,7 +20,6 @@ import {
   Badge,
   Heading,
   Avatar,
-  Icon,
   Menu,
   MenuButton,
   MenuList,
@@ -42,6 +41,7 @@ import {
   CheckboxGroup,
   FormControl,
   FormLabel,
+  Wrap,
 } from "@chakra-ui/react";
 import { Select as ChakraSelect } from "chakra-react-select";
 import { SingleDatepicker } from "chakra-dayzed-datepicker";
@@ -50,12 +50,6 @@ import {
   FiMove,
   FiEdit,
   FiMoreVertical,
-  FiCheckCircle,
-  FiClock,
-  FiXCircle,
-  FiUpload,
-  FiLock,
-  FiUnlock,
   FiSave,
 } from "react-icons/fi";
 import PageHeader from "../../components/PageHeader";
@@ -70,6 +64,8 @@ import PreviewButton from "../../components/Document/PreviewButton";
 import Timestamp from "../../components/Timestamp";
 import Breadcrumbs from "../../components/Document/Breadcrumbs";
 import PrivacyDisplay from "../../components/Document/PrivacyDisplay";
+import QualityDocumentBadges from "../../components/Document/QualityDocumentBadges";
+import QualityDocumentActions from "../../components/Document/QualityDocumentActions";
 import {
   useDocuments,
   usePermissions,
@@ -79,6 +75,7 @@ import { toast } from "sonner";
 import DocumentBadges from "./Badges";
 import moment from "moment";
 import Can from "../../components/Can";
+import { canEditDocument } from "../../utils/qualityDocumentUtils";
 
 const DocumentDetail = () => {
   const { id } = useParams();
@@ -192,6 +189,14 @@ const DocumentDetail = () => {
   };
 
   const isValid = isDocumentValid();
+
+  // Handler for quality document lifecycle updates
+  const handleQualityDocumentUpdate = (updatedDoc) => {
+    setDocument(updatedDoc);
+  };
+
+  // Check if document can be edited (considering quality document lifecycle)
+  const documentCanBeEdited = canEditDocument(document);
 
   const handleTitleBlur = async (newTitle) => {
     const trimmedTitle = newTitle.trim();
@@ -624,16 +629,19 @@ const DocumentDetail = () => {
                         fontWeight="bold"
                         color={isValid ? "inherit" : "red.500"}
                         w="full"
-                        isPreviewFocusable={true}
+                        isPreviewFocusable={documentCanBeEdited}
                         submitOnBlur={true}
                         selectAllOnFocus={false}
+                        isDisabled={!documentCanBeEdited}
                       >
                         <EditablePreview
                           w="full"
                           borderRadius="md"
                           _hover={{
-                            background: "gray.100",
-                            cursor: "pointer",
+                            background: documentCanBeEdited
+                              ? "gray.100"
+                              : undefined,
+                            cursor: documentCanBeEdited ? "pointer" : "default",
                           }}
                         />
                         <EditableTextarea
@@ -655,7 +663,12 @@ const DocumentDetail = () => {
                           }}
                         />
                       </Editable>
-                      <DocumentBadges data={document} {...{ isValid }} />
+                      <HStack spacing={2}>
+                        <Wrap>
+                          <DocumentBadges data={document} {...{ isValid }} />
+                          <QualityDocumentBadges document={document} />
+                        </Wrap>
+                      </HStack>
                     </VStack>
                   </HStack>
                 </Flex>
@@ -668,9 +681,10 @@ const DocumentDetail = () => {
                   defaultValue={document?.description || ""}
                   onSubmit={handleDescriptionBlur}
                   placeholder="Add a description..."
-                  isPreviewFocusable={true}
+                  isPreviewFocusable={documentCanBeEdited}
                   submitOnBlur={true}
                   selectAllOnFocus={false}
+                  isDisabled={!documentCanBeEdited}
                 >
                   <EditablePreview
                     py={2}
@@ -678,8 +692,8 @@ const DocumentDetail = () => {
                     borderRadius="md"
                     color={document?.description ? "gray.700" : "gray.400"}
                     _hover={{
-                      background: "gray.100",
-                      cursor: "pointer",
+                      background: documentCanBeEdited ? "gray.100" : undefined,
+                      cursor: documentCanBeEdited ? "pointer" : "default",
                     }}
                   />
                   <EditableTextarea
@@ -804,153 +818,6 @@ const DocumentDetail = () => {
               </CardBody>
             </Card>
 
-            {/* File/Folder Specific Details */}
-            {document?.type === "file" && (
-              <Card>
-                <CardBody>
-                  <VStack align="stretch" spacing={3}>
-                    <Stack w="full">
-                      <Text fontSize="sm" color="gray.600">
-                        File Type
-                      </Text>
-                      {document?.metadata?.fileType?.id ? (
-                        <>
-                          <HStack spacing={2}>
-                            <Badge
-                              colorScheme="purple"
-                              fontSize="sm"
-                              px={3}
-                              py={1}
-                              borderRadius="md"
-                            >
-                              {document.metadata.fileType.name ||
-                                "Unknowon File Type"}
-                            </Badge>
-                            <Button
-                              size="xs"
-                              variant="ghost"
-                              colorScheme="brandPrimary"
-                              onClick={onFileTypeOpen}
-                            >
-                              Change
-                            </Button>
-                          </HStack>
-                          {document?.metadata?.fileType?.isQualityDocument ? (
-                            <VStack align="stretch" spacing={2} mt={2} w="full">
-                              {document.metadata.documentNumber && (
-                                <HStack spacing={2}>
-                                  <Text
-                                    fontSize="xs"
-                                    color="gray.500"
-                                    minW="100px"
-                                  >
-                                    Doc Number:
-                                  </Text>
-                                  <Text fontSize="sm">
-                                    {document.metadata.documentNumber}
-                                  </Text>
-                                </HStack>
-                              )}
-                              {document.metadata.issuedDate && (
-                                <HStack spacing={2}>
-                                  <Text
-                                    fontSize="xs"
-                                    color="gray.500"
-                                    minW="100px"
-                                  >
-                                    Issued Date:
-                                  </Text>
-                                  <Text fontSize="sm">
-                                    {new Date(
-                                      document.metadata.issuedDate,
-                                    ).toLocaleDateString()}
-                                  </Text>
-                                </HStack>
-                              )}
-                              {document.metadata.effectivityDate && (
-                                <HStack spacing={2}>
-                                  <Text
-                                    fontSize="xs"
-                                    color="gray.500"
-                                    minW="100px"
-                                  >
-                                    Effectivity:
-                                  </Text>
-                                  <Text fontSize="sm">
-                                    {new Date(
-                                      document.metadata.effectivityDate,
-                                    ).toLocaleDateString()}
-                                  </Text>
-                                </HStack>
-                              )}
-                              <Button
-                                size="xs"
-                                variant="link"
-                                colorScheme="brandPrimary"
-                                onClick={onMetadataOpen}
-                                alignSelf="flex-start"
-                              >
-                                Update Metadata
-                              </Button>
-                            </VStack>
-                          ) : (
-                            <Button
-                              mt={2}
-                              w="full"
-                              size="xs"
-                              variant="outline"
-                              colorScheme="brandPrimary"
-                              onClick={onMetadataOpen}
-                            >
-                              Add Metadata
-                            </Button>
-                          )}
-                        </>
-                      ) : (
-                        <Button
-                          w="full"
-                          size="xs"
-                          variant="outline"
-                          colorScheme="brandSecondary"
-                          onClick={onFileTypeOpen}
-                        >
-                          Assign File Type
-                        </Button>
-                      )}
-                    </Stack>
-
-                    <Divider />
-
-                    {document?.metadata?.filename ? (
-                      <Box>
-                        <Text fontSize="sm" color="gray.600">
-                          Filename
-                        </Text>
-                        <Text fontSize="sm" wordBreak="break-all" mt={1}>
-                          {document.metadata.filename}
-                        </Text>
-                      </Box>
-                    ) : (
-                      <Text fontSize="sm" color="red.500">
-                        ⚠️ Missing filename metadata
-                      </Text>
-                    )}
-
-                    {document?.metadata?.size && (
-                      <Box>
-                        <Text fontSize="sm" color="gray.600">
-                          File Size
-                        </Text>
-                        <Text fontSize="sm" mt={2}>
-                          {formatFileSize(document.metadata.size)}
-                        </Text>
-                      </Box>
-                    )}
-                  </VStack>
-                </CardBody>
-              </Card>
-            )}
-
             {document?.type === "folder" && (
               <Card>
                 <CardBody>
@@ -1003,7 +870,7 @@ const DocumentDetail = () => {
             )}
           </Stack>
           <Stack spacing={4} flex={1}>
-            {/* Version Control & Approval Status Combined - Spans 4 columns, 2 rows */}
+            {/* Version Control - Quality Documents */}
             {["file"].includes(document?.type) &&
               document?.metadata?.fileType?.isQualityDocument && (
                 <Card>
@@ -1011,90 +878,175 @@ const DocumentDetail = () => {
                     <Text fontWeight="semibold" mb={4}>
                       Version Control
                     </Text>
-                    <VStack spacing={3} align="stretch" mb={6}>
-                      <HStack justify="space-between">
-                        <HStack spacing={2}>
-                          <Icon as={FiLock} color="gray.500" />
-                          <Text fontSize="sm">Status</Text>
-                        </HStack>
-                        <Badge colorScheme="green">Available</Badge>
-                      </HStack>
-                      <Button
-                        leftIcon={<FiUnlock />}
-                        size="sm"
-                        colorScheme="orange"
-                        variant="outline"
-                        w="full"
-                        onClick={() => {
-                          console.log("Check Out document:", {
-                            ...document,
-                            id,
-                          });
-                        }}
-                      >
-                        Check Out
-                      </Button>
-                      <Button
-                        leftIcon={<FiUpload />}
-                        size="sm"
-                        colorScheme="green"
-                        variant="outline"
-                        w="full"
-                        isDisabled
-                        onClick={() => {
-                          console.log("Check In document:", {
-                            ...document,
-                            id,
-                          });
-                        }}
-                      >
-                        Check In
-                      </Button>
-                    </VStack>
-
-                    <Divider mb={4} />
-
-                    <Text fontWeight="semibold" mb={4}>
-                      Approval Status
-                    </Text>
-                    <VStack spacing={3} align="stretch">
-                      <HStack justify="space-between">
-                        <HStack spacing={2}>
-                          <Icon as={FiClock} color="orange.500" />
-                          <Text fontSize="sm">Awaiting review</Text>
-                        </HStack>
-                        <Badge colorScheme="yellow">Pending</Badge>
-                      </HStack>
-                      <Button
-                        leftIcon={<FiCheckCircle />}
-                        size="sm"
-                        colorScheme="green"
-                        variant="outline"
-                        w="full"
-                        onClick={() => {
-                          // Pass full document object with ID from URL
-                          console.log("Approve document:", { ...document, id });
-                        }}
-                      >
-                        Approve
-                      </Button>
-                      <Button
-                        leftIcon={<FiXCircle />}
-                        size="sm"
-                        colorScheme="red"
-                        variant="outline"
-                        w="full"
-                        onClick={() => {
-                          // Pass full document object with ID from URL
-                          console.log("Reject document:", { ...document, id });
-                        }}
-                      >
-                        Reject
-                      </Button>
-                    </VStack>
+                    <QualityDocumentActions
+                      document={document}
+                      onUpdate={handleQualityDocumentUpdate}
+                    />
                   </CardBody>
                 </Card>
               )}
+
+            {/* File/Folder Specific Details */}
+            {document?.type === "file" && (
+              <Card>
+                <CardBody>
+                  <VStack align="stretch" spacing={3}>
+                    <Stack w="full">
+                      <Text fontSize="sm" color="gray.600">
+                        File Type
+                      </Text>
+                      {document?.metadata?.fileType?.id ? (
+                        <>
+                          <HStack spacing={2}>
+                            <Badge
+                              colorScheme="purple"
+                              fontSize="sm"
+                              px={3}
+                              py={1}
+                              borderRadius="md"
+                            >
+                              {document.metadata.fileType.name ||
+                                "Unknowon File Type"}
+                            </Badge>
+                            {((document.metadata.fileType.isQualityDocument &&
+                              document.metadata.checkedOut === 1) ||
+                              !document.metadata.fileType
+                                .isQualityDocument) && (
+                              <Button
+                                size="xs"
+                                variant="ghost"
+                                colorScheme="brandPrimary"
+                                onClick={onFileTypeOpen}
+                              >
+                                Change
+                              </Button>
+                            )}
+                          </HStack>
+                          {document?.metadata?.fileType?.isQualityDocument ? (
+                            <VStack align="stretch" spacing={2} mt={2} w="full">
+                              {document.metadata.documentNumber && (
+                                <HStack spacing={2}>
+                                  <Text
+                                    fontSize="xs"
+                                    color="gray.500"
+                                    minW="100px"
+                                  >
+                                    Doc Number:
+                                  </Text>
+                                  <Text fontSize="sm">
+                                    {document.metadata.documentNumber}
+                                  </Text>
+                                </HStack>
+                              )}
+                              {document.metadata.issuedDate && (
+                                <HStack spacing={2}>
+                                  <Text
+                                    fontSize="xs"
+                                    color="gray.500"
+                                    minW="100px"
+                                  >
+                                    Issued Date:
+                                  </Text>
+                                  <Text fontSize="sm">
+                                    {new Date(
+                                      document.metadata.issuedDate,
+                                    ).toLocaleDateString()}
+                                  </Text>
+                                </HStack>
+                              )}
+                              {document.metadata.effectivityDate && (
+                                <HStack spacing={2}>
+                                  <Text
+                                    fontSize="xs"
+                                    color="gray.500"
+                                    minW="100px"
+                                  >
+                                    Effectivity:
+                                  </Text>
+                                  <Text fontSize="sm">
+                                    {new Date(
+                                      document.metadata.effectivityDate,
+                                    ).toLocaleDateString()}
+                                  </Text>
+                                </HStack>
+                              )}
+                              {((document.metadata.fileType.isQualityDocument &&
+                                document.metadata.checkedOut === 1) ||
+                                !document.metadata.fileType
+                                  .isQualityDocument) && (
+                                <Button
+                                  size="xs"
+                                  variant="link"
+                                  colorScheme="brandPrimary"
+                                  onClick={onMetadataOpen}
+                                  alignSelf="flex-start"
+                                >
+                                  Update Metadata
+                                </Button>
+                              )}
+                            </VStack>
+                          ) : (
+                            ((document.metadata.fileType.isQualityDocument &&
+                              document.metadata.checkedOut === 1) ||
+                              !document.metadata.fileType
+                                .isQualityDocument) && (
+                              <Button
+                                mt={2}
+                                w="full"
+                                size="xs"
+                                variant="outline"
+                                colorScheme="brandPrimary"
+                                onClick={onMetadataOpen}
+                              >
+                                Add Metadata
+                              </Button>
+                            )
+                          )}
+                        </>
+                      ) : (
+                        <Button
+                          w="full"
+                          size="xs"
+                          variant="outline"
+                          colorScheme="brandSecondary"
+                          onClick={onFileTypeOpen}
+                        >
+                          Assign File Type
+                        </Button>
+                      )}
+                    </Stack>
+
+                    <Divider />
+
+                    {document?.metadata?.filename ? (
+                      <Box>
+                        <Text fontSize="sm" color="gray.600">
+                          Filename
+                        </Text>
+                        <Text fontSize="sm" wordBreak="break-all" mt={1}>
+                          {document.metadata.filename}
+                        </Text>
+                      </Box>
+                    ) : (
+                      <Text fontSize="sm" color="red.500">
+                        ⚠️ Missing filename metadata
+                      </Text>
+                    )}
+
+                    {document?.metadata?.size && (
+                      <Box>
+                        <Text fontSize="sm" color="gray.600">
+                          File Size
+                        </Text>
+                        <Text fontSize="sm" mt={2}>
+                          {formatFileSize(document.metadata.size)}
+                        </Text>
+                      </Box>
+                    )}
+                  </VStack>
+                </CardBody>
+              </Card>
+            )}
 
             {document?.type === "formTemplate" && (
               <Card>

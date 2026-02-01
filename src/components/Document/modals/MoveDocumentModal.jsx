@@ -180,7 +180,6 @@ const MoveDocumentModal = ({ isOpen, onClose, document }) => {
     async (parentId) => {
       const folderKey = parentId === null ? "root" : parentId;
       if (lastFetchedFolderRef.current === folderKey) {
-        console.log(`Skipping duplicate request for folder: ${folderKey}`);
         return;
       }
 

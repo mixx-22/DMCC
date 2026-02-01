@@ -138,8 +138,9 @@ export const useFileType = () => {
 export const useOrganizations = () => {
   const context = useContext(OrganizationsContext);
   if (!context) {
-    throw new Error("useOrganizations must be used within OrganizationsProvider");
+    throw new Error(
+      "useOrganizations must be used within OrganizationsProvider",
+    );
   }
   return context;
 };
-
