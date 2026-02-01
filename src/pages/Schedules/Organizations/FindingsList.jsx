@@ -832,6 +832,7 @@ const FindingsList = ({
   onEdit,
   onDelete,
   onSaveEdit,
+  isScheduleOngoing,
 }) => {
   if (!findings || findings.length === 0) {
     return null;
@@ -851,6 +852,7 @@ const FindingsList = ({
           onEdit={onEdit}
           onDelete={onDelete}
           onSaveEdit={onSaveEdit}
+          {...{ isScheduleOngoing }}
         />
       ))}
     </VStack>
