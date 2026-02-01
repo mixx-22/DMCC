@@ -49,6 +49,7 @@ import {
   Input,
   IconButton,
   InputLeftElement,
+  TableContainer,
 } from "@chakra-ui/react";
 import { motion } from "framer-motion"; // v10.16.16 - Used for smooth animations and transitions
 import { InfoIcon, ChevronDownIcon } from "@chakra-ui/icons";
@@ -70,16 +71,16 @@ const MotionGridItem = motion(GridItem);
 // Animation variants
 const cardVariants = {
   hidden: { opacity: 0, y: 20 },
-  visible: { 
-    opacity: 1, 
+  visible: {
+    opacity: 1,
     y: 0,
-    transition: { duration: 0.4, ease: "easeOut" }
+    transition: { duration: 0.4, ease: "easeOut" },
   },
   hover: {
     y: -4,
     boxShadow: "0 12px 24px rgba(0, 90, 238, 0.15)",
-    transition: { duration: 0.2 }
-  }
+    transition: { duration: 0.2 },
+  },
 };
 
 const staggerContainer = {
@@ -88,9 +89,9 @@ const staggerContainer = {
     opacity: 1,
     transition: {
       staggerChildren: 0.1,
-      delayChildren: 0.1
-    }
-  }
+      delayChildren: 0.1,
+    },
+  },
 };
 
 // Reusable KPI Card Component with brand colors and animations
@@ -108,7 +109,7 @@ const KpiCard = ({
   const cardBg = useColorModeValue("white", "gray.800");
   const textColor = useColorModeValue("gray.700", "gray.100");
   const labelColor = useColorModeValue("gray.600", "gray.300");
-  
+
   // Default gradient colors based on color scheme
   // Maps to colors defined in theme configuration (src/theme/colors.tsx)
   const defaultGradients = {
@@ -118,10 +119,11 @@ const KpiCard = ({
     warning: { from: "#F59E0B", to: "#FBBF24" },
     error: { from: "#F43F5E", to: "#FDA4AF" },
     purple: { from: "#805AD5", to: "#B794F4" },
-    blue: { from: "#3182CE", to: "#63B3ED" }
+    blue: { from: "#3182CE", to: "#63B3ED" },
   };
 
-  const gradient = defaultGradients[colorScheme] || defaultGradients.brandPrimary;
+  const gradient =
+    defaultGradients[colorScheme] || defaultGradients.brandPrimary;
   const fromColor = gradientFrom || gradient.from;
   const toColor = gradientTo || gradient.to;
 
@@ -136,6 +138,7 @@ const KpiCard = ({
       whileHover="hover"
       initial="hidden"
       animate="visible"
+      h="full"
     >
       {/* Gradient accent bar */}
       <Box
@@ -146,7 +149,7 @@ const KpiCard = ({
         h="4px"
         bgGradient={`linear(to-r, ${fromColor}, ${toColor})`}
       />
-      
+
       <CardBody pt={6}>
         <VStack align="stretch" spacing={3}>
           <HStack justify="space-between" align="start">
@@ -167,7 +170,7 @@ const KpiCard = ({
               </Tooltip>
             )}
           </HStack>
-          
+
           <HStack align="baseline" spacing={1}>
             <Text
               color={textColor}
@@ -183,7 +186,7 @@ const KpiCard = ({
               </Text>
             )}
           </HStack>
-          
+
           {helpText && (
             <Text fontSize="xs" color={labelColor} noOfLines={2}>
               {helpText}
@@ -199,7 +202,7 @@ const KpiCard = ({
 const SectionHeader = ({ title, description, icon }) => {
   const titleColor = useColorModeValue("gray.800", "white");
   const descColor = useColorModeValue("gray.600", "gray.300");
-  
+
   return (
     <MotionBox
       variants={cardVariants}
@@ -209,8 +212,8 @@ const SectionHeader = ({ title, description, icon }) => {
     >
       <HStack spacing={3} mb={2}>
         {icon && <Icon as={icon} boxSize={6} color="brandPrimary.500" />}
-        <Heading 
-          size="lg" 
+        <Heading
+          size="lg"
           color={titleColor}
           fontWeight="700"
           letterSpacing="tight"
@@ -231,22 +234,20 @@ const SectionHeader = ({ title, description, icon }) => {
 const ProgressWithColor = ({ value, label, description }) => {
   const labelColor = useColorModeValue("gray.700", "gray.200");
   const descColor = useColorModeValue("gray.600", "gray.400");
-  
+
   // Determine color based on value
   const getColorScheme = () => {
-    if (value >= 90) return { scheme: "success", from: "#10B981", to: "#6EE7B7" };
-    if (value >= 70) return { scheme: "warning", from: "#F59E0B", to: "#FBBF24" };
+    if (value >= 90)
+      return { scheme: "success", from: "#10B981", to: "#6EE7B7" };
+    if (value >= 70)
+      return { scheme: "warning", from: "#F59E0B", to: "#FBBF24" };
     return { scheme: "error", from: "#F43F5E", to: "#FDA4AF" };
   };
 
   const { scheme, from, to } = getColorScheme();
 
   return (
-    <MotionBox
-      variants={cardVariants}
-      initial="hidden"
-      animate="visible"
-    >
+    <MotionBox variants={cardVariants} initial="hidden" animate="visible">
       <HStack justify="space-between" mb={3}>
         <VStack align="start" spacing={0} flex="1">
           <Text fontSize="sm" fontWeight="600" color={labelColor}>
@@ -270,7 +271,12 @@ const ProgressWithColor = ({ value, label, description }) => {
           {value.toFixed(1)}%
         </Badge>
       </HStack>
-      <Box position="relative" overflow="hidden" borderRadius="full" bg={useColorModeValue("gray.100", "gray.700")}>
+      <Box
+        position="relative"
+        overflow="hidden"
+        borderRadius="full"
+        bg={useColorModeValue("gray.100", "gray.700")}
+      >
         <MotionBox
           h="12px"
           bgGradient={`linear(to-r, ${from}, ${to})`}
@@ -302,7 +308,7 @@ const AuditKpiDashboard = () => {
   const [loadingSchedules, setLoadingSchedules] = useState(false);
   const [teamsMap, setTeamsMap] = useState({}); // Map of team IDs to team names
   const [objectivesMap, setObjectivesMap] = useState({}); // Map of objective titles to descriptions
-  
+
   // Header states (matching main dashboard)
   const [greeting, setGreeting] = useState("");
   const [searchKeyword, setSearchKeyword] = useState("");
@@ -312,9 +318,9 @@ const AuditKpiDashboard = () => {
   const tableHeaderBg = useColorModeValue("gray.50", "gray.600");
   const greetingColor = useColorModeValue("gray.500", "gray.300");
   const dateColor = useColorModeValue("gray.400", "gray.400");
-  
+
   const currentDate = format(new Date(), "EEEE, MMMM d");
-  
+
   // Route constants
   const AUDIT_SCHEDULES_ROUTE = "/audit-schedules";
 
@@ -334,11 +340,13 @@ const AuditKpiDashboard = () => {
     );
     setGreeting(currentGreeting?.text || "Hello");
   }, []);
-  
+
   // Handle search
   const handleSearch = () => {
     if (searchKeyword.trim()) {
-      navigate(`${AUDIT_SCHEDULES_ROUTE}?keyword=${encodeURIComponent(searchKeyword.trim())}`);
+      navigate(
+        `${AUDIT_SCHEDULES_ROUTE}?keyword=${encodeURIComponent(searchKeyword.trim())}`,
+      );
     }
   };
 
@@ -347,13 +355,13 @@ const AuditKpiDashboard = () => {
       handleSearch();
     }
   };
-  
+
   // Get selected year name for display
   const selectedYearDisplay = useMemo(
     () => selectedYear || "Select Year",
-    [selectedYear]
+    [selectedYear],
   );
-  
+
   // Get selected schedule name for display
   const selectedScheduleDisplay = useMemo(() => {
     if (!selectedSchedule) return "Select Schedule";
@@ -704,8 +712,8 @@ const AuditKpiDashboard = () => {
         >
           <VStack spacing={6}>
             <Box position="relative">
-              <Spinner 
-                size="xl" 
+              <Spinner
+                size="xl"
                 thickness="4px"
                 speed="0.8s"
                 color="brandPrimary.500"
@@ -716,8 +724,8 @@ const AuditKpiDashboard = () => {
                 left="50%"
                 transform="translate(-50%, -50%)"
               >
-                <Spinner 
-                  size="lg" 
+                <Spinner
+                  size="lg"
                   thickness="3px"
                   speed="1.2s"
                   color="brandSecondary.500"
@@ -725,15 +733,15 @@ const AuditKpiDashboard = () => {
               </Box>
             </Box>
             <VStack spacing={2}>
-              <Text 
-                color={useColorModeValue("gray.700", "gray.200")} 
+              <Text
+                color={useColorModeValue("gray.700", "gray.200")}
                 fontSize="lg"
                 fontWeight="600"
               >
                 Loading KPI Dashboard
               </Text>
-              <Text 
-                color={useColorModeValue("gray.500", "gray.400")} 
+              <Text
+                color={useColorModeValue("gray.500", "gray.400")}
                 fontSize="sm"
               >
                 Fetching audit performance data...
@@ -754,8 +762,8 @@ const AuditKpiDashboard = () => {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4 }}
         >
-          <Alert 
-            status="error" 
+          <Alert
+            status="error"
             borderRadius="xl"
             flexDirection="column"
             alignItems="center"
@@ -786,8 +794,8 @@ const AuditKpiDashboard = () => {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.4 }}
         >
-          <Alert 
-            status="info" 
+          <Alert
+            status="info"
             borderRadius="xl"
             flexDirection="column"
             alignItems="center"
@@ -802,7 +810,8 @@ const AuditKpiDashboard = () => {
               No Data Available
             </AlertTitle>
             <AlertDescription fontSize="md" maxW="md">
-              No KPI data found for this audit schedule. Please select a different year or schedule.
+              No KPI data found for this audit schedule. Please select a
+              different year or schedule.
             </AlertDescription>
           </Alert>
         </MotionBox>
@@ -857,7 +866,7 @@ const AuditKpiDashboard = () => {
                   borderRightRadius={0}
                   isDisabled={loadingYears}
                 >
-                  {selectedYearDisplay}
+                  Year: {selectedYearDisplay}
                 </MenuButton>
                 <MenuList>
                   {years.length === 0 ? (
@@ -880,7 +889,11 @@ const AuditKpiDashboard = () => {
                 <MenuButton
                   as={Button}
                   rightIcon={<ChevronDownIcon />}
-                  borderRadius={0}
+                  borderRadius={
+                    selectedScheduleDisplay !== kpiData?.metadata?.scheduleTitle
+                      ? 0
+                      : "md"
+                  }
                   isDisabled={loadingSchedules || !selectedYear}
                 >
                   {selectedScheduleDisplay}
@@ -909,9 +922,11 @@ const AuditKpiDashboard = () => {
               </Menu>
 
               {/* Stats Display */}
-              <Button borderLeftRadius={0}>
-                {kpiData?.metadata?.scheduleTitle || "Audit KPIs"}
-              </Button>
+              {selectedScheduleDisplay !== kpiData?.metadata?.scheduleTitle && (
+                <Button borderLeftRadius={0}>
+                  {kpiData?.metadata?.scheduleTitle || "Audit KPIs"}
+                </Button>
+              )}
             </ButtonGroup>
           </Box>
 
@@ -941,20 +956,20 @@ const AuditKpiDashboard = () => {
       </MotionBox>
 
       {/* Main KPI Grid - Bento Layout */}
-      <MotionBox
-        variants={staggerContainer}
-        initial="hidden"
-        animate="visible"
-      >
+      <MotionBox variants={staggerContainer} initial="hidden" animate="visible">
         {/* KPI Summary Section - Bento Grid */}
         <SectionHeader
           title="Performance Metrics"
           description="Key performance indicators tracking audit completion and execution rates"
         />
-        
+
         {/* Asymmetric Bento Grid */}
         <Grid
-          templateColumns={{ base: "1fr", md: "repeat(2, 1fr)", lg: "repeat(4, 1fr)" }}
+          templateColumns={{
+            base: "1fr",
+            md: "repeat(2, 1fr)",
+            lg: "repeat(4, 1fr)",
+          }}
           gap={6}
           mb={8}
         >
@@ -965,7 +980,9 @@ const AuditKpiDashboard = () => {
               value={kpiData.auditCompletionRate?.toFixed(1) || 0}
               unit="%"
               helpText="Audits completed vs planned"
-              colorScheme={kpiData.auditCompletionRate >= 90 ? "success" : "warning"}
+              colorScheme={
+                kpiData.auditCompletionRate >= 90 ? "success" : "warning"
+              }
               description="Percentage of scheduled audits that have been completed"
             />
           </MotionGridItem>
@@ -977,7 +994,9 @@ const AuditKpiDashboard = () => {
               value={kpiData.auditExecutionRate?.toFixed(1) || 0}
               unit="%"
               helpText="Audits executed vs scheduled"
-              colorScheme={kpiData.auditExecutionRate >= 90 ? "success" : "warning"}
+              colorScheme={
+                kpiData.auditExecutionRate >= 90 ? "success" : "warning"
+              }
               description="Percentage of audits that have been executed"
             />
           </MotionGridItem>
@@ -1011,7 +1030,7 @@ const AuditKpiDashboard = () => {
           title="Non-Conformity Analysis"
           description="Detailed breakdown of non-conformity rates and their impact on overall quality"
         />
-        
+
         <Grid
           templateColumns={{ base: "1fr", lg: "repeat(3, 1fr)" }}
           gap={6}
@@ -1020,6 +1039,7 @@ const AuditKpiDashboard = () => {
           {/* NC Rate - Takes 1 column */}
           <MotionGridItem colSpan={{ base: 1, lg: 1 }} variants={cardVariants}>
             <KpiCard
+              h="full"
               label="Non-Conformity Rate"
               value={kpiData.nonConformityRate?.toFixed(1) || 0}
               unit="%"
@@ -1036,20 +1056,26 @@ const AuditKpiDashboard = () => {
               borderRadius="xl"
               boxShadow="md"
               overflow="hidden"
-              whileHover={{ y: -4, boxShadow: "0 12px 24px rgba(0, 90, 238, 0.15)" }}
+              whileHover={{
+                y: -4,
+                boxShadow: "0 12px 24px rgba(0, 90, 238, 0.15)",
+              }}
               transition={{ duration: 0.2 }}
             >
-              <Box
-                bgGradient="linear(to-r, error.500, error.400)"
-                h="4px"
-              />
+              <Box bgGradient="linear(to-r, error.500, error.400)" h="4px" />
               <CardHeader pb={2}>
                 <HStack justify="space-between">
                   <VStack align="start" spacing={0}>
-                    <Heading size="sm" color={useColorModeValue("gray.700", "gray.100")}>
+                    <Heading
+                      size="sm"
+                      color={useColorModeValue("gray.700", "gray.100")}
+                    >
                       Findings Breakdown
                     </Heading>
-                    <Text fontSize="xs" color={useColorModeValue("gray.600", "gray.400")}>
+                    <Text
+                      fontSize="xs"
+                      color={useColorModeValue("gray.600", "gray.400")}
+                    >
                       Distribution of major and minor non-conformities
                     </Text>
                   </VStack>
@@ -1058,7 +1084,12 @@ const AuditKpiDashboard = () => {
               <CardBody pt={2}>
                 <HStack spacing={6} justify="space-around">
                   <VStack spacing={2}>
-                    <Text fontSize="xs" color={useColorModeValue("gray.600", "gray.400")} fontWeight="600" textTransform="uppercase">
+                    <Text
+                      fontSize="xs"
+                      color={useColorModeValue("gray.600", "gray.400")}
+                      fontWeight="600"
+                      textTransform="uppercase"
+                    >
                       Major NC
                     </Text>
                     <Box
@@ -1074,11 +1105,16 @@ const AuditKpiDashboard = () => {
                       {kpiData.majorVsMinorCount?.MAJOR_NC || 0}
                     </Box>
                   </VStack>
-                  
+
                   <Divider orientation="vertical" h="80px" />
-                  
+
                   <VStack spacing={2}>
-                    <Text fontSize="xs" color={useColorModeValue("gray.600", "gray.400")} fontWeight="600" textTransform="uppercase">
+                    <Text
+                      fontSize="xs"
+                      color={useColorModeValue("gray.600", "gray.400")}
+                      fontWeight="600"
+                      textTransform="uppercase"
+                    >
                       Minor NC
                     </Text>
                     <Box
@@ -1096,9 +1132,14 @@ const AuditKpiDashboard = () => {
                   </VStack>
 
                   <Divider orientation="vertical" h="80px" />
-                  
+
                   <VStack spacing={2}>
-                    <Text fontSize="xs" color={useColorModeValue("gray.600", "gray.400")} fontWeight="600" textTransform="uppercase">
+                    <Text
+                      fontSize="xs"
+                      color={useColorModeValue("gray.600", "gray.400")}
+                      fontWeight="600"
+                      textTransform="uppercase"
+                    >
                       Observations
                     </Text>
                     <Box
@@ -1144,7 +1185,7 @@ const AuditKpiDashboard = () => {
           title="Findings by ISO Clause"
           description="Detailed breakdown of findings mapped to specific ISO standard clauses"
         />
-        
+
         <MotionCard
           variants={cardVariants}
           bg={useColorModeValue("white", "gray.800")}
@@ -1153,71 +1194,100 @@ const AuditKpiDashboard = () => {
           overflow="hidden"
           mb={8}
         >
-          <Box bgGradient="linear(to-r, brandPrimary.500, purple.500)" h="3px" />
+          <Box
+            bgGradient="linear(to-r, brandPrimary.500, purple.500)"
+            h="3px"
+          />
           <CardBody p={0}>
-            {kpiData.findingsPerClause && kpiData.findingsPerClause.length > 0 ? (
+            {kpiData.findingsPerClause &&
+            kpiData.findingsPerClause.length > 0 ? (
               <Box overflowX="auto">
-                <Table variant="simple">
-                  <Thead bg={useColorModeValue("gray.50", "gray.700")}>
-                    <Tr>
-                      <Th fontWeight="700" textTransform="uppercase" fontSize="xs" letterSpacing="wider">
-                        ISO Clause
-                      </Th>
-                      <Th fontWeight="700" textTransform="uppercase" fontSize="xs" letterSpacing="wider">
-                        Description
-                      </Th>
-                      <Th 
-                        isNumeric 
-                        fontWeight="700" 
-                        textTransform="uppercase" 
-                        fontSize="xs" 
-                        letterSpacing="wider"
-                      >
-                        Count
-                      </Th>
-                    </Tr>
-                  </Thead>
-                  <Tbody>
-                    {kpiData.findingsPerClause.map((item, index) => (
-                      <Tr
-                        key={index}
-                        _hover={{
-                          bg: useColorModeValue("gray.50", "gray.700"),
-                        }}
-                        transition="background 0.2s"
-                      >
-                        <Td fontWeight="600" color={useColorModeValue("brandPrimary.600", "brandPrimary.300")}>
-                          {item.clause || "N/A"}
-                        </Td>
-                        <Td 
-                          color={useColorModeValue("gray.600", "gray.300")}
-                          maxW="400px"
-                          isTruncated
-                          title={item.description}
+                <TableContainer>
+                  <Table variant="simple">
+                    <Thead bg={useColorModeValue("gray.50", "gray.700")}>
+                      <Tr>
+                        <Th
+                          fontWeight="700"
+                          textTransform="uppercase"
+                          fontSize="xs"
+                          letterSpacing="wider"
                         >
-                          {item.description || "N/A"}
-                        </Td>
-                        <Td isNumeric>
-                          <Badge
-                            bgGradient={item.count > HIGH_FINDING_COUNT_THRESHOLD ? "linear(to-r, error.500, error.600)" : "linear(to-r, brandPrimary.500, brandPrimary.600)"}
-                            color="white"
-                            fontSize="md"
-                            px={3}
-                            py={1}
-                            borderRadius="full"
-                            fontWeight="bold"
-                          >
-                            {item.count}
-                          </Badge>
-                        </Td>
+                          ISO Clause
+                        </Th>
+                        <Th
+                          fontWeight="700"
+                          textTransform="uppercase"
+                          fontSize="xs"
+                          letterSpacing="wider"
+                        >
+                          Description
+                        </Th>
+                        <Th
+                          isNumeric
+                          fontWeight="700"
+                          textTransform="uppercase"
+                          fontSize="xs"
+                          letterSpacing="wider"
+                        >
+                          Count
+                        </Th>
                       </Tr>
-                    ))}
-                  </Tbody>
-                </Table>
+                    </Thead>
+                    <Tbody>
+                      {kpiData.findingsPerClause.map((item, index) => (
+                        <Tr
+                          key={index}
+                          _hover={{
+                            bg: useColorModeValue("gray.50", "gray.700"),
+                          }}
+                          transition="background 0.2s"
+                        >
+                          <Td
+                            fontWeight="600"
+                            color={useColorModeValue(
+                              "brandPrimary.600",
+                              "brandPrimary.300",
+                            )}
+                          >
+                            {item.clause || "N/A"}
+                          </Td>
+                          <Td
+                            color={useColorModeValue("gray.600", "gray.300")}
+                            maxW="400px"
+                            isTruncated
+                            title={item.description}
+                          >
+                            {item.description || "N/A"}
+                          </Td>
+                          <Td isNumeric>
+                            <Badge
+                              bgGradient={
+                                item.count > HIGH_FINDING_COUNT_THRESHOLD
+                                  ? "linear(to-r, error.500, error.600)"
+                                  : "linear(to-r, brandPrimary.500, brandPrimary.600)"
+                              }
+                              color="white"
+                              fontSize="md"
+                              px={3}
+                              py={1}
+                              borderRadius="full"
+                              fontWeight="bold"
+                            >
+                              {item.count}
+                            </Badge>
+                          </Td>
+                        </Tr>
+                      ))}
+                    </Tbody>
+                  </Table>
+                </TableContainer>
               </Box>
             ) : (
               <Box p={12} textAlign="center">
-                <Text color={useColorModeValue("gray.500", "gray.400")} fontSize="lg">
+                <Text
+                  color={useColorModeValue("gray.500", "gray.400")}
+                  fontSize="lg"
+                >
                   No findings recorded for selected schedules
                 </Text>
               </Box>
@@ -1232,7 +1302,7 @@ const AuditKpiDashboard = () => {
               title="Team Performance Metrics"
               description="Non-conformities and findings breakdown by team"
             />
-            
+
             <MotionCard
               variants={cardVariants}
               bg={useColorModeValue("white", "gray.800")}
@@ -1257,7 +1327,7 @@ const AuditKpiDashboard = () => {
           title="Team Contribution Analysis"
           description="Each team's contribution to the overall non-conformity percentage"
         />
-        
+
         <MotionCard
           variants={cardVariants}
           bg={useColorModeValue("white", "gray.800")}
