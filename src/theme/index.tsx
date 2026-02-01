@@ -12,11 +12,14 @@ import { avatarTheme } from "./avatar";
 import { inputTheme } from "./input";
 import { buttonTheme } from "./button";
 import { tabsTheme } from "./tabs";
+import { backgroundGradients, getDashboardBackground } from "./backgrounds";
 
 export const transition = {
   smooth: "200ms ease-out",
   fun: "all 600ms cubic-bezier(0.68, -0.55, 0.265, 1.55)",
 };
+
+export { backgroundGradients, getDashboardBackground };
 
 export const theme = extendTheme({
   colors,

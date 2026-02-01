@@ -36,6 +36,7 @@ import {
 import apiService from "../services/api";
 import NcMetricsBarChart from "../components/NcMetricsBarChart";
 import NcContributionBarChart from "../components/NcContributionBarChart";
+import { getDashboardBackground } from "../theme";
 
 // Reusable KPI Card Component
 const KpiCard = ({
@@ -135,6 +136,11 @@ const AuditKpiDashboard = () => {
   const cardBg = useColorModeValue("white", "gray.700");
   const borderColor = useColorModeValue("gray.200", "gray.600");
   const tableHeaderBg = useColorModeValue("gray.50", "gray.600");
+  const tableRowHoverBg = useColorModeValue("gray.50", "gray.600");
+
+  // Get background gradient configuration
+  const isDarkMode = useColorModeValue(false, true);
+  const bgConfig = getDashboardBackground("auditDashboard", isDarkMode);
 
   // Fetch teams data to map IDs to names and objectives
   useEffect(() => {
@@ -515,6 +521,14 @@ const AuditKpiDashboard = () => {
 
   return (
     <Box p={8}>
+      {/* Gradient Background Layer */}
+      <Box sx={bgConfig.container}>
+        <Box sx={bgConfig.base} />
+        <Box sx={bgConfig.blob1} />
+        <Box sx={bgConfig.blob2} />
+        <Box sx={bgConfig.blob3} />
+      </Box>
+
       {/* Page Header */}
       <VStack align="stretch" spacing={6}>
         <Box>
@@ -750,7 +764,7 @@ const AuditKpiDashboard = () => {
                         <Tr
                           key={index}
                           _hover={{
-                            bg: useColorModeValue("gray.50", "gray.600"),
+                            bg: tableRowHoverBg,
                           }}
                         >
                           <Td fontWeight="medium">{item.clause || "N/A"}</Td>
