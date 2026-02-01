@@ -416,6 +416,28 @@ const Request = () => {
     }
   };
 
+  // Handle modal close and refresh current tab
+  const handleModalClose = () => {
+    onQualityDocumentModalClose();
+    // Refresh the current active tab
+    switch (activeTab) {
+      case 0:
+        fetchMyRequests(myRequestsPage);
+        break;
+      case 1:
+        fetchForApproval(forApprovalPage);
+        break;
+      case 2:
+        fetchForPublish(forPublishPage);
+        break;
+      case 3:
+        fetchRequestHistory(requestHistoryPage);
+        break;
+      default:
+        break;
+    }
+  };
+
   // Render tab content helper
   const renderTabContent = (
     documents,
@@ -535,7 +557,7 @@ const Request = () => {
 
       <QualityDocumentUploadModal
         isOpen={isQualityDocumentModalOpen}
-        onClose={onQualityDocumentModalClose}
+        onClose={handleModalClose}
         parentId={null}
         path={`/request`}
       />
