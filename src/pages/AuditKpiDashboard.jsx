@@ -1148,8 +1148,8 @@ const AuditKpiDashboard = () => {
           </MotionGridItem>
         </Grid>
 
-        {/* Corrective Action Closure Rate */}
-        <MotionCard
+        {/* Corrective Action Closure Rate - Hidden */}
+        {/* <MotionCard
           variants={cardVariants}
           bg={whiteBg}
           borderRadius="xl"
@@ -1166,7 +1166,7 @@ const AuditKpiDashboard = () => {
               progressBarBg={progressBarBg}
             />
           </CardBody>
-        </MotionCard>
+        </MotionCard> */}
 
         {/* Clause-Based Findings Table */}
         <SectionHeader
