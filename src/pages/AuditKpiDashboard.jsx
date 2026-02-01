@@ -231,7 +231,7 @@ const SectionHeader = ({ title, description, icon }) => {
 };
 
 // Progress Bar with Color Logic and modern styling
-const ProgressWithColor = ({ value, label, description }) => {
+const ProgressWithColor = ({ value, label, description, progressBarBg }) => {
   const labelColor = useColorModeValue("gray.700", "gray.200");
   const descColor = useColorModeValue("gray.600", "gray.400");
 
@@ -275,7 +275,7 @@ const ProgressWithColor = ({ value, label, description }) => {
         position="relative"
         overflow="hidden"
         borderRadius="full"
-        bg={useColorModeValue("gray.100", "gray.700")}
+        bg={progressBarBg}
       >
         <MotionBox
           h="12px"
@@ -313,11 +313,21 @@ const AuditKpiDashboard = () => {
   const [greeting, setGreeting] = useState("");
   const [searchKeyword, setSearchKeyword] = useState("");
 
+  // Color mode values - extracted to avoid inline usage
   const cardBg = useColorModeValue("white", "gray.700");
   const borderColor = useColorModeValue("gray.200", "gray.600");
   const tableHeaderBg = useColorModeValue("gray.50", "gray.600");
   const greetingColor = useColorModeValue("gray.500", "gray.300");
   const dateColor = useColorModeValue("gray.400", "gray.400");
+  const whiteBg = useColorModeValue("white", "gray.800");
+  const progressBarBg = useColorModeValue("gray.100", "gray.700");
+  const textPrimaryColor = useColorModeValue("gray.700", "gray.200");
+  const textSecondaryColor = useColorModeValue("gray.500", "gray.400");
+  const textTertiaryColor = useColorModeValue("gray.600", "gray.400");
+  const headingColor = useColorModeValue("gray.700", "gray.100");
+  const tableHoverBg = useColorModeValue("gray.50", "gray.700");
+  const tableTextColor = useColorModeValue("gray.600", "gray.300");
+  const clauseColor = useColorModeValue("brandPrimary.600", "brandPrimary.300");
 
   const currentDate = format(new Date(), "EEEE, MMMM d");
 
@@ -734,14 +744,14 @@ const AuditKpiDashboard = () => {
             </Box>
             <VStack spacing={2}>
               <Text
-                color={useColorModeValue("gray.700", "gray.200")}
+                color={textPrimaryColor}
                 fontSize="lg"
                 fontWeight="600"
               >
                 Loading KPI Dashboard
               </Text>
               <Text
-                color={useColorModeValue("gray.500", "gray.400")}
+                color={textSecondaryColor}
                 fontSize="sm"
               >
                 Fetching audit performance data...
@@ -1052,7 +1062,7 @@ const AuditKpiDashboard = () => {
           {/* Major/Minor NC Breakdown - Takes 2 columns */}
           <MotionGridItem colSpan={{ base: 1, lg: 2 }} variants={cardVariants}>
             <MotionCard
-              bg={useColorModeValue("white", "gray.800")}
+              bg={whiteBg}
               borderRadius="xl"
               boxShadow="md"
               overflow="hidden"
@@ -1068,13 +1078,13 @@ const AuditKpiDashboard = () => {
                   <VStack align="start" spacing={0}>
                     <Heading
                       size="sm"
-                      color={useColorModeValue("gray.700", "gray.100")}
+                      color={headingColor}
                     >
                       Findings Breakdown
                     </Heading>
                     <Text
                       fontSize="xs"
-                      color={useColorModeValue("gray.600", "gray.400")}
+                      color={textTertiaryColor}
                     >
                       Distribution of major and minor non-conformities
                     </Text>
@@ -1086,7 +1096,7 @@ const AuditKpiDashboard = () => {
                   <VStack spacing={2}>
                     <Text
                       fontSize="xs"
-                      color={useColorModeValue("gray.600", "gray.400")}
+                      color={textTertiaryColor}
                       fontWeight="600"
                       textTransform="uppercase"
                     >
@@ -1111,7 +1121,7 @@ const AuditKpiDashboard = () => {
                   <VStack spacing={2}>
                     <Text
                       fontSize="xs"
-                      color={useColorModeValue("gray.600", "gray.400")}
+                      color={textTertiaryColor}
                       fontWeight="600"
                       textTransform="uppercase"
                     >
@@ -1136,7 +1146,7 @@ const AuditKpiDashboard = () => {
                   <VStack spacing={2}>
                     <Text
                       fontSize="xs"
-                      color={useColorModeValue("gray.600", "gray.400")}
+                      color={textTertiaryColor}
                       fontWeight="600"
                       textTransform="uppercase"
                     >
@@ -1164,7 +1174,7 @@ const AuditKpiDashboard = () => {
         {/* Corrective Action Closure Rate */}
         <MotionCard
           variants={cardVariants}
-          bg={useColorModeValue("white", "gray.800")}
+          bg={whiteBg}
           borderRadius="xl"
           boxShadow="md"
           overflow="hidden"
@@ -1176,6 +1186,7 @@ const AuditKpiDashboard = () => {
               value={kpiData.correctiveActionClosureRate || 0}
               label="Corrective Action Closure Rate"
               description="Percentage of corrective actions that have been completed and closed"
+              progressBarBg={progressBarBg}
             />
           </CardBody>
         </MotionCard>
@@ -1188,7 +1199,7 @@ const AuditKpiDashboard = () => {
 
         <MotionCard
           variants={cardVariants}
-          bg={useColorModeValue("white", "gray.800")}
+          bg={whiteBg}
           borderRadius="xl"
           boxShadow="md"
           overflow="hidden"
@@ -1201,91 +1212,86 @@ const AuditKpiDashboard = () => {
           <CardBody p={0}>
             {kpiData.findingsPerClause &&
             kpiData.findingsPerClause.length > 0 ? (
-              <Box overflowX="auto">
-                <TableContainer>
-                  <Table variant="simple">
-                    <Thead bg={useColorModeValue("gray.50", "gray.700")}>
-                      <Tr>
-                        <Th
-                          fontWeight="700"
-                          textTransform="uppercase"
-                          fontSize="xs"
-                          letterSpacing="wider"
+              <TableContainer maxH="500px" overflowY="auto">
+                <Table variant="simple">
+                  <Thead bg={tableHeaderBg} position="sticky" top={0} zIndex={1}>
+                    <Tr>
+                      <Th
+                        fontWeight="700"
+                        textTransform="uppercase"
+                        fontSize="xs"
+                        letterSpacing="wider"
+                      >
+                        ISO Clause
+                      </Th>
+                      <Th
+                        fontWeight="700"
+                        textTransform="uppercase"
+                        fontSize="xs"
+                        letterSpacing="wider"
+                      >
+                        Description
+                      </Th>
+                      <Th
+                        isNumeric
+                        fontWeight="700"
+                        textTransform="uppercase"
+                        fontSize="xs"
+                        letterSpacing="wider"
+                      >
+                        Count
+                      </Th>
+                    </Tr>
+                  </Thead>
+                  <Tbody>
+                    {kpiData.findingsPerClause.map((item, index) => (
+                      <Tr
+                        key={index}
+                        _hover={{
+                          bg: tableHoverBg,
+                        }}
+                        transition="background 0.2s"
+                      >
+                        <Td
+                          fontWeight="600"
+                          color={clauseColor}
                         >
-                          ISO Clause
-                        </Th>
-                        <Th
-                          fontWeight="700"
-                          textTransform="uppercase"
-                          fontSize="xs"
-                          letterSpacing="wider"
+                          {item.clause || "N/A"}
+                        </Td>
+                        <Td
+                          color={tableTextColor}
+                          maxW="400px"
+                          isTruncated
+                          title={item.description}
                         >
-                          Description
-                        </Th>
-                        <Th
-                          isNumeric
-                          fontWeight="700"
-                          textTransform="uppercase"
-                          fontSize="xs"
-                          letterSpacing="wider"
-                        >
-                          Count
-                        </Th>
+                          {item.description || "N/A"}
+                        </Td>
+                        <Td isNumeric>
+                          <Badge
+                            bgGradient={
+                              item.count > HIGH_FINDING_COUNT_THRESHOLD
+                                ? "linear(to-r, error.500, error.600)"
+                                : "linear(to-r, brandPrimary.500, brandPrimary.600)"
+                            }
+                            color="white"
+                            fontSize="md"
+                            px={3}
+                            py={1}
+                            borderRadius="full"
+                            fontWeight="bold"
+                          >
+                            {item.count}
+                          </Badge>
+                        </Td>
                       </Tr>
-                    </Thead>
-                    <Tbody>
-                      {kpiData.findingsPerClause.map((item, index) => (
-                        <Tr
-                          key={index}
-                          _hover={{
-                            bg: useColorModeValue("gray.50", "gray.700"),
-                          }}
-                          transition="background 0.2s"
-                        >
-                          <Td
-                            fontWeight="600"
-                            color={useColorModeValue(
-                              "brandPrimary.600",
-                              "brandPrimary.300",
-                            )}
-                          >
-                            {item.clause || "N/A"}
-                          </Td>
-                          <Td
-                            color={useColorModeValue("gray.600", "gray.300")}
-                            maxW="400px"
-                            isTruncated
-                            title={item.description}
-                          >
-                            {item.description || "N/A"}
-                          </Td>
-                          <Td isNumeric>
-                            <Badge
-                              bgGradient={
-                                item.count > HIGH_FINDING_COUNT_THRESHOLD
-                                  ? "linear(to-r, error.500, error.600)"
-                                  : "linear(to-r, brandPrimary.500, brandPrimary.600)"
-                              }
-                              color="white"
-                              fontSize="md"
-                              px={3}
-                              py={1}
-                              borderRadius="full"
-                              fontWeight="bold"
-                            >
-                              {item.count}
-                            </Badge>
-                          </Td>
-                        </Tr>
-                      ))}
-                    </Tbody>
-                  </Table>
-                </TableContainer>
-              </Box>
+                    ))}
+                  </Tbody>
+                </Table>
+              </TableContainer>
             ) : (
               <Box p={12} textAlign="center">
                 <Text
-                  color={useColorModeValue("gray.500", "gray.400")}
+                  color={textSecondaryColor}
                   fontSize="lg"
                 >
                   No findings recorded for selected schedules
@@ -1305,7 +1311,7 @@ const AuditKpiDashboard = () => {
 
             <MotionCard
               variants={cardVariants}
-              bg={useColorModeValue("white", "gray.800")}
+              bg={whiteBg}
               borderRadius="xl"
               boxShadow="md"
               overflow="hidden"
@@ -1330,7 +1336,7 @@ const AuditKpiDashboard = () => {
 
         <MotionCard
           variants={cardVariants}
-          bg={useColorModeValue("white", "gray.800")}
+          bg={whiteBg}
           borderRadius="xl"
           boxShadow="md"
           overflow="hidden"
