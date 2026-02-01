@@ -4,6 +4,20 @@ A comprehensive document management system with certification and permit monitor
 
 ## Features
 
+### Audit Schedule Tour Guide
+- **Interactive Tour**: Comprehensive walkthrough of the audit schedule workflow
+- **Step-by-step Guidance**: Learn how to manage organizations, conduct visits, record findings, and close audits
+- **Contextual Help**: Tour automatically adapts to show only relevant steps based on available data
+- **Easy Access**: Click the help (?) button in any audit schedule page to start the tour
+- **Smart Navigation**: Auto-scrolls and highlights key interface elements during the tour
+
+To use the tour guide:
+1. Navigate to any audit schedule page (e.g., `/audit-schedule/:id`)
+2. Click the help icon (?) button in the page header
+3. Follow the interactive tour steps to learn about audit management features
+
+The tour guide is powered by [@sjmc11/tourguidejs](https://tourguidejs.com/) and integrates seamlessly with the Chakra UI theme.
+
 ### Document Management
 - Upload documents with details
 - Document versioning
