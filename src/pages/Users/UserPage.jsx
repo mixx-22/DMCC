@@ -260,11 +260,13 @@ const UserPage = () => {
       text: "This will generate a new password for this user. The user will need to use the new password to log in.",
       icon: "warning",
       showCancelButton: true,
-      confirmButtonColor: "#3182CE",
-      cancelButtonColor: "#718096",
+      buttonsStyling: false,
       confirmButtonText: "Proceed",
       cancelButtonText: "Cancel",
       reverseButtons: true,
+      customClass: {
+        popup: "warning",
+      },
     });
 
     if (result.isConfirmed) {
@@ -297,11 +299,13 @@ const UserPage = () => {
       text: "This action is irreversible and cannot be undone.",
       icon: "warning",
       showCancelButton: true,
-      confirmButtonColor: "#E53E3E",
-      cancelButtonColor: "#718096",
+      buttonsStyling: false,
       confirmButtonText: "Delete",
       cancelButtonText: "Cancel",
       reverseButtons: true,
+      customClass: {
+        popup: "danger",
+      },
     });
 
     if (result.isConfirmed) {

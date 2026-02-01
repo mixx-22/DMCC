@@ -173,10 +173,12 @@ const FileTypeModal = ({ isOpen, onClose, fileType }) => {
       text: "This action cannot be undone. Are you sure you want to delete this file type?",
       icon: "warning",
       showCancelButton: true,
-      confirmButtonColor: "#d33",
-      cancelButtonColor: "#3085d6",
+      buttonsStyling: false,
       confirmButtonText: "Yes, delete it",
       cancelButtonText: "Cancel",
+      customClass: {
+        popup: "danger",
+      },
     });
 
     if (!result.isConfirmed) {
