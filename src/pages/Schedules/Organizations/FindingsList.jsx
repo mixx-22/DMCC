@@ -616,20 +616,22 @@ const FindingCard = ({
                                 Verification Details
                               </Text>
                             </HStack>
-                            <IconButton
-                              icon={<FiEdit />}
-                              size="xs"
-                              variant="ghost"
-                              colorScheme={
-                                finding.corrected === 2
-                                  ? "green"
-                                  : finding.corrected === 0
-                                    ? "red"
-                                    : "warning"
-                              }
-                              onClick={() => setIsEditingVerification(true)}
-                              aria-label="Edit verification"
-                            />
+                            {isScheduleOngoing && (
+                              <IconButton
+                                icon={<FiEdit />}
+                                size="xs"
+                                variant="ghost"
+                                colorScheme={
+                                  finding.corrected === 2
+                                    ? "green"
+                                    : finding.corrected === 0
+                                      ? "red"
+                                      : "warning"
+                                }
+                                onClick={() => setIsEditingVerification(true)}
+                                aria-label="Edit verification"
+                              />
+                            )}
                           </HStack>
                           <VerificationForm
                             initialData={{
