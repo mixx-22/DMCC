@@ -167,10 +167,15 @@ export const useAuditTourGuide = (isEnabled = true) => {
       const steps = getTourSteps();
       
       // Add steps to the tour
-      tourRef.current.addSteps(steps).then(() => {
-        // Start the tour after steps are added
-        tourRef.current.start();
-      });
+      tourRef.current.addSteps(steps)
+        .then(() => {
+          // Start the tour after steps are added
+          tourRef.current.start();
+        })
+        .catch((error) => {
+          console.error("Failed to start tour:", error);
+          // Optionally show a user-friendly message
+        });
     }
   }, []);
 
