@@ -1,5 +1,5 @@
-import { useEffect, useState } from "react";
-import { useParams, useLocation } from "react-router-dom";
+import { useEffect, useState, useMemo, useRef } from "react";
+import { useParams, useLocation, useNavigate } from "react-router-dom";
 import {
   Box,
   SimpleGrid,
@@ -37,9 +37,24 @@ import {
   Icon,
   Tooltip,
   Container,
+  Stack,
+  ButtonGroup,
+  Menu,
+  MenuButton,
+  Button,
+  MenuList,
+  MenuItem,
+  Center,
+  InputGroup,
+  Input,
+  IconButton,
+  InputLeftElement,
 } from "@chakra-ui/react";
 import { motion } from "framer-motion"; // v10.16.16 - Used for smooth animations and transitions
-import { InfoIcon } from "@chakra-ui/icons";
+import { InfoIcon, ChevronDownIcon } from "@chakra-ui/icons";
+import { FiSearch } from "react-icons/fi";
+import { format } from "date-fns";
+import { useUser } from "../context/_useContext";
 import apiService from "../services/api";
 import NcMetricsBarChart from "../components/NcMetricsBarChart";
 import NcContributionBarChart from "../components/NcContributionBarChart";
@@ -272,6 +287,8 @@ const ProgressWithColor = ({ value, label, description }) => {
 const AuditKpiDashboard = () => {
   const { auditScheduleId } = useParams();
   const location = useLocation();
+  const navigate = useNavigate();
+  const { user: currentUser } = useUser();
   const [kpiData, setKpiData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -285,10 +302,65 @@ const AuditKpiDashboard = () => {
   const [loadingSchedules, setLoadingSchedules] = useState(false);
   const [teamsMap, setTeamsMap] = useState({}); // Map of team IDs to team names
   const [objectivesMap, setObjectivesMap] = useState({}); // Map of objective titles to descriptions
+  
+  // Header states (matching main dashboard)
+  const [greeting, setGreeting] = useState("");
+  const [searchKeyword, setSearchKeyword] = useState("");
 
   const cardBg = useColorModeValue("white", "gray.700");
   const borderColor = useColorModeValue("gray.200", "gray.600");
   const tableHeaderBg = useColorModeValue("gray.50", "gray.600");
+  const greetingColor = useColorModeValue("gray.500", "gray.300");
+  const dateColor = useColorModeValue("gray.400", "gray.400");
+  
+  const fetched = useRef();
+  const currentDate = format(new Date(), "EEEE, MMMM d");
+
+  // Set greeting based on time of day (matching main dashboard)
+  useEffect(() => {
+    if (fetched.current) return;
+    fetched.current = true;
+    const hour = new Date().getHours();
+    const greetings = [
+      { range: [0, 5], text: "Good night" },
+      { range: [5, 12], text: "Good morning" },
+      { range: [12, 17], text: "Good afternoon" },
+      { range: [17, 22], text: "Good evening" },
+      { range: [22, 24], text: "Good night" },
+    ];
+
+    const currentGreeting = greetings.find(
+      (g) => hour >= g.range[0] && hour < g.range[1],
+    );
+    setGreeting(currentGreeting?.text || "Hello");
+  }, []);
+  
+  // Handle search
+  const handleSearch = () => {
+    if (searchKeyword.trim()) {
+      navigate(`/audit-schedules?keyword=${encodeURIComponent(searchKeyword.trim())}`);
+    }
+  };
+
+  const handleKeyDown = (e) => {
+    if (e.key === "Enter") {
+      handleSearch();
+    }
+  };
+  
+  // Get selected year name for display
+  const selectedYearDisplay = useMemo(
+    () => selectedYear || "Select Year",
+    [selectedYear]
+  );
+  
+  // Get selected schedule name for display
+  const selectedScheduleDisplay = useMemo(() => {
+    if (!selectedSchedule) return "Select Schedule";
+    if (selectedSchedule === "all") return "All Schedules";
+    const schedule = schedules.find((s) => s._id === selectedSchedule);
+    return schedule?.title || schedule?.auditCode || "Selected Schedule";
+  }, [selectedSchedule, schedules]);
 
   // Fetch teams data to map IDs to names and objectives
   useEffect(() => {
@@ -740,139 +812,133 @@ const AuditKpiDashboard = () => {
 
   return (
     <Container maxW="container.2xl" py={8} px={{ base: 4, md: 6, lg: 8 }}>
-      {/* Page Header with brand colors */}
+      {/* Page Header - Matching Main Dashboard Style */}
       <MotionBox
         variants={cardVariants}
         initial="hidden"
         animate="visible"
         mb={8}
       >
-        <Box
-          bgGradient="linear(135deg, brandPrimary.500 0%, brandPrimary.600 50%, brandPrimary.700 100%)"
-          borderRadius="2xl"
-          p={{ base: 6, md: 8 }}
-          color="white"
-          position="relative"
-          overflow="hidden"
-          boxShadow="xl"
+        <Stack
+          spacing={4}
+          flexDir="column"
+          alignItems="center"
+          justifyContent="center"
         >
-          {/* Decorative elements */}
-          <Box
-            position="absolute"
-            top="-20%"
-            right="-10%"
-            w="300px"
-            h="300px"
-            borderRadius="full"
-            bg="brandSecondary.400"
-            opacity={0.1}
-            filter="blur(60px)"
-          />
-          
-          <VStack align="start" spacing={3} position="relative" zIndex={1}>
-            <Heading size="2xl" fontWeight="800" letterSpacing="tight">
-              Audit KPI Dashboard
-            </Heading>
-            <Text fontSize="lg" opacity={0.95} maxW="2xl">
-              Comprehensive performance metrics and insights for your audit schedules
-              {kpiData?.metadata?.scheduleTitle && (
-                <Text as="span" fontWeight="semibold" ml={2}>
-                  • {kpiData.metadata.scheduleTitle}
-                </Text>
-              )}
+          {/* Greeting Section */}
+          <Center flexDir="column">
+            <Text
+              textAlign="center"
+              fontSize={{ base: "2xl", md: "3xl" }}
+              fontWeight="300"
+              color={greetingColor}
+            >
+              {greeting},{" "}
+              {currentUser?.firstName || currentUser?.name || "User"}
             </Text>
-          </VStack>
-        </Box>
+            <Text
+              textAlign="center"
+              fontSize={{ base: "md", md: "lg" }}
+              fontWeight="300"
+              color={dateColor}
+            >
+              {currentDate}
+            </Text>
+          </Center>
+
+          {/* Filters as Button Group (Team Stats Style) */}
+          <Box>
+            <ButtonGroup isAttached variant="teamStats" size="sm">
+              {/* Year Filter */}
+              <Menu>
+                <MenuButton
+                  as={Button}
+                  rightIcon={<ChevronDownIcon />}
+                  borderRightRadius={0}
+                  isDisabled={loadingYears}
+                >
+                  {selectedYearDisplay}
+                </MenuButton>
+                <MenuList>
+                  {years.length === 0 ? (
+                    <MenuItem isDisabled>No years available</MenuItem>
+                  ) : (
+                    years.map((year) => (
+                      <MenuItem
+                        key={year}
+                        onClick={() => setSelectedYear(year.toString())}
+                      >
+                        {year}
+                      </MenuItem>
+                    ))
+                  )}
+                </MenuList>
+              </Menu>
+
+              {/* Schedule Filter */}
+              <Menu>
+                <MenuButton
+                  as={Button}
+                  rightIcon={<ChevronDownIcon />}
+                  borderRadius={0}
+                  isDisabled={loadingSchedules || !selectedYear}
+                >
+                  {selectedScheduleDisplay}
+                </MenuButton>
+                <MenuList>
+                  {schedules.length === 0 ? (
+                    <MenuItem isDisabled>No schedules available</MenuItem>
+                  ) : (
+                    <>
+                      <MenuItem onClick={() => setSelectedSchedule("all")}>
+                        All Schedules
+                      </MenuItem>
+                      {schedules.map((schedule) => (
+                        <MenuItem
+                          key={schedule._id}
+                          onClick={() => setSelectedSchedule(schedule._id)}
+                        >
+                          {schedule.title ||
+                            schedule.auditCode ||
+                            "Untitled Schedule"}
+                        </MenuItem>
+                      ))}
+                    </>
+                  )}
+                </MenuList>
+              </Menu>
+
+              {/* Stats Display */}
+              <Button borderLeftRadius={0}>
+                {kpiData?.metadata?.scheduleTitle || "Audit KPIs"}
+              </Button>
+            </ButtonGroup>
+          </Box>
+
+          {/* Search Input */}
+          <Box w="full" maxW="md">
+            <InputGroup w="full">
+              <Input
+                value={searchKeyword}
+                onChange={(e) => setSearchKeyword(e.target.value)}
+                onKeyDown={handleKeyDown}
+                placeholder="Search audit schedules..."
+                variant="search"
+              />
+              <InputLeftElement>
+                <IconButton
+                  isRound
+                  icon={<FiSearch />}
+                  onClick={handleSearch}
+                  aria-label="Search"
+                  variant="ghost"
+                  size="sm"
+                />
+              </InputLeftElement>
+            </InputGroup>
+          </Box>
+        </Stack>
       </MotionBox>
-
-      {/* Filters Section - Modern card */}
-      <MotionCard
-        variants={cardVariants}
-        initial="hidden"
-        animate="visible"
-        mb={8}
-        bg={useColorModeValue("white", "gray.800")}
-        borderRadius="xl"
-        boxShadow="md"
-        overflow="hidden"
-      >
-        <Box
-          bgGradient="linear(to-r, brandSecondary.500, brandSecondary.400)"
-          h="3px"
-        />
-        <CardBody p={6}>
-          <HStack spacing={2} mb={4}>
-            <Icon as={InfoIcon} color="brandPrimary.500" />
-            <Heading size="sm" color={useColorModeValue("gray.700", "gray.100")}>
-              Filter Options
-            </Heading>
-          </HStack>
-          <SimpleGrid columns={{ base: 1, md: 2 }} spacing={6}>
-            {/* Year Filter */}
-            <FormControl>
-              <FormLabel 
-                fontSize="sm" 
-                fontWeight="600" 
-                color={useColorModeValue("gray.700", "gray.200")}
-              >
-                Audit Year
-              </FormLabel>
-              <Select
-                value={selectedYear}
-                onChange={(e) => setSelectedYear(e.target.value)}
-                isDisabled={loadingYears}
-                size="lg"
-                borderRadius="lg"
-                focusBorderColor="brandPrimary.500"
-              >
-                {years.length === 0 ? (
-                  <option>No years available</option>
-                ) : (
-                  years.map((year) => (
-                    <option key={year} value={year}>
-                      {year}
-                    </option>
-                  ))
-                )}
-              </Select>
-            </FormControl>
-
-            {/* Schedule Filter */}
-            <FormControl>
-              <FormLabel 
-                fontSize="sm" 
-                fontWeight="600" 
-                color={useColorModeValue("gray.700", "gray.200")}
-              >
-                Schedule Selection
-              </FormLabel>
-              <Select
-                value={selectedSchedule}
-                onChange={(e) => setSelectedSchedule(e.target.value)}
-                isDisabled={loadingSchedules}
-                size="lg"
-                borderRadius="lg"
-                focusBorderColor="brandPrimary.500"
-              >
-                {schedules.length === 0 ? (
-                  <option>No schedules available</option>
-                ) : (
-                  <>
-                    <option value="all">All Schedules</option>
-                    {schedules.map((schedule) => (
-                      <option key={schedule._id} value={schedule._id}>
-                        {schedule.title ||
-                          schedule.auditCode ||
-                          "Untitled Schedule"}
-                      </option>
-                    ))}
-                  </>
-                )}
-              </Select>
-            </FormControl>
-          </SimpleGrid>
-        </CardBody>
-      </MotionCard>
 
       {/* Main KPI Grid - Bento Layout */}
       <MotionBox
