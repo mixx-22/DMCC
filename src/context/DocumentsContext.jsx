@@ -448,44 +448,48 @@ export const DocumentsProvider = ({ children }) => {
   const extractStateFromResponse = (response, action, requestId = null) => {
     // If response.data contains the new state values, use them
     if (response.data && typeof response.data === "object") {
-      const newState = {};
+      const newState = {
+        requestData: {},
+        metadata: {},
+      };
+      let hasChanges = false;
 
       // Extract status if present
       if (typeof response.data.status !== "undefined") {
         newState.status = response.data.status;
+        hasChanges = true;
       }
 
       // Extract mode if present
       if (typeof response.data.mode !== "undefined") {
-        newState.requestData = {
-          ...(newState.requestData || {}),
-          mode: response.data.mode,
-        };
+        newState.requestData.mode = response.data.mode;
+        hasChanges = true;
       }
 
       // Extract checkedOut from either direct property or metadata.checkedOut
-      const checkedOut = 
-        typeof response.data.checkedOut !== "undefined" 
-          ? response.data.checkedOut 
-          : response.data.metadata?.checkedOut;
+      const checkedOut = response.data.checkedOut ?? response.data.metadata?.checkedOut;
       
       if (typeof checkedOut !== "undefined") {
-        newState.metadata = {
-          ...(newState.metadata || {}),
-          checkedOut: checkedOut,
-        };
+        newState.metadata.checkedOut = checkedOut;
+        hasChanges = true;
       }
 
       // Extract requestId if present
       if (response.data.requestId) {
-        newState.requestData = {
-          ...(newState.requestData || {}),
-          requestId: response.data.requestId,
-        };
+        newState.requestData.requestId = response.data.requestId;
+        hasChanges = true;
+      }
+
+      // Remove empty nested objects
+      if (Object.keys(newState.requestData).length === 0) {
+        delete newState.requestData;
+      }
+      if (Object.keys(newState.metadata).length === 0) {
+        delete newState.metadata;
       }
 
       // If we have at least one of the key properties, return the new state
-      if (Object.keys(newState).length > 0) {
+      if (hasChanges) {
         return newState;
       }
     }
