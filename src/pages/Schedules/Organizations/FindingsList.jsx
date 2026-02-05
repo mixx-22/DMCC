@@ -88,7 +88,7 @@ const FindingCard = ({
 
   // Check if verification is needed (has action plan but not verified)
   const needsVerification =
-    shouldShowActionPlan && finding.actionPlan && finding.corrected !== 1;
+    shouldShowActionPlan && finding.actionPlan && finding.corrected === -1;
 
   const handleEditClick = () => {
     setIsEditing(true);
@@ -129,7 +129,7 @@ const FindingCard = ({
   const handleSaveVerification = async (verificationData) => {
     // Calculate currentCompliance based on corrected status
     const currentCompliance =
-      verificationData.corrected === 1 ? "COMPLIANT" : finding.compliance;
+      verificationData.corrected === 2 ? "COMPLIANT" : finding.compliance;
 
     // Save verification data at finding level
     const updatedFinding = {
@@ -586,7 +586,7 @@ const FindingCard = ({
                           onCancel={handleCancelVerification}
                           readOnly={false}
                         />
-                      ) : (finding.corrected !== undefined && finding.corrected !== null) ? (
+                      ) : (finding.corrected === 0 || finding.corrected === 2 || finding.corrected === 1) ? (
                         <Box>
                           <HStack justify="space-between" mb={2}>
                             <HStack spacing={2}>
@@ -599,7 +599,7 @@ const FindingCard = ({
                               icon={<FiEdit />}
                               size="xs"
                               variant="ghost"
-                              colorScheme={finding.corrected === 1 ? "green" : "orange"}
+                              colorScheme={finding.corrected === 2 ? "green" : finding.corrected === 0 ? "red" : "orange"}
                               onClick={() => setIsEditingVerification(true)}
                               aria-label="Edit verification"
                             />

@@ -10,14 +10,14 @@ import {
   FormHelperText,
   useColorModeValue,
   Switch,
-  Heading,
   Badge,
+  SimpleGrid,
 } from "@chakra-ui/react";
 import { useState } from "react";
 import { FiSave, FiX } from "react-icons/fi";
 import { SingleDatepicker } from "chakra-dayzed-datepicker";
 import { useLayout } from "../../../context/_useContext";
-import moment from "moment";
+import Timestamp from "../../../components/Timestamp";
 
 const VerificationForm = ({
   initialData = null,
@@ -34,8 +34,16 @@ const VerificationForm = ({
   // Initialize form data
   const getInitialFormData = () => {
     if (initialData) {
+      // Handle backward compatibility: convert old corrected value (1) to new system (2)
+      let correctedValue =
+        initialData.corrected !== undefined ? initialData.corrected : -1;
+      if (correctedValue === 1) {
+        correctedValue = 2; // Old "corrected" becomes new "corrected"
+      }
+
       return {
-        corrected: initialData.corrected || 0,
+        corrected:
+          initialData.corrected !== undefined ? initialData.corrected : -1,
         correctionDate: initialData.correctionDate
           ? new Date(initialData.correctionDate)
           : new Date(),
@@ -43,7 +51,7 @@ const VerificationForm = ({
       };
     }
     return {
-      corrected: 0,
+      corrected: -1,
       correctionDate: new Date(),
       remarks: "",
     };
@@ -100,50 +108,48 @@ const VerificationForm = ({
         borderColor={borderColor}
       >
         <VStack align="stretch" spacing={4}>
-          <HStack justify="space-between">
-            <Heading size="sm" color="green.600">
-              Verification
-            </Heading>
-            <Badge colorScheme={formData.corrected === 1 ? "green" : "orange"}>
-              {formData.corrected === 1 ? "Corrected" : "Pending"}
-            </Badge>
-          </HStack>
-
-          <VStack align="stretch" spacing={3}>
+          <SimpleGrid columns={[1, 1, 2]} align="stretch" spacing={3}>
             <Box>
               <Text fontSize="xs" color={labelColor} mb={1}>
                 Status:
               </Text>
               <Badge
-                colorScheme={formData.corrected === 1 ? "green" : "orange"}
+                colorScheme={
+                  formData.corrected === 2
+                    ? "green"
+                    : formData.corrected === 0
+                      ? "red"
+                      : "orange"
+                }
                 fontSize="sm"
               >
-                {formData.corrected === 1 ? "Corrected" : "Not Yet Corrected"}
+                {formData.corrected === 2
+                  ? "Corrected"
+                  : formData.corrected === 0
+                    ? "Not Corrected"
+                    : "Pending Verification"}
               </Badge>
             </Box>
 
-            {formData.correctionDate && (
+            {formData.corrected !== -1 && formData.correctionDate && (
               <Box>
                 <Text fontSize="xs" color={labelColor} mb={1}>
                   Correction Date:
                 </Text>
-                <Text fontSize="sm">
-                  {moment(formData.correctionDate).format("MMMM DD, YYYY")}
-                </Text>
+                <Timestamp date={formData.correctionDate} fontSize="sm" />
               </Box>
             )}
-
-            {formData.remarks && (
-              <Box>
-                <Text fontSize="xs" color={labelColor} mb={1}>
-                  Remarks:
-                </Text>
-                <Text fontSize="sm" whiteSpace="pre-wrap">
-                  {formData.remarks}
-                </Text>
-              </Box>
-            )}
-          </VStack>
+          </SimpleGrid>
+          {formData.remarks && (
+            <Box flex={1}>
+              <Text fontSize="xs" color={labelColor} mb={1}>
+                Remarks:
+              </Text>
+              <Text fontSize="sm" whiteSpace="pre-wrap">
+                {formData.remarks}
+              </Text>
+            </Box>
+          )}
         </VStack>
       </Box>
     );
@@ -189,20 +195,36 @@ const VerificationForm = ({
                 Corrected Status
               </FormLabel>
               <Switch
-                isChecked={formData.corrected === 1}
+                isChecked={formData.corrected === 2}
                 onChange={(e) =>
-                  handleChange("corrected", e.target.checked ? 1 : 0)
+                  handleChange("corrected", e.target.checked ? 2 : 0)
                 }
                 colorScheme="green"
               />
-              <Text fontSize="sm" fontWeight="medium" color={formData.corrected === 1 ? "green.600" : "orange.600"}>
-                {formData.corrected === 1 ? "Corrected" : "Not Corrected"}
+              <Text
+                fontSize="sm"
+                fontWeight="medium"
+                color={
+                  formData.corrected === 2
+                    ? "green.600"
+                    : formData.corrected === 0
+                      ? "red.600"
+                      : "orange.600"
+                }
+              >
+                {formData.corrected === 2
+                  ? "Corrected"
+                  : formData.corrected === 0
+                    ? "Not Corrected"
+                    : "Pending Verification"}
               </Text>
             </HStack>
             <FormHelperText>
-              {formData.corrected === 1 
-                ? "✓ Finding will be marked as COMPLIANT" 
-                : "⚠ Finding will keep its original compliance status"}
+              {formData.corrected === 2
+                ? "✓ Finding will be marked as COMPLIANT"
+                : formData.corrected === 0
+                  ? "✗ Finding verified as not corrected"
+                  : "⚠ Verification pending - use switch to mark as corrected or not corrected"}
             </FormHelperText>
           </FormControl>
 

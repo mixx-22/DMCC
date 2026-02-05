@@ -99,7 +99,12 @@ const FindingsForm = ({
         objectives: objectives, // NEW: Array of objective snapshots
         compliance: initialData.compliance || "",
         currentCompliance: initialData.currentCompliance || initialData.compliance || "",
-        corrected: initialData.corrected || 0,
+        corrected: (() => {
+          // Handle backward compatibility: convert old corrected value (1) to new system (2)
+          if (initialData.corrected === 1) return 2; // Old "corrected" becomes new "corrected"
+          if (initialData.corrected !== undefined) return initialData.corrected;
+          return -1; // Default for new findings
+        })(),
         correctionDate: initialData.correctionDate ? new Date(initialData.correctionDate) : null,
         remarks: initialData.remarks || "",
         report: initialData.report
@@ -136,7 +141,7 @@ const FindingsForm = ({
       objectives: [], // NEW: Array instead of single value
       compliance: "",
       currentCompliance: "",
-      corrected: 0,
+      corrected: -1,
       correctionDate: null,
       remarks: "",
       report: {
@@ -225,7 +230,7 @@ const FindingsForm = ({
     if (validateForm()) {
       // Calculate currentCompliance based on corrected status
       const calculatedCurrentCompliance = 
-        formData.corrected === 1 
+        formData.corrected === 2 
           ? "COMPLIANT" 
           : formData.compliance;
 
