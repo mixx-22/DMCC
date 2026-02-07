@@ -86,17 +86,16 @@ const ReportCard = ({ finding, organization, onSave, isScheduleOngoing }) => {
     shouldShowActionPlan && finding.actionPlan && finding.corrected === -1;
 
   const handleSaveActionPlan = async (actionPlanData) => {
-    // Save action plan as part of the finding (exclude temporary properties)
+    // Save action plan as part of the finding
     const { visitIndex, organizationId, ...findingData } = finding;
     const updatedFinding = {
       ...findingData,
       actionPlan: actionPlanData,
-      visitIndex, // Keep for routing
-      organizationId, // Keep for routing
     };
 
     if (onSave) {
-      await onSave(updatedFinding, organization);
+      // Pass finding with temporary routing properties for handleSaveFinding
+      await onSave({ ...updatedFinding, visitIndex, organizationId }, organization);
     }
     onActionPlanClose();
   };
@@ -106,7 +105,7 @@ const ReportCard = ({ finding, organization, onSave, isScheduleOngoing }) => {
     const currentCompliance =
       verificationData.corrected === 2 ? "COMPLIANT" : finding.compliance;
 
-    // Save verification data at finding level (exclude temporary properties)
+    // Save verification data at finding level
     const { visitIndex, organizationId, ...findingData } = finding;
     const updatedFinding = {
       ...findingData,
@@ -114,12 +113,11 @@ const ReportCard = ({ finding, organization, onSave, isScheduleOngoing }) => {
       correctionDate: verificationData.correctionDate,
       remarks: verificationData.remarks,
       currentCompliance: currentCompliance,
-      visitIndex, // Keep for routing
-      organizationId, // Keep for routing
     };
 
     if (onSave) {
-      await onSave(updatedFinding, organization);
+      // Pass finding with temporary routing properties for handleSaveFinding
+      await onSave({ ...updatedFinding, visitIndex, organizationId }, organization);
     }
     onVerificationClose();
   };
@@ -370,9 +368,8 @@ const ReportsTab = ({ schedule }) => {
     const visitIndex = updatedFinding.visitIndex;
 
     // Remove temporary routing properties before persisting
-    const cleanFinding = { ...updatedFinding };
-    delete cleanFinding.visitIndex;
-    delete cleanFinding.organizationId;
+    // eslint-disable-next-line no-unused-vars
+    const { visitIndex: _visitIndex, organizationId: _organizationId, ...cleanFinding } = updatedFinding;
 
     // Calculate updated visits with the edited finding
     const updatedVisits = organization.visits.map((v, i) => {
