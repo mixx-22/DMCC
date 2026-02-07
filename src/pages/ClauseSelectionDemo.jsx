@@ -222,7 +222,7 @@ const ClauseSelectionDemo = () => {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const [selectedClauses, setSelectedClauses] = useState([]);
 
-  const handleConfirm = (clauses) => {
+  const handleChange = (clauses) => {
     setSelectedClauses(clauses);
     console.log("Selected clauses:", clauses);
   };
@@ -236,8 +236,9 @@ const ClauseSelectionDemo = () => {
           </Heading>
           <Text color="gray.600">
             This demo showcases the ClauseSelectionModal component with
-            hierarchical checkbox selection, indeterminate states, and
-            collapsible parent clauses.
+            hierarchical checkbox selection, indeterminate states, collapsible
+            parent clauses, and real-time selection display. Now behaves like a
+            controlled input component.
           </Text>
         </Box>
 
@@ -286,10 +287,13 @@ const ClauseSelectionDemo = () => {
               </Text>
               <Text fontSize="sm">✓ Collapsible parent clauses</Text>
               <Text fontSize="sm">
-                ✓ Returns array of objects with id and name
+                ✓ Behaves like a controlled input with value and onChange
               </Text>
               <Text fontSize="sm">
-                ✓ Persists selection state for editing
+                ✓ Real-time selected clauses display in side panel
+              </Text>
+              <Text fontSize="sm">
+                ✓ Progressive indentation based on clause depth
               </Text>
             </VStack>
           </CardBody>
@@ -300,8 +304,8 @@ const ClauseSelectionDemo = () => {
         isOpen={isOpen}
         onClose={onClose}
         clauses={SAMPLE_CLAUSES}
-        initialSelectedClauses={selectedClauses}
-        onConfirm={handleConfirm}
+        value={selectedClauses}
+        onChange={handleChange}
       />
     </Container>
   );

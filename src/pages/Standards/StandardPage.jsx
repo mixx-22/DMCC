@@ -613,7 +613,7 @@ const StandardPage = () => {
 
   const handleClauseSelection = (clauses) => {
     setSelectedClauses(clauses);
-    toast.success(`${clauses.length} clause${clauses.length !== 1 ? "s" : ""} selected`);
+    // No toast here since it would trigger on every change
     console.log("Selected clauses:", clauses);
   };
 
@@ -998,8 +998,8 @@ const StandardPage = () => {
         isOpen={isClauseSelectionOpen}
         onClose={onClauseSelectionClose}
         clauses={standard?.clauses || []}
-        initialSelectedClauses={selectedClauses}
-        onConfirm={handleClauseSelection}
+        value={selectedClauses}
+        onChange={handleClauseSelection}
       />
     </Box>
   );
