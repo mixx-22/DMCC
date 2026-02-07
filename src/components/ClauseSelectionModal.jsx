@@ -85,6 +85,27 @@ const ClauseSelectionModal = ({
     }));
   }, []);
 
+  // Helper function to build result array from selected IDs
+  const buildResultArray = useCallback(
+    (selectedSet) => {
+      const result = [];
+      clauses.forEach((clause) => {
+        if (clause.subClauses) {
+          clause.subClauses.forEach((sub) => {
+            if (selectedSet.has(sub.id)) {
+              result.push({
+                id: sub.id,
+                name: `${sub.clause} - ${sub.description}`,
+              });
+            }
+          });
+        }
+      });
+      return result;
+    },
+    [clauses]
+  );
+
   // Check if a parent clause is indeterminate (some but not all children selected)
   const isIndeterminate = useCallback(
     (clause) => {
@@ -123,23 +144,9 @@ const ClauseSelectionModal = ({
       }
       
       // Build result array and call onChange immediately
-      const result = [];
-      clauses.forEach((c) => {
-        if (c.subClauses) {
-          c.subClauses.forEach((sub) => {
-            if (newSet.has(sub.id)) {
-              result.push({
-                id: sub.id,
-                name: `${sub.clause} - ${sub.description}`,
-              });
-            }
-          });
-        }
-      });
-      
-      onChange(result);
+      onChange(buildResultArray(newSet));
     },
-    [areAllChildrenSelected, selectedIds, clauses, onChange],
+    [areAllChildrenSelected, selectedIds, buildResultArray, onChange],
   );
 
   // Handle child checkbox change - immediately updates via onChange
@@ -153,23 +160,9 @@ const ClauseSelectionModal = ({
       }
       
       // Build result array and call onChange immediately
-      const result = [];
-      clauses.forEach((clause) => {
-        if (clause.subClauses) {
-          clause.subClauses.forEach((sub) => {
-            if (newSet.has(sub.id)) {
-              result.push({
-                id: sub.id,
-                name: `${sub.clause} - ${sub.description}`,
-              });
-            }
-          });
-        }
-      });
-      
-      onChange(result);
+      onChange(buildResultArray(newSet));
     },
-    [selectedIds, clauses, onChange],
+    [selectedIds, buildResultArray, onChange],
   );
 
   // Build the result array for display
@@ -197,23 +190,9 @@ const ClauseSelectionModal = ({
       newSet.delete(clauseId);
       
       // Build result array and call onChange
-      const result = [];
-      clauses.forEach((clause) => {
-        if (clause.subClauses) {
-          clause.subClauses.forEach((sub) => {
-            if (newSet.has(sub.id)) {
-              result.push({
-                id: sub.id,
-                name: `${sub.clause} - ${sub.description}`,
-              });
-            }
-          });
-        }
-      });
-      
-      onChange(result);
+      onChange(buildResultArray(newSet));
     },
-    [selectedIds, clauses, onChange],
+    [selectedIds, buildResultArray, onChange],
   );
 
   return (
