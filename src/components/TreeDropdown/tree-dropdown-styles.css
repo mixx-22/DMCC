@@ -1,0 +1,419 @@
+/* Chakra UI styled Tree Dropdown */
+/* This file provides custom styling to match Chakra UI v2 design system */
+
+.chakra-tree-dropdown-wrapper {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+}
+
+/* Container */
+.chakra-tree-dropdown-wrapper .dropdown {
+  position: relative;
+  width: 100%;
+}
+
+/* Trigger / Input Container */
+.chakra-tree-dropdown-wrapper .dropdown-trigger {
+  display: flex;
+  align-items: center;
+  min-height: 40px;
+  padding: 0 12px;
+  border: 1px solid;
+  border-radius: 6px;
+  background-color: transparent;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-size: 16px;
+}
+
+/* Light mode trigger styles */
+.chakra-light-mode .dropdown-trigger {
+  border-color: #E2E8F0;
+  background-color: white;
+}
+
+.chakra-light-mode .dropdown-trigger:hover {
+  border-color: #CBD5E1;
+}
+
+.chakra-light-mode .dropdown-trigger.arrow.bottom {
+  border-color: #005AEE;
+  box-shadow: 0 0 0 1px #005AEE;
+}
+
+/* Dark mode trigger styles */
+.chakra-dark-mode .dropdown-trigger {
+  border-color: #4A5568;
+  background-color: #2D3748;
+  color: white;
+}
+
+.chakra-dark-mode .dropdown-trigger:hover {
+  border-color: #718096;
+}
+
+.chakra-dark-mode .dropdown-trigger.arrow.bottom {
+  border-color: #4D8CFF;
+  box-shadow: 0 0 0 1px #4D8CFF;
+}
+
+/* Placeholder text */
+.chakra-tree-dropdown-wrapper .dropdown-trigger > span {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Light mode placeholder */
+.chakra-light-mode .dropdown-trigger > span {
+  color: #A0AEC0;
+}
+
+/* Dark mode placeholder */
+.chakra-dark-mode .dropdown-trigger > span {
+  color: #A0AEC0;
+}
+
+/* Arrow icon */
+.chakra-tree-dropdown-wrapper .toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-left: 8px;
+  width: 20px;
+  height: 20px;
+  transition: transform 0.2s;
+}
+
+.chakra-tree-dropdown-wrapper .dropdown-trigger.arrow.bottom .toggle {
+  transform: rotate(180deg);
+}
+
+.chakra-tree-dropdown-wrapper .toggle:after {
+  content: "";
+  display: inline-block;
+  width: 0;
+  height: 0;
+  border-left: 5px solid transparent;
+  border-right: 5px solid transparent;
+  border-top: 5px solid currentColor;
+}
+
+/* Light mode arrow */
+.chakra-light-mode .toggle:after {
+  opacity: 0.6;
+}
+
+/* Dark mode arrow */
+.chakra-dark-mode .toggle:after {
+  opacity: 0.7;
+}
+
+/* Dropdown content */
+.chakra-tree-dropdown-wrapper .dropdown-content {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  right: 0;
+  z-index: 1000;
+  max-height: 300px;
+  overflow-y: auto;
+  border: 1px solid;
+  border-radius: 6px;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+}
+
+/* Light mode dropdown content */
+.chakra-light-mode .dropdown-content {
+  border-color: #E2E8F0;
+  background-color: white;
+}
+
+/* Dark mode dropdown content */
+.chakra-dark-mode .dropdown-content {
+  border-color: #4A5568;
+  background-color: #2D3748;
+}
+
+/* Search input */
+.chakra-tree-dropdown-wrapper .search {
+  padding: 8px 12px;
+  border-bottom: 1px solid;
+}
+
+/* Light mode search */
+.chakra-light-mode .search {
+  border-color: #E2E8F0;
+}
+
+/* Dark mode search */
+.chakra-dark-mode .search {
+  border-color: #4A5568;
+}
+
+.chakra-tree-dropdown-wrapper .search input {
+  width: 100%;
+  padding: 6px 10px;
+  border: 1px solid;
+  border-radius: 6px;
+  font-size: 14px;
+  outline: none;
+  transition: all 0.2s;
+}
+
+/* Light mode search input */
+.chakra-light-mode .search input {
+  border-color: #E2E8F0;
+  background-color: #F7FAFC;
+  color: #1A202C;
+}
+
+.chakra-light-mode .search input:focus {
+  border-color: #005AEE;
+  box-shadow: 0 0 0 1px #005AEE;
+}
+
+.chakra-light-mode .search input::placeholder {
+  color: #A0AEC0;
+}
+
+/* Dark mode search input */
+.chakra-dark-mode .search input {
+  border-color: #4A5568;
+  background-color: #1A202C;
+  color: white;
+}
+
+.chakra-dark-mode .search input:focus {
+  border-color: #4D8CFF;
+  box-shadow: 0 0 0 1px #4D8CFF;
+}
+
+.chakra-dark-mode .search input::placeholder {
+  color: #718096;
+}
+
+/* Tree */
+.chakra-tree-dropdown-wrapper .root {
+  padding: 4px 0;
+}
+
+/* Tree nodes */
+.chakra-tree-dropdown-wrapper .node {
+  padding: 8px 12px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+/* Light mode node */
+.chakra-light-mode .node:hover {
+  background-color: #F7FAFC;
+}
+
+/* Dark mode node */
+.chakra-dark-mode .node:hover {
+  background-color: #4A5568;
+}
+
+/* Node label */
+.chakra-tree-dropdown-wrapper .node-label {
+  display: flex;
+  align-items: center;
+  font-size: 14px;
+}
+
+/* Light mode node label */
+.chakra-light-mode .node-label {
+  color: #2D3748;
+}
+
+/* Dark mode node label */
+.chakra-dark-mode .node-label {
+  color: #E2E8F0;
+}
+
+/* Checkbox */
+.chakra-tree-dropdown-wrapper .checkbox-item {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  margin-right: 8px;
+  border: 2px solid;
+  border-radius: 3px;
+  transition: all 0.2s;
+}
+
+/* Light mode checkbox */
+.chakra-light-mode .checkbox-item {
+  border-color: #CBD5E1;
+}
+
+.chakra-light-mode .checkbox-item.checked,
+.chakra-light-mode .checkbox-item.partial {
+  background-color: #005AEE;
+  border-color: #005AEE;
+}
+
+/* Dark mode checkbox */
+.chakra-dark-mode .checkbox-item {
+  border-color: #718096;
+}
+
+.chakra-dark-mode .checkbox-item.checked,
+.chakra-dark-mode .checkbox-item.partial {
+  background-color: #4D8CFF;
+  border-color: #4D8CFF;
+}
+
+/* Checkbox check mark */
+.chakra-tree-dropdown-wrapper .checkbox-item:after {
+  content: "";
+  display: none;
+  width: 4px;
+  height: 8px;
+  border: solid white;
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
+}
+
+.chakra-tree-dropdown-wrapper .checkbox-item.checked:after {
+  display: block;
+}
+
+/* Partial selection indicator */
+.chakra-tree-dropdown-wrapper .checkbox-item.partial:after {
+  display: block;
+  width: 8px;
+  height: 2px;
+  border: none;
+  background-color: white;
+  transform: none;
+}
+
+/* Toggle icon for expanding/collapsing */
+.chakra-tree-dropdown-wrapper .toggle.collapsed {
+  margin-right: 6px;
+  transition: transform 0.2s;
+}
+
+.chakra-tree-dropdown-wrapper .toggle.collapsed:before {
+  content: "▶";
+  font-size: 10px;
+}
+
+.chakra-tree-dropdown-wrapper .toggle.expanded:before {
+  content: "▼";
+  font-size: 10px;
+}
+
+/* Light mode toggle */
+.chakra-light-mode .toggle.collapsed:before,
+.chakra-light-mode .toggle.expanded:before {
+  color: #718096;
+}
+
+/* Dark mode toggle */
+.chakra-dark-mode .toggle.collapsed:before,
+.chakra-dark-mode .toggle.expanded:before {
+  color: #A0AEC0;
+}
+
+/* Tag (selected items in trigger) */
+.chakra-tree-dropdown-wrapper .tag {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  margin: 2px 4px 2px 0;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+/* Light mode tag */
+.chakra-light-mode .tag {
+  background-color: #EDF2F7;
+  color: #2D3748;
+}
+
+/* Dark mode tag */
+.chakra-dark-mode .tag {
+  background-color: #4A5568;
+  color: #E2E8F0;
+}
+
+/* Tag close button */
+.chakra-tree-dropdown-wrapper .tag .tag-remove {
+  margin-left: 6px;
+  cursor: pointer;
+  font-weight: bold;
+  opacity: 0.6;
+  transition: opacity 0.2s;
+}
+
+.chakra-tree-dropdown-wrapper .tag .tag-remove:hover {
+  opacity: 1;
+}
+
+/* No matches message */
+.chakra-tree-dropdown-wrapper .no-matches {
+  padding: 16px 12px;
+  text-align: center;
+  font-size: 14px;
+}
+
+/* Light mode no matches */
+.chakra-light-mode .no-matches {
+  color: #718096;
+}
+
+/* Dark mode no matches */
+.chakra-dark-mode .no-matches {
+  color: #A0AEC0;
+}
+
+/* Scrollbar styling */
+.chakra-tree-dropdown-wrapper .dropdown-content::-webkit-scrollbar {
+  width: 8px;
+}
+
+.chakra-tree-dropdown-wrapper .dropdown-content::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+/* Light mode scrollbar */
+.chakra-light-mode .dropdown-content::-webkit-scrollbar-thumb {
+  background-color: #CBD5E1;
+  border-radius: 4px;
+}
+
+.chakra-light-mode .dropdown-content::-webkit-scrollbar-thumb:hover {
+  background-color: #A0AEC0;
+}
+
+/* Dark mode scrollbar */
+.chakra-dark-mode .dropdown-content::-webkit-scrollbar-thumb {
+  background-color: #4A5568;
+  border-radius: 4px;
+}
+
+.chakra-dark-mode .dropdown-content::-webkit-scrollbar-thumb:hover {
+  background-color: #718096;
+}
+
+/* Disable state */
+.chakra-tree-dropdown-wrapper .dropdown.disabled .dropdown-trigger {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+/* Light mode disabled */
+.chakra-light-mode .dropdown.disabled .dropdown-trigger {
+  background-color: #EDF2F7;
+}
+
+/* Dark mode disabled */
+.chakra-dark-mode .dropdown.disabled .dropdown-trigger {
+  background-color: #1A202C;
+}
