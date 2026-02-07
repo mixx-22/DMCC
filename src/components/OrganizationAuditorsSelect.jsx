@@ -24,6 +24,15 @@ import { useCallback } from "react";
 
 const getUserId = (user) => user.id || user._id || user.userId;
 
+// Helper function to get user's full name from either format
+const getUserFullName = (user) => {
+  if (!user) return "";
+  // Handle combined name field (API format)
+  if (user.name) return user.name;
+  // Handle separate firstName/lastName fields (legacy format)
+  return `${user.firstName || ""} ${user.lastName || ""}`.trim();
+};
+
 const noOptionsMessage = () => "No auditors available for this organization";
 
 /**
@@ -44,13 +53,11 @@ const OrganizationAuditorsSelect = ({
 }) => {
   const handleChange = (selectedOptions) => {
     const users = (selectedOptions || []).map((option) => ({
-      id: option.value,
-      _id: option.value,
-      firstName: option.user.firstName,
-      lastName: option.user.lastName,
-      email: option.user.email,
-      employeeId: option.user.employeeId || "",
-      profilePicture: option.user.profilePicture,
+      // Preserve the original user object structure
+      ...option.user,
+      // Ensure id and _id are set
+      id: getUserId(option.user),
+      _id: getUserId(option.user),
     }));
     onChange(users);
   };
@@ -64,18 +71,18 @@ const OrganizationAuditorsSelect = ({
   // Convert organization auditors to select options
   const auditorOptions = organizationAuditors.map((auditor) => ({
     value: getUserId(auditor),
-    label: `${auditor.firstName || ""} ${auditor.lastName || ""}`.trim(),
+    label: getUserFullName(auditor) || "Unknown",
     user: auditor,
   }));
 
   const selectedValues = value.map((user) => ({
     value: getUserId(user),
-    label: `${user.firstName || ""} ${user.lastName || ""}`.trim(),
+    label: getUserFullName(user) || "Unknown",
     user: user,
   }));
 
   const formatOptionLabel = ({ user }) => {
-    const fullName = `${user.firstName || ""} ${user.lastName || ""}`.trim();
+    const fullName = getUserFullName(user) || "Unknown";
     return (
       <HStack>
         <Avatar size="sm" name={fullName} src={user.profilePicture} />
@@ -84,7 +91,7 @@ const OrganizationAuditorsSelect = ({
             {fullName}
           </Text>
           <Text fontSize="xs" color="gray.500">
-            {user.email}
+            {user.email || user.employeeId || ""}
           </Text>
         </VStack>
       </HStack>
@@ -107,9 +114,7 @@ const OrganizationAuditorsSelect = ({
               <Tbody>
                 {value.map((user) => {
                   const userId = getUserId(user);
-                  const fullName = `${user.firstName || ""} ${
-                    user.lastName || ""
-                  }`.trim();
+                  const fullName = getUserFullName(user) || "Unknown";
                   return (
                     <Tr key={getUserId(user)}>
                       <Td>
@@ -129,7 +134,7 @@ const OrganizationAuditorsSelect = ({
                                 {fullName}
                               </Text>
                               <Text fontSize="xs" color="gray.500">
-                                {user.email}
+                                {user.email || user.employeeId || ""}
                               </Text>
                             </VStack>
                           </HStack>
@@ -149,9 +154,7 @@ const OrganizationAuditorsSelect = ({
             <HStack spacing={2} wrap="wrap">
               {value.map((user) => {
                 const userId = getUserId(user);
-                const fullName = `${user.firstName || ""} ${
-                  user.lastName || ""
-                }`.trim();
+                const fullName = getUserFullName(user) || "Unknown";
                 return (
                   <Link
                     key={userId}
@@ -199,9 +202,7 @@ const OrganizationAuditorsSelect = ({
             <HStack spacing={2} wrap="wrap" mb={2}>
               {value.map((user) => {
                 const userId = getUserId(user);
-                const fullName = `${user.firstName || ""} ${
-                  user.lastName || ""
-                }`.trim();
+                const fullName = getUserFullName(user) || "Unknown";
                 return (
                   <Link
                     key={userId}
@@ -262,9 +263,7 @@ const OrganizationAuditorsSelect = ({
           <Tbody>
             {value.map((user) => {
               const userId = getUserId(user);
-              const fullName = `${user.firstName || ""} ${
-                user.lastName || ""
-              }`.trim();
+              const fullName = getUserFullName(user) || "Unknown";
               return (
                 <Tr key={userId}>
                   <Td border="none">
