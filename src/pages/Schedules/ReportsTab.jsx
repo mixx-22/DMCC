@@ -32,6 +32,9 @@ import ActionPlanForm from "./Organizations/ActionPlanForm";
 import VerificationForm from "./Organizations/VerificationForm";
 import NotifBadge from "../../components/NotifBadge";
 
+// Constants
+const DATE_FORMAT_LONG = "MMMM DD, YYYY";
+
 // Map compliance values to display names and colors
 const COMPLIANCE_DISPLAY = {
   OBSERVATIONS: { label: "Observations", color: "brandPrimary" },
@@ -44,6 +47,11 @@ const COMPLIANCE_DISPLAY = {
   MAJOR_NC: { label: "Major Non-Conformity", color: "error" },
   COMPLIANT: { label: "Compliant", color: "green" },
 };
+
+// Helper function to check if finding should have action plan
+const isNonConformityWithReport = (finding) =>
+  (finding.compliance === "MINOR_NC" || finding.compliance === "MAJOR_NC") &&
+  finding.report;
 
 const ReportCard = ({ finding, organization, onSave, isScheduleOngoing }) => {
   const cardBg = useColorModeValue("white", "gray.700");
@@ -68,9 +76,7 @@ const ReportCard = ({ finding, organization, onSave, isScheduleOngoing }) => {
     COMPLIANCE_DISPLAY.OBSERVATIONS;
 
   // Check if finding should have action plan (MINOR_NC or MAJOR_NC with report)
-  const shouldShowActionPlan =
-    (finding.compliance === "MINOR_NC" || finding.compliance === "MAJOR_NC") &&
-    finding.report;
+  const shouldShowActionPlan = isNonConformityWithReport(finding);
 
   // Check if action plan is missing
   const needsActionPlan = shouldShowActionPlan && !finding.actionPlan;
@@ -80,10 +86,13 @@ const ReportCard = ({ finding, organization, onSave, isScheduleOngoing }) => {
     shouldShowActionPlan && finding.actionPlan && finding.corrected === -1;
 
   const handleSaveActionPlan = async (actionPlanData) => {
-    // Save action plan as part of the finding
+    // Save action plan as part of the finding (exclude temporary properties)
+    const { visitIndex, organizationId, ...findingData } = finding;
     const updatedFinding = {
-      ...finding,
+      ...findingData,
       actionPlan: actionPlanData,
+      visitIndex, // Keep for routing
+      organizationId, // Keep for routing
     };
 
     if (onSave) {
