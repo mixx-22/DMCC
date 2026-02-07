@@ -184,6 +184,38 @@ const SAMPLE_CLAUSES = [
       },
     ],
   },
+  {
+    id: "test-deep-nesting",
+    clause: "11",
+    title: "Deep Nesting Example (for testing indentation)",
+    subClauses: [
+      {
+        id: "test-11-1",
+        clause: "11.1",
+        description: "Level 2 clause - standard indentation.",
+      },
+      {
+        id: "test-11-1-1",
+        clause: "11.1.1",
+        description: "Level 3 clause - deeper indentation.",
+      },
+      {
+        id: "test-11-1-1-1",
+        clause: "11.1.1.1",
+        description: "Level 4 clause - even deeper indentation.",
+      },
+      {
+        id: "test-11-1-1-1-1",
+        clause: "11.1.1.1.1",
+        description: "Level 5 clause - maximum depth example.",
+      },
+      {
+        id: "test-11-2",
+        clause: "11.2",
+        description: "Another level 2 clause for comparison.",
+      },
+    ],
+  },
 ];
 
 const ClauseSelectionDemo = () => {

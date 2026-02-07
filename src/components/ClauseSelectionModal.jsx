@@ -18,6 +18,26 @@ import { useState, useMemo, useCallback } from "react";
 import { FiChevronDown, FiChevronRight } from "react-icons/fi";
 
 /**
+ * Calculate the depth level of a clause based on its number format
+ * Examples: "4" = 1, "4.1" = 2, "4.1.1" = 3, "9.9.9.9" = 4
+ */
+const getClauseDepth = (clauseNumber) => {
+  if (!clauseNumber || typeof clauseNumber !== "string") return 1;
+  return clauseNumber.split(".").filter(Boolean).length;
+};
+
+/**
+ * Calculate indentation margin based on clause depth
+ * Base indentation is 0 for parent, then 8 units per depth level
+ */
+const getIndentationMargin = (clauseNumber) => {
+  const depth = getClauseDepth(clauseNumber);
+  // Parent clauses (depth 1) have no indentation
+  // Each subsequent level gets 8 units more (in Chakra spacing units)
+  return depth > 1 ? (depth - 1) * 8 : 0;
+};
+
+/**
  * ClauseSelectionModal - A modal for selecting multiple clauses with hierarchical checkbox structure
  * 
  * @param {boolean} isOpen - Whether the modal is open
@@ -186,22 +206,26 @@ const ClauseSelectionModal = ({
 
                   {/* Sub Clauses */}
                   <Collapse in={expandedClauses[clause.id]} animateOpacity>
-                    <VStack align="stretch" spacing={2} ml={8} mt={2}>
+                    <VStack align="stretch" spacing={2} mt={2}>
                       {clause.subClauses && clause.subClauses.length > 0 ? (
                         clause.subClauses.map((sub) => (
-                          <Checkbox
+                          <Box
                             key={sub.id}
-                            isChecked={selectedIds.has(sub.id)}
-                            onChange={() => handleChildChange(sub.id)}
-                            size="sm"
+                            ml={getIndentationMargin(sub.clause)}
                           >
-                            <Text fontSize="sm">
-                              {sub.clause} - {sub.description}
-                            </Text>
-                          </Checkbox>
+                            <Checkbox
+                              isChecked={selectedIds.has(sub.id)}
+                              onChange={() => handleChildChange(sub.id)}
+                              size="sm"
+                            >
+                              <Text fontSize="sm">
+                                {sub.clause} - {sub.description}
+                              </Text>
+                            </Checkbox>
+                          </Box>
                         ))
                       ) : (
-                        <Text fontSize="sm" color="gray.500">
+                        <Text fontSize="sm" color="gray.500" ml={8}>
                           No sub-clauses available.
                         </Text>
                       )}
