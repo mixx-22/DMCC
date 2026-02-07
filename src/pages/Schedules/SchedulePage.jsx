@@ -72,6 +72,8 @@ import CloseAuditModal from "./CloseAuditModal";
 import { OrganizationsProvider } from "../../context/OrganizationsContext";
 import Timestamp from "../../components/Timestamp";
 import Organizations from "./Organizations";
+import PreviousAuditAsyncSelect from "../../components/PreviousAuditAsyncSelect";
+import StandardsAsyncSelect from "../../components/StandardsAsyncSelect";
 
 // Inner component that uses organizations context
 const SchedulePageContent = () => {
@@ -216,8 +218,16 @@ const SchedulePageContent = () => {
     }
 
     try {
+      // Normalize the data before submitting
+      const submitData = {
+        ...formData,
+        // Convert standard object to string if it's an object
+        standard: formData.standard?.standard || formData.standard || "",
+        // previousAudit is already in the right format (object with _id, title, auditCode)
+      };
+
       if (isNewSchedule) {
-        const result = await createSchedule(formData);
+        const result = await createSchedule(submitData);
         if (result?.id || result?._id) {
           navigate(`/audit-schedule/${result.id || result._id}`, {
             replace: true,
@@ -226,7 +236,7 @@ const SchedulePageContent = () => {
           navigate("/audit-schedules");
         }
       } else {
-        await updateSchedule(id, formData);
+        await updateSchedule(id, submitData);
         // Stay on current page - context is already updated
       }
     } catch (error) {
@@ -912,7 +922,7 @@ const SchedulePageContent = () => {
       description: formData.description,
       auditCode: formData.auditCode,
       auditType: formData.auditType,
-      standard: formData.standard,
+      standard: formData.standard?.standard || formData.standard || "",
       status: formData.status,
       ...overrides,
     };
@@ -976,7 +986,7 @@ const SchedulePageContent = () => {
       const updatePayload = buildUpdatePayload({
         auditCode: detailsData.auditCode,
         auditType: detailsData.auditType,
-        standard: detailsData.standard,
+        standard: detailsData.standard?.standard || detailsData.standard || "",
         previousAudit: detailsData.previousAudit,
       });
       const updatedSchedule = await updateSchedule(id, updatePayload);
@@ -1199,19 +1209,22 @@ const SchedulePageContent = () => {
                     </FormErrorMessage>
                   </FormControl>
 
-                  <FormControl>
-                    <FormLabel>Standard</FormLabel>
-                    <Input
-                      value={formData.standard}
-                      onChange={(e) =>
-                        handleFieldChange("standard", e.target.value)
-                      }
-                      placeholder="e.g., ISO 9001, SOX, ISO 27001"
-                    />
-                    <FormHelperText>
-                      The audit standard or framework being followed (optional)
-                    </FormHelperText>
-                  </FormControl>
+                  <StandardsAsyncSelect
+                    value={formData.standard}
+                    onChange={(standard) =>
+                      handleFieldChange("standard", standard)
+                    }
+                    label="Standard"
+                  />
+
+                  <PreviousAuditAsyncSelect
+                    value={formData.previousAudit}
+                    onChange={(audit) =>
+                      handleFieldChange("previousAudit", audit)
+                    }
+                    currentScheduleId={id !== "new" ? id : null}
+                    label="Previous Audit"
+                  />
                 </>
               )}
 
@@ -1259,7 +1272,9 @@ const SchedulePageContent = () => {
                         <Text fontWeight="semibold" minW="120px">
                           Standard:
                         </Text>
-                        <Text>{formData.standard || "-"}</Text>
+                        <Text>
+                          {formData.standard?.standard || formData.standard || "-"}
+                        </Text>
                       </HStack>
                       <HStack>
                         <Text fontWeight="semibold" minW="120px">
@@ -1510,7 +1525,7 @@ const SchedulePageContent = () => {
                       Standard
                     </Text>
                     <Text fontSize="sm" mt={1} fontWeight="medium">
-                      {formData.standard || "-"}
+                      {formData.standard?.standard || formData.standard || "-"}
                     </Text>
                   </Box>
                   <Box>

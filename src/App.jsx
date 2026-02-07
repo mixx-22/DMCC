@@ -47,6 +47,9 @@ import Request from "./pages/Request/Request";
 import ResponsiveTabsDemo from "./pages/ResponsiveTabsDemo";
 import OrganizationTabsDemo from "./pages/OrganizationTabsDemo";
 import AuditKpiDashboard from "./pages/AuditKpiDashboard";
+import ClauseSelectionDemo from "./pages/ClauseSelectionDemo";
+import SidebarDemo from "./pages/SidebarDemo";
+import AuditScheduleFieldsDemo from "./pages/AuditScheduleFieldsDemo";
 
 const ProtectedRoute = ({ children }) => {
   const { currentUser } = useApp();
@@ -83,6 +86,15 @@ function App() {
           <Route
             path="/demo/organization-tabs"
             element={<OrganizationTabsDemo />}
+          />
+          <Route
+            path="/demo/clause-selection"
+            element={<ClauseSelectionDemo />}
+          />
+          <Route path="/demo/sidebar" element={<SidebarDemo />} />
+          <Route
+            path="/demo/audit-schedule-fields"
+            element={<AuditScheduleFieldsDemo />}
           />
           <Route
             path="/*"
