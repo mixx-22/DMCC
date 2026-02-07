@@ -4,6 +4,7 @@ import {
   Checkbox,
   Collapse,
   Flex,
+  IconButton,
   Modal,
   ModalBody,
   ModalCloseButton,
@@ -11,6 +12,7 @@ import {
   ModalFooter,
   ModalHeader,
   ModalOverlay,
+  Spacer,
   Text,
   VStack,
 } from "@chakra-ui/react";
@@ -39,7 +41,7 @@ const getIndentationMargin = (clauseNumber) => {
 
 /**
  * ClauseSelectionModal - A modal for selecting multiple clauses with hierarchical checkbox structure
- * 
+ *
  * @param {boolean} isOpen - Whether the modal is open
  * @param {function} onClose - Function to close the modal
  * @param {Array} clauses - Array of clause objects with structure: { id, clause, title, subClauses: [{ id, clause, description }] }
@@ -80,14 +82,14 @@ const ClauseSelectionModal = ({
     (clause) => {
       if (!clause.subClauses || clause.subClauses.length === 0) return false;
       const selectedSubClauses = clause.subClauses.filter((sub) =>
-        selectedIds.has(sub.id)
+        selectedIds.has(sub.id),
       );
       return (
         selectedSubClauses.length > 0 &&
         selectedSubClauses.length < clause.subClauses.length
       );
     },
-    [selectedIds]
+    [selectedIds],
   );
 
   // Check if all children of a parent clause are selected
@@ -96,7 +98,7 @@ const ClauseSelectionModal = ({
       if (!clause.subClauses || clause.subClauses.length === 0) return false;
       return clause.subClauses.every((sub) => selectedIds.has(sub.id));
     },
-    [selectedIds]
+    [selectedIds],
   );
 
   // Handle parent checkbox change
@@ -115,7 +117,7 @@ const ClauseSelectionModal = ({
         return newSet;
       });
     },
-    [areAllChildrenSelected]
+    [areAllChildrenSelected],
   );
 
   // Handle child checkbox change
@@ -161,7 +163,12 @@ const ClauseSelectionModal = ({
   };
 
   return (
-    <Modal isOpen={isOpen} onClose={handleCancel} size="xl" scrollBehavior="inside">
+    <Modal
+      isOpen={isOpen}
+      onClose={handleCancel}
+      size="xl"
+      scrollBehavior="inside"
+    >
       <ModalOverlay />
       <ModalContent>
         <ModalHeader>Select Clauses</ModalHeader>
@@ -181,20 +188,8 @@ const ClauseSelectionModal = ({
                 >
                   {/* Parent Clause */}
                   <Flex align="center" gap={2}>
-                    <Button
-                      size="sm"
-                      variant="ghost"
-                      onClick={() => toggleExpanded(clause.id)}
-                      minW="auto"
-                      px={1}
-                    >
-                      {expandedClauses[clause.id] ? (
-                        <FiChevronDown />
-                      ) : (
-                        <FiChevronRight />
-                      )}
-                    </Button>
                     <Checkbox
+                      colorScheme="brandPrimary"
                       isChecked={areAllChildrenSelected(clause)}
                       isIndeterminate={isIndeterminate(clause)}
                       onChange={() => handleParentChange(clause)}
@@ -202,6 +197,21 @@ const ClauseSelectionModal = ({
                     >
                       {clause.clause} - {clause.title}
                     </Checkbox>
+                    <Spacer />
+                    <IconButton
+                      icon={
+                        expandedClauses[clause.id] ? (
+                          <FiChevronDown />
+                        ) : (
+                          <FiChevronRight />
+                        )
+                      }
+                      size="sm"
+                      variant="ghost"
+                      isRound
+                      onClick={() => toggleExpanded(clause.id)}
+                      px={1}
+                    ></IconButton>
                   </Flex>
 
                   {/* Sub Clauses */}
@@ -214,9 +224,9 @@ const ClauseSelectionModal = ({
                             ml={getIndentationMargin(sub.clause)}
                           >
                             <Checkbox
+                              colorScheme="brandPrimary"
                               isChecked={selectedIds.has(sub.id)}
                               onChange={() => handleChildChange(sub.id)}
-                              size="sm"
                             >
                               <Text fontSize="sm">
                                 {sub.clause} - {sub.description}
@@ -239,8 +249,8 @@ const ClauseSelectionModal = ({
         <ModalFooter>
           <Flex justify="space-between" w="full" align="center">
             <Text fontSize="sm" color="gray.600">
-              {selectedClauses.length} clause{selectedClauses.length !== 1 ? "s" : ""}{" "}
-              selected
+              {selectedClauses.length} clause
+              {selectedClauses.length !== 1 ? "s" : ""} selected
             </Text>
             <Flex gap={3}>
               <Button variant="ghost" onClick={handleCancel}>
