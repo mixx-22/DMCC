@@ -50,7 +50,8 @@ import apiService from "../../services/api";
 import { toast } from "sonner";
 import { v4 as uuidv4 } from "uuid";
 import Swal from "sweetalert2";
-import ChakraTreeDropdown from "../../components/TreeDropdown";
+import DropdownTreeSelect from "react-dropdown-tree-select";
+import "react-dropdown-tree-select/dist/styles.css";
 
 const STANDARDS_ENDPOINT =
   import.meta.env.VITE_API_PACKAGE_STANDARDS || "/standards";
@@ -756,10 +757,10 @@ const StandardPage = () => {
                 </Text>
                 <FormControl>
                   <FormLabel>Select Clauses</FormLabel>
-                  <ChakraTreeDropdown
+                  <DropdownTreeSelect
                     data={treeDropdownData}
                     onChange={handleTreeDropdownChange}
-                    placeholderText="Select clauses..."
+                    texts={{ placeholder: "Select clauses..." }}
                     showPartiallySelected={true}
                     keepTreeOnSearch={true}
                     keepChildrenOnSearch={true}
