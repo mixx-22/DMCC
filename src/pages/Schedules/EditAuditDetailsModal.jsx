@@ -28,7 +28,6 @@ const EditAuditDetailsModal = ({
   currentScheduleId = null,
 }) => {
   const [formData, setFormData] = useState({
-    auditCode: "",
     auditType: "",
     standard: "",
     previousAudit: null,
@@ -38,7 +37,6 @@ const EditAuditDetailsModal = ({
   useEffect(() => {
     if (auditData && isOpen) {
       setFormData({
-        auditCode: auditData.auditCode || "",
         auditType: auditData.auditType || "",
         standard: auditData.standard || "",
         previousAudit: auditData.previousAudit || null,
@@ -64,9 +62,6 @@ const EditAuditDetailsModal = ({
   const validateForm = () => {
     const errors = {};
 
-    if (!formData.auditCode.trim()) {
-      errors.auditCode = "Audit code is required";
-    }
     if (!formData.auditType) {
       errors.auditType = "Audit type is required";
     }
@@ -86,7 +81,6 @@ const EditAuditDetailsModal = ({
     // Reset form data to original values
     if (auditData) {
       setFormData({
-        auditCode: auditData.auditCode || "",
         auditType: auditData.auditType || "",
         standard: auditData.standard || "",
         previousAudit: auditData.previousAudit || null,
@@ -103,19 +97,6 @@ const EditAuditDetailsModal = ({
         <ModalCloseButton />
         <ModalBody>
           <VStack spacing={4}>
-            <FormControl isRequired isInvalid={!!validationErrors.auditCode}>
-              <FormLabel>Audit Code</FormLabel>
-              <Input
-                value={formData.auditCode}
-                onChange={(e) => handleFieldChange("auditCode", e.target.value)}
-                placeholder="e.g., AUD-2024-001"
-              />
-              <FormHelperText>
-                Unique identifier for this audit schedule
-              </FormHelperText>
-              <FormErrorMessage>{validationErrors.auditCode}</FormErrorMessage>
-            </FormControl>
-
             <FormControl isRequired isInvalid={!!validationErrors.auditType}>
               <FormLabel>Audit Type</FormLabel>
               <Select

@@ -115,7 +115,7 @@ const SchedulePageContent = () => {
     { title: "Basic Information", fields: ["title", "description"] },
     {
       title: "Audit Details",
-      fields: ["auditCode", "auditType", "standard"],
+      fields: ["auditType", "standard"],
     },
     { title: "Review", fields: [] },
   ];
@@ -160,9 +160,6 @@ const SchedulePageContent = () => {
       }
       if (field === "description" && !formData.description.trim()) {
         errors.description = "Description is required";
-      }
-      if (field === "auditCode" && !formData.auditCode.trim()) {
-        errors.auditCode = "Audit code is required";
       }
       if (field === "auditType" && !formData.auditType) {
         errors.auditType = "Audit type is required";
@@ -883,7 +880,6 @@ const SchedulePageContent = () => {
     return {
       title: formData.title,
       description: formData.description,
-      auditCode: formData.auditCode,
       auditType: formData.auditType,
       standard: formData.standard,
       status: formData.status,
@@ -947,7 +943,6 @@ const SchedulePageContent = () => {
   const handleSaveAuditDetails = async (detailsData) => {
     try {
       const updatePayload = buildUpdatePayload({
-        auditCode: detailsData.auditCode,
         auditType: detailsData.auditType,
         standard: detailsData.standard,
         previousAudit: detailsData.previousAudit,
@@ -1104,25 +1099,6 @@ const SchedulePageContent = () => {
                   <Heading size="md" mb={2}>
                     Audit Details
                   </Heading>
-                  <FormControl
-                    isRequired
-                    isInvalid={!!validationErrors.auditCode}
-                  >
-                    <FormLabel>Audit Code</FormLabel>
-                    <Input
-                      value={formData.auditCode}
-                      onChange={(e) =>
-                        handleFieldChange("auditCode", e.target.value)
-                      }
-                      placeholder="e.g., AUD-2024-001"
-                    />
-                    <FormHelperText>
-                      Unique identifier for this audit schedule
-                    </FormHelperText>
-                    <FormErrorMessage>
-                      {validationErrors.auditCode}
-                    </FormErrorMessage>
-                  </FormControl>
 
                   <FormControl
                     isRequired

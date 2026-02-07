@@ -67,7 +67,6 @@ const MOCK_SCHEDULE = MOCK_SCHEDULES[0];
 const initialScheduleData = {
   title: "",
   description: "",
-  auditCode: "",
   auditType: "",
   standard: "",
   previousAudit: null,
@@ -137,11 +136,12 @@ export const ScheduleProfileProvider = ({ children }) => {
     dispatch({ type: "FETCHING" });
 
     if (!USE_API) {
-      // Mock mode
+      // Mock mode - generate audit code
       await new Promise((resolve) => setTimeout(resolve, 800));
       const newSchedule = {
         ...scheduleData,
         _id: `schedule-${Date.now()}`,
+        auditCode: `AUD-${new Date().getFullYear()}-${String(Date.now()).slice(-3)}`,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       };
@@ -200,9 +200,10 @@ export const ScheduleProfileProvider = ({ children }) => {
           `${SCHEDULES_ENDPOINT}/${scheduleId}`,
           { method: "PUT", body: JSON.stringify(scheduleData) },
         );
-        const { success = false } = response;
+        const { success = false, data } = response;
         if (success) {
-          const updatedSchedule = {
+          // Use backend response data if available, otherwise merge with existing
+          const updatedSchedule = data || {
             ...state.schedule,
             ...scheduleData,
             updatedAt: new Date().toISOString(),
