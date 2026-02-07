@@ -27,6 +27,15 @@ import OrganizationAuditorsSelect from "../../../components/OrganizationAuditors
 import { useLayout, useUser } from "../../../context/_useContext";
 import Timestamp from "../../../components/Timestamp";
 
+// Helper function to get user's full name from either format
+const getUserFullName = (user) => {
+  if (!user) return "";
+  // Handle combined name field (API format)
+  if (user.name) return user.name;
+  // Handle separate firstName/lastName fields (legacy format)
+  return `${user.firstName || ""} ${user.lastName || ""}`.trim();
+};
+
 const ActionPlanForm = ({
   initialData = null,
   organizationAuditors = [], // List of auditors from organization
@@ -174,27 +183,30 @@ const ActionPlanForm = ({
                       Owner(s):
                     </Text>
                     <Wrap>
-                      {formData.owner.map((u, index) => (
-                        <WrapItem key={`owner-${u.id}-${index}`}>
-                          <Tooltip
-                            label={`${u.firstName || ""} ${u.lastName || ""}`}
-                          >
-                            <Card variant="filled" shadow="none">
-                              <CardBody px={2} py={1}>
-                                <HStack spacing={1}>
-                                  <Avatar
-                                    size="xs"
-                                    name={`${u.firstName || ""} ${u.lastName || ""}`}
-                                  />
-                                  <Text fontSize="sm">
-                                    {`${u.firstName || ""} ${u.lastName || ""}`}
-                                  </Text>
-                                </HStack>
-                              </CardBody>
-                            </Card>
-                          </Tooltip>
-                        </WrapItem>
-                      ))}
+                      {formData.owner.map((u, index) => {
+                        const fullName = getUserFullName(u);
+                        return (
+                          <WrapItem key={`owner-${u.id}-${index}`}>
+                            <Tooltip
+                              label={fullName}
+                            >
+                              <Card variant="filled" shadow="none">
+                                <CardBody px={2} py={1}>
+                                  <HStack spacing={1}>
+                                    <Avatar
+                                      size="xs"
+                                      name={fullName}
+                                    />
+                                    <Text fontSize="sm">
+                                      {fullName}
+                                    </Text>
+                                  </HStack>
+                                </CardBody>
+                              </Card>
+                            </Tooltip>
+                          </WrapItem>
+                        );
+                      })}
                     </Wrap>
                   </Box>
                 )}
@@ -235,27 +247,30 @@ const ActionPlanForm = ({
                       Taken By:
                     </Text>
                     <Wrap>
-                      {formData.takenBy.map((u, index) => (
-                        <WrapItem key={`takenby-${u.id}-${index}`}>
-                          <Tooltip
-                            label={`${u.firstName || ""} ${u.lastName || ""}`}
-                          >
-                            <Card variant="filled" shadow="none">
-                              <CardBody px={2} py={1}>
-                                <HStack spacing={1}>
-                                  <Avatar
-                                    size="xs"
-                                    name={`${u.firstName || ""} ${u.lastName || ""}`}
-                                  />
-                                  <Text fontSize="sm">
-                                    {`${u.firstName || ""} ${u.lastName || ""}`}
-                                  </Text>
-                                </HStack>
-                              </CardBody>
-                            </Card>
-                          </Tooltip>
-                        </WrapItem>
-                      ))}
+                      {formData.takenBy.map((u, index) => {
+                        const fullName = getUserFullName(u);
+                        return (
+                          <WrapItem key={`takenby-${u.id}-${index}`}>
+                            <Tooltip
+                              label={fullName}
+                            >
+                              <Card variant="filled" shadow="none">
+                                <CardBody px={2} py={1}>
+                                  <HStack spacing={1}>
+                                    <Avatar
+                                      size="xs"
+                                      name={fullName}
+                                    />
+                                    <Text fontSize="sm">
+                                      {fullName}
+                                    </Text>
+                                  </HStack>
+                                </CardBody>
+                              </Card>
+                            </Tooltip>
+                          </WrapItem>
+                        );
+                      })}
                     </Wrap>
                   </Box>
                 )}
@@ -265,27 +280,30 @@ const ActionPlanForm = ({
                       Verified By:
                     </Text>
                     <Wrap>
-                      {formData.auditor.map((u, index) => (
-                        <WrapItem key={`auditor-${u.id}-${index}`}>
-                          <Tooltip
-                            label={`${u.firstName || ""} ${u.lastName || ""}`}
-                          >
-                            <Card variant="filled" shadow="none">
-                              <CardBody px={2} py={1}>
-                                <HStack spacing={1}>
-                                  <Avatar
-                                    size="xs"
-                                    name={`${u.firstName || ""} ${u.lastName || ""}`}
-                                  />
-                                  <Text fontSize="sm">
-                                    {`${u.firstName || ""} ${u.lastName || ""}`}
-                                  </Text>
-                                </HStack>
-                              </CardBody>
-                            </Card>
-                          </Tooltip>
-                        </WrapItem>
-                      ))}
+                      {formData.auditor.map((u, index) => {
+                        const fullName = getUserFullName(u);
+                        return (
+                          <WrapItem key={`auditor-${u.id}-${index}`}>
+                            <Tooltip
+                              label={fullName}
+                            >
+                              <Card variant="filled" shadow="none">
+                                <CardBody px={2} py={1}>
+                                  <HStack spacing={1}>
+                                    <Avatar
+                                      size="xs"
+                                      name={fullName}
+                                    />
+                                    <Text fontSize="sm">
+                                      {fullName}
+                                    </Text>
+                                  </HStack>
+                                </CardBody>
+                              </Card>
+                            </Tooltip>
+                          </WrapItem>
+                        );
+                      })}
                     </Wrap>
                   </Box>
                 )}
@@ -441,23 +459,26 @@ const ActionPlanForm = ({
               </Text>
               {formData.auditor && formData.auditor.length > 0 ? (
                 <Wrap spacing={1}>
-                  {formData.auditor.map((user, idx) => (
-                    <WrapItem key={`auditor-${user._id || user.id}-${idx}`}>
-                      <Card variant="filled" shadow="none" bg="info.100">
-                        <CardBody px={2} py={1}>
-                          <HStack spacing={1}>
-                            <Avatar
-                              size="xs"
-                              name={`${user.firstName} ${user.lastName}`}
-                            />
-                            <Text fontSize="sm" fontWeight="medium">
-                              {user.firstName} {user.lastName}
-                            </Text>
-                          </HStack>
-                        </CardBody>
-                      </Card>
-                    </WrapItem>
-                  ))}
+                  {formData.auditor.map((user, idx) => {
+                    const fullName = getUserFullName(user);
+                    return (
+                      <WrapItem key={`auditor-${user._id || user.id}-${idx}`}>
+                        <Card variant="filled" shadow="none" bg="info.100">
+                          <CardBody px={2} py={1}>
+                            <HStack spacing={1}>
+                              <Avatar
+                                size="xs"
+                                name={fullName}
+                              />
+                              <Text fontSize="sm" fontWeight="medium">
+                                {fullName}
+                              </Text>
+                            </HStack>
+                          </CardBody>
+                        </Card>
+                      </WrapItem>
+                    );
+                  })}
                 </Wrap>
               ) : (
                 <Text fontSize="sm" color="red.500">
