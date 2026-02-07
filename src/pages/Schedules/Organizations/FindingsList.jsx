@@ -40,6 +40,15 @@ import ActionPlanForm from "./ActionPlanForm";
 import VerificationForm from "./VerificationForm";
 import NotifBadge from "../../../components/NotifBadge";
 
+// Helper function to get user's full name from either format
+const getUserFullName = (user) => {
+  if (!user) return "";
+  // Handle combined name field (API format)
+  if (user.name) return user.name;
+  // Handle separate firstName/lastName fields (legacy format)
+  return `${user.firstName || ""} ${user.lastName || ""}`.trim();
+};
+
 // Map compliance values to display names and colors
 const COMPLIANCE_DISPLAY = {
   OBSERVATIONS: { label: "Observations", color: "brandPrimary" },
@@ -57,6 +66,7 @@ const FindingCard = ({
   finding,
   teamObjectives,
   team, // NEW: Accept team object
+  organizationAuditors = [], // NEW: Accept organization auditors
   onEdit,
   onDelete,
   onSaveEdit,
@@ -165,6 +175,7 @@ const FindingCard = ({
           <FindingsForm
             teamObjectives={teamObjectives}
             team={team} // NEW: Pass team object
+            organizationAuditors={organizationAuditors} // NEW: Pass organization auditors
             initialData={finding}
             mode="edit"
             onAddFinding={handleSave}
@@ -425,12 +436,13 @@ const FindingCard = ({
                                   <Wrap>
                                     {finding?.report?.auditor?.map(
                                       (u, index) => {
+                                        const fullName = getUserFullName(u);
                                         return (
                                           <WrapItem
                                             key={`auditor-${u.id}-${index}`}
                                           >
                                             <Tooltip
-                                              label={`${u.firstName} ${u.lastName}`}
+                                              label={fullName}
                                             >
                                               <Card
                                                 variant="filled"
@@ -440,10 +452,10 @@ const FindingCard = ({
                                                   <HStack spacing={1}>
                                                     <Avatar
                                                       size="xs"
-                                                      name={`${u.firstName} ${u.lastName}`}
+                                                      name={fullName}
                                                     />
                                                     <Text fontSize="sm">
-                                                      {`${u.firstName} ${u.lastName}`}
+                                                      {fullName}
                                                     </Text>
                                                   </HStack>
                                                 </CardBody>
@@ -474,12 +486,13 @@ const FindingCard = ({
                                   <Wrap>
                                     {finding?.report?.auditee?.map(
                                       (u, index) => {
+                                        const fullName = getUserFullName(u);
                                         return (
                                           <WrapItem
                                             key={`auditee-${u.id}-${index}`}
                                           >
                                             <Tooltip
-                                              label={`${u.firstName} ${u.lastName}`}
+                                              label={fullName}
                                             >
                                               <Card
                                                 variant="filled"
@@ -489,10 +502,10 @@ const FindingCard = ({
                                                   <HStack spacing={1}>
                                                     <Avatar
                                                       size="xs"
-                                                      name={`${u.firstName} ${u.lastName}`}
+                                                      name={fullName}
                                                     />
                                                     <Text fontSize="sm">
-                                                      {`${u.firstName} ${u.lastName}`}
+                                                      {fullName}
                                                     </Text>
                                                   </HStack>
                                                 </CardBody>
@@ -524,6 +537,8 @@ const FindingCard = ({
                       {isEditingActionPlan ? (
                         <ActionPlanForm
                           initialData={finding.actionPlan}
+                          organizationAuditors={organizationAuditors} // NEW: Pass organization auditors
+                          team={team} // NEW: Pass team for leaders
                           onSave={handleSaveActionPlan}
                           onCancel={handleCancelActionPlan}
                           readOnly={false}
@@ -548,6 +563,8 @@ const FindingCard = ({
                           </HStack>
                           <ActionPlanForm
                             initialData={finding.actionPlan}
+                            organizationAuditors={organizationAuditors} // NEW: Pass organization auditors
+                            team={team} // NEW: Pass team for leaders
                             onSave={handleSaveActionPlan}
                             onCancel={handleCancelActionPlan}
                             readOnly={true}
@@ -746,20 +763,21 @@ const FindingCard = ({
                             <Box>
                               <Wrap>
                                 {finding?.report?.auditor?.map((u, index) => {
+                                  const fullName = getUserFullName(u);
                                   return (
                                     <WrapItem key={`auditor-${u.id}-${index}`}>
                                       <Tooltip
-                                        label={`${u.firstName} ${u.lastName}`}
+                                        label={fullName}
                                       >
                                         <Card variant="filled" shadow="none">
                                           <CardBody px={2} py={1}>
                                             <HStack spacing={1}>
                                               <Avatar
                                                 size="xs"
-                                                name={`${u.firstName} ${u.lastName}`}
+                                                name={fullName}
                                               />
                                               <Text fontSize="sm">
-                                                {`${u.firstName} ${u.lastName}`}
+                                                {fullName}
                                               </Text>
                                             </HStack>
                                           </CardBody>
@@ -784,20 +802,21 @@ const FindingCard = ({
                             <Box>
                               <Wrap>
                                 {finding?.report?.auditee?.map((u, index) => {
+                                  const fullName = getUserFullName(u);
                                   return (
                                     <WrapItem key={`auditee-${u.id}-${index}`}>
                                       <Tooltip
-                                        label={`${u.firstName} ${u.lastName}`}
+                                        label={fullName}
                                       >
                                         <Card variant="filled" shadow="none">
                                           <CardBody px={2} py={1}>
                                             <HStack spacing={1}>
                                               <Avatar
                                                 size="xs"
-                                                name={`${u.firstName} ${u.lastName}`}
+                                                name={fullName}
                                               />
                                               <Text fontSize="sm">
-                                                {`${u.firstName} ${u.lastName}`}
+                                                {fullName}
                                               </Text>
                                             </HStack>
                                           </CardBody>
@@ -831,6 +850,7 @@ const FindingsList = ({
   findings = [],
   teamObjectives = [],
   team = null, // NEW: Accept team object
+  organizationAuditors = [], // NEW: Accept organization auditors
   onEdit,
   onDelete,
   onSaveEdit,
@@ -851,6 +871,7 @@ const FindingsList = ({
           finding={finding}
           teamObjectives={teamObjectives}
           team={team} // NEW: Pass team object
+          organizationAuditors={organizationAuditors} // NEW: Pass organization auditors
           onEdit={onEdit}
           onDelete={onDelete}
           onSaveEdit={onSaveEdit}

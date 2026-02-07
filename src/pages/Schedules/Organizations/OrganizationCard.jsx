@@ -1298,6 +1298,7 @@ const OrganizationCard = ({
                                                     team?.objectives || []
                                                   }
                                                   team={team} // NEW: Pass full team object
+                                                  organizationAuditors={auditors} // NEW: Pass organization auditors
                                                   onEdit={() => {
                                                     // onEdit is called but inline editing handles the UI
                                                   }}
@@ -1327,6 +1328,7 @@ const OrganizationCard = ({
                                                   team?.objectives || []
                                                 }
                                                 team={team} // NEW: Pass full team object
+                                                organizationAuditors={auditors} // NEW: Pass organization auditors
                                                 onAddFinding={async (
                                                   findingData,
                                                 ) => {
