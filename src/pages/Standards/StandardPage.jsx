@@ -46,6 +46,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import PageHeader from "../../components/PageHeader";
 import PageFooter from "../../components/PageFooter";
 import Timestamp from "../../components/Timestamp";
+import ClauseSelectionModal from "../../components/ClauseSelectionModal";
 import apiService from "../../services/api";
 import { toast } from "sonner";
 import { v4 as uuidv4 } from "uuid";
@@ -66,6 +67,12 @@ const StandardPage = () => {
   const { isOpen, onOpen, onClose } = useDisclosure();
   const [editingClauseIndex, setEditingClauseIndex] = useState(null);
   const [isEditMode, setIsEditMode] = useState(false);
+  const {
+    isOpen: isClauseSelectionOpen,
+    onOpen: onClauseSelectionOpen,
+    onClose: onClauseSelectionClose,
+  } = useDisclosure();
+  const [selectedClauses, setSelectedClauses] = useState([]);
   const [standardForm, setStandardForm] = useState({
     standard: "",
     description: "",
@@ -410,6 +417,12 @@ const StandardPage = () => {
     }
   };
 
+  const handleClauseSelection = (clauses) => {
+    setSelectedClauses(clauses);
+    toast.success(`${clauses.length} clause${clauses.length !== 1 ? "s" : ""} selected`);
+    console.log("Selected clauses:", clauses);
+  };
+
   return (
     <Box>
       <PageHeader>
@@ -558,11 +571,20 @@ const StandardPage = () => {
             <CardBody>
               <Flex justify="space-between" align="center" mb={4} gap={4}>
                 <Heading size="md">Clauses</Heading>
-                {isEditMode && (
-                  <Button leftIcon={<FiPlus />} onClick={openAddClause}>
-                    Add Clause
+                <Flex gap={2}>
+                  <Button
+                    variant="outline"
+                    onClick={onClauseSelectionOpen}
+                    size="sm"
+                  >
+                    Demo: Select Clauses
                   </Button>
-                )}
+                  {isEditMode && (
+                    <Button leftIcon={<FiPlus />} onClick={openAddClause}>
+                      Add Clause
+                    </Button>
+                  )}
+                </Flex>
               </Flex>
               {standard.clauses && standard.clauses.length > 0 ? (
                 <Accordion allowMultiple>
@@ -776,6 +798,15 @@ const StandardPage = () => {
           </ModalFooter>
         </ModalContent>
       </Modal>
+
+      {/* Clause Selection Modal */}
+      <ClauseSelectionModal
+        isOpen={isClauseSelectionOpen}
+        onClose={onClauseSelectionClose}
+        clauses={standard?.clauses || []}
+        initialSelectedClauses={selectedClauses}
+        onConfirm={handleClauseSelection}
+      />
     </Box>
   );
 };
