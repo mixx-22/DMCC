@@ -18,7 +18,7 @@ import {
   ModalBody,
   ModalCloseButton,
   useDisclosure,
-  IconButton,
+  Button,
   Wrap,
   WrapItem,
   Tooltip,
@@ -251,37 +251,27 @@ const ReportCard = ({ finding, organization, onSave, isScheduleOngoing }) => {
             {/* Action Buttons */}
             {shouldShowActionPlan && isScheduleOngoing && (
               <HStack spacing={2}>
-                <IconButton
-                  icon={<FiTool />}
+                <Button
+                  leftIcon={<FiTool />}
                   size="sm"
                   colorScheme="brandPrimary"
                   variant={needsActionPlan ? "solid" : "outline"}
                   onClick={onActionPlanOpen}
-                  aria-label={
-                    finding.actionPlan ? "Edit Action Plan" : "Add Action Plan"
-                  }
-                  leftIcon={
-                    <NotifBadge
-                      show={needsActionPlan}
-                      message="Action Plan Required"
-                    />
-                  }
                 >
                   {finding.actionPlan ? "Edit Action Plan" : "Add Action Plan"}
-                </IconButton>
+                </Button>
                 {finding.actionPlan && (
-                  <IconButton
-                    icon={<FiCheckCircle />}
+                  <Button
+                    leftIcon={<FiCheckCircle />}
                     size="sm"
                     colorScheme="green"
                     variant={needsVerification ? "solid" : "outline"}
                     onClick={onVerificationOpen}
-                    aria-label="Set Verification"
                   >
                     {finding.corrected === -1
                       ? "Set Verification"
                       : "Edit Verification"}
-                  </IconButton>
+                  </Button>
                 )}
               </HStack>
             )}
