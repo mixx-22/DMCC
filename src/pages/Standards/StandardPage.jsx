@@ -258,6 +258,7 @@ const StandardPage = () => {
     return sampleTreeData.map((item) => ({
       label: `${item.clause} - ${item.title}`,
       value: item.id,
+      expanded: true,
       children: (item.subClauses || []).map((sub) => ({
         label: `${sub.clause} - ${sub.description}`,
         value: sub.id,
@@ -766,6 +767,8 @@ const StandardPage = () => {
                     keepChildrenOnSearch={true}
                     keepOpenOnSelect={true}
                     mode="multiSelect"
+                    showDropdown="always"
+                    inlineSearchInput={true}
                   />
                 </FormControl>
                 {selectedTreeItems.length > 0 && (
