@@ -122,7 +122,6 @@ const OrganizationCard = ({
   const borderColor = useColorModeValue("gray.200", "gray.600");
   const hoverBg = useColorModeValue("gray.50", "gray.600");
   const headerHoverBg = useColorModeValue("gray.100", "gray.650");
-  const objectiveBg = useColorModeValue("gray.50", "gray.700");
   const [tabColor, brandPrimaryColor, brandSecondaryColor] = useToken(
     "colors",
     ["gray.500", "brandPrimary.600", "brandSecondary.600"],
@@ -130,12 +129,6 @@ const OrganizationCard = ({
   const $tabColor = cssVar("tabs-color");
 
   const isScheduleOngoing = useMemo(() => schedule?.status === 0, [schedule]);
-
-  const WEIGHT_COLORS = {
-    low: "success",
-    medium: "brandSecondary",
-    high: "error",
-  };
 
   // State to track which visit's finding form is shown (visitIndex -> boolean)
   const [showFindingFormFor, setShowFindingFormFor] = useState(new Set());
@@ -1062,7 +1055,7 @@ const OrganizationCard = ({
                                                 <Box
                                                   w="2px"
                                                   h="full"
-                                                  bg={objectiveBg}
+                                                  bg="gray.300"
                                                 ></Box>
                                               </Box>
                                             )}
@@ -1080,7 +1073,7 @@ const OrganizationCard = ({
                                                 <Box
                                                   w="2px"
                                                   h="full"
-                                                  bg={objectiveBg}
+                                                  bg="gray.300"
                                                 ></Box>
                                               </Box>
                                             )}
@@ -1185,7 +1178,7 @@ const OrganizationCard = ({
                                               <Box
                                                 w="2px"
                                                 h="full"
-                                                bg={objectiveBg}
+                                                bg="gray.300"
                                               />
                                             )}
                                           </Box>
@@ -1567,48 +1560,6 @@ const OrganizationCard = ({
                             Description
                           </Text>
                           <Text fontSize="sm">{team.description}</Text>
-                        </Box>
-                      )}
-
-                      {/* Team Objectives */}
-                      {team?.objectives && team.objectives.length > 0 && (
-                        <Box>
-                          <Text fontSize="sm" color="gray.500" mb={2}>
-                            Objectives
-                          </Text>
-                          <Stack spacing={3}>
-                            {team.objectives.map((objective, index) => (
-                              <Box
-                                key={objective.id || `objective-${index}`}
-                                p={3}
-                                borderWidth={1}
-                                borderRadius="md"
-                                borderColor={borderColor}
-                                bg={objectiveBg}
-                              >
-                                <Flex
-                                  justify="space-between"
-                                  align="start"
-                                  mb={2}
-                                >
-                                  <Text fontWeight="bold" fontSize="sm">
-                                    {objective.title}
-                                  </Text>
-                                  <Badge
-                                    colorScheme={
-                                      WEIGHT_COLORS[objective.weight]
-                                    }
-                                    fontSize="xs"
-                                  >
-                                    {objective.weight}
-                                  </Badge>
-                                </Flex>
-                                <Text fontSize="sm" color="gray.600">
-                                  {objective.description}
-                                </Text>
-                              </Box>
-                            ))}
-                          </Stack>
                         </Box>
                       )}
 
