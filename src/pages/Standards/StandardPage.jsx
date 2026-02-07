@@ -33,6 +33,9 @@ import {
   Textarea,
   useDisclosure,
   VStack,
+  Stack,
+  Spacer,
+  CardHeader,
 } from "@chakra-ui/react";
 import {
   FiArrowLeft,
@@ -679,7 +682,7 @@ const StandardPage = () => {
       </PageFooter>
 
       <Flex gap={6} flexWrap={{ base: "wrap", xl: "nowrap" }}>
-        <Box w={{ base: "full", xl: "sm" }}>
+        <Stack spacing={6} w={{ base: "full", xl: "sm" }}>
           <Card>
             <CardBody>
               <VStack align="stretch" spacing={4}>
@@ -758,28 +761,44 @@ const StandardPage = () => {
               </VStack>
             </CardBody>
           </Card>
-        </Box>
-
-        <Box flex={1} minW={{ base: "full", xl: 0 }}>
           <Card>
             <CardBody>
-              <Flex justify="space-between" align="center" mb={4} gap={4}>
-                <Heading size="md">Clauses</Heading>
+              <Flex justify="space-between" align="center" gap={4}>
+                <Heading size="md">Demo</Heading>
                 <Flex gap={2}>
                   <Button
                     variant="outline"
                     onClick={onClauseSelectionOpen}
                     size="sm"
                   >
-                    Demo: Select Clauses
+                    Select Clauses
                   </Button>
-                  {isEditMode && (
-                    <Button leftIcon={<FiPlus />} onClick={openAddClause}>
-                      Add Clause
-                    </Button>
-                  )}
                 </Flex>
               </Flex>
+            </CardBody>
+          </Card>
+        </Stack>
+
+        <Box flex={1} minW={{ base: "full", xl: 0 }}>
+          <Card>
+            <CardHeader pb={0}>
+              <Flex justify="space-between" align="center" gap={4}>
+                <Heading size="md">Clauses</Heading>
+                <Spacer />
+                {isEditMode && (
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    colorScheme="green"
+                    leftIcon={<FiPlus />}
+                    onClick={openAddClause}
+                  >
+                    Add Clause
+                  </Button>
+                )}
+              </Flex>
+            </CardHeader>
+            <CardBody>
               {standard.clauses && standard.clauses.length > 0 ? (
                 <Accordion allowMultiple>
                   {standard.clauses.map((clause, index) => (
@@ -804,6 +823,7 @@ const StandardPage = () => {
                             <IconButton
                               size="sm"
                               variant="ghost"
+                              colorScheme="green"
                               aria-label="Edit clause"
                               icon={<FiEdit2 />}
                               onClick={(event) => {
