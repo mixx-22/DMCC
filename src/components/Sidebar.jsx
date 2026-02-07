@@ -33,8 +33,8 @@ import {
   FiFolder,
   FiSearch,
   FiClock,
-  FiBook,
 } from "react-icons/fi";
+import { PiBookOpenText } from "react-icons/pi";
 import { HiOutlineUser, HiOutlineUserGroup } from "react-icons/hi2";
 import { IoCalendarOutline } from "react-icons/io5";
 import logoDefault from "../images/auptilyze.png";
@@ -290,7 +290,7 @@ const Sidebar = () => {
         id: "standards",
         path: "/standards",
         label: "Standards",
-        icon: FiBook,
+        icon: PiBookOpenText,
       });
     }
     if (isSettingsAllowed) {
