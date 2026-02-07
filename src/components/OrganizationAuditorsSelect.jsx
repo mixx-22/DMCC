@@ -20,8 +20,11 @@ import {
 import { Select } from "chakra-react-select";
 import { FiEye, FiX } from "react-icons/fi";
 import { Link as RouterLink } from "react-router-dom";
+import { useCallback } from "react";
 
 const getUserId = (user) => user.id || user._id || user.userId;
+
+const noOptionsMessage = () => "No auditors available for this organization";
 
 /**
  * Component to select auditors from organization's auditor list
@@ -234,7 +237,7 @@ const OrganizationAuditorsSelect = ({
             onChange={handleChange}
             options={auditorOptions}
             placeholder={placeholder}
-            noOptionsMessage={() => "No auditors available for this organization"}
+            noOptionsMessage={noOptionsMessage}
             formatOptionLabel={formatOptionLabel}
             isClearable
             colorScheme="brandPrimary"
