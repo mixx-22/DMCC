@@ -20,6 +20,7 @@ import {
 import { useState, useEffect } from "react";
 import { FiSave } from "react-icons/fi";
 import PreviousAuditAsyncSelect from "../../components/PreviousAuditAsyncSelect";
+import StandardsAsyncSelect from "../../components/StandardsAsyncSelect";
 import {
   generateAuditCode,
   getAuditTypePrefix,
@@ -196,17 +197,11 @@ const EditAuditDetailsModal = ({
               <FormErrorMessage>{validationErrors.auditCode}</FormErrorMessage>
             </FormControl>
 
-            <FormControl>
-              <FormLabel>Standard</FormLabel>
-              <Input
-                value={formData.standard}
-                onChange={(e) => handleFieldChange("standard", e.target.value)}
-                placeholder="e.g., ISO 9001, SOX, ISO 27001"
-              />
-              <FormHelperText>
-                The audit standard or framework being followed (optional)
-              </FormHelperText>
-            </FormControl>
+            <StandardsAsyncSelect
+              value={formData.standard}
+              onChange={(standard) => handleFieldChange("standard", standard)}
+              label="Standard"
+            />
 
             <PreviousAuditAsyncSelect
               value={formData.previousAudit}
