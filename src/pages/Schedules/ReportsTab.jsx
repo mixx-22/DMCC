@@ -106,13 +106,16 @@ const ReportCard = ({ finding, organization, onSave, isScheduleOngoing }) => {
     const currentCompliance =
       verificationData.corrected === 2 ? "COMPLIANT" : finding.compliance;
 
-    // Save verification data at finding level
+    // Save verification data at finding level (exclude temporary properties)
+    const { visitIndex, organizationId, ...findingData } = finding;
     const updatedFinding = {
-      ...finding,
+      ...findingData,
       corrected: verificationData.corrected,
       correctionDate: verificationData.correctionDate,
       remarks: verificationData.remarks,
       currentCompliance: currentCompliance,
+      visitIndex, // Keep for routing
+      organizationId, // Keep for routing
     };
 
     if (onSave) {
@@ -154,7 +157,7 @@ const ReportCard = ({ finding, organization, onSave, isScheduleOngoing }) => {
                       {finding.objectives.map((obj, idx) => (
                         <WrapItem key={`obj-${obj._id}-${idx}`}>
                           <Tooltip
-                            label={`Updated: ${moment(obj.teamUpdatedAt).format("MMMM DD, YYYY")}`}
+                            label={`Updated: ${moment(obj.teamUpdatedAt).format(DATE_FORMAT_LONG)}`}
                             placement="top"
                           >
                             <Badge
@@ -236,7 +239,7 @@ const ReportCard = ({ finding, organization, onSave, isScheduleOngoing }) => {
                           Date Issued:
                         </Text>
                         <Text fontSize="sm">
-                          {moment(finding.report.date).format("MMMM DD, YYYY")}
+                          {moment(finding.report.date).format(DATE_FORMAT_LONG)}
                         </Text>
                       </HStack>
                     )}
@@ -366,13 +369,18 @@ const ReportsTab = ({ schedule }) => {
     // Find the visit index from the finding
     const visitIndex = updatedFinding.visitIndex;
 
+    // Remove temporary routing properties before persisting
+    const cleanFinding = { ...updatedFinding };
+    delete cleanFinding.visitIndex;
+    delete cleanFinding.organizationId;
+
     // Calculate updated visits with the edited finding
     const updatedVisits = organization.visits.map((v, i) => {
       if (i === visitIndex) {
         return {
           ...v,
           findings: (v.findings || []).map((f) =>
-            f._id === updatedFinding._id ? updatedFinding : f,
+            f._id === cleanFinding._id ? cleanFinding : f,
           ),
         };
       }
