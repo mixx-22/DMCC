@@ -39,6 +39,11 @@ import {
   EditablePreview,
   useDisclosure,
   InputGroup,
+  Tabs,
+  TabList,
+  Tab,
+  TabPanels,
+  TabPanel,
 } from "@chakra-ui/react";
 import {
   FiArrowLeft,
@@ -72,6 +77,7 @@ import CloseAuditModal from "./CloseAuditModal";
 import { OrganizationsProvider } from "../../context/OrganizationsContext";
 import Timestamp from "../../components/Timestamp";
 import Organizations from "./Organizations";
+import ReportsTab from "./ReportsTab";
 import PreviousAuditAsyncSelect from "../../components/PreviousAuditAsyncSelect";
 import StandardsAsyncSelect from "../../components/StandardsAsyncSelect";
 
@@ -1590,9 +1596,23 @@ const SchedulePageContent = () => {
             </Card>
           </Stack>
 
-          {/* Right Column - Organizations */}
+          {/* Right Column - Organizations and Reports */}
           <Stack spacing={4} flex={1}>
-            <Organizations schedule={schedule ?? {}} {...{ setFormData }} />
+            <Tabs colorScheme="brandPrimary" isLazy>
+              <TabList>
+                <Tab>Organizations</Tab>
+                <Tab>Reports</Tab>
+              </TabList>
+
+              <TabPanels>
+                <TabPanel px={0} py={4}>
+                  <Organizations schedule={schedule ?? {}} {...{ setFormData }} />
+                </TabPanel>
+                <TabPanel px={0} py={4}>
+                  <ReportsTab schedule={schedule ?? {}} />
+                </TabPanel>
+              </TabPanels>
+            </Tabs>
           </Stack>
         </Flex>
       </Box>
