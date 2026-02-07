@@ -1294,10 +1294,9 @@ const OrganizationCard = ({
                                                 <FindingsList
                                                   {...{ isScheduleOngoing }}
                                                   findings={visit.findings}
-                                                  teamObjectives={
-                                                    team?.objectives || []
+                                                  auditStandardClauses={
+                                                    schedule?.standard?.clauses || []
                                                   }
-                                                  team={team} // NEW: Pass full team object
                                                   onEdit={() => {
                                                     // onEdit is called but inline editing handles the UI
                                                   }}
@@ -1323,10 +1322,9 @@ const OrganizationCard = ({
                                             visit.findings?.length < 1 ||
                                             showFindingFormFor.has(index) ? (
                                               <FindingsForm
-                                                teamObjectives={
-                                                  team?.objectives || []
+                                                auditStandardClauses={
+                                                  schedule?.standard?.clauses || []
                                                 }
-                                                team={team} // NEW: Pass full team object
                                                 onAddFinding={async (
                                                   findingData,
                                                 ) => {
