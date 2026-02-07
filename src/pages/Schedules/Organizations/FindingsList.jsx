@@ -538,6 +538,7 @@ const FindingCard = ({
                         <ActionPlanForm
                           initialData={finding.actionPlan}
                           organizationAuditors={organizationAuditors} // NEW: Pass organization auditors
+                          team={team} // NEW: Pass team for leaders
                           onSave={handleSaveActionPlan}
                           onCancel={handleCancelActionPlan}
                           readOnly={false}
@@ -563,6 +564,7 @@ const FindingCard = ({
                           <ActionPlanForm
                             initialData={finding.actionPlan}
                             organizationAuditors={organizationAuditors} // NEW: Pass organization auditors
+                            team={team} // NEW: Pass team for leaders
                             onSave={handleSaveActionPlan}
                             onCancel={handleCancelActionPlan}
                             readOnly={true}

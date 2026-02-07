@@ -24,6 +24,7 @@ import { FiSave, FiX } from "react-icons/fi";
 import { SingleDatepicker } from "chakra-dayzed-datepicker";
 import UserAsyncSelect from "../../../components/UserAsyncSelect";
 import OrganizationAuditorsSelect from "../../../components/OrganizationAuditorsSelect";
+import TeamLeadersSelect from "../../../components/TeamLeadersSelect";
 import { useLayout, useUser } from "../../../context/_useContext";
 import Timestamp from "../../../components/Timestamp";
 
@@ -39,6 +40,7 @@ const getUserFullName = (user) => {
 const ActionPlanForm = ({
   initialData = null,
   organizationAuditors = [], // List of auditors from organization
+  team = null, // Team object for leaders
   onSave,
   onCancel,
   readOnly = false,
@@ -371,12 +373,13 @@ const ActionPlanForm = ({
             {/* Owner */}
             <FormControl isInvalid={errors.owner}>
               <FormLabel fontSize="sm">Owner(s) *</FormLabel>
-              <UserAsyncSelect
+              <TeamLeadersSelect
                 label=""
                 value={formData.owner || []}
                 onChange={(users) => handleChange("owner", users)}
                 placeholder="Select owner(s) responsible for resolution"
                 displayMode="none"
+                team={team}
               />
               {errors.owner && (
                 <FormHelperText color="error.500">
