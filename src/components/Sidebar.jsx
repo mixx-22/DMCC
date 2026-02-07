@@ -282,7 +282,8 @@ const Sidebar = () => {
     }
     if (isSettingsAllowed) {
       const children = [];
-      children.push({ path: "/allSettings", label: "All Settings" });
+      children.push({ path: "/settings", label: "All Settings" });
+      children.push({ path: "/standards", label: "Standards" });
       if (isSettingsRolesAllowed) {
         children.push({ path: "/roles", label: "Roles & Permissions" });
       }
