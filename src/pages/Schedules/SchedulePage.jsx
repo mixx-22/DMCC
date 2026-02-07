@@ -38,6 +38,7 @@ import {
   EditableTextarea,
   EditablePreview,
   useDisclosure,
+  InputGroup,
 } from "@chakra-ui/react";
 import {
   FiArrowLeft,
@@ -60,7 +61,11 @@ import {
   useScheduleProfile,
   useOrganizations,
 } from "../../context/_useContext";
-import { getAuditTypeLabel } from "../../utils/auditHelpers";
+import {
+  getAuditTypeLabel,
+  generateAuditCode,
+  getAuditTypePrefix,
+} from "../../utils/auditHelpers";
 import { validateAuditScheduleClosure } from "../../utils/helpers";
 import EditAuditDetailsModal from "./EditAuditDetailsModal";
 import CloseAuditModal from "./CloseAuditModal";
@@ -137,10 +142,32 @@ const SchedulePageContent = () => {
   }, [schedule, isNewSchedule, initialScheduleData]);
 
   const handleFieldChange = (field, value) => {
-    setFormData((prev) => ({
-      ...prev,
-      [field]: value,
-    }));
+    setFormData((prev) => {
+      const updated = {
+        ...prev,
+        [field]: value,
+      };
+
+      // Auto-generate audit code when type, year, or number changes
+      if (
+        field === "auditType" ||
+        field === "auditYear" ||
+        field === "auditNumber"
+      ) {
+        const type = field === "auditType" ? value : prev.auditType;
+        const year =
+          field === "auditYear"
+            ? value
+            : prev.auditYear || new Date().getFullYear().toString();
+        const number = field === "auditNumber" ? value : prev.auditNumber || "";
+
+        if (type) {
+          updated.auditCode = generateAuditCode(type, year, number);
+        }
+      }
+
+      return updated;
+    });
 
     if (validationErrors[field]) {
       setValidationErrors((prev) => ({
@@ -1106,26 +1133,6 @@ const SchedulePageContent = () => {
                   </Heading>
                   <FormControl
                     isRequired
-                    isInvalid={!!validationErrors.auditCode}
-                  >
-                    <FormLabel>Audit Code</FormLabel>
-                    <Input
-                      value={formData.auditCode}
-                      onChange={(e) =>
-                        handleFieldChange("auditCode", e.target.value)
-                      }
-                      placeholder="e.g., AUD-2024-001"
-                    />
-                    <FormHelperText>
-                      Unique identifier for this audit schedule
-                    </FormHelperText>
-                    <FormErrorMessage>
-                      {validationErrors.auditCode}
-                    </FormErrorMessage>
-                  </FormControl>
-
-                  <FormControl
-                    isRequired
                     isInvalid={!!validationErrors.auditType}
                   >
                     <FormLabel>Audit Type</FormLabel>
@@ -1144,6 +1151,51 @@ const SchedulePageContent = () => {
                     </Select>
                     <FormErrorMessage>
                       {validationErrors.auditType}
+                    </FormErrorMessage>
+                  </FormControl>
+
+                  <FormControl
+                    isRequired
+                    isInvalid={!!validationErrors.auditCode}
+                  >
+                    <FormLabel>Audit Code</FormLabel>
+                    <HStack spacing={2}>
+                      <InputGroup size="md" flex="0 0 100px">
+                        <Input
+                          value={getAuditTypePrefix(formData.auditType) || ""}
+                          isReadOnly
+                          placeholder="AUD"
+                          textAlign="center"
+                        />
+                      </InputGroup>
+                      <InputGroup size="md" flex="0 0 100px">
+                        <Input
+                          value={formData.auditYear || ""}
+                          onChange={(e) =>
+                            handleFieldChange("auditYear", e.target.value)
+                          }
+                          placeholder="YYYY"
+                          textAlign="center"
+                          maxLength={4}
+                        />
+                      </InputGroup>
+                      <InputGroup size="md" flex="1">
+                        <Input
+                          value={formData.auditNumber || ""}
+                          onChange={(e) =>
+                            handleFieldChange("auditNumber", e.target.value)
+                          }
+                          placeholder="Audit Number"
+                          textAlign="center"
+                        />
+                      </InputGroup>
+                    </HStack>
+                    <FormHelperText>
+                      Prefix is auto-filled based on audit type. Year defaults
+                      to current year. Number is optional (e.g., 001 or 9999).
+                    </FormHelperText>
+                    <FormErrorMessage>
+                      {validationErrors.auditCode}
                     </FormErrorMessage>
                   </FormControl>
 
