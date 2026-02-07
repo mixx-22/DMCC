@@ -46,11 +46,35 @@ export const getAuditTypePrefix = (type) => {
 };
 
 /**
+ * Parse an audit code into its components
+ * @param {string} auditCode - The audit code in format PREFIX-YEAR-NUMBER
+ * @returns {Object} Object with year and number properties
+ */
+export const parseAuditCode = (auditCode) => {
+  const currentYear = new Date().getFullYear().toString();
+  let auditYear = currentYear;
+  let auditNumber = "";
+  
+  if (auditCode) {
+    // Extract year and number from existing audit code (format: PREFIX-YEAR-NUMBER)
+    const parts = auditCode.split("-");
+    if (parts.length >= 2) {
+      auditYear = parts[1] || currentYear;
+    }
+    if (parts.length >= 3) {
+      auditNumber = parts[2] || "";
+    }
+  }
+  
+  return { auditYear, auditNumber };
+};
+
+/**
  * Generate an audit code based on audit type
  * @param {string} auditType - The audit type key
  * @param {string|number} year - The year (defaults to current year)
  * @param {string|number} number - The audit number (defaults to empty string, can be 9999 for placeholder)
- * @returns {string} The generated audit code in format PREFIX-YEAR-NUMBER
+ * @returns {string} The generated audit code in format PREFIX-YEAR-NUMBER (or PREFIX-YEAR if number is empty)
  */
 export const generateAuditCode = (auditType, year = null, number = "") => {
   const prefix = getAuditTypePrefix(auditType);
@@ -61,5 +85,10 @@ export const generateAuditCode = (auditType, year = null, number = "") => {
   const auditYear = year || new Date().getFullYear();
   const auditNumber = number || "";
   
-  return `${prefix}-${auditYear}-${auditNumber}`;
+  // Only include the number part if it's not empty
+  if (auditNumber) {
+    return `${prefix}-${auditYear}-${auditNumber}`;
+  }
+  
+  return `${prefix}-${auditYear}`;
 };

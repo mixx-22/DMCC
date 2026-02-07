@@ -1161,7 +1161,7 @@ const SchedulePageContent = () => {
                       </InputGroup>
                       <InputGroup size="md" flex="0 0 100px">
                         <Input
-                          value={formData.auditYear || new Date().getFullYear().toString()}
+                          value={formData.auditYear || ""}
                           onChange={(e) =>
                             handleFieldChange("auditYear", e.target.value)
                           }
@@ -1182,7 +1182,7 @@ const SchedulePageContent = () => {
                       </InputGroup>
                     </HStack>
                     <FormHelperText>
-                      Prefix is based on audit type and cannot be edited. Format: {formData.auditType ? getAuditTypePrefix(formData.auditType) : "PREFIX"}-YEAR-NUMBER
+                      Prefix is based on audit type and cannot be edited. Year and number are optional. Format: {formData.auditType ? getAuditTypePrefix(formData.auditType) : "PREFIX"}-YEAR[-NUMBER]
                     </FormHelperText>
                     <FormErrorMessage>
                       {validationErrors.auditCode}

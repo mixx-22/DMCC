@@ -20,7 +20,7 @@ import {
 import { useState, useEffect } from "react";
 import { FiSave } from "react-icons/fi";
 import PreviousAuditAsyncSelect from "../../components/PreviousAuditAsyncSelect";
-import { generateAuditCode, getAuditTypePrefix } from "../../utils/auditHelpers";
+import { generateAuditCode, getAuditTypePrefix, parseAuditCode } from "../../utils/auditHelpers";
 
 const EditAuditDetailsModal = ({
   isOpen,
@@ -43,19 +43,7 @@ const EditAuditDetailsModal = ({
   useEffect(() => {
     if (auditData && isOpen) {
       // Parse existing audit code if present
-      let auditYear = new Date().getFullYear().toString();
-      let auditNumber = "";
-      
-      if (auditData.auditCode) {
-        // Extract year and number from existing audit code (format: PREFIX-YEAR-NUMBER)
-        const parts = auditData.auditCode.split("-");
-        if (parts.length >= 2) {
-          auditYear = parts[1] || auditYear;
-        }
-        if (parts.length >= 3) {
-          auditNumber = parts[2] || "";
-        }
-      }
+      const { auditYear, auditNumber } = parseAuditCode(auditData.auditCode);
       
       setFormData({
         auditCode: auditData.auditCode || "",
@@ -122,18 +110,7 @@ const EditAuditDetailsModal = ({
     setValidationErrors({});
     // Reset form data to original values
     if (auditData) {
-      let auditYear = new Date().getFullYear().toString();
-      let auditNumber = "";
-      
-      if (auditData.auditCode) {
-        const parts = auditData.auditCode.split("-");
-        if (parts.length >= 2) {
-          auditYear = parts[1] || auditYear;
-        }
-        if (parts.length >= 3) {
-          auditNumber = parts[2] || "";
-        }
-      }
+      const { auditYear, auditNumber } = parseAuditCode(auditData.auditCode);
       
       setFormData({
         auditCode: auditData.auditCode || "",
@@ -203,7 +180,7 @@ const EditAuditDetailsModal = ({
                 </InputGroup>
               </HStack>
               <FormHelperText>
-                Prefix is based on audit type and cannot be edited. Format: {formData.auditType ? getAuditTypePrefix(formData.auditType) : "PREFIX"}-YEAR-NUMBER
+                Prefix is based on audit type and cannot be edited. Year and number are optional. Format: {formData.auditType ? getAuditTypePrefix(formData.auditType) : "PREFIX"}-YEAR[-NUMBER]
               </FormHelperText>
               <FormErrorMessage>{validationErrors.auditCode}</FormErrorMessage>
             </FormControl>
