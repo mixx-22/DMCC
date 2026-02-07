@@ -23,11 +23,13 @@ import { useState } from "react";
 import { FiSave, FiX } from "react-icons/fi";
 import { SingleDatepicker } from "chakra-dayzed-datepicker";
 import UserAsyncSelect from "../../../components/UserAsyncSelect";
+import OrganizationAuditorsSelect from "../../../components/OrganizationAuditorsSelect";
 import { useLayout, useUser } from "../../../context/_useContext";
 import Timestamp from "../../../components/Timestamp";
 
 const ActionPlanForm = ({
   initialData = null,
+  organizationAuditors = [], // List of auditors from organization
   onSave,
   onCancel,
   readOnly = false,
@@ -417,12 +419,13 @@ const ActionPlanForm = ({
             {/* Taken By */}
             <FormControl isInvalid={errors.takenBy}>
               <FormLabel fontSize="sm">Taken By *</FormLabel>
-              <UserAsyncSelect
+              <OrganizationAuditorsSelect
                 label=""
                 value={formData.takenBy || []}
                 onChange={(users) => handleChange("takenBy", users)}
                 placeholder="Select person(s) who implemented the action"
                 displayMode="none"
+                organizationAuditors={organizationAuditors}
               />
               {errors.takenBy && (
                 <FormHelperText color="error.500">

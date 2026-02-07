@@ -57,6 +57,7 @@ const FindingCard = ({
   finding,
   teamObjectives,
   team, // NEW: Accept team object
+  organizationAuditors = [], // NEW: Accept organization auditors
   onEdit,
   onDelete,
   onSaveEdit,
@@ -165,6 +166,7 @@ const FindingCard = ({
           <FindingsForm
             teamObjectives={teamObjectives}
             team={team} // NEW: Pass team object
+            organizationAuditors={organizationAuditors} // NEW: Pass organization auditors
             initialData={finding}
             mode="edit"
             onAddFinding={handleSave}
@@ -524,6 +526,7 @@ const FindingCard = ({
                       {isEditingActionPlan ? (
                         <ActionPlanForm
                           initialData={finding.actionPlan}
+                          organizationAuditors={organizationAuditors} // NEW: Pass organization auditors
                           onSave={handleSaveActionPlan}
                           onCancel={handleCancelActionPlan}
                           readOnly={false}
@@ -548,6 +551,7 @@ const FindingCard = ({
                           </HStack>
                           <ActionPlanForm
                             initialData={finding.actionPlan}
+                            organizationAuditors={organizationAuditors} // NEW: Pass organization auditors
                             onSave={handleSaveActionPlan}
                             onCancel={handleCancelActionPlan}
                             readOnly={true}
@@ -831,6 +835,7 @@ const FindingsList = ({
   findings = [],
   teamObjectives = [],
   team = null, // NEW: Accept team object
+  organizationAuditors = [], // NEW: Accept organization auditors
   onEdit,
   onDelete,
   onSaveEdit,
@@ -851,6 +856,7 @@ const FindingsList = ({
           finding={finding}
           teamObjectives={teamObjectives}
           team={team} // NEW: Pass team object
+          organizationAuditors={organizationAuditors} // NEW: Pass organization auditors
           onEdit={onEdit}
           onDelete={onDelete}
           onSaveEdit={onSaveEdit}

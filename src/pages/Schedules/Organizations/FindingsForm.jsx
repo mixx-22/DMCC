@@ -18,6 +18,7 @@ import { useState } from "react";
 import { FiSave, FiX } from "react-icons/fi";
 import { SingleDatepicker } from "chakra-dayzed-datepicker";
 import UserAsyncSelect from "../../../components/UserAsyncSelect";
+import OrganizationAuditorsSelect from "../../../components/OrganizationAuditorsSelect";
 import { useLayout } from "../../../context/_useContext";
 
 // Helper function to check if compliance type is a Non-Conformity
@@ -62,6 +63,7 @@ const COMPLIANCE_OPTIONS = [
 const FindingsForm = ({
   teamObjectives = [],
   team = null, // NEW: Accept full team object for updatedAt
+  organizationAuditors = [], // List of auditors from organization
   initialData = null,
   mode = "add",
   onAddFinding,
@@ -488,12 +490,13 @@ const FindingsForm = ({
               {/* Auditor */}
               <FormControl isInvalid={!!errors["report.auditor"]}>
                 <FormLabel fontSize="sm">Auditor</FormLabel>
-                <UserAsyncSelect
+                <OrganizationAuditorsSelect
                   label=""
                   value={formData.report.auditor || []}
                   onChange={(users) => handleReportChange("auditor", users)}
                   placeholder="Select Auditor(s)"
                   displayMode="none"
+                  organizationAuditors={organizationAuditors}
                 />
                 {errors["report.auditor"] && (
                   <FormHelperText color="red.500" fontSize="xs">
