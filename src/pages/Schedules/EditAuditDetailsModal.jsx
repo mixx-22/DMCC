@@ -180,7 +180,7 @@ const EditAuditDetailsModal = ({
                 </InputGroup>
               </HStack>
               <FormHelperText>
-                Prefix is based on audit type and cannot be edited. Year and number are optional. Format: {formData.auditType ? getAuditTypePrefix(formData.auditType) : "PREFIX"}-YEAR[-NUMBER]
+                Prefix is auto-filled based on audit type. Year defaults to current year. Number is optional (e.g., 001 or 9999).
               </FormHelperText>
               <FormErrorMessage>{validationErrors.auditCode}</FormErrorMessage>
             </FormControl>
