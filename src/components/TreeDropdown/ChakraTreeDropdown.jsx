@@ -37,11 +37,9 @@ const ChakraTreeDropdown = ({
   const { colorMode } = useColorMode();
   const dropdownRef = useRef(null);
 
-  // Handle changes and log selected nodes
+  // Handle changes
   const handleChange = useCallback(
     (currentNode, selectedNodes) => {
-      console.log("Current node:", currentNode);
-      console.log("Selected nodes:", selectedNodes);
       if (onChange) {
         onChange(currentNode, selectedNodes);
       }
