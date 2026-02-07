@@ -33,6 +33,7 @@ import {
   FiFolder,
   FiSearch,
   FiClock,
+  FiBook,
 } from "react-icons/fi";
 import { HiOutlineUser, HiOutlineUserGroup } from "react-icons/hi2";
 import { IoCalendarOutline } from "react-icons/io5";
@@ -183,6 +184,7 @@ const Sidebar = () => {
   const [isSettingsAllowed, setIsSettingsAllowed] = useState(1);
   const [isSettingsRolesAllowed, setIsSettingsRolesAllowed] = useState(1);
   const [isSettingsfileTypeAllowed, setIsSettingsfileTypeAllowed] = useState(1);
+  const [isStandardsAllowed, setIsStandardsAllowed] = useState(1);
 
   useEffect(() => {
     async function init() {
@@ -203,6 +205,9 @@ const Sidebar = () => {
 
       const val6 = await isAllowedTo("settings.fileType.r");
       setIsSettingsfileTypeAllowed(val6);
+
+      const val7 = await isAllowedTo("settings.r");
+      setIsStandardsAllowed(val7);
     }
     init();
   }, [isAllowedTo]);
@@ -280,10 +285,17 @@ const Sidebar = () => {
         children: scheduleChildren,
       });
     }
+    if (isStandardsAllowed) {
+      items.push({
+        id: "standards",
+        path: "/standards",
+        label: "Standards",
+        icon: FiBook,
+      });
+    }
     if (isSettingsAllowed) {
       const children = [];
       children.push({ path: "/settings", label: "All Settings" });
-      children.push({ path: "/standards", label: "Standards" });
       if (isSettingsRolesAllowed) {
         children.push({ path: "/roles", label: "Roles & Permissions" });
       }
@@ -303,6 +315,7 @@ const Sidebar = () => {
     isUsersAllowed,
     isTeamsAllowed,
     isSchedulesAllowed,
+    isStandardsAllowed,
     isSettingsAllowed,
     isSettingsRolesAllowed,
     isSettingsfileTypeAllowed,

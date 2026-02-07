@@ -48,6 +48,7 @@ import ResponsiveTabsDemo from "./pages/ResponsiveTabsDemo";
 import OrganizationTabsDemo from "./pages/OrganizationTabsDemo";
 import AuditKpiDashboard from "./pages/AuditKpiDashboard";
 import ClauseSelectionDemo from "./pages/ClauseSelectionDemo";
+import SidebarDemo from "./pages/SidebarDemo";
 
 const ProtectedRoute = ({ children }) => {
   const { currentUser } = useApp();
@@ -89,6 +90,7 @@ function App() {
             path="/demo/clause-selection"
             element={<ClauseSelectionDemo />}
           />
+          <Route path="/demo/sidebar" element={<SidebarDemo />} />
           <Route
             path="/*"
             element={
