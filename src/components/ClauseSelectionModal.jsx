@@ -1,11 +1,12 @@
 import {
+  Badge,
   Box,
   Button,
   Checkbox,
   Collapse,
   Flex,
-  Grid,
   Heading,
+  Hide,
   IconButton,
   Modal,
   ModalBody,
@@ -16,6 +17,7 @@ import {
   ModalOverlay,
   Spacer,
   Text,
+  useColorModeValue,
   VStack,
 } from "@chakra-ui/react";
 import { useState, useMemo, useCallback, useEffect } from "react";
@@ -36,8 +38,7 @@ const getClauseDepth = (clauseNumber) => {
  */
 const getIndentationMargin = (clauseNumber) => {
   const depth = getClauseDepth(clauseNumber);
-  // Parent clauses (depth 1) have no indentation
-  // Each subsequent level gets 8 units more (in Chakra spacing units)
+
   return depth > 1 ? (depth - 1) * 8 : 0;
 };
 
@@ -58,26 +59,22 @@ const ClauseSelectionModal = ({
   value = [],
   onChange,
 }) => {
-  // Track which parent clauses are expanded
+  const selectedContainerBG = useColorModeValue("gray.200", "gray.800");
   const [expandedClauses, setExpandedClauses] = useState(() => {
-    // Initially expand all clauses
     return clauses.reduce((acc, clause) => {
       acc[clause.id] = true;
       return acc;
     }, {});
   });
 
-  // Track selected clause IDs - sync with value prop
   const [selectedIds, setSelectedIds] = useState(() => {
     return new Set(value.map((c) => c.id));
   });
 
-  // Sync selectedIds with value prop when it changes externally
   useEffect(() => {
     setSelectedIds(new Set(value.map((c) => c.id)));
   }, [value]);
 
-  // Toggle expansion of a parent clause
   const toggleExpanded = useCallback((clauseId) => {
     setExpandedClauses((prev) => ({
       ...prev,
@@ -85,7 +82,6 @@ const ClauseSelectionModal = ({
     }));
   }, []);
 
-  // Helper function to build result array from selected IDs
   const buildResultArray = useCallback(
     (selectedSet) => {
       const result = [];
@@ -103,10 +99,9 @@ const ClauseSelectionModal = ({
       });
       return result;
     },
-    [clauses]
+    [clauses],
   );
 
-  // Check if a parent clause is indeterminate (some but not all children selected)
   const isIndeterminate = useCallback(
     (clause) => {
       if (!clause.subClauses || clause.subClauses.length === 0) return false;
@@ -121,7 +116,6 @@ const ClauseSelectionModal = ({
     [selectedIds],
   );
 
-  // Check if all children of a parent clause are selected
   const areAllChildrenSelected = useCallback(
     (clause) => {
       if (!clause.subClauses || clause.subClauses.length === 0) return false;
@@ -130,26 +124,21 @@ const ClauseSelectionModal = ({
     [selectedIds],
   );
 
-  // Handle parent checkbox change - immediately updates via onChange
   const handleParentChange = useCallback(
     (clause) => {
       const allSelected = areAllChildrenSelected(clause);
       const newSet = new Set(selectedIds);
       if (allSelected) {
-        // Unselect all children
         clause.subClauses.forEach((sub) => newSet.delete(sub.id));
       } else {
-        // Select all children
         clause.subClauses.forEach((sub) => newSet.add(sub.id));
       }
-      
-      // Build result array and call onChange immediately
+
       onChange(buildResultArray(newSet));
     },
     [areAllChildrenSelected, selectedIds, buildResultArray, onChange],
   );
 
-  // Handle child checkbox change - immediately updates via onChange
   const handleChildChange = useCallback(
     (subClauseId) => {
       const newSet = new Set(selectedIds);
@@ -158,14 +147,12 @@ const ClauseSelectionModal = ({
       } else {
         newSet.add(subClauseId);
       }
-      
-      // Build result array and call onChange immediately
+
       onChange(buildResultArray(newSet));
     },
     [selectedIds, buildResultArray, onChange],
   );
 
-  // Build the result array for display
   const selectedClauses = useMemo(() => {
     const result = [];
     clauses.forEach((clause) => {
@@ -183,13 +170,11 @@ const ClauseSelectionModal = ({
     return result;
   }, [clauses, selectedIds]);
 
-  // Handle remove from selected list
   const handleRemoveClause = useCallback(
     (clauseId) => {
       const newSet = new Set(selectedIds);
       newSet.delete(clauseId);
-      
-      // Build result array and call onChange
+
       onChange(buildResultArray(newSet));
     },
     [selectedIds, buildResultArray, onChange],
@@ -199,17 +184,40 @@ const ClauseSelectionModal = ({
     <Modal
       isOpen={isOpen}
       onClose={onClose}
-      size="6xl"
+      size={["full", "full", "6xl"]}
       scrollBehavior="inside"
     >
       <ModalOverlay />
       <ModalContent>
-        <ModalHeader>Select Clauses</ModalHeader>
+        <ModalHeader borderBottomWidth="1px" borderColor="gray.200">
+          Select Clauses
+        </ModalHeader>
         <ModalCloseButton />
-        <ModalBody>
-          <Grid templateColumns="1fr 350px" gap={6} h="500px">
+        <ModalBody p={0}>
+          <Flex
+            gap={0}
+            h={["full", "full", "500px"]}
+            flexDir={{ base: "column", md: "row" }}
+          >
+            <Hide above="sm">
+              <Collapse in={selectedClauses.length} unmountOnExit>
+                <Heading size="sm" p={2} bg="brandPrimary.50">
+                  Selected Clauses{" "}
+                  <Badge colorScheme="error" borderRadius="full">
+                    {selectedClauses.length}
+                  </Badge>
+                </Heading>
+              </Collapse>
+            </Hide>
+
             {/* Left column: Clause tree */}
-            <Box overflowY="auto" pr={2}>
+            <Box
+              flex={1}
+              p={[2, 2, 6]}
+              overflowY="auto"
+              borderRightWidth="1px"
+              borderColor="gray.200"
+            >
               <VStack align="stretch" spacing={3}>
                 {clauses.length === 0 ? (
                   <Text color="gray.500">No clauses available.</Text>
@@ -284,51 +292,56 @@ const ClauseSelectionModal = ({
             </Box>
 
             {/* Right column: Selected clauses */}
-            <Box
-              borderLeftWidth="1px"
-              borderColor="gray.200"
-              pl={6}
-              overflowY="auto"
-            >
-              <VStack align="stretch" spacing={3}>
-                <Heading size="sm" mb={2}>
-                  Selected Clauses ({selectedClauses.length})
-                </Heading>
-                {selectedClauses.length === 0 ? (
-                  <Text fontSize="sm" color="gray.500" fontStyle="italic">
-                    No clauses selected yet
-                  </Text>
-                ) : (
-                  selectedClauses.map((clause) => (
-                    <Flex
-                      key={clause.id}
-                      align="center"
-                      gap={2}
-                      p={2}
-                      borderWidth="1px"
-                      borderColor="gray.200"
-                      borderRadius="md"
-                      bg="blue.50"
-                    >
-                      <Text fontSize="sm" flex={1}>
-                        {clause.name}
-                      </Text>
-                      <IconButton
-                        icon={<FiX />}
-                        size="xs"
-                        variant="ghost"
-                        colorScheme="red"
-                        aria-label="Remove clause"
-                        onClick={() => handleRemoveClause(clause.id)}
-                      />
-                    </Flex>
-                  ))
-                )}
-              </VStack>
-            </Box>
-          </Grid>
+            <Hide below="md">
+              <Box
+                flex={1}
+                p={[2, 2, 6]}
+                overflowY="auto"
+                bg={selectedContainerBG}
+              >
+                <VStack align="stretch" spacing={3}>
+                  <Heading size="sm" mb={2}>
+                    Selected Clauses{" "}
+                    <Badge colorScheme="error" borderRadius="full">
+                      {selectedClauses.length}
+                    </Badge>
+                  </Heading>
+                  {selectedClauses.length === 0 ? (
+                    <Text fontSize="sm" color="gray.500" fontStyle="italic">
+                      No clauses selected yet
+                    </Text>
+                  ) : (
+                    selectedClauses.map((clause) => (
+                      <Flex
+                        key={clause.id}
+                        align="center"
+                        gap={2}
+                        p={2}
+                        borderWidth="1px"
+                        borderColor="gray.200"
+                        borderRadius="md"
+                        bg="brandPrimary.50"
+                      >
+                        <Text fontSize="sm" flex={1}>
+                          {clause.name}
+                        </Text>
+                        <IconButton
+                          icon={<FiX />}
+                          size="xs"
+                          variant="ghost"
+                          colorScheme="red"
+                          aria-label="Remove clause"
+                          onClick={() => handleRemoveClause(clause.id)}
+                        />
+                      </Flex>
+                    ))
+                  )}
+                </VStack>
+              </Box>
+            </Hide>
+          </Flex>
         </ModalBody>
-        <ModalFooter>
+        <ModalFooter borderTopWidth="1px" borderColor="gray.200">
           <Button variant="outline" onClick={onClose}>
             Close
           </Button>
