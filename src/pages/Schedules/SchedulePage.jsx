@@ -61,7 +61,11 @@ import {
   useScheduleProfile,
   useOrganizations,
 } from "../../context/_useContext";
-import { getAuditTypeLabel, generateAuditCode, getAuditTypePrefix } from "../../utils/auditHelpers";
+import {
+  getAuditTypeLabel,
+  generateAuditCode,
+  getAuditTypePrefix,
+} from "../../utils/auditHelpers";
 import { validateAuditScheduleClosure } from "../../utils/helpers";
 import EditAuditDetailsModal from "./EditAuditDetailsModal";
 import CloseAuditModal from "./CloseAuditModal";
@@ -143,18 +147,25 @@ const SchedulePageContent = () => {
         ...prev,
         [field]: value,
       };
-      
+
       // Auto-generate audit code when type, year, or number changes
-      if (field === "auditType" || field === "auditYear" || field === "auditNumber") {
+      if (
+        field === "auditType" ||
+        field === "auditYear" ||
+        field === "auditNumber"
+      ) {
         const type = field === "auditType" ? value : prev.auditType;
-        const year = field === "auditYear" ? value : (prev.auditYear || new Date().getFullYear().toString());
-        const number = field === "auditNumber" ? value : (prev.auditNumber || "");
-        
+        const year =
+          field === "auditYear"
+            ? value
+            : prev.auditYear || new Date().getFullYear().toString();
+        const number = field === "auditNumber" ? value : prev.auditNumber || "";
+
         if (type) {
           updated.auditCode = generateAuditCode(type, year, number);
         }
       }
-      
+
       return updated;
     });
 
@@ -1153,10 +1164,8 @@ const SchedulePageContent = () => {
                         <Input
                           value={getAuditTypePrefix(formData.auditType) || ""}
                           isReadOnly
-                          bg="gray.100"
-                          placeholder="PREFIX"
+                          placeholder="AUD"
                           textAlign="center"
-                          fontWeight="bold"
                         />
                       </InputGroup>
                       <InputGroup size="md" flex="0 0 100px">
@@ -1176,13 +1185,14 @@ const SchedulePageContent = () => {
                           onChange={(e) =>
                             handleFieldChange("auditNumber", e.target.value)
                           }
-                          placeholder="Number (e.g., 001 or 9999)"
+                          placeholder="Audit Number"
                           textAlign="center"
                         />
                       </InputGroup>
                     </HStack>
                     <FormHelperText>
-                      Prefix is auto-filled based on audit type. Year defaults to current year. Number is optional (e.g., 001 or 9999).
+                      Prefix is auto-filled based on audit type. Year defaults
+                      to current year. Number is optional (e.g., 001 or 9999).
                     </FormHelperText>
                     <FormErrorMessage>
                       {validationErrors.auditCode}

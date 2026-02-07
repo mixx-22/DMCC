@@ -20,7 +20,11 @@ import {
 import { useState, useEffect } from "react";
 import { FiSave } from "react-icons/fi";
 import PreviousAuditAsyncSelect from "../../components/PreviousAuditAsyncSelect";
-import { generateAuditCode, getAuditTypePrefix, parseAuditCode } from "../../utils/auditHelpers";
+import {
+  generateAuditCode,
+  getAuditTypePrefix,
+  parseAuditCode,
+} from "../../utils/auditHelpers";
 
 const EditAuditDetailsModal = ({
   isOpen,
@@ -44,7 +48,7 @@ const EditAuditDetailsModal = ({
     if (auditData && isOpen) {
       // Parse existing audit code if present
       const { auditYear, auditNumber } = parseAuditCode(auditData.auditCode);
-      
+
       setFormData({
         auditCode: auditData.auditCode || "",
         auditType: auditData.auditType || "",
@@ -63,18 +67,22 @@ const EditAuditDetailsModal = ({
         ...prev,
         [field]: value,
       };
-      
+
       // Auto-generate audit code when type, year, or number changes
-      if (field === "auditType" || field === "auditYear" || field === "auditNumber") {
+      if (
+        field === "auditType" ||
+        field === "auditYear" ||
+        field === "auditNumber"
+      ) {
         const type = field === "auditType" ? value : prev.auditType;
         const year = field === "auditYear" ? value : prev.auditYear;
         const number = field === "auditNumber" ? value : prev.auditNumber;
-        
+
         if (type) {
           updated.auditCode = generateAuditCode(type, year, number);
         }
       }
-      
+
       return updated;
     });
 
@@ -111,7 +119,7 @@ const EditAuditDetailsModal = ({
     // Reset form data to original values
     if (auditData) {
       const { auditYear, auditNumber } = parseAuditCode(auditData.auditCode);
-      
+
       setFormData({
         auditCode: auditData.auditCode || "",
         auditType: auditData.auditType || "",
@@ -155,16 +163,16 @@ const EditAuditDetailsModal = ({
                   <Input
                     value={getAuditTypePrefix(formData.auditType) || ""}
                     isReadOnly
-                    bg="gray.100"
-                    placeholder="PREFIX"
+                    placeholder="AUD"
                     textAlign="center"
-                    fontWeight="bold"
                   />
                 </InputGroup>
                 <InputGroup size="md" flex="0 0 100px">
                   <Input
                     value={formData.auditYear}
-                    onChange={(e) => handleFieldChange("auditYear", e.target.value)}
+                    onChange={(e) =>
+                      handleFieldChange("auditYear", e.target.value)
+                    }
                     placeholder="YYYY"
                     textAlign="center"
                     maxLength={4}
@@ -173,14 +181,17 @@ const EditAuditDetailsModal = ({
                 <InputGroup size="md" flex="1">
                   <Input
                     value={formData.auditNumber}
-                    onChange={(e) => handleFieldChange("auditNumber", e.target.value)}
-                    placeholder="Number (e.g., 001 or 9999)"
+                    onChange={(e) =>
+                      handleFieldChange("auditNumber", e.target.value)
+                    }
+                    placeholder="Audit Number"
                     textAlign="center"
                   />
                 </InputGroup>
               </HStack>
               <FormHelperText>
-                Prefix is auto-filled based on audit type. Year defaults to current year. Number is optional (e.g., 001 or 9999).
+                Prefix is auto-filled based on audit type. Year defaults to
+                current year. Number is optional (e.g., 001 or 9999).
               </FormHelperText>
               <FormErrorMessage>{validationErrors.auditCode}</FormErrorMessage>
             </FormControl>
