@@ -145,11 +145,95 @@ const MODULES = [
     path: "request.publish",
   },
   {
+    key: "request.permissions.approval",
+    label: "Approval",
+    description: "Manage document approval requests",
+    level: 1,
+    parentLabel: (action) => {
+      switch (action) {
+        case "c":
+          return "Create Approval Requests";
+        case "r":
+          return "View Approval Requests";
+        case "u":
+          return "Update Approval Requests";
+        case "d":
+          return "Delete Approval Requests";
+        default:
+          return `${PERMISSION_LABELS[action]} Approval Requests`;
+      }
+    },
+    path: "request.approval",
+  },
+  {
     key: "audit",
     label: "Audit",
-    description: "View audit logs and history",
+    description: "Manage audit module access",
     level: 0,
     path: "audit",
+  },
+  {
+    key: "audit.permissions.schedule",
+    label: "Schedule",
+    description: "Manage audit schedules",
+    level: 1,
+    parentLabel: (action) => {
+      switch (action) {
+        case "c":
+          return "Create Audit Schedules";
+        case "r":
+          return "View Audit Schedules";
+        case "u":
+          return "Update Audit Schedules";
+        case "d":
+          return "Delete Audit Schedules";
+        default:
+          return `${PERMISSION_LABELS[action]} Audit Schedules`;
+      }
+    },
+    path: "audit.schedule",
+  },
+  {
+    key: "audit.permissions.findings",
+    label: "Findings",
+    description: "Manage audit findings",
+    level: 1,
+    parentLabel: (action) => {
+      switch (action) {
+        case "c":
+          return "Create Audit Findings";
+        case "r":
+          return "View Audit Findings";
+        case "u":
+          return "Update Audit Findings";
+        case "d":
+          return "Delete Audit Findings";
+        default:
+          return `${PERMISSION_LABELS[action]} Audit Findings`;
+      }
+    },
+    path: "audit.findings",
+  },
+  {
+    key: "audit.permissions.response",
+    label: "Response",
+    description: "Manage audit responses",
+    level: 1,
+    parentLabel: (action) => {
+      switch (action) {
+        case "c":
+          return "Create Audit Responses";
+        case "r":
+          return "View Audit Responses";
+        case "u":
+          return "Update Audit Responses";
+        case "d":
+          return "Delete Audit Responses";
+        default:
+          return `${PERMISSION_LABELS[action]} Audit Responses`;
+      }
+    },
+    path: "audit.response",
   },
   {
     key: "settings",

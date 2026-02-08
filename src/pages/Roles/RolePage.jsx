@@ -80,10 +80,21 @@ const RolePage = () => {
         u: 0,
         d: 0,
         permission: {
+          approval: { c: 0, r: 0, u: 0, d: 0 },
           publish: { c: 0, r: 0, u: 0, d: 0 },
         },
       },
-      audit: { c: 0, r: 0, u: 0, d: 0 },
+      audit: {
+        c: 0,
+        r: 0,
+        u: 0,
+        d: 0,
+        permission: {
+          schedule: { c: 0, r: 0, u: 0, d: 0 },
+          findings: { c: 0, r: 0, u: 0, d: 0 },
+          response: { c: 0, r: 0, u: 0, d: 0 },
+        },
+      },
       settings: {
         c: 0,
         r: 0,
