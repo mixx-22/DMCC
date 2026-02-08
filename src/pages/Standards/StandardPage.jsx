@@ -36,6 +36,9 @@ import {
   Stack,
   Spacer,
   CardHeader,
+  Editable,
+  EditablePreview,
+  EditableTextarea,
 } from "@chakra-ui/react";
 import {
   FiArrowLeft,
@@ -539,17 +542,22 @@ const StandardPage = () => {
     }));
   };
 
-  const handleSaveStandard = async () => {
-    if (!standardForm.standard.trim()) {
+  const handleTitleBlur = async (newTitle) => {
+    const trimmedTitle = newTitle?.trim() || "";
+    
+    if (!trimmedTitle) {
       toast.error("Standard title is required.");
       return;
     }
 
-    setIsSavingClause(true);
+    if (trimmedTitle === (standard?.standard || standard?.title || standard?.name)) {
+      return;
+    }
+
     try {
       const payload = {
-        standard: standardForm.standard.trim(),
-        description: standardForm.description.trim(),
+        standard: trimmedTitle,
+        description: standard?.description || "",
         clauses: standard?.clauses || [],
       };
 
@@ -558,28 +566,57 @@ const StandardPage = () => {
           method: "PUT",
           body: JSON.stringify(payload),
         });
-        toast.success("Standard updated.");
-        await fetchStandard();
+        toast.success("Title updated.");
       }
 
       setStandard((prev) => ({
         ...prev,
-        ...payload,
+        standard: trimmedTitle,
       }));
-      setIsEditMode(false);
+      setStandardForm((prev) => ({
+        ...prev,
+        standard: trimmedTitle,
+      }));
     } catch (error) {
-      toast.error("Failed to update standard.");
-    } finally {
-      setIsSavingClause(false);
+      toast.error("Failed to update title.");
+      console.error("Failed to update title:", error);
     }
   };
 
-  const handleCancelEdit = () => {
-    setIsEditMode(false);
-    setStandardForm({
-      standard: standard?.standard || standard?.title || standard?.name || "",
-      description: standard?.description || "",
-    });
+  const handleDescriptionBlur = async (newDescription) => {
+    const trimmedDescription = newDescription?.trim() || "";
+    
+    if (trimmedDescription === (standard?.description || "")) {
+      return;
+    }
+
+    try {
+      const payload = {
+        standard: standard?.standard || standard?.title || standard?.name || "",
+        description: trimmedDescription,
+        clauses: standard?.clauses || [],
+      };
+
+      if (USE_API) {
+        await apiService.request(`${STANDARDS_ENDPOINT}/${id}`, {
+          method: "PUT",
+          body: JSON.stringify(payload),
+        });
+        toast.success("Description updated.");
+      }
+
+      setStandard((prev) => ({
+        ...prev,
+        description: trimmedDescription,
+      }));
+      setStandardForm((prev) => ({
+        ...prev,
+        description: trimmedDescription,
+      }));
+    } catch (error) {
+      toast.error("Failed to update description.");
+      console.error("Failed to update description:", error);
+    }
   };
 
   const handleDeleteStandard = async () => {
@@ -661,22 +698,16 @@ const StandardPage = () => {
                 colorScheme="brandPrimary"
                 onClick={() => setIsEditMode(true)}
               >
-                Edit Standard
+                Edit Clauses
               </Button>
             </HStack>
           ) : (
-            <>
-              <Button variant="outline" onClick={handleCancelEdit}>
-                Cancel
-              </Button>
-              <Button
-                colorScheme="brandPrimary"
-                onClick={handleSaveStandard}
-                isLoading={isSavingClause}
-              >
-                Save Changes
-              </Button>
-            </>
+            <Button
+              colorScheme="brandPrimary"
+              onClick={() => setIsEditMode(false)}
+            >
+              Done Editing Clauses
+            </Button>
           )}
         </Flex>
       </PageFooter>
@@ -691,23 +722,40 @@ const StandardPage = () => {
                     fontSize="xs"
                     color="gray.500"
                     textTransform="uppercase"
+                    mb={2}
                   >
                     Standard
                   </Text>
-                  {isEditMode ? (
-                    <Input
-                      mt={2}
-                      value={standardForm.standard}
-                      onChange={(e) =>
-                        handleStandardFieldChange("standard", e.target.value)
-                      }
-                      placeholder="Standard title"
+                  <Editable
+                    key={`title-${standard?.id}`}
+                    defaultValue={standardTitle}
+                    onSubmit={handleTitleBlur}
+                    fontSize="2xl"
+                    fontWeight="bold"
+                    w="full"
+                    isPreviewFocusable={true}
+                    submitOnBlur={true}
+                    selectAllOnFocus={false}
+                  >
+                    <EditablePreview
+                      w="full"
+                      py={2}
+                      px={2}
+                      borderRadius="md"
+                      _hover={{
+                        background: "gray.100",
+                        cursor: "pointer",
+                      }}
                     />
-                  ) : (
-                    <Heading size="md" mt={1}>
-                      {standardTitle}
-                    </Heading>
-                  )}
+                    <EditableTextarea
+                      py={2}
+                      px={2}
+                      resize="vertical"
+                      minH="auto"
+                      fontSize="2xl"
+                      fontWeight="bold"
+                    />
+                  </Editable>
                 </Box>
 
                 <Divider />
@@ -717,24 +765,38 @@ const StandardPage = () => {
                     fontSize="xs"
                     color="gray.500"
                     textTransform="uppercase"
+                    mb={2}
                   >
                     Description
                   </Text>
-                  {isEditMode ? (
-                    <Textarea
-                      mt={2}
-                      value={standardForm.description}
-                      onChange={(e) =>
-                        handleStandardFieldChange("description", e.target.value)
-                      }
-                      placeholder="Standard description"
-                      rows={4}
+                  <Editable
+                    w="full"
+                    key={`description-${standard?.id}`}
+                    defaultValue={standard.description || ""}
+                    onSubmit={handleDescriptionBlur}
+                    placeholder="Add a description..."
+                    isPreviewFocusable={true}
+                    submitOnBlur={true}
+                    selectAllOnFocus={false}
+                  >
+                    <EditablePreview
+                      py={2}
+                      px={2}
+                      w="full"
+                      borderRadius="md"
+                      color={standard?.description ? "gray.700" : "gray.400"}
+                      _hover={{
+                        background: "gray.100",
+                        cursor: "pointer",
+                      }}
                     />
-                  ) : (
-                    <Text mt={1} fontSize="sm">
-                      {standard.description || "No description available."}
-                    </Text>
-                  )}
+                    <EditableTextarea
+                      py={2}
+                      px={2}
+                      minH="60px"
+                      resize="vertical"
+                    />
+                  </Editable>
                 </Box>
 
                 <Divider />
