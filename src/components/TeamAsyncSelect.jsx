@@ -99,9 +99,9 @@ const TeamAsyncSelect = ({
   const handleChange = (selectedOptions) => {
     if (isMulti) {
       const teams = (selectedOptions || []).map((option) => ({
+        ...option.team, // Preserve all team data from API
         id: option.value,
         _id: option.value,
-        name: option.team.name,
       }));
 
       // Check max limit if specified
@@ -114,9 +114,9 @@ const TeamAsyncSelect = ({
       // Single select mode
       if (selectedOptions) {
         const team = {
+          ...selectedOptions.team, // Preserve all team data from API
           id: selectedOptions.value,
           _id: selectedOptions.value,
-          name: selectedOptions.team.name,
         };
         onChange(team);
       } else {

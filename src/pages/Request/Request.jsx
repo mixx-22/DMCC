@@ -10,11 +10,6 @@ import {
   Button,
   Flex,
   useDisclosure,
-  Tabs,
-  TabList,
-  TabPanels,
-  Tab,
-  TabPanel,
 } from "@chakra-ui/react";
 import { FiPlus } from "react-icons/fi";
 import { toast } from "sonner";
@@ -27,6 +22,12 @@ import { ListView } from "../../components/Document/ListView";
 import Pagination from "../../components/Pagination";
 import apiService from "../../services/api";
 import { useDocuments } from "../../context/_useContext";
+import ResponsiveTabs, {
+  ResponsiveTabList,
+  ResponsiveTab,
+  ResponsiveTabPanels,
+  ResponsiveTabPanel,
+} from "../../components/common/ResponsiveTabs";
 
 const ITEMS_PER_PAGE = 10;
 
@@ -496,16 +497,20 @@ const Request = () => {
       </PageHeader>
 
       <Stack spacing={{ base: 4, lg: 6 }}>
-        <Tabs index={activeTab} onChange={handleTabChange} colorScheme="blue">
-          <TabList>
-            <Tab>My Requests</Tab>
-            <Tab>For Approval</Tab>
-            <Tab>For Publish</Tab>
-            <Tab>Request History</Tab>
-          </TabList>
+        <ResponsiveTabs
+          index={activeTab}
+          onChange={handleTabChange}
+          colorScheme="warning"
+        >
+          <ResponsiveTabList>
+            <ResponsiveTab>My Requests</ResponsiveTab>
+            <ResponsiveTab>For Approval</ResponsiveTab>
+            <ResponsiveTab>For Publish</ResponsiveTab>
+            <ResponsiveTab>Request History</ResponsiveTab>
+          </ResponsiveTabList>
 
-          <TabPanels>
-            <TabPanel px={0}>
+          <ResponsiveTabPanels>
+            <ResponsiveTabPanel px={0}>
               {renderTabContent(
                 myRequests,
                 myRequestsTotal,
@@ -514,9 +519,9 @@ const Request = () => {
                 "No requests found",
                 true, // Show discard button for My Requests
               )}
-            </TabPanel>
+            </ResponsiveTabPanel>
 
-            <TabPanel px={0}>
+            <ResponsiveTabPanel px={0}>
               {renderTabContent(
                 forApproval,
                 forApprovalTotal,
@@ -525,9 +530,9 @@ const Request = () => {
                 "No requests pending approval",
                 false, // Hide discard button for For Approval
               )}
-            </TabPanel>
+            </ResponsiveTabPanel>
 
-            <TabPanel px={0}>
+            <ResponsiveTabPanel px={0}>
               {renderTabContent(
                 forPublish,
                 forPublishTotal,
@@ -536,9 +541,9 @@ const Request = () => {
                 "No requests pending publish",
                 false, // Hide discard button for For Publish
               )}
-            </TabPanel>
+            </ResponsiveTabPanel>
 
-            <TabPanel px={0}>
+            <ResponsiveTabPanel px={0}>
               {renderTabContent(
                 requestHistory,
                 requestHistoryTotal,
@@ -548,9 +553,9 @@ const Request = () => {
                 false, // Hide discard button for Request History
                 true, // Show status column for Request History
               )}
-            </TabPanel>
-          </TabPanels>
-        </Tabs>
+            </ResponsiveTabPanel>
+          </ResponsiveTabPanels>
+        </ResponsiveTabs>
       </Stack>
 
       <DocumentDrawer

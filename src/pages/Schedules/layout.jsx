@@ -224,7 +224,11 @@ const SchedulesList = () => {
                         </Text>
                       </Td>
                       <Td>
-                        <Text fontSize="sm">{schedule.standard || "-"}</Text>
+                        <Text fontSize="sm">
+                          {schedule?.standard?.standard ||
+                            schedule?.standard ||
+                            "-"}
+                        </Text>
                       </Td>
                       <Td textAlign="right">
                         {getStatusBadge(schedule.status)}

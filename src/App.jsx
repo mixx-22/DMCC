@@ -36,6 +36,8 @@ import Notifications from "./pages/Notifications";
 import Profile from "./pages/Profile";
 import ChangePassword from "./pages/ChangePassword";
 import Settings from "./pages/Settings";
+import Standards from "./pages/Standards/StandardsList";
+import StandardPage from "./pages/Standards/StandardPage";
 import { useApp } from "./context/_useContext";
 import { UserProfileProvider } from "./context/UserProfileContext";
 import FormTemplateBuilder from "./pages/FormTemplateBuilder";
@@ -45,6 +47,9 @@ import Request from "./pages/Request/Request";
 import ResponsiveTabsDemo from "./pages/ResponsiveTabsDemo";
 import OrganizationTabsDemo from "./pages/OrganizationTabsDemo";
 import AuditKpiDashboard from "./pages/AuditKpiDashboard";
+import ClauseSelectionDemo from "./pages/ClauseSelectionDemo";
+import SidebarDemo from "./pages/SidebarDemo";
+import AuditScheduleFieldsDemo from "./pages/AuditScheduleFieldsDemo";
 
 const ProtectedRoute = ({ children }) => {
   const { currentUser } = useApp();
@@ -83,6 +88,15 @@ function App() {
             element={<OrganizationTabsDemo />}
           />
           <Route
+            path="/demo/clause-selection"
+            element={<ClauseSelectionDemo />}
+          />
+          <Route path="/demo/sidebar" element={<SidebarDemo />} />
+          <Route
+            path="/demo/audit-schedule-fields"
+            element={<AuditScheduleFieldsDemo />}
+          />
+          <Route
             path="/*"
             element={
               <ProtectedRoute>
@@ -113,6 +127,8 @@ function App() {
                       element={<ChangePassword />}
                     />
                     <Route path="/settings" element={<Settings />} />
+                    <Route path="/standards" element={<Standards />} />
+                    <Route path="/standards/:id" element={<StandardPage />} />
                     <Route path="/documents" element={<Documents />} />
                     <Route path="/document/:id" element={<DocumentDetail />} />
                     <Route

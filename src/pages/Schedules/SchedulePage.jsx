@@ -21,7 +21,6 @@ import {
   Textarea,
   Select,
   HStack,
-  FormHelperText,
   Badge,
   Stepper,
   Step,
@@ -60,13 +59,22 @@ import {
   useScheduleProfile,
   useOrganizations,
 } from "../../context/_useContext";
-import { getAuditTypeLabel } from "../../utils/auditHelpers";
+import { getAuditTypeLabel, generateAuditCode } from "../../utils/auditHelpers";
 import { validateAuditScheduleClosure } from "../../utils/helpers";
 import EditAuditDetailsModal from "./EditAuditDetailsModal";
 import CloseAuditModal from "./CloseAuditModal";
 import { OrganizationsProvider } from "../../context/OrganizationsContext";
 import Timestamp from "../../components/Timestamp";
 import Organizations from "./Organizations";
+import ReportsTab from "./ReportsTab";
+import PreviousAuditAsyncSelect from "../../components/PreviousAuditAsyncSelect";
+import StandardsAsyncSelect from "../../components/StandardsAsyncSelect";
+import ResponsiveTabs, {
+  ResponsiveTab,
+  ResponsiveTabList,
+  ResponsiveTabPanel,
+  ResponsiveTabPanels,
+} from "../../components/common/ResponsiveTabs";
 
 // Inner component that uses organizations context
 const SchedulePageContent = () => {
@@ -109,13 +117,18 @@ const SchedulePageContent = () => {
     onClose: onCloseAuditClose,
   } = useDisclosure();
 
+  const [tabIndex, setTabIndex] = useState(0);
+  const handleTabsChange = (index) => {
+    setTabIndex(index);
+  };
+
   const [isClosingAudit, setIsClosingAudit] = useState(false);
 
   const steps = [
     { title: "Basic Information", fields: ["title", "description"] },
     {
       title: "Audit Details",
-      fields: ["auditCode", "auditType", "standard"],
+      fields: ["auditType", "standard"],
     },
     { title: "Review", fields: [] },
   ];
@@ -137,10 +150,32 @@ const SchedulePageContent = () => {
   }, [schedule, isNewSchedule, initialScheduleData]);
 
   const handleFieldChange = (field, value) => {
-    setFormData((prev) => ({
-      ...prev,
-      [field]: value,
-    }));
+    setFormData((prev) => {
+      const updated = {
+        ...prev,
+        [field]: value,
+      };
+
+      // Auto-generate audit code when type, year, or number changes
+      if (
+        field === "auditType" ||
+        field === "auditYear" ||
+        field === "auditNumber"
+      ) {
+        const type = field === "auditType" ? value : prev.auditType;
+        const year =
+          field === "auditYear"
+            ? value
+            : prev.auditYear || new Date().getFullYear().toString();
+        const number = field === "auditNumber" ? value : prev.auditNumber || "";
+
+        if (type) {
+          updated.auditCode = generateAuditCode(type, year, number);
+        }
+      }
+
+      return updated;
+    });
 
     if (validationErrors[field]) {
       setValidationErrors((prev) => ({
@@ -160,9 +195,6 @@ const SchedulePageContent = () => {
       }
       if (field === "description" && !formData.description.trim()) {
         errors.description = "Description is required";
-      }
-      if (field === "auditCode" && !formData.auditCode.trim()) {
-        errors.auditCode = "Audit code is required";
       }
       if (field === "auditType" && !formData.auditType) {
         errors.auditType = "Audit type is required";
@@ -189,8 +221,21 @@ const SchedulePageContent = () => {
     }
 
     try {
+      // Normalize the data before submitting
+      const { standard, ...rest } = formData || {};
+
+      const submitData = {
+        ...rest,
+        ...(standard && {
+          standard: {
+            standard: standard.standard,
+            id: standard._id ?? standard.id,
+          },
+        }),
+      };
+
       if (isNewSchedule) {
-        const result = await createSchedule(formData);
+        const result = await createSchedule(submitData);
         if (result?.id || result?._id) {
           navigate(`/audit-schedule/${result.id || result._id}`, {
             replace: true,
@@ -199,7 +244,7 @@ const SchedulePageContent = () => {
           navigate("/audit-schedules");
         }
       } else {
-        await updateSchedule(id, formData);
+        await updateSchedule(id, submitData);
         // Stay on current page - context is already updated
       }
     } catch (error) {
@@ -412,7 +457,7 @@ const SchedulePageContent = () => {
             </div>
             <div class="info-row">
               <span class="info-label">Standard :</span>
-              <span class="info-value">${schedule?.standard || formData?.standard || "-"}</span>
+              <span class="info-value">${schedule?.standard?.standard || formData?.standard?.standard || schedule?.standard || formData?.standard || "-"}</span>
             </div>
             <div class="info-row">
               <span class="info-label">Status :</span>
@@ -768,7 +813,7 @@ const SchedulePageContent = () => {
           <div class="footer-info">
             Audit Code: ${schedule?.auditCode || formData?.auditCode || "-"} | 
             Type: ${schedule?.auditType ? getAuditTypeLabel(schedule.auditType) : formData?.auditType ? getAuditTypeLabel(formData.auditType) : "-"} | 
-            Standard: ${schedule?.standard || formData?.standard || "-"}
+            Standard: ${schedule?.standard?.standard || formData?.standard?.standard || schedule?.standard || formData?.standard || "-"}
           </div>
 
           <div class="footer-bar"></div>
@@ -883,9 +928,8 @@ const SchedulePageContent = () => {
     return {
       title: formData.title,
       description: formData.description,
-      auditCode: formData.auditCode,
       auditType: formData.auditType,
-      standard: formData.standard,
+      standard: formData.standard || {},
       status: formData.status,
       ...overrides,
     };
@@ -946,10 +990,16 @@ const SchedulePageContent = () => {
 
   const handleSaveAuditDetails = async (detailsData) => {
     try {
+      const { standard } = detailsData || {};
+
       const updatePayload = buildUpdatePayload({
-        auditCode: detailsData.auditCode,
         auditType: detailsData.auditType,
-        standard: detailsData.standard,
+        ...(standard && {
+          standard: {
+            standard: standard.standard,
+            id: standard._id ?? standard.id,
+          },
+        }),
         previousAudit: detailsData.previousAudit,
       });
       const updatedSchedule = await updateSchedule(id, updatePayload);
@@ -1106,26 +1156,6 @@ const SchedulePageContent = () => {
                   </Heading>
                   <FormControl
                     isRequired
-                    isInvalid={!!validationErrors.auditCode}
-                  >
-                    <FormLabel>Audit Code</FormLabel>
-                    <Input
-                      value={formData.auditCode}
-                      onChange={(e) =>
-                        handleFieldChange("auditCode", e.target.value)
-                      }
-                      placeholder="e.g., AUD-2024-001"
-                    />
-                    <FormHelperText>
-                      Unique identifier for this audit schedule
-                    </FormHelperText>
-                    <FormErrorMessage>
-                      {validationErrors.auditCode}
-                    </FormErrorMessage>
-                  </FormControl>
-
-                  <FormControl
-                    isRequired
                     isInvalid={!!validationErrors.auditType}
                   >
                     <FormLabel>Audit Type</FormLabel>
@@ -1147,19 +1177,22 @@ const SchedulePageContent = () => {
                     </FormErrorMessage>
                   </FormControl>
 
-                  <FormControl>
-                    <FormLabel>Standard</FormLabel>
-                    <Input
-                      value={formData.standard}
-                      onChange={(e) =>
-                        handleFieldChange("standard", e.target.value)
-                      }
-                      placeholder="e.g., ISO 9001, SOX, ISO 27001"
-                    />
-                    <FormHelperText>
-                      The audit standard or framework being followed (optional)
-                    </FormHelperText>
-                  </FormControl>
+                  <StandardsAsyncSelect
+                    value={formData.standard}
+                    onChange={(standard) =>
+                      handleFieldChange("standard", standard)
+                    }
+                    label="Standard"
+                  />
+
+                  <PreviousAuditAsyncSelect
+                    value={formData.previousAudit}
+                    onChange={(audit) =>
+                      handleFieldChange("previousAudit", audit)
+                    }
+                    currentScheduleId={id !== "new" ? id : null}
+                    label="Previous Audit"
+                  />
                 </>
               )}
 
@@ -1207,7 +1240,11 @@ const SchedulePageContent = () => {
                         <Text fontWeight="semibold" minW="120px">
                           Standard:
                         </Text>
-                        <Text>{formData.standard || "-"}</Text>
+                        <Text>
+                          {formData.standard?.standard ||
+                            formData.standard ||
+                            "-"}
+                        </Text>
                       </HStack>
                       <HStack>
                         <Text fontWeight="semibold" minW="120px">
@@ -1458,7 +1495,7 @@ const SchedulePageContent = () => {
                       Standard
                     </Text>
                     <Text fontSize="sm" mt={1} fontWeight="medium">
-                      {formData.standard || "-"}
+                      {formData.standard?.standard || formData.standard || "-"}
                     </Text>
                   </Box>
                   <Box>
@@ -1523,9 +1560,31 @@ const SchedulePageContent = () => {
             </Card>
           </Stack>
 
-          {/* Right Column - Organizations */}
+          {/* Right Column - Organizations and Reports */}
           <Stack spacing={4} flex={1}>
-            <Organizations schedule={schedule ?? {}} {...{ setFormData }} />
+            <ResponsiveTabs
+              isLazy
+              index={tabIndex}
+              colorScheme="purple"
+              onChange={handleTabsChange}
+            >
+              <ResponsiveTabList>
+                <ResponsiveTab>Organizations</ResponsiveTab>
+                <ResponsiveTab>Reports</ResponsiveTab>
+              </ResponsiveTabList>
+
+              <ResponsiveTabPanels>
+                <ResponsiveTabPanel px={0} py={4}>
+                  <Organizations
+                    schedule={schedule ?? {}}
+                    {...{ setFormData }}
+                  />
+                </ResponsiveTabPanel>
+                <ResponsiveTabPanel px={0} py={4}>
+                  <ReportsTab schedule={schedule ?? {}} />
+                </ResponsiveTabPanel>
+              </ResponsiveTabPanels>
+            </ResponsiveTabs>
           </Stack>
         </Flex>
       </Box>

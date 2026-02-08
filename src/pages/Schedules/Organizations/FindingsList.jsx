@@ -16,11 +16,6 @@ import {
   Wrap,
   WrapItem,
   Button,
-  Tabs,
-  TabList,
-  Tab,
-  TabPanels,
-  TabPanel,
   Center,
 } from "@chakra-ui/react";
 import { useState } from "react";
@@ -39,6 +34,21 @@ import FindingsForm from "./FindingsForm";
 import ActionPlanForm from "./ActionPlanForm";
 import VerificationForm from "./VerificationForm";
 import NotifBadge from "../../../components/NotifBadge";
+import ResponsiveTabs, {
+  ResponsiveTabList,
+  ResponsiveTab,
+  ResponsiveTabPanels,
+  ResponsiveTabPanel,
+} from "../../../components/common/ResponsiveTabs";
+
+// Helper function to get user's full name from either format
+const getUserFullName = (user) => {
+  if (!user) return "";
+  // Handle combined name field (API format)
+  if (user.name) return user.name;
+  // Handle separate firstName/lastName fields (legacy format)
+  return `${user.firstName || ""} ${user.lastName || ""}`.trim();
+};
 
 // Map compliance values to display names and colors
 const COMPLIANCE_DISPLAY = {
@@ -55,8 +65,9 @@ const COMPLIANCE_DISPLAY = {
 
 const FindingCard = ({
   finding,
-  teamObjectives,
   team, // NEW: Accept team object
+  organizationAuditors = [], // NEW: Accept organization auditors
+  auditStandardClauses, // Changed from teamObjectives to auditStandardClauses
   onEdit,
   onDelete,
   onSaveEdit,
@@ -70,6 +81,7 @@ const FindingCard = ({
   const borderColor = useColorModeValue("gray.200", "gray.600");
   const labelColor = useColorModeValue("gray.600", "gray.400");
   const reportBg = useColorModeValue("gray.50", "gray.800");
+  const [activeTabIndex, setActiveTabIndex] = useState(0);
 
   const complianceInfo =
     COMPLIANCE_DISPLAY[finding.compliance] || COMPLIANCE_DISPLAY.OBSERVATIONS;
@@ -163,8 +175,9 @@ const FindingCard = ({
       >
         <CardBody>
           <FindingsForm
-            teamObjectives={teamObjectives}
             team={team} // NEW: Pass team object
+            organizationAuditors={organizationAuditors} // NEW: Pass organization auditors
+            auditStandardClauses={auditStandardClauses}
             initialData={finding}
             mode="edit"
             onAddFinding={handleSave}
@@ -210,34 +223,38 @@ const FindingCard = ({
                   {finding.title}
                 </Text>
               </HStack>
-              {/* Objectives Display */}
-              {finding.objectives && finding.objectives.length > 0 && (
+              {/* Clauses Display */}
+              {finding.clauses && finding.clauses.length > 0 && (
                 <Box>
                   <Wrap spacing={1}>
-                    {finding.objectives.map((obj, idx) => (
-                      <WrapItem key={`obj-${obj._id}-${idx}`}>
-                        <Tooltip
-                          label={`Updated: ${moment(obj.teamUpdatedAt).format("MMMM DD, YYYY")}`}
-                          placement="top"
-                        >
-                          <Badge fontSize="2xs" px={2} py={1} borderRadius="md">
-                            {obj.title}
-                          </Badge>
-                        </Tooltip>
+                    {finding.clauses.map((clause, idx) => (
+                      <WrapItem key={`clause-${clause.id}-${idx}`}>
+                        <Badge fontSize="2xs" px={2} py={1} borderRadius="md">
+                          {clause.name}
+                        </Badge>
                       </WrapItem>
                     ))}
-                    <WrapItem>
-                      <Text as="span" fontSize="xs" color="gray.500" mt={1}>
-                        {moment(finding.objectives[0]?.teamUpdatedAt).format(
-                          "MMM DD, YYYY",
-                        )}
-                      </Text>
-                    </WrapItem>
                   </Wrap>
                 </Box>
               )}
+              {/* Backward compatibility for old objectives */}
+              {!finding.clauses &&
+                finding.objectives &&
+                finding.objectives.length > 0 && (
+                  <Box>
+                    <Wrap spacing={1}>
+                      {finding.objectives.map((obj, idx) => (
+                        <WrapItem key={`obj-${obj._id}-${idx}`}>
+                          <Badge fontSize="2xs" px={2} py={1} borderRadius="md">
+                            {obj.title}
+                          </Badge>
+                        </WrapItem>
+                      ))}
+                    </Wrap>
+                  </Box>
+                )}
               {/* Backward compatibility for old single objective */}
-              {!finding.objectives && finding.objective && (
+              {!finding.clauses && !finding.objectives && finding.objective && (
                 <Text fontSize="xs" color={labelColor}>
                   {finding.objective}
                 </Text>
@@ -309,15 +326,20 @@ const FindingCard = ({
 
               {/* Tabs for Report, Action Plan, and Verification - Only for MINOR_NC/MAJOR_NC with report */}
               {shouldShowActionPlan ? (
-                <Tabs colorScheme="brandPrimary">
-                  <TabList>
-                    <Tab>
+                <ResponsiveTabs
+                  colorScheme="purple"
+                  index={activeTabIndex}
+                  onChange={(index) => setActiveTabIndex(index)}
+                  triggerUpdate={isExpanded}
+                >
+                  <ResponsiveTabList>
+                    <ResponsiveTab>
                       <HStack spacing={2}>
                         <FiFileText />
                         <Text>Report</Text>
                       </HStack>
-                    </Tab>
-                    <Tab>
+                    </ResponsiveTab>
+                    <ResponsiveTab>
                       <HStack spacing={2}>
                         <Center position="relative">
                           <FiTool />
@@ -332,8 +354,8 @@ const FindingCard = ({
                         </Center>
                         <Text>Action Plan</Text>
                       </HStack>
-                    </Tab>
-                    <Tab>
+                    </ResponsiveTab>
+                    <ResponsiveTab>
                       <HStack spacing={2}>
                         <Center pos="relative">
                           <FiCheckCircle />
@@ -348,12 +370,12 @@ const FindingCard = ({
                         </Center>
                         <Text>Verification</Text>
                       </HStack>
-                    </Tab>
-                  </TabList>
+                    </ResponsiveTab>
+                  </ResponsiveTabList>
 
-                  <TabPanels>
+                  <ResponsiveTabPanels>
                     {/* Report Tab Panel */}
-                    <TabPanel px={0} py={4}>
+                    <ResponsiveTabPanel px={0} py={4}>
                       <Box
                         p={3}
                         bg={reportBg}
@@ -425,13 +447,12 @@ const FindingCard = ({
                                   <Wrap>
                                     {finding?.report?.auditor?.map(
                                       (u, index) => {
+                                        const fullName = getUserFullName(u);
                                         return (
                                           <WrapItem
                                             key={`auditor-${u.id}-${index}`}
                                           >
-                                            <Tooltip
-                                              label={`${u.firstName} ${u.lastName}`}
-                                            >
+                                            <Tooltip label={fullName}>
                                               <Card
                                                 variant="filled"
                                                 shadow="none"
@@ -440,10 +461,10 @@ const FindingCard = ({
                                                   <HStack spacing={1}>
                                                     <Avatar
                                                       size="xs"
-                                                      name={`${u.firstName} ${u.lastName}`}
+                                                      name={fullName}
                                                     />
                                                     <Text fontSize="sm">
-                                                      {`${u.firstName} ${u.lastName}`}
+                                                      {fullName}
                                                     </Text>
                                                   </HStack>
                                                 </CardBody>
@@ -474,13 +495,12 @@ const FindingCard = ({
                                   <Wrap>
                                     {finding?.report?.auditee?.map(
                                       (u, index) => {
+                                        const fullName = getUserFullName(u);
                                         return (
                                           <WrapItem
                                             key={`auditee-${u.id}-${index}`}
                                           >
-                                            <Tooltip
-                                              label={`${u.firstName} ${u.lastName}`}
-                                            >
+                                            <Tooltip label={fullName}>
                                               <Card
                                                 variant="filled"
                                                 shadow="none"
@@ -489,10 +509,10 @@ const FindingCard = ({
                                                   <HStack spacing={1}>
                                                     <Avatar
                                                       size="xs"
-                                                      name={`${u.firstName} ${u.lastName}`}
+                                                      name={fullName}
                                                     />
                                                     <Text fontSize="sm">
-                                                      {`${u.firstName} ${u.lastName}`}
+                                                      {fullName}
                                                     </Text>
                                                   </HStack>
                                                 </CardBody>
@@ -517,13 +537,15 @@ const FindingCard = ({
                           </HStack>
                         </VStack>
                       </Box>
-                    </TabPanel>
+                    </ResponsiveTabPanel>
 
                     {/* Action Plan Tab Panel */}
-                    <TabPanel px={0} py={4}>
+                    <ResponsiveTabPanel px={0} py={4}>
                       {isEditingActionPlan ? (
                         <ActionPlanForm
                           initialData={finding.actionPlan}
+                          organizationAuditors={organizationAuditors} // NEW: Pass organization auditors
+                          team={team} // NEW: Pass team for leaders
                           onSave={handleSaveActionPlan}
                           onCancel={handleCancelActionPlan}
                           readOnly={false}
@@ -548,6 +570,8 @@ const FindingCard = ({
                           </HStack>
                           <ActionPlanForm
                             initialData={finding.actionPlan}
+                            organizationAuditors={organizationAuditors} // NEW: Pass organization auditors
+                            team={team} // NEW: Pass team for leaders
                             onSave={handleSaveActionPlan}
                             onCancel={handleCancelActionPlan}
                             readOnly={true}
@@ -576,10 +600,10 @@ const FindingCard = ({
                           </Button>
                         </Center>
                       )}
-                    </TabPanel>
+                    </ResponsiveTabPanel>
 
                     {/* Verification Tab Panel */}
-                    <TabPanel px={0} py={4}>
+                    <ResponsiveTabPanel px={0} py={4}>
                       {needsActionPlan ? (
                         <Center w="full" flexDir="column" minH="xs">
                           <Text
@@ -671,9 +695,9 @@ const FindingCard = ({
                           </Button>
                         </Center>
                       )}
-                    </TabPanel>
-                  </TabPanels>
-                </Tabs>
+                    </ResponsiveTabPanel>
+                  </ResponsiveTabPanels>
+                </ResponsiveTabs>
               ) : (
                 /* Report Section - For findings without tabs (non-NC or without report) */
                 finding.report && (
@@ -746,20 +770,19 @@ const FindingCard = ({
                             <Box>
                               <Wrap>
                                 {finding?.report?.auditor?.map((u, index) => {
+                                  const fullName = getUserFullName(u);
                                   return (
                                     <WrapItem key={`auditor-${u.id}-${index}`}>
-                                      <Tooltip
-                                        label={`${u.firstName} ${u.lastName}`}
-                                      >
+                                      <Tooltip label={fullName}>
                                         <Card variant="filled" shadow="none">
                                           <CardBody px={2} py={1}>
                                             <HStack spacing={1}>
                                               <Avatar
                                                 size="xs"
-                                                name={`${u.firstName} ${u.lastName}`}
+                                                name={fullName}
                                               />
                                               <Text fontSize="sm">
-                                                {`${u.firstName} ${u.lastName}`}
+                                                {fullName}
                                               </Text>
                                             </HStack>
                                           </CardBody>
@@ -784,20 +807,19 @@ const FindingCard = ({
                             <Box>
                               <Wrap>
                                 {finding?.report?.auditee?.map((u, index) => {
+                                  const fullName = getUserFullName(u);
                                   return (
                                     <WrapItem key={`auditee-${u.id}-${index}`}>
-                                      <Tooltip
-                                        label={`${u.firstName} ${u.lastName}`}
-                                      >
+                                      <Tooltip label={fullName}>
                                         <Card variant="filled" shadow="none">
                                           <CardBody px={2} py={1}>
                                             <HStack spacing={1}>
                                               <Avatar
                                                 size="xs"
-                                                name={`${u.firstName} ${u.lastName}`}
+                                                name={fullName}
                                               />
                                               <Text fontSize="sm">
-                                                {`${u.firstName} ${u.lastName}`}
+                                                {fullName}
                                               </Text>
                                             </HStack>
                                           </CardBody>
@@ -829,8 +851,9 @@ const FindingCard = ({
 
 const FindingsList = ({
   findings = [],
-  teamObjectives = [],
   team = null, // NEW: Accept team object
+  organizationAuditors = [], // NEW: Accept organization auditors
+  auditStandardClauses = [], // Changed from teamObjectives to auditStandardClauses
   onEdit,
   onDelete,
   onSaveEdit,
@@ -849,8 +872,9 @@ const FindingsList = ({
         <FindingCard
           key={finding._id || index}
           finding={finding}
-          teamObjectives={teamObjectives}
           team={team} // NEW: Pass team object
+          organizationAuditors={organizationAuditors} // NEW: Pass organization auditors
+          auditStandardClauses={auditStandardClauses}
           onEdit={onEdit}
           onDelete={onDelete}
           onSaveEdit={onSaveEdit}
