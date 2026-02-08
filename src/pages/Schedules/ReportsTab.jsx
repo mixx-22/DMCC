@@ -375,9 +375,7 @@ const ReportsTab = ({ schedule }) => {
 
     // Remove temporary routing properties before persisting
     // eslint-disable-next-line no-unused-vars
-    const cleanFinding = { ...updatedFinding };
-    delete cleanFinding.visitIndex;
-    delete cleanFinding.organizationId;
+    const { visitIndex: _visitIndex, organizationId: _organizationId, ...cleanFinding } = updatedFinding;
 
     // Calculate updated visits with the edited finding
     const updatedVisits = organization.visits.map((v, i) => {
