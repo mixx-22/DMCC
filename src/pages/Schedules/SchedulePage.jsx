@@ -21,7 +21,6 @@ import {
   Textarea,
   Select,
   HStack,
-  FormHelperText,
   Badge,
   Stepper,
   Step,
@@ -38,7 +37,6 @@ import {
   EditableTextarea,
   EditablePreview,
   useDisclosure,
-  InputGroup,
 } from "@chakra-ui/react";
 import {
   FiArrowLeft,
@@ -61,11 +59,7 @@ import {
   useScheduleProfile,
   useOrganizations,
 } from "../../context/_useContext";
-import {
-  getAuditTypeLabel,
-  generateAuditCode,
-  getAuditTypePrefix,
-} from "../../utils/auditHelpers";
+import { getAuditTypeLabel, generateAuditCode } from "../../utils/auditHelpers";
 import { validateAuditScheduleClosure } from "../../utils/helpers";
 import EditAuditDetailsModal from "./EditAuditDetailsModal";
 import CloseAuditModal from "./CloseAuditModal";
@@ -122,7 +116,7 @@ const SchedulePageContent = () => {
     { title: "Basic Information", fields: ["title", "description"] },
     {
       title: "Audit Details",
-      fields: ["auditCode", "auditType", "standard"],
+      fields: ["auditType", "standard"],
     },
     { title: "Review", fields: [] },
   ];
@@ -189,9 +183,6 @@ const SchedulePageContent = () => {
       }
       if (field === "description" && !formData.description.trim()) {
         errors.description = "Description is required";
-      }
-      if (field === "auditCode" && !formData.auditCode.trim()) {
-        errors.auditCode = "Audit code is required";
       }
       if (field === "auditType" && !formData.auditType) {
         errors.auditType = "Audit type is required";
@@ -920,7 +911,6 @@ const SchedulePageContent = () => {
     return {
       title: formData.title,
       description: formData.description,
-      auditCode: formData.auditCode,
       auditType: formData.auditType,
       standard: formData.standard?.standard || formData.standard || "",
       status: formData.status,
@@ -984,7 +974,6 @@ const SchedulePageContent = () => {
   const handleSaveAuditDetails = async (detailsData) => {
     try {
       const updatePayload = buildUpdatePayload({
-        auditCode: detailsData.auditCode,
         auditType: detailsData.auditType,
         standard: detailsData.standard?.standard || detailsData.standard || "",
         previousAudit: detailsData.previousAudit,
@@ -1164,51 +1153,6 @@ const SchedulePageContent = () => {
                     </FormErrorMessage>
                   </FormControl>
 
-                  <FormControl
-                    isRequired
-                    isInvalid={!!validationErrors.auditCode}
-                  >
-                    <FormLabel>Audit Code</FormLabel>
-                    <HStack spacing={2}>
-                      <InputGroup size="md" flex="0 0 100px">
-                        <Input
-                          value={getAuditTypePrefix(formData.auditType) || ""}
-                          isReadOnly
-                          placeholder="AUD"
-                          textAlign="center"
-                        />
-                      </InputGroup>
-                      <InputGroup size="md" flex="0 0 100px">
-                        <Input
-                          value={formData.auditYear || ""}
-                          onChange={(e) =>
-                            handleFieldChange("auditYear", e.target.value)
-                          }
-                          placeholder="YYYY"
-                          textAlign="center"
-                          maxLength={4}
-                        />
-                      </InputGroup>
-                      <InputGroup size="md" flex="1">
-                        <Input
-                          value={formData.auditNumber || ""}
-                          onChange={(e) =>
-                            handleFieldChange("auditNumber", e.target.value)
-                          }
-                          placeholder="Audit Number"
-                          textAlign="center"
-                        />
-                      </InputGroup>
-                    </HStack>
-                    <FormHelperText>
-                      Prefix is auto-filled based on audit type. Year defaults
-                      to current year. Number is optional (e.g., 001 or 9999).
-                    </FormHelperText>
-                    <FormErrorMessage>
-                      {validationErrors.auditCode}
-                    </FormErrorMessage>
-                  </FormControl>
-
                   <StandardsAsyncSelect
                     value={formData.standard}
                     onChange={(standard) =>
@@ -1273,7 +1217,9 @@ const SchedulePageContent = () => {
                           Standard:
                         </Text>
                         <Text>
-                          {formData.standard?.standard || formData.standard || "-"}
+                          {formData.standard?.standard ||
+                            formData.standard ||
+                            "-"}
                         </Text>
                       </HStack>
                       <HStack>

@@ -9,23 +9,15 @@ import {
   Button,
   FormControl,
   FormLabel,
-  Input,
   Select,
   VStack,
   FormErrorMessage,
-  FormHelperText,
-  HStack,
-  InputGroup,
 } from "@chakra-ui/react";
 import { useState, useEffect } from "react";
 import { FiSave } from "react-icons/fi";
 import PreviousAuditAsyncSelect from "../../components/PreviousAuditAsyncSelect";
 import StandardsAsyncSelect from "../../components/StandardsAsyncSelect";
-import {
-  generateAuditCode,
-  getAuditTypePrefix,
-  parseAuditCode,
-} from "../../utils/auditHelpers";
+import { generateAuditCode, parseAuditCode } from "../../utils/auditHelpers";
 
 const EditAuditDetailsModal = ({
   isOpen,
@@ -36,7 +28,6 @@ const EditAuditDetailsModal = ({
   currentScheduleId = null,
 }) => {
   const [formData, setFormData] = useState({
-    auditCode: "",
     auditType: "",
     standard: "",
     previousAudit: null,
@@ -51,7 +42,6 @@ const EditAuditDetailsModal = ({
       const { auditYear, auditNumber } = parseAuditCode(auditData.auditCode);
 
       setFormData({
-        auditCode: auditData.auditCode || "",
         auditType: auditData.auditType || "",
         standard: auditData.standard || "",
         previousAudit: auditData.previousAudit || null,
@@ -98,9 +88,6 @@ const EditAuditDetailsModal = ({
   const validateForm = () => {
     const errors = {};
 
-    if (!formData.auditCode.trim()) {
-      errors.auditCode = "Audit code is required";
-    }
     if (!formData.auditType) {
       errors.auditType = "Audit type is required";
     }
@@ -122,7 +109,6 @@ const EditAuditDetailsModal = ({
       const { auditYear, auditNumber } = parseAuditCode(auditData.auditCode);
 
       setFormData({
-        auditCode: auditData.auditCode || "",
         auditType: auditData.auditType || "",
         standard: auditData.standard || "",
         previousAudit: auditData.previousAudit || null,
@@ -155,46 +141,6 @@ const EditAuditDetailsModal = ({
                 <option value="operational">Operational Audit</option>
               </Select>
               <FormErrorMessage>{validationErrors.auditType}</FormErrorMessage>
-            </FormControl>
-
-            <FormControl isRequired isInvalid={!!validationErrors.auditCode}>
-              <FormLabel>Audit Code</FormLabel>
-              <HStack spacing={2}>
-                <InputGroup size="md" flex="0 0 100px">
-                  <Input
-                    value={getAuditTypePrefix(formData.auditType) || ""}
-                    isReadOnly
-                    placeholder="AUD"
-                    textAlign="center"
-                  />
-                </InputGroup>
-                <InputGroup size="md" flex="0 0 100px">
-                  <Input
-                    value={formData.auditYear}
-                    onChange={(e) =>
-                      handleFieldChange("auditYear", e.target.value)
-                    }
-                    placeholder="YYYY"
-                    textAlign="center"
-                    maxLength={4}
-                  />
-                </InputGroup>
-                <InputGroup size="md" flex="1">
-                  <Input
-                    value={formData.auditNumber}
-                    onChange={(e) =>
-                      handleFieldChange("auditNumber", e.target.value)
-                    }
-                    placeholder="Audit Number"
-                    textAlign="center"
-                  />
-                </InputGroup>
-              </HStack>
-              <FormHelperText>
-                Prefix is auto-filled based on audit type. Year defaults to
-                current year. Number is optional (e.g., 001 or 9999).
-              </FormHelperText>
-              <FormErrorMessage>{validationErrors.auditCode}</FormErrorMessage>
             </FormControl>
 
             <StandardsAsyncSelect
