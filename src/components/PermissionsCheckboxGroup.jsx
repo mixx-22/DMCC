@@ -236,6 +236,48 @@ const MODULES = [
     path: "audit.response",
   },
   {
+    key: "audit.permissions.organizations",
+    label: "Organizations",
+    description: "Manage audit organizations",
+    level: 1,
+    parentLabel: (action) => {
+      switch (action) {
+        case "c":
+          return "Create Audit Organizations";
+        case "r":
+          return "View Audit Organizations";
+        case "u":
+          return "Update Audit Organizations";
+        case "d":
+          return "Delete Audit Organizations";
+        default:
+          return `${PERMISSION_LABELS[action]} Audit Organizations`;
+      }
+    },
+    path: "audit.organizations",
+  },
+  {
+    key: "audit.permissions.kpis",
+    label: "KPIs",
+    description: "Manage audit KPIs",
+    level: 1,
+    parentLabel: (action) => {
+      switch (action) {
+        case "c":
+          return "Create Audit KPIs";
+        case "r":
+          return "View Audit KPIs";
+        case "u":
+          return "Update Audit KPIs";
+        case "d":
+          return "Delete Audit KPIs";
+        default:
+          return `${PERMISSION_LABELS[action]} Audit KPIs`;
+      }
+    },
+    path: "audit.kpis",
+  },
+  {
     key: "settings",
     label: "Settings",
     description: "Manage application settings",

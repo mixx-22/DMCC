@@ -58,6 +58,7 @@ import PageFooter from "../../components/PageFooter";
 import {
   useScheduleProfile,
   useOrganizations,
+  usePermissions,
 } from "../../context/_useContext";
 import { getAuditTypeLabel, generateAuditCode } from "../../utils/auditHelpers";
 import { validateAuditScheduleClosure } from "../../utils/helpers";
@@ -75,6 +76,7 @@ import ResponsiveTabs, {
   ResponsiveTabPanel,
   ResponsiveTabPanels,
 } from "../../components/common/ResponsiveTabs";
+import Can from "../../components/Can";
 
 // Inner component that uses organizations context
 const SchedulePageContent = () => {
@@ -84,6 +86,7 @@ const SchedulePageContent = () => {
     schedule,
     initialScheduleData,
     loading,
+    fetchSchedule,
     updateSchedule,
     createSchedule,
     deleteSchedule,
@@ -92,6 +95,7 @@ const SchedulePageContent = () => {
 
   // Get organizations from context
   const { organizations } = useOrganizations();
+  const { isAllowedTo } = usePermissions();
 
   const errorColor = useColorModeValue("error.600", "error.400");
   const summaryCardBg = useColorModeValue("gray.50", "gray.700");
@@ -122,6 +126,9 @@ const SchedulePageContent = () => {
     setTabIndex(index);
   };
 
+  const [isOrganizationsAllowed, setIsOrganizationsAllowed] = useState(false);
+  const [isReportsAllowed, setIsReportsAllowed] = useState(false);
+
   const [isClosingAudit, setIsClosingAudit] = useState(false);
 
   const steps = [
@@ -149,30 +156,57 @@ const SchedulePageContent = () => {
     }
   }, [schedule, isNewSchedule, initialScheduleData]);
 
+  useEffect(() => {
+    let isActive = true;
+
+    const checkPermissions = async () => {
+      try {
+        const [orgAllowed, reportsAllowed] = await Promise.all([
+          isAllowedTo("audit.organizations.r"),
+          isAllowedTo("audit.response.r"),
+        ]);
+        console.log(
+          "Permissions - Organizations:",
+          orgAllowed,
+          "Reports:",
+          reportsAllowed,
+        );
+
+        if (isActive) {
+          setIsOrganizationsAllowed(orgAllowed);
+          setIsReportsAllowed(reportsAllowed);
+        }
+      } catch (error) {
+        if (isActive) {
+          setIsOrganizationsAllowed(false);
+          setIsReportsAllowed(false);
+        }
+        console.error("Failed to check audit permissions:", error);
+      }
+    };
+
+    checkPermissions();
+
+    return () => {
+      isActive = false;
+    };
+  }, [isAllowedTo]);
+
+  const visibleTabsCount =
+    (isOrganizationsAllowed ? 1 : 0) + (isReportsAllowed ? 1 : 0);
+
+  useEffect(() => {
+    if (visibleTabsCount > 0 && tabIndex >= visibleTabsCount) {
+      setTabIndex(0);
+    }
+  }, [visibleTabsCount, tabIndex]);
+
   const handleFieldChange = (field, value) => {
     setFormData((prev) => {
       const updated = {
         ...prev,
         [field]: value,
       };
-
-      // Auto-generate audit code when type, year, or number changes
-      if (
-        field === "auditType" ||
-        field === "auditYear" ||
-        field === "auditNumber"
-      ) {
-        const type = field === "auditType" ? value : prev.auditType;
-        const year =
-          field === "auditYear"
-            ? value
-            : prev.auditYear || new Date().getFullYear().toString();
-        const number = field === "auditNumber" ? value : prev.auditNumber || "";
-
-        if (type) {
-          updated.auditCode = generateAuditCode(type, year, number);
-        }
-      }
 
       return updated;
     });
@@ -991,9 +1025,19 @@ const SchedulePageContent = () => {
   const handleSaveAuditDetails = async (detailsData) => {
     try {
       const { standard } = detailsData || {};
+      const auditCode =
+        detailsData?.auditCode ||
+        (detailsData?.auditType
+          ? generateAuditCode(
+              detailsData.auditType,
+              detailsData.auditYear,
+              detailsData.auditNumber,
+            )
+          : undefined);
 
       const updatePayload = buildUpdatePayload({
         auditType: detailsData.auditType,
+        ...(auditCode ? { auditCode } : {}),
         ...(standard && {
           standard: {
             standard: standard.standard,
@@ -1003,7 +1047,14 @@ const SchedulePageContent = () => {
         previousAudit: detailsData.previousAudit,
       });
       const updatedSchedule = await updateSchedule(id, updatePayload);
-      setFormData((prev) => ({ ...prev, ...updatedSchedule }));
+      setFormData((prev) => ({
+        ...prev,
+        ...updatePayload,
+        ...(updatedSchedule || {}),
+      }));
+      if (id && id !== "new") {
+        await fetchSchedule(id);
+      }
       onEditDetailsClose();
     } catch (error) {
       // Error toast is handled by context
@@ -1073,15 +1124,17 @@ const SchedulePageContent = () => {
       <Box>
         <PageHeader>
           <Flex justify="space-between" align="center" w="full">
-            <HStack>
-              <IconButton
-                icon={<FiArrowLeft />}
-                onClick={handleCancel}
-                aria-label="Back to schedules"
-                variant="ghost"
-              />
-              <Heading variant="pageTitle">Create New Schedule</Heading>
-            </HStack>
+            <Can to="audit.schedule.c">
+              <HStack>
+                <IconButton
+                  icon={<FiArrowLeft />}
+                  onClick={handleCancel}
+                  aria-label="Back to schedules"
+                  variant="ghost"
+                />
+                <Heading variant="pageTitle">Create New Schedule</Heading>
+              </HStack>
+            </Can>
           </Flex>
         </PageHeader>
 
@@ -1219,12 +1272,6 @@ const SchedulePageContent = () => {
                           Title:
                         </Text>
                         <Text>{formData.title || "-"}</Text>
-                      </HStack>
-                      <HStack>
-                        <Text fontWeight="semibold" minW="120px">
-                          Audit Code:
-                        </Text>
-                        <Text>{formData.auditCode || "-"}</Text>
                       </HStack>
                       <HStack>
                         <Text fontWeight="semibold" minW="120px">
@@ -1460,15 +1507,17 @@ const SchedulePageContent = () => {
                 <Flex justify="space-between" align="center" mb={4}>
                   <Text fontWeight="semibold">Audit Details</Text>
                   {isScheduleOngoing && (
-                    <Button
-                      size="xs"
-                      variant="ghost"
-                      colorScheme="brandPrimary"
-                      leftIcon={<FiEdit />}
-                      onClick={onEditDetailsOpen}
-                    >
-                      Edit
-                    </Button>
+                    <Can to="audit.schedule.u">
+                      <Button
+                        size="xs"
+                        variant="ghost"
+                        colorScheme="brandPrimary"
+                        leftIcon={<FiEdit />}
+                        onClick={onEditDetailsOpen}
+                      >
+                        Edit
+                      </Button>
+                    </Can>
                   )}
                 </Flex>
                 <VStack align="stretch" spacing={3}>
@@ -1536,24 +1585,28 @@ const SchedulePageContent = () => {
                   </Text>
 
                   {formData.status === 1 ? (
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      colorScheme="brandPrimary"
-                      leftIcon={<FiEdit />}
-                      onClick={handleReopenAudit}
-                    >
-                      Reopen Audit Schedule
-                    </Button>
+                    <Can to="audit.schedule.u">
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        colorScheme="brandPrimary"
+                        leftIcon={<FiEdit />}
+                        onClick={handleReopenAudit}
+                      >
+                        Reopen Audit Schedule
+                      </Button>
+                    </Can>
                   ) : (
-                    <Button
-                      size="sm"
-                      colorScheme="green"
-                      leftIcon={<FiCheckCircle />}
-                      onClick={onCloseAuditOpen}
-                    >
-                      Close Audit Schedule
-                    </Button>
+                    <Can to="audit.schedule.u">
+                      <Button
+                        size="sm"
+                        colorScheme="green"
+                        leftIcon={<FiCheckCircle />}
+                        onClick={onCloseAuditOpen}
+                      >
+                        Close Audit Schedule
+                      </Button>
+                    </Can>
                   )}
                 </VStack>
               </CardBody>
@@ -1569,20 +1622,26 @@ const SchedulePageContent = () => {
               onChange={handleTabsChange}
             >
               <ResponsiveTabList>
-                <ResponsiveTab>Organizations</ResponsiveTab>
-                <ResponsiveTab>Reports</ResponsiveTab>
+                {isOrganizationsAllowed && (
+                  <ResponsiveTab>Organizations</ResponsiveTab>
+                )}
+                {isReportsAllowed && <ResponsiveTab>Reports</ResponsiveTab>}
               </ResponsiveTabList>
 
               <ResponsiveTabPanels>
-                <ResponsiveTabPanel px={0} py={4}>
-                  <Organizations
-                    schedule={schedule ?? {}}
-                    {...{ setFormData }}
-                  />
-                </ResponsiveTabPanel>
-                <ResponsiveTabPanel px={0} py={4}>
-                  <ReportsTab schedule={schedule ?? {}} />
-                </ResponsiveTabPanel>
+                {isOrganizationsAllowed && (
+                  <ResponsiveTabPanel px={0} py={4}>
+                    <Organizations
+                      schedule={schedule ?? {}}
+                      {...{ setFormData }}
+                    />
+                  </ResponsiveTabPanel>
+                )}
+                {isReportsAllowed && (
+                  <ResponsiveTabPanel px={0} py={4}>
+                    <ReportsTab schedule={schedule ?? {}} />
+                  </ResponsiveTabPanel>
+                )}
               </ResponsiveTabPanels>
             </ResponsiveTabs>
           </Stack>
@@ -1593,13 +1652,15 @@ const SchedulePageContent = () => {
       <PageFooter>
         <HStack spacing={3} w="full">
           <Menu>
-            <MenuButton
-              as={Button}
-              leftIcon={<FiMoreVertical />}
-              variant="ghost"
-            >
-              More Options
-            </MenuButton>
+            <Can to="audit.schedule.u">
+              <MenuButton
+                as={Button}
+                leftIcon={<FiMoreVertical />}
+                variant="ghost"
+              >
+                More Options
+              </MenuButton>
+            </Can>
             <MenuList>
               <MenuItem icon={<FiPrinter />} onClick={handlePrintSchedule}>
                 Print Schedule

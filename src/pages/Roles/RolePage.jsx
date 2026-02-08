@@ -93,6 +93,8 @@ const RolePage = () => {
           schedule: { c: 0, r: 0, u: 0, d: 0 },
           findings: { c: 0, r: 0, u: 0, d: 0 },
           response: { c: 0, r: 0, u: 0, d: 0 },
+          organizations: { c: 0, r: 0, u: 0, d: 0 },
+          kpis: { c: 0, r: 0, u: 0, d: 0 },
         },
       },
       settings: {

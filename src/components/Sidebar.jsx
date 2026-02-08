@@ -185,6 +185,9 @@ const Sidebar = () => {
   const [isSettingsRolesAllowed, setIsSettingsRolesAllowed] = useState(1);
   const [isSettingsfileTypeAllowed, setIsSettingsfileTypeAllowed] = useState(1);
   const [isStandardsAllowed, setIsStandardsAllowed] = useState(1);
+  const [isRequestApprovalAllowed, setIsRequestApprovalAllowed] = useState(1);
+  const [isRequestPublishAllowed, setIsRequestPublishAllowed] = useState(1);
+  const [isKPIAllowed, setIsKPIAllowed] = useState(1);
 
   useEffect(() => {
     async function init() {
@@ -194,7 +197,7 @@ const Sidebar = () => {
       const val2 = await isAllowedTo("users.r");
       setIsUsersAllowed(val2);
 
-      const val3 = await isAllowedTo("audit.r");
+      const val3 = await isAllowedTo("audit.schedule.r");
       setIsSchedulesAllowed(val3);
 
       const val4 = await isAllowedTo("settings.r");
@@ -211,6 +214,12 @@ const Sidebar = () => {
 
       const val8 = await isAllowedTo("request.approval.r");
       setIsRequestApprovalAllowed(val8);
+
+      const val9 = await isAllowedTo("request.publish.r");
+      setIsRequestPublishAllowed(val9);
+
+      const val10 = await isAllowedTo("audit.r");
+      setIsKPIAllowed(val10);
     }
     init();
   }, [isAllowedTo]);
@@ -236,8 +245,12 @@ const Sidebar = () => {
         icon: FiClock,
         children: [
           { path: "/request?tab=0", label: "My Requests" },
-          { path: "/request?tab=1", label: "For Approval" },
-          { path: "/request?tab=2", label: "For Publish" },
+          ...(isRequestApprovalAllowed
+            ? [{ path: "/request?tab=1", label: "For Approval" }]
+            : []),
+          ...(isRequestPublishAllowed
+            ? [{ path: "/request?tab=2", label: "For Publish" }]
+            : []),
           { path: "/request?tab=3", label: "Request History" },
         ],
       },
@@ -274,10 +287,12 @@ const Sidebar = () => {
         path: "/audit-schedules",
         label: "All Schedules",
       });
-      scheduleChildren.push({
-        path: "/schedules/latest/kpis",
-        label: "Audit KPIs",
-      });
+      if (isKPIAllowed) {
+        scheduleChildren.push({
+          path: "/schedules/latest/kpis",
+          label: "Audit KPIs",
+        });
+      }
 
       items.push({
         id: "schedules",
@@ -322,6 +337,9 @@ const Sidebar = () => {
     isSettingsAllowed,
     isSettingsRolesAllowed,
     isSettingsfileTypeAllowed,
+    isRequestApprovalAllowed,
+    isRequestPublishAllowed,
+    isKPIAllowed,
   ]);
 
   useEffect(() => {
