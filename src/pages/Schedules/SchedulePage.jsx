@@ -126,6 +126,7 @@ const SchedulePageContent = () => {
     setTabIndex(index);
   };
 
+  const [isScheduleUpdateAllowed, setIsScheduleUpdateAllowed] = useState(false);
   const [isOrganizationsAllowed, setIsOrganizationsAllowed] = useState(false);
   const [isReportsAllowed, setIsReportsAllowed] = useState(false);
 
@@ -161,10 +162,12 @@ const SchedulePageContent = () => {
 
     const checkPermissions = async () => {
       try {
-        const [orgAllowed, reportsAllowed] = await Promise.all([
-          isAllowedTo("audit.organizations.r"),
-          isAllowedTo("audit.response.r"),
-        ]);
+        const [scheduleUpdateAllowed, orgAllowed, reportsAllowed] =
+          await Promise.all([
+            isAllowedTo("audit.schedule.u"),
+            isAllowedTo("audit.organizations.r"),
+            isAllowedTo("audit.response.r"),
+          ]);
         console.log(
           "Permissions - Organizations:",
           orgAllowed,
@@ -173,11 +176,13 @@ const SchedulePageContent = () => {
         );
 
         if (isActive) {
+          setIsScheduleUpdateAllowed(scheduleUpdateAllowed);
           setIsOrganizationsAllowed(orgAllowed);
           setIsReportsAllowed(reportsAllowed);
         }
       } catch (error) {
         if (isActive) {
+          setIsScheduleUpdateAllowed(false);
           setIsOrganizationsAllowed(false);
           setIsReportsAllowed(false);
         }
@@ -200,6 +205,8 @@ const SchedulePageContent = () => {
       setTabIndex(0);
     }
   }, [visibleTabsCount, tabIndex]);
+
+  const canEditScheduleDetails = isScheduleOngoing && isScheduleUpdateAllowed;
 
   const handleFieldChange = (field, value) => {
     setFormData((prev) => {
@@ -1381,7 +1388,7 @@ const SchedulePageContent = () => {
               <CardBody>
                 <VStack align="stretch" spacing={4}>
                   <Editable
-                    isDisabled={!isScheduleOngoing}
+                    isDisabled={!canEditScheduleDetails}
                     key={`title-${schedule?.id || schedule?._id}`}
                     defaultValue={schedule?.title || "Untitled"}
                     onSubmit={handleTitleBlur}
@@ -1395,10 +1402,14 @@ const SchedulePageContent = () => {
                     <EditablePreview
                       w="full"
                       borderRadius="md"
-                      _hover={{
-                        background: "gray.100",
-                        cursor: "pointer",
-                      }}
+                      _hover={
+                        canEditScheduleDetails
+                          ? {
+                              background: "gray.100",
+                              cursor: "pointer",
+                            }
+                          : undefined
+                      }
                     />
                     <EditableTextarea
                       ref={titleTextareaRef}
@@ -1433,7 +1444,7 @@ const SchedulePageContent = () => {
                   {/* Editable Description */}
                   <Editable
                     w="full"
-                    isDisabled={!isScheduleOngoing}
+                    isDisabled={!canEditScheduleDetails}
                     key={`description-${schedule?.id || schedule?._id}`}
                     defaultValue={schedule?.description || ""}
                     onSubmit={handleDescriptionBlur}
@@ -1447,10 +1458,14 @@ const SchedulePageContent = () => {
                       w="full"
                       borderRadius="md"
                       color={schedule?.description ? "gray.700" : "gray.400"}
-                      _hover={{
-                        background: "gray.100",
-                        cursor: "pointer",
-                      }}
+                      _hover={
+                        canEditScheduleDetails
+                          ? {
+                              background: "gray.100",
+                              cursor: "pointer",
+                            }
+                          : undefined
+                      }
                     />
                     <EditableTextarea
                       ref={descriptionTextareaRef}

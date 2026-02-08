@@ -17,6 +17,7 @@ import { FiSave, FiX } from "react-icons/fi";
 import UserAsyncSelect from "../../../components/UserAsyncSelect";
 import VisitManager from "./VisitManager";
 import { toast } from "sonner";
+import Can from "../../../components/Can";
 
 const OrganizationForm = ({
   schedule = {},
@@ -145,64 +146,66 @@ const OrganizationForm = ({
   };
 
   return (
-    <Card
-      bg={bg}
-      borderWidth={2}
-      borderStyle="dashed"
-      borderColor={borderColor}
-      shadow="none"
-    >
-      <CardBody>
-        <Stack spacing={4}>
-          <TeamSingleAsyncSelect
-            value={formData.team}
-            placeholder="Start searching for Teams..."
-            onChange={(team) => handleFieldChange("team", team)}
-            isInvalid={!!validationErrors.team}
-            label="Team"
-          />
-          <Divider />
-          <UserAsyncSelect
-            value={formData.auditors || []}
-            placeholder="Start searching for Users..."
-            onChange={(users) => handleFieldChange("auditors", users)}
-            isInvalid={!!validationErrors.auditors}
-            displayMode="none"
-            label="Auditors"
-            limit={5}
-          />
-          <Divider />
-          <VisitManager
-            visits={formData.visits}
-            onChange={(visits) => handleFieldChange("visits", visits)}
-            isInvalid={!!validationErrors.visits}
-          />
-        </Stack>
-      </CardBody>
-      <CardFooter>
-        <HStack w="full">
-          <Spacer />
-          <ButtonGroup>
-            <Button
-              size="sm"
-              variant="ghost"
-              onClick={handleCancel}
-              leftIcon={<FiX />}
-            >
-              Cancel
-            </Button>
-            <Button
-              size="sm"
-              colorScheme="brandPrimary"
-              onClick={handleSubmit}
-              leftIcon={<FiSave />}
-            >
-              {"Add Organization"}
-            </Button>
-          </ButtonGroup>
-        </HStack>
-      </CardFooter>
-    </Card>
+    <Can to="audit.organizations.u">
+      <Card
+        bg={bg}
+        borderWidth={2}
+        borderStyle="dashed"
+        borderColor={borderColor}
+        shadow="none"
+      >
+        <CardBody>
+          <Stack spacing={4}>
+            <TeamSingleAsyncSelect
+              value={formData.team}
+              placeholder="Start searching for Teams..."
+              onChange={(team) => handleFieldChange("team", team)}
+              isInvalid={!!validationErrors.team}
+              label="Team"
+            />
+            <Divider />
+            <UserAsyncSelect
+              value={formData.auditors || []}
+              placeholder="Start searching for Users..."
+              onChange={(users) => handleFieldChange("auditors", users)}
+              isInvalid={!!validationErrors.auditors}
+              displayMode="none"
+              label="Auditors"
+              limit={5}
+            />
+            <Divider />
+            <VisitManager
+              visits={formData.visits}
+              onChange={(visits) => handleFieldChange("visits", visits)}
+              isInvalid={!!validationErrors.visits}
+            />
+          </Stack>
+        </CardBody>
+        <CardFooter>
+          <HStack w="full">
+            <Spacer />
+            <ButtonGroup>
+              <Button
+                size="sm"
+                variant="ghost"
+                onClick={handleCancel}
+                leftIcon={<FiX />}
+              >
+                Cancel
+              </Button>
+              <Button
+                size="sm"
+                colorScheme="brandPrimary"
+                onClick={handleSubmit}
+                leftIcon={<FiSave />}
+              >
+                {"Add Organization"}
+              </Button>
+            </ButtonGroup>
+          </HStack>
+        </CardFooter>
+      </Card>
+    </Can>
   );
 };
 

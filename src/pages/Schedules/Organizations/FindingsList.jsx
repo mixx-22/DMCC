@@ -40,6 +40,7 @@ import ResponsiveTabs, {
   ResponsiveTabPanels,
   ResponsiveTabPanel,
 } from "../../../components/common/ResponsiveTabs";
+import Can from "../../../components/Can";
 
 // Helper function to get user's full name from either format
 const getUserFullName = (user) => {
@@ -281,26 +282,28 @@ const FindingCard = ({
                 onClick={() => setIsExpanded(!isExpanded)}
                 aria-label={isExpanded ? "Collapse" : "Expand"}
               />
-              {isScheduleOngoing && onEdit && (
-                <IconButton
-                  icon={<FiEdit />}
-                  size="sm"
-                  variant="ghost"
-                  colorScheme="brandPrimary"
-                  onClick={handleEditClick}
-                  aria-label="Edit finding"
-                />
-              )}
-              {isScheduleOngoing && onDelete && (
-                <IconButton
-                  icon={<FiTrash2 />}
-                  size="sm"
-                  variant="ghost"
-                  colorScheme="error"
-                  onClick={() => onDelete(finding)}
-                  aria-label="Delete finding"
-                />
-              )}
+              <Can to="audit.findings.u">
+                {isScheduleOngoing && onEdit && (
+                  <IconButton
+                    icon={<FiEdit />}
+                    size="sm"
+                    variant="ghost"
+                    colorScheme="brandPrimary"
+                    onClick={handleEditClick}
+                    aria-label="Edit finding"
+                  />
+                )}
+                {isScheduleOngoing && onDelete && (
+                  <IconButton
+                    icon={<FiTrash2 />}
+                    size="sm"
+                    variant="ghost"
+                    colorScheme="error"
+                    onClick={() => onDelete(finding)}
+                    aria-label="Delete finding"
+                  />
+                )}
+              </Can>
             </HStack>
           </HStack>
 

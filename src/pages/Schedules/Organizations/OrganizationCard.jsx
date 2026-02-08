@@ -53,6 +53,7 @@ import {
   useOrganizations,
   useDocuments,
   useLayout,
+  usePermissions,
 } from "../../../context/_useContext";
 import Timestamp from "../../../components/Timestamp";
 import apiService from "../../../services/api";
@@ -75,6 +76,7 @@ import ResponsiveTabs, {
   ResponsiveTabPanels,
 } from "../../../components/common/ResponsiveTabs";
 import NotifBadge from "../../../components/NotifBadge";
+import Can from "../../../components/Can";
 
 // Tab indices for better maintainability
 const TAB_INDICES = {
@@ -116,6 +118,7 @@ const OrganizationCard = ({
     loading: documentsLoading,
     fetchDocuments,
   } = useDocuments();
+  const { isAllowedTo } = usePermissions();
   const { selectedDocument, closeDocumentDrawer, handleDocumentClick } =
     useLayout();
   const cardBg = useColorModeValue("white", "gray.700");
@@ -149,6 +152,8 @@ const OrganizationCard = ({
   const [editingVisitComplianceFor, setEditingVisitComplianceFor] =
     useState(null);
 
+  const [isFindingsCreateAllowed, setIsFindingsCreateAllowed] = useState(false);
+
   // State to track verdict modal
   const [isVerdictModalOpen, setIsVerdictModalOpen] = useState(false);
   // Calculate the organization verdict
@@ -169,6 +174,30 @@ const OrganizationCard = ({
     activeTabIndex,
     fetchDocuments,
   ]);
+
+  useEffect(() => {
+    let isActive = true;
+
+    const checkPermissions = async () => {
+      try {
+        const allowed = await isAllowedTo("audit.findings.c");
+        if (isActive) {
+          setIsFindingsCreateAllowed(allowed);
+        }
+      } catch (error) {
+        if (isActive) {
+          setIsFindingsCreateAllowed(false);
+        }
+        console.error("Failed to check findings permission:", error);
+      }
+    };
+
+    checkPermissions();
+
+    return () => {
+      isActive = false;
+    };
+  }, [isAllowedTo]);
 
   // Fetch standard clauses when component mounts or when standard changes
   // Use clauses from parent if available, otherwise fetch
@@ -1473,6 +1502,7 @@ const OrganizationCard = ({
                                               {canSetCompliance(visit).can ? (
                                                 <>
                                                   {isScheduleOngoing &&
+                                                  isFindingsCreateAllowed &&
                                                   editingVisitComplianceFor ===
                                                     index ? (
                                                     <VisitComplianceForm
@@ -1491,7 +1521,9 @@ const OrganizationCard = ({
                                                         );
                                                       }}
                                                       readOnly={false}
-                                                      {...{ isScheduleOngoing }}
+                                                      {...{
+                                                        isScheduleOngoing,
+                                                      }}
                                                     />
                                                   ) : visit?.compliance ? (
                                                     <VisitComplianceForm
@@ -1503,9 +1535,11 @@ const OrganizationCard = ({
                                                         );
                                                       }}
                                                       readOnly={true}
-                                                      {...{ isScheduleOngoing }}
+                                                      {...{
+                                                        isScheduleOngoing,
+                                                      }}
                                                     />
-                                                  ) : (
+                                                  ) : isFindingsCreateAllowed ? (
                                                     <Button
                                                       size="sm"
                                                       leftIcon={<FiPlus />}
@@ -1523,6 +1557,16 @@ const OrganizationCard = ({
                                                     >
                                                       Set Visit Compliance
                                                     </Button>
+                                                  ) : (
+                                                    <Text
+                                                      fontSize="sm"
+                                                      color="gray.500"
+                                                      opacity={0.8}
+                                                    >
+                                                      You don't have permission
+                                                      to update visit
+                                                      compliance.
+                                                    </Text>
                                                   )}
                                                 </>
                                               ) : (
@@ -1576,80 +1620,64 @@ const OrganizationCard = ({
                                             {/* Add Finding Form or Button */}
                                             {!visit?.findings ||
                                             visit.findings?.length < 1 ||
-                                            showFindingFormFor.has(index) ? (
-                                              <FindingsForm
-                                                team={team} // NEW: Pass full team object
-                                                organizationAuditors={auditors} // NEW: Pass organization auditors
-                                                auditStandardClauses={
-                                                  standardClauses
-                                                }
-                                                onAddFinding={async (
-                                                  findingData,
-                                                ) => {
-                                                  // Calculate updated visits with new finding
-                                                  const updatedVisits =
-                                                    organization.visits.map(
-                                                      (v, i) => {
-                                                        if (i === index) {
-                                                          return {
-                                                            ...v,
-                                                            findings: [
-                                                              ...(v.findings ||
-                                                                []),
-                                                              findingData,
-                                                            ],
-                                                          };
-                                                        }
-                                                        return v;
-                                                      },
-                                                    );
-
-                                                  // Update organization in context
-                                                  dispatch({
-                                                    type: "UPDATE_ORGANIZATION",
-                                                    payload: {
-                                                      ...organization,
-                                                      visits: updatedVisits,
-                                                      teamId:
-                                                        organization.teamId ||
-                                                        team,
-                                                    },
-                                                  });
-
-                                                  try {
-                                                    // Persist to server
-                                                    await updateOrganization(
-                                                      organization._id,
-                                                      {
-                                                        ...organization,
-                                                        visits: updatedVisits,
-                                                        teamId:
-                                                          organization.teamId ||
-                                                          team,
-                                                      },
-                                                    );
-
-                                                    // Hide form after successful add
-                                                    setShowFindingFormFor(
-                                                      (prev) => {
-                                                        const newSet = new Set(
-                                                          prev,
+                                            showFindingFormFor.has(index)
+                                              ? isFindingsCreateAllowed && (
+                                                  <FindingsForm
+                                                    team={team} // NEW: Pass full team object
+                                                    organizationAuditors={
+                                                      auditors
+                                                    } // NEW: Pass organization auditors
+                                                    auditStandardClauses={
+                                                      standardClauses
+                                                    }
+                                                    onAddFinding={async (
+                                                      findingData,
+                                                    ) => {
+                                                      // Calculate updated visits with new finding
+                                                      const updatedVisits =
+                                                        organization.visits.map(
+                                                          (v, i) => {
+                                                            if (i === index) {
+                                                              return {
+                                                                ...v,
+                                                                findings: [
+                                                                  ...(v.findings ||
+                                                                    []),
+                                                                  findingData,
+                                                                ],
+                                                              };
+                                                            }
+                                                            return v;
+                                                          },
                                                         );
-                                                        newSet.delete(index);
-                                                        return newSet;
-                                                      },
-                                                    );
-                                                  } catch (error) {
-                                                    console.error(
-                                                      "Failed to add finding:",
-                                                      error,
-                                                    );
-                                                    // Could refetch or show error
-                                                  }
-                                                }}
-                                                onCancel={
-                                                  visit.findings?.length > 0
-                                                    ? () => {
+
+                                                      // Update organization in context
+                                                      dispatch({
+                                                        type: "UPDATE_ORGANIZATION",
+                                                        payload: {
+                                                          ...organization,
+                                                          visits: updatedVisits,
+                                                          teamId:
+                                                            organization.teamId ||
+                                                            team,
+                                                        },
+                                                      });
+
+                                                      try {
+                                                        // Persist to server
+                                                        await updateOrganization(
+                                                          organization._id,
+                                                          {
+                                                            ...organization,
+                                                            visits:
+                                                              updatedVisits,
+                                                            teamId:
+                                                              organization.teamId ||
+                                                              team,
+                                                          },
+                                                        );
+
+                                                        // Hide form after successful add
                                                         setShowFindingFormFor(
                                                           (prev) => {
                                                             const newSet =
@@ -1660,33 +1688,53 @@ const OrganizationCard = ({
                                                             return newSet;
                                                           },
                                                         );
-                                                      }
-                                                    : undefined
-                                                }
-                                              />
-                                            ) : (
-                                              isScheduleOngoing && (
-                                                <Button
-                                                  size="sm"
-                                                  leftIcon={<FiPlus />}
-                                                  onClick={() => {
-                                                    setShowFindingFormFor(
-                                                      (prev) => {
-                                                        const newSet = new Set(
-                                                          prev,
+                                                      } catch (error) {
+                                                        console.error(
+                                                          "Failed to add finding:",
+                                                          error,
                                                         );
-                                                        newSet.add(index);
-                                                        return newSet;
-                                                      },
-                                                    );
-                                                  }}
-                                                  colorScheme="brandPrimary"
-                                                  variant="outline"
-                                                >
-                                                  Add Finding
-                                                </Button>
-                                              )
-                                            )}
+                                                        // Could refetch or show error
+                                                      }
+                                                    }}
+                                                    onCancel={
+                                                      visit.findings?.length > 0
+                                                        ? () => {
+                                                            setShowFindingFormFor(
+                                                              (prev) => {
+                                                                const newSet =
+                                                                  new Set(prev);
+                                                                newSet.delete(
+                                                                  index,
+                                                                );
+                                                                return newSet;
+                                                              },
+                                                            );
+                                                          }
+                                                        : undefined
+                                                    }
+                                                  />
+                                                )
+                                              : isScheduleOngoing &&
+                                                isFindingsCreateAllowed && (
+                                                  <Button
+                                                    size="sm"
+                                                    leftIcon={<FiPlus />}
+                                                    onClick={() => {
+                                                      setShowFindingFormFor(
+                                                        (prev) => {
+                                                          const newSet =
+                                                            new Set(prev);
+                                                          newSet.add(index);
+                                                          return newSet;
+                                                        },
+                                                      );
+                                                    }}
+                                                    colorScheme="brandPrimary"
+                                                    variant="outline"
+                                                  >
+                                                    Add Finding
+                                                  </Button>
+                                                )}
                                           </Stack>
                                         </Flex>
                                       </AccordionPanel>
@@ -1718,31 +1766,33 @@ const OrganizationCard = ({
                     )}
 
                     {/* Add Visit Section */}
-                    <Box p={4} pt={2}>
-                      {showVisitForm && isScheduleOngoing ? (
-                        <VisitManager
-                          label=""
-                          visits={organization.visits || []}
-                          onChange={handleAddVisit}
-                          onCancel={() => setShowVisitForm(false)}
-                        />
-                      ) : (
-                        isScheduleOngoing &&
-                        organization?.visits?.length > 0 && (
-                          <Flex justifyContent="flex-end">
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              colorScheme="purple"
-                              leftIcon={<FiCalendar />}
-                              onClick={() => setShowVisitForm(true)}
-                            >
-                              Manage Visits
-                            </Button>
-                          </Flex>
-                        )
-                      )}
-                    </Box>
+                    <Can to="audit.findings.c">
+                      <Box p={4} pt={2}>
+                        {showVisitForm && isScheduleOngoing ? (
+                          <VisitManager
+                            label=""
+                            visits={organization.visits || []}
+                            onChange={handleAddVisit}
+                            onCancel={() => setShowVisitForm(false)}
+                          />
+                        ) : (
+                          isScheduleOngoing &&
+                          organization?.visits?.length > 0 && (
+                            <Flex justifyContent="flex-end">
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                colorScheme="purple"
+                                leftIcon={<FiCalendar />}
+                                onClick={() => setShowVisitForm(true)}
+                              >
+                                Manage Visits
+                              </Button>
+                            </Flex>
+                          )
+                        )}
+                      </Box>
+                    </Can>
                   </ResponsiveTabPanel>
                   {/* Team Details Tab */}
                   <ResponsiveTabPanel>
