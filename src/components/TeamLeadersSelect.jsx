@@ -55,7 +55,8 @@ const TeamLeadersSelect = ({
       return;
     }
 
-    const leaders = team.leadersData || [];
+    // Support both leadersData (populated from context) and leaders (from API)
+    const leaders = team.leadersData || team.leaders || [];
 
     setTeamLeaders(leaders);
   }, [team]);
