@@ -21,7 +21,8 @@ import { Select } from "chakra-react-select";
 import { useState } from "react";
 import { FiSave, FiX } from "react-icons/fi";
 import { SingleDatepicker } from "chakra-dayzed-datepicker";
-import UserAsyncSelect from "../../../components/UserAsyncSelect";
+import OrganizationAuditorsSelect from "../../../components/OrganizationAuditorsSelect";
+import TeamLeadersSelect from "../../../components/TeamLeadersSelect";
 import ClauseSelectionModal from "../../../components/ClauseSelectionModal";
 import { useLayout } from "../../../context/_useContext";
 
@@ -65,6 +66,8 @@ const COMPLIANCE_OPTIONS = [
 ];
 
 const FindingsForm = ({
+  team = null, // NEW: Accept full team object for updatedAt
+  organizationAuditors = [], // List of auditors from organization
   auditStandardClauses = [], // Changed from teamObjectives to auditStandardClauses
   initialData = null,
   mode = "add",
@@ -74,7 +77,11 @@ const FindingsForm = ({
   const bg = useColorModeValue("brandPrimary.50", "brandPrimary.900");
   const borderColor = useColorModeValue("brandPrimary.200", "brandPrimary.700");
   const { pageRef } = useLayout();
-  const { isOpen: isClauseModalOpen, onOpen: onClauseModalOpen, onClose: onClauseModalClose } = useDisclosure();
+  const {
+    isOpen: isClauseModalOpen,
+    onOpen: onClauseModalOpen,
+    onClose: onClauseModalClose,
+  } = useDisclosure();
 
   // Initialize form data based on mode
   const getInitialFormData = () => {
@@ -83,9 +90,12 @@ const FindingsForm = ({
       let clauses = [];
       if (initialData.clauses && Array.isArray(initialData.clauses)) {
         clauses = initialData.clauses;
-      } else if (initialData.objectives && Array.isArray(initialData.objectives)) {
+      } else if (
+        initialData.objectives &&
+        Array.isArray(initialData.objectives)
+      ) {
         // Old format: objectives - convert to clauses
-        clauses = initialData.objectives.map(obj => ({
+        clauses = initialData.objectives.map((obj) => ({
           id: obj._id || obj.id,
           name: obj.title,
         }));
@@ -319,8 +329,8 @@ const FindingsForm = ({
               colorScheme="brandPrimary"
             >
               {formData.clauses.length > 0
-                ? `${formData.clauses.length} Clause${formData.clauses.length > 1 ? 's' : ''} Selected`
-                : 'Select Clauses'}
+                ? `${formData.clauses.length} Clause${formData.clauses.length > 1 ? "s" : ""} Selected`
+                : "Select Clauses"}
             </Button>
             {formData.clauses.length > 0 && (
               <Wrap spacing={2}>
@@ -346,7 +356,7 @@ const FindingsForm = ({
                         onClick={() => {
                           handleChange(
                             "clauses",
-                            formData.clauses.filter((c) => c.id !== clause.id)
+                            formData.clauses.filter((c) => c.id !== clause.id),
                           );
                         }}
                         aria-label="Remove clause"
@@ -369,7 +379,9 @@ const FindingsForm = ({
           onClose={onClauseModalClose}
           clauses={auditStandardClauses}
           value={formData.clauses}
-          onChange={(selectedClauses) => handleChange("clauses", selectedClauses)}
+          onChange={(selectedClauses) =>
+            handleChange("clauses", selectedClauses)
+          }
         />
 
         {/* Compliance Dropdown */}
@@ -508,12 +520,13 @@ const FindingsForm = ({
               {/* Auditor */}
               <FormControl isInvalid={!!errors["report.auditor"]}>
                 <FormLabel fontSize="sm">Auditor</FormLabel>
-                <UserAsyncSelect
+                <OrganizationAuditorsSelect
                   label=""
                   value={formData.report.auditor || []}
                   onChange={(users) => handleReportChange("auditor", users)}
                   placeholder="Select Auditor(s)"
                   displayMode="none"
+                  organizationAuditors={organizationAuditors}
                 />
                 {errors["report.auditor"] && (
                   <FormHelperText color="red.500" fontSize="xs">
@@ -525,12 +538,13 @@ const FindingsForm = ({
               {/* Auditee */}
               <FormControl isInvalid={!!errors["report.auditee"]}>
                 <FormLabel fontSize="sm">Auditee</FormLabel>
-                <UserAsyncSelect
+                <TeamLeadersSelect
                   label=""
                   value={formData.report.auditee || []}
                   onChange={(users) => handleReportChange("auditee", users)}
                   placeholder="Select Auditee(s)"
                   displayMode="none"
+                  team={team}
                 />
                 {errors["report.auditee"] && (
                   <FormHelperText color="red.500" fontSize="xs">
