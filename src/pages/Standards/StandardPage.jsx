@@ -566,7 +566,6 @@ const StandardPage = () => {
           method: "PUT",
           body: JSON.stringify(payload),
         });
-        toast.success("Title updated.");
       }
 
       setStandard((prev) => ({
@@ -578,9 +577,7 @@ const StandardPage = () => {
         standard: trimmedTitle,
       }));
       
-      if (!USE_API) {
-        toast.success("Title updated (demo mode).");
-      }
+      toast.success(USE_API ? "Title updated." : "Title updated (demo mode).");
     } catch (error) {
       toast.error("Failed to update title.");
       console.error("Failed to update title:", error);
@@ -606,7 +603,6 @@ const StandardPage = () => {
           method: "PUT",
           body: JSON.stringify(payload),
         });
-        toast.success("Description updated.");
       }
 
       setStandard((prev) => ({
@@ -618,9 +614,7 @@ const StandardPage = () => {
         description: trimmedDescription,
       }));
       
-      if (!USE_API) {
-        toast.success("Description updated (demo mode).");
-      }
+      toast.success(USE_API ? "Description updated." : "Description updated (demo mode).");
     } catch (error) {
       toast.error("Failed to update description.");
       console.error("Failed to update description:", error);
