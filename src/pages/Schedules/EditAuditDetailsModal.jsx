@@ -154,6 +154,7 @@ const EditAuditDetailsModal = ({
               onChange={(audit) => handleFieldChange("previousAudit", audit)}
               currentScheduleId={currentScheduleId}
               label="Previous Audit"
+              allowEmptySearch
             />
           </VStack>
         </ModalBody>

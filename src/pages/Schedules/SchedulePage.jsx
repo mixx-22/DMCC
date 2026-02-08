@@ -1245,6 +1245,7 @@ const SchedulePageContent = () => {
                       handleFieldChange("standard", standard)
                     }
                     label="Standard"
+                    allowEmptySearch
                   />
 
                   <PreviousAuditAsyncSelect
@@ -1254,6 +1255,7 @@ const SchedulePageContent = () => {
                     }
                     currentScheduleId={id !== "new" ? id : null}
                     label="Previous Audit"
+                    allowEmptySearch
                   />
                 </>
               )}

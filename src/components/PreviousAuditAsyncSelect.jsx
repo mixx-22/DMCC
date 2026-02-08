@@ -38,8 +38,10 @@ const PreviousAuditAsyncSelect = ({
   isInvalid,
   label = "Previous Audit",
   placeholder = "Type at least 2 characters to search audits...",
+  helperText = "Select a previous audit for reference (optional)",
   currentScheduleId = null,
   limit = 10,
+  allowEmptySearch = false,
   debounceTimeout = 300,
   ...props
 }) => {
@@ -55,7 +57,7 @@ const PreviousAuditAsyncSelect = ({
 
   const loadOptions = useCallback(
     async (inputValue) => {
-      if (inputValue.length < 2) {
+      if (!allowEmptySearch && inputValue.length < 2) {
         return [];
       }
 
@@ -76,6 +78,7 @@ const PreviousAuditAsyncSelect = ({
 
               const title = (schedule.title || "").toLowerCase();
               const auditCode = (schedule.auditCode || "").toLowerCase();
+              if (!inputValue.length) return true;
               return (
                 title.includes(searchLower) || auditCode.includes(searchLower)
               );
@@ -94,7 +97,9 @@ const PreviousAuditAsyncSelect = ({
             const data = await apiService.request(SCHEDULES_ENDPOINT, {
               method: "GET",
               params: {
-                keyword: inputValue,
+                ...(allowEmptySearch || inputValue.length
+                  ? { keyword: inputValue }
+                  : {}),
                 limit,
               },
             });
@@ -120,7 +125,7 @@ const PreviousAuditAsyncSelect = ({
         }, debounceTimeout);
       });
     },
-    [limit, debounceTimeout, currentScheduleId],
+    [limit, debounceTimeout, currentScheduleId, allowEmptySearch],
   );
 
   const handleChange = (selectedOption) => {
@@ -167,14 +172,15 @@ const PreviousAuditAsyncSelect = ({
           loadOptions={loadOptions}
           placeholder={placeholder}
           noOptionsMessage={({ inputValue }) =>
-            inputValue.length < 2
+            !allowEmptySearch && inputValue.length < 2
               ? "Type at least 2 characters to search"
               : "No audits found"
           }
           formatOptionLabel={formatOptionLabel}
           isClearable
           cacheOptions
-          defaultOptions={[]}
+          defaultOptions={allowEmptySearch}
+          openMenuOnFocus={allowEmptySearch}
           loadingMessage={() => "Loading audits..."}
           colorScheme="brandPrimary"
           useBasicStyles
@@ -187,9 +193,11 @@ const PreviousAuditAsyncSelect = ({
           }}
         />
       </Box>
-      <Text fontSize="xs" color="gray.500" mt={1}>
-        Select a previous audit for reference (optional)
-      </Text>
+      {helperText && (
+        <Text fontSize="xs" color="gray.500" mt={1}>
+          {allowEmptySearch ? "Click to view available audits" : helperText}
+        </Text>
+      )}
     </FormControl>
   );
 };
