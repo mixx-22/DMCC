@@ -44,6 +44,8 @@ const Organizations = ({ schedule = {}, setFormData = () => {} }) => {
   }, []);
 
   // Fetch standard clauses once for the schedule
+  // Note: loadingClauses is intentionally NOT in the dependency array to avoid infinite loops
+  // The effect should only re-run when schedule.standard changes
   useEffect(() => {
     const fetchStandardClauses = async () => {
       // Get standard ID or object from schedule
@@ -70,7 +72,7 @@ const Organizations = ({ schedule = {}, setFormData = () => {} }) => {
         return;
       }
       
-      // Don't fetch if already loading
+      // Don't fetch if already loading (guard against concurrent fetches)
       if (loadingClauses) return;
       
       setLoadingClauses(true);
