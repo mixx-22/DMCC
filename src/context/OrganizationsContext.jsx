@@ -398,13 +398,14 @@ export const OrganizationsProvider = ({ children, scheduleId }) => {
           },
         );
 
-        if (response.success && (organizationData._id || organizationData.id)) {
-          dispatch({ type: "UPDATE_ORGANIZATION", payload: organizationData });
+        if (response.success && response.organization) {
+          // Use the organization data from the response
+          dispatch({ type: "UPDATE_ORGANIZATION", payload: response.organization });
           toast.success("Organization Updated", {
             description: "Organization has been successfully updated",
             duration: 2000,
           });
-          return organizationData;
+          return response.organization;
         } else {
           console.error("Invalid response format:", response);
           const error = new Error("Failed to update organization");
