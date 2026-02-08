@@ -19,8 +19,8 @@ function mergeOrganizationUpdate(existingOrg, update) {
   
   // If auditors in update is array of ID strings, keep the existing populated auditors array
   if (update.auditors && Array.isArray(update.auditors) && existingOrg.auditors && Array.isArray(existingOrg.auditors)) {
-    const updateHasObjects = update.auditors.some(a => typeof a === 'object');
-    const existingHasObjects = existingOrg.auditors.some(a => typeof a === 'object');
+    const updateHasObjects = update.auditors.some(a => typeof a === 'object' && a !== null);
+    const existingHasObjects = existingOrg.auditors.some(a => typeof a === 'object' && a !== null);
     
     // Keep existing if it has objects and update only has strings
     if (existingHasObjects && !updateHasObjects) {
