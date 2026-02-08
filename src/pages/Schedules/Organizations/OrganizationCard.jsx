@@ -307,7 +307,7 @@ const OrganizationCard = ({
     };
     
     fetchStandardClauses();
-  }, [schedule?.standard, loadingClauses]);
+  }, [schedule?.standard]);
 
   const handleDeleteOrganization = async (organization) => {
     const result = await Swal.fire({
