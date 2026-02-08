@@ -189,19 +189,12 @@ const ActionPlanForm = ({
                         const fullName = getUserFullName(u);
                         return (
                           <WrapItem key={`owner-${u.id}-${index}`}>
-                            <Tooltip
-                              label={fullName}
-                            >
+                            <Tooltip label={fullName}>
                               <Card variant="filled" shadow="none">
                                 <CardBody px={2} py={1}>
                                   <HStack spacing={1}>
-                                    <Avatar
-                                      size="xs"
-                                      name={fullName}
-                                    />
-                                    <Text fontSize="sm">
-                                      {fullName}
-                                    </Text>
+                                    <Avatar size="xs" name={fullName} />
+                                    <Text fontSize="sm">{fullName}</Text>
                                   </HStack>
                                 </CardBody>
                               </Card>
@@ -253,19 +246,12 @@ const ActionPlanForm = ({
                         const fullName = getUserFullName(u);
                         return (
                           <WrapItem key={`takenby-${u.id}-${index}`}>
-                            <Tooltip
-                              label={fullName}
-                            >
+                            <Tooltip label={fullName}>
                               <Card variant="filled" shadow="none">
                                 <CardBody px={2} py={1}>
                                   <HStack spacing={1}>
-                                    <Avatar
-                                      size="xs"
-                                      name={fullName}
-                                    />
-                                    <Text fontSize="sm">
-                                      {fullName}
-                                    </Text>
+                                    <Avatar size="xs" name={fullName} />
+                                    <Text fontSize="sm">{fullName}</Text>
                                   </HStack>
                                 </CardBody>
                               </Card>
@@ -286,19 +272,12 @@ const ActionPlanForm = ({
                         const fullName = getUserFullName(u);
                         return (
                           <WrapItem key={`auditor-${u.id}-${index}`}>
-                            <Tooltip
-                              label={fullName}
-                            >
+                            <Tooltip label={fullName}>
                               <Card variant="filled" shadow="none">
                                 <CardBody px={2} py={1}>
                                   <HStack spacing={1}>
-                                    <Avatar
-                                      size="xs"
-                                      name={fullName}
-                                    />
-                                    <Text fontSize="sm">
-                                      {fullName}
-                                    </Text>
+                                    <Avatar size="xs" name={fullName} />
+                                    <Text fontSize="sm">{fullName}</Text>
                                   </HStack>
                                 </CardBody>
                               </Card>
@@ -440,17 +419,17 @@ const ActionPlanForm = ({
             {/* Taken By */}
             <FormControl isInvalid={errors.takenBy}>
               <FormLabel fontSize="sm">Taken By *</FormLabel>
-              <OrganizationAuditorsSelect
+              <TeamLeadersSelect
                 label=""
                 value={formData.takenBy || []}
                 onChange={(users) => handleChange("takenBy", users)}
                 placeholder="Select person(s) who implemented the action"
                 displayMode="none"
-                organizationAuditors={organizationAuditors}
+                team={team}
               />
-              {errors.takenBy && (
+              {errors.owner && (
                 <FormHelperText color="error.500">
-                  {errors.takenBy}
+                  {errors.owner}
                 </FormHelperText>
               )}
             </FormControl>
@@ -469,10 +448,7 @@ const ActionPlanForm = ({
                         <Card variant="filled" shadow="none" bg="info.100">
                           <CardBody px={2} py={1}>
                             <HStack spacing={1}>
-                              <Avatar
-                                size="xs"
-                                name={fullName}
-                              />
+                              <Avatar size="xs" name={fullName} />
                               <Text fontSize="sm" fontWeight="medium">
                                 {fullName}
                               </Text>
