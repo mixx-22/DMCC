@@ -43,6 +43,7 @@ const TeamAsyncSelect = ({
   label = "Teams",
   placeholder = "Type at least 2 characters to search teams...",
   limit = 10,
+  allowEmptySearch = false,
   displayMode = "badges",
   readonly = false,
   tableProps = {},
@@ -52,7 +53,7 @@ const TeamAsyncSelect = ({
 }) => {
   const loadOptions = useCallback(
     async (inputValue) => {
-      if (inputValue.length < 2) {
+      if (!allowEmptySearch && inputValue.length < 2) {
         return [];
       }
 
@@ -60,7 +61,9 @@ const TeamAsyncSelect = ({
         return new Promise((resolve) => {
           setTimeout(() => {
             const filtered = MOCK_TEAMS.filter((team) =>
-              team.name.toLowerCase().includes(inputValue.toLowerCase()),
+              inputValue.length
+                ? team.name.toLowerCase().includes(inputValue.toLowerCase())
+                : true,
             );
             resolve(
               filtered.slice(0, limit).map((team) => ({
@@ -77,7 +80,9 @@ const TeamAsyncSelect = ({
         const data = await apiService.request(TEAMS_ENDPOINT, {
           method: "GET",
           params: {
-            keyword: inputValue,
+            ...(allowEmptySearch || inputValue.length
+              ? { keyword: inputValue }
+              : {}),
             limit,
           },
         });
@@ -93,7 +98,7 @@ const TeamAsyncSelect = ({
         return [];
       }
     },
-    [limit],
+    [limit, allowEmptySearch],
   );
 
   const handleChange = (selectedOptions) => {
@@ -288,14 +293,15 @@ const TeamAsyncSelect = ({
             loadOptions={loadOptions}
             placeholder={placeholder}
             noOptionsMessage={({ inputValue }) =>
-              inputValue.length < 2
+              !allowEmptySearch && inputValue.length < 2
                 ? "Type at least 2 characters to search"
                 : "No teams found"
             }
             formatOptionLabel={formatOptionLabel}
             isClearable
             cacheOptions
-            defaultOptions={false}
+            defaultOptions={allowEmptySearch}
+            openMenuOnFocus={allowEmptySearch}
             loadingMessage={() => "Loading teams..."}
             colorScheme="green"
             useBasicStyles
@@ -304,7 +310,9 @@ const TeamAsyncSelect = ({
         </Box>
         {!readonly && (
           <Text fontSize="xs" color="gray.500" mt={1}>
-            Type at least 2 characters to search for teams
+            {allowEmptySearch
+              ? "Click to view available teams"
+              : "Type at least 2 characters to search for teams"}
             {max && ` (max ${max} team${max > 1 ? "s" : ""})`}
           </Text>
         )}

@@ -162,6 +162,7 @@ const OrganizationForm = ({
               onChange={(team) => handleFieldChange("team", team)}
               isInvalid={!!validationErrors.team}
               label="Team"
+              allowEmptySearch
             />
             <Divider />
             <UserAsyncSelect
@@ -172,6 +173,8 @@ const OrganizationForm = ({
               displayMode="none"
               label="Auditors"
               limit={5}
+              roleFilter="Internal Auditor"
+              allowEmptySearch
             />
             <Divider />
             <VisitManager

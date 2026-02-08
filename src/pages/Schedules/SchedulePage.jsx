@@ -277,8 +277,10 @@ const SchedulePageContent = () => {
 
       if (isNewSchedule) {
         const result = await createSchedule(submitData);
-        if (result?.id || result?._id) {
-          navigate(`/audit-schedule/${result.id || result._id}`, {
+        const createdSchedule = result?.data || result?.schedule || result;
+        const createdId = createdSchedule?.id || createdSchedule?._id;
+        if (createdId) {
+          navigate(`/audit-schedule/${createdId}`, {
             replace: true,
           });
         } else {
