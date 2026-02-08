@@ -255,10 +255,6 @@ const StandardPage = () => {
     onClose: onClauseSelectionClose,
   } = useDisclosure();
   const [selectedClauses, setSelectedClauses] = useState([]);
-  const [standardForm, setStandardForm] = useState({
-    standard: "",
-    description: "",
-  });
   const [clauseForm, setClauseForm] = useState({
     id: uuidv4(),
     clause: "",
@@ -282,10 +278,6 @@ const StandardPage = () => {
         // Use mock data for demo purposes
         if (id === "demo") {
           setStandard(MOCK_STANDARD_WITH_CLAUSES);
-          setStandardForm({
-            standard: MOCK_STANDARD_WITH_CLAUSES.standard,
-            description: MOCK_STANDARD_WITH_CLAUSES.description,
-          });
           return;
         }
         setStandard(null);
@@ -298,18 +290,10 @@ const StandardPage = () => {
 
       const data = response?.data || response;
       setStandard(data);
-      setStandardForm({
-        standard: data?.standard || data?.title || data?.name || "",
-        description: data?.description || "",
-      });
     } catch (error) {
       // Fall back to mock data for demo purposes
       if (id === "demo") {
         setStandard(MOCK_STANDARD_WITH_CLAUSES);
-        setStandardForm({
-          standard: MOCK_STANDARD_WITH_CLAUSES.standard,
-          description: MOCK_STANDARD_WITH_CLAUSES.description,
-        });
       } else {
         setStandard(null);
       }
@@ -535,22 +519,17 @@ const StandardPage = () => {
   const standardTitle =
     standard.standard || standard.title || standard.name || "Standard";
 
-  const handleStandardFieldChange = (field, value) => {
-    setStandardForm((prev) => ({
-      ...prev,
-      [field]: value,
-    }));
-  };
-
   const handleTitleBlur = async (newTitle) => {
     const trimmedTitle = newTitle?.trim() || "";
-    
+
     if (!trimmedTitle) {
       toast.error("Standard title is required.");
       return;
     }
 
-    if (trimmedTitle === (standard?.standard || standard?.title || standard?.name)) {
+    if (
+      trimmedTitle === (standard?.standard || standard?.title || standard?.name)
+    ) {
       return;
     }
 
@@ -572,11 +551,7 @@ const StandardPage = () => {
         ...prev,
         standard: trimmedTitle,
       }));
-      setStandardForm((prev) => ({
-        ...prev,
-        standard: trimmedTitle,
-      }));
-      
+
       toast.success(USE_API ? "Title updated." : "Title updated (demo mode).");
     } catch (error) {
       toast.error("Failed to update title.");
@@ -586,7 +561,7 @@ const StandardPage = () => {
 
   const handleDescriptionBlur = async (newDescription) => {
     const trimmedDescription = newDescription?.trim() || "";
-    
+
     if (trimmedDescription === (standard?.description || "")) {
       return;
     }
@@ -609,12 +584,10 @@ const StandardPage = () => {
         ...prev,
         description: trimmedDescription,
       }));
-      setStandardForm((prev) => ({
-        ...prev,
-        description: trimmedDescription,
-      }));
-      
-      toast.success(USE_API ? "Description updated." : "Description updated (demo mode).");
+
+      toast.success(
+        USE_API ? "Description updated." : "Description updated (demo mode).",
+      );
     } catch (error) {
       toast.error("Failed to update description.");
       console.error("Failed to update description:", error);
@@ -719,108 +692,75 @@ const StandardPage = () => {
           <Card>
             <CardBody>
               <VStack align="stretch" spacing={4}>
-                <Box>
-                  <Text
-                    fontSize="xs"
-                    color="gray.500"
-                    textTransform="uppercase"
-                    mb={2}
-                  >
-                    Standard
-                  </Text>
-                  <Editable
-                    key={`title-${standard?.id}`}
-                    defaultValue={standardTitle}
-                    onSubmit={handleTitleBlur}
+                <Editable
+                  key={`title-${standard?.id}`}
+                  defaultValue={standardTitle}
+                  onSubmit={handleTitleBlur}
+                  fontSize="2xl"
+                  fontWeight="bold"
+                  w="full"
+                  isPreviewFocusable={true}
+                  submitOnBlur={true}
+                  selectAllOnFocus={false}
+                >
+                  <EditablePreview
+                    w="full"
+                    borderRadius="md"
+                    _hover={{
+                      background: "gray.100",
+                      cursor: "pointer",
+                    }}
+                  />
+                  <EditableTextarea
+                    py={2}
+                    px={2}
+                    resize="vertical"
+                    minH="auto"
                     fontSize="2xl"
                     fontWeight="bold"
-                    w="full"
-                    isPreviewFocusable={true}
-                    submitOnBlur={true}
-                    selectAllOnFocus={false}
-                  >
-                    <EditablePreview
-                      w="full"
-                      py={2}
-                      px={2}
-                      borderRadius="md"
-                      _hover={{
-                        background: "gray.100",
-                        cursor: "pointer",
-                      }}
-                    />
-                    <EditableTextarea
-                      py={2}
-                      px={2}
-                      resize="vertical"
-                      minH="auto"
-                      fontSize="2xl"
-                      fontWeight="bold"
-                    />
-                  </Editable>
-                </Box>
+                  />
+                </Editable>
 
                 <Divider />
 
-                <Box>
-                  <Text
-                    fontSize="xs"
-                    color="gray.500"
-                    textTransform="uppercase"
-                    mb={2}
-                  >
-                    Description
-                  </Text>
-                  <Editable
+                <Editable
+                  w="full"
+                  key={`description-${standard?.id}`}
+                  defaultValue={standard.description || ""}
+                  onSubmit={handleDescriptionBlur}
+                  placeholder="Add a description..."
+                  isPreviewFocusable={true}
+                  submitOnBlur={true}
+                  selectAllOnFocus={false}
+                >
+                  <EditablePreview
                     w="full"
-                    key={`description-${standard?.id}`}
-                    defaultValue={standard.description || ""}
-                    onSubmit={handleDescriptionBlur}
-                    placeholder="Add a description..."
-                    isPreviewFocusable={true}
-                    submitOnBlur={true}
-                    selectAllOnFocus={false}
-                  >
-                    <EditablePreview
-                      py={2}
-                      px={2}
-                      w="full"
-                      borderRadius="md"
-                      color={standard?.description ? "gray.700" : "gray.400"}
-                      _hover={{
-                        background: "gray.100",
-                        cursor: "pointer",
-                      }}
-                    />
-                    <EditableTextarea
-                      py={2}
-                      px={2}
-                      minH="60px"
-                      resize="vertical"
-                    />
-                  </Editable>
-                </Box>
+                    borderRadius="md"
+                    color={standard?.description ? "gray.700" : "gray.400"}
+                    _hover={{
+                      background: "gray.100",
+                      cursor: "pointer",
+                    }}
+                  />
+                  <EditableTextarea
+                    py={2}
+                    px={2}
+                    minH="60px"
+                    resize="vertical"
+                  />
+                </Editable>
 
                 <Divider />
 
-                <Box>
-                  <Text
-                    fontSize="xs"
-                    color="gray.500"
-                    textTransform="uppercase"
-                  >
+                <Box flex={1}>
+                  <Text fontSize="sm" color="gray.600">
                     Last Modified
                   </Text>
-                  <Timestamp
-                    date={
-                      standard.updatedAt ||
-                      standard.updated_at ||
-                      standard.modifiedAt ||
-                      standard.lastModified
-                    }
-                    showTime={true}
-                    fontSize="sm"
-                  />
+                  <Text fontSize="sm" mt={2}>
+                    <Timestamp
+                      date={standard.updatedAt || standard.createdAt}
+                    />
+                  </Text>
                 </Box>
               </VStack>
             </CardBody>
