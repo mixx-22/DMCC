@@ -185,7 +185,6 @@ const Sidebar = () => {
   const [isSettingsRolesAllowed, setIsSettingsRolesAllowed] = useState(1);
   const [isSettingsfileTypeAllowed, setIsSettingsfileTypeAllowed] = useState(1);
   const [isStandardsAllowed, setIsStandardsAllowed] = useState(1);
-  const [isRequestApprovalAllowed, setIsRequestApprovalAllowed] = useState(1);
 
   useEffect(() => {
     async function init() {
@@ -237,9 +236,7 @@ const Sidebar = () => {
         icon: FiClock,
         children: [
           { path: "/request?tab=0", label: "My Requests" },
-          ...(isRequestApprovalAllowed
-            ? [{ path: "/request?tab=1", label: "For Approval" }]
-            : []),
+          { path: "/request?tab=1", label: "For Approval" },
           { path: "/request?tab=2", label: "For Publish" },
           { path: "/request?tab=3", label: "Request History" },
         ],
@@ -325,7 +322,6 @@ const Sidebar = () => {
     isSettingsAllowed,
     isSettingsRolesAllowed,
     isSettingsfileTypeAllowed,
-    isRequestApprovalAllowed,
   ]);
 
   useEffect(() => {
