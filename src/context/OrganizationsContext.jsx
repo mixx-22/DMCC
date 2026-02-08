@@ -378,9 +378,18 @@ export const OrganizationsProvider = ({ children, scheduleId }) => {
       try {
         const updated = {
           ...organizationData,
-          team: organizationData.team._id ?? organizationData.team.id,
-          auditors: organizationData.auditors.map((a) => a._id ?? a.id),
         };
+        
+        // Only process team if it's provided in the update
+        if (organizationData.team) {
+          updated.team = organizationData.team._id ?? organizationData.team.id;
+        }
+        
+        // Only process auditors if they're provided in the update
+        if (organizationData.auditors) {
+          updated.auditors = organizationData.auditors.map((a) => a._id ?? a.id);
+        }
+        
         const response = await apiService.request(
           `${ORGANIZATIONS_ENDPOINT}/${organizationId}`,
           {
