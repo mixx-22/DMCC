@@ -521,21 +521,15 @@ const AuditKpiDashboard = () => {
 
         // Check if we're on the latest route or have a selected schedule
         const isLatestRoute = location.pathname.includes("/latest/kpis");
-        let scheduleId;
 
-        if (isLatestRoute) {
-          scheduleId = "latest";
-        } else if (selectedSchedule) {
-          scheduleId = selectedSchedule;
-        } else if (auditScheduleId) {
-          scheduleId = auditScheduleId;
-        } else {
-          // No schedule selected yet, don't fetch
+        const scheduleId = isLatestRoute
+          ? "latest"
+          : (selectedSchedule ?? auditScheduleId);
+
+        if (!scheduleId) {
           setLoading(false);
           return;
         }
-
-        console.warn({ scheduleId });
 
         // Build query parameters - always include both year and scheduleId
         const params = new URLSearchParams();
