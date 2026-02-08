@@ -577,6 +577,10 @@ const StandardPage = () => {
         ...prev,
         standard: trimmedTitle,
       }));
+      
+      if (!USE_API) {
+        toast.success("Title updated (demo mode).");
+      }
     } catch (error) {
       toast.error("Failed to update title.");
       console.error("Failed to update title:", error);
@@ -613,6 +617,10 @@ const StandardPage = () => {
         ...prev,
         description: trimmedDescription,
       }));
+      
+      if (!USE_API) {
+        toast.success("Description updated (demo mode).");
+      }
     } catch (error) {
       toast.error("Failed to update description.");
       console.error("Failed to update description:", error);
