@@ -26,10 +26,9 @@ const tabBtn = defineStyle((props) => {
     textTransform: "lowercase",
     borderRadius: 0,
     borderBottom: "2px solid",
-    fontWeight: "normal",
     // borderColor: mode(`gray.200`, `whiteAlpha.300`)(props),
     borderColor: mode(`${colorScheme}.600`, `${colorScheme}.200`)(props),
-    color: mode(`${colorScheme}.600`, `${colorScheme}.200`)(props),
+    color: "body",
   };
 });
 
