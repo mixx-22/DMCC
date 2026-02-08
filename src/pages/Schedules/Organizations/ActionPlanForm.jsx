@@ -22,8 +22,6 @@ import {
 import { useState } from "react";
 import { FiSave, FiX } from "react-icons/fi";
 import { SingleDatepicker } from "chakra-dayzed-datepicker";
-import UserAsyncSelect from "../../../components/UserAsyncSelect";
-import OrganizationAuditorsSelect from "../../../components/OrganizationAuditorsSelect";
 import TeamLeadersSelect from "../../../components/TeamLeadersSelect";
 import { useLayout, useUser } from "../../../context/_useContext";
 import Timestamp from "../../../components/Timestamp";
@@ -39,7 +37,6 @@ const getUserFullName = (user) => {
 
 const ActionPlanForm = ({
   initialData = null,
-  organizationAuditors = [], // List of auditors from organization
   team = null, // Team object for leaders
   onSave,
   onCancel,
