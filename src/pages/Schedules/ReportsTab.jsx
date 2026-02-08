@@ -380,18 +380,56 @@ const ReportsTab = ({ schedule }) => {
     // Find the visit index from the finding
     const visitIndex = updatedFinding.visitIndex;
 
+    // Defensive check: Ensure visitIndex is valid
+    if (typeof visitIndex !== 'number' || visitIndex < 0) {
+      console.error('Error: Invalid visitIndex:', visitIndex);
+      throw new Error('Invalid visitIndex for finding update');
+    }
+
     // Remove temporary routing properties before persisting
     // eslint-disable-next-line no-unused-vars
     const { visitIndex: _visitIndex, organizationId: _organizationId, ...cleanFinding } = updatedFinding;
 
+    // Defensive check: Ensure _id is present in cleanFinding
+    if (!cleanFinding._id) {
+      console.error('Error: cleanFinding missing _id property:', cleanFinding);
+      console.error('Original updatedFinding:', updatedFinding);
+      throw new Error('Finding must have an _id property to be saved');
+    }
+
+    // Defensive check: Ensure organization has visits array
+    if (!organization.visits || !Array.isArray(organization.visits)) {
+      console.error('Error: Organization missing visits array:', organization);
+      throw new Error('Organization must have a visits array');
+    }
+
     // Calculate updated visits with the edited finding
     const updatedVisits = organization.visits.map((v, i) => {
       if (i === visitIndex) {
+        // Defensive check: Ensure visit has findings array
+        if (!v.findings || !Array.isArray(v.findings)) {
+          console.warn('Warning: Visit missing findings array, initializing empty array');
+          return {
+            ...v,
+            findings: [cleanFinding],
+          };
+        }
+
         return {
           ...v,
-          findings: (v.findings || []).map((f) =>
-            f._id === cleanFinding._id ? cleanFinding : f,
-          ),
+          findings: v.findings.map((f) => {
+            // Defensive check: Skip if finding is null/undefined
+            if (!f) {
+              console.warn('Warning: Null/undefined finding in array, skipping');
+              return f;
+            }
+            // Defensive check: If finding has no _id, skip it
+            if (!f._id) {
+              console.warn('Warning: Finding in array missing _id:', f);
+              return f;
+            }
+            return f._id === cleanFinding._id ? cleanFinding : f;
+          }),
         };
       }
       return v;
