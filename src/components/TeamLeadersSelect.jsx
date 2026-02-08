@@ -70,12 +70,12 @@ const TeamLeadersSelect = ({
 
     // Check if we have valid cached data
     if (cachedData && now - cachedData.timestamp < CACHE_DURATION) {
-      setTeamLeaders(cachedData.leaders);
+      setTeamLeaders(cachedData.leadersData);
       return;
     }
 
     // Load leaders from team and cache them
-    const leaders = team.leaders || [];
+    const leaders = team.leadersData || [];
     leadersCache.set(teamId, {
       leaders,
       timestamp: now,
