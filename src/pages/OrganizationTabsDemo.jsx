@@ -6,7 +6,6 @@ import {
   Card,
   CardBody,
   VStack,
-  Button,
   Collapse,
   IconButton,
   HStack,
@@ -32,8 +31,9 @@ const OrganizationTabsDemo = () => {
             Organization Tabs Demo - Collapse Test
           </Heading>
           <Text color="gray.600">
-            This demonstrates the TabIndicator issue in OrganizationCard where tabs are inside a Collapse component.
-            Click the button below to expand/collapse the card.
+            This demonstrates the TabIndicator issue in OrganizationCard where
+            tabs are inside a Collapse component. Click the button below to
+            expand/collapse the card.
           </Text>
           <Text color="gray.600" mt={2}>
             Active Tab Index: {activeTabIndex}
@@ -53,7 +53,7 @@ const OrganizationTabsDemo = () => {
                 size="sm"
               />
             </HStack>
-            
+
             <Collapse in={isExpanded} animateOpacity>
               <ResponsiveTabs
                 colorScheme="brandPrimary"

@@ -16,11 +16,6 @@ import {
   Wrap,
   WrapItem,
   Button,
-  Tabs,
-  TabList,
-  Tab,
-  TabPanels,
-  TabPanel,
   Center,
 } from "@chakra-ui/react";
 import { useState } from "react";
@@ -39,6 +34,12 @@ import FindingsForm from "./FindingsForm";
 import ActionPlanForm from "./ActionPlanForm";
 import VerificationForm from "./VerificationForm";
 import NotifBadge from "../../../components/NotifBadge";
+import ResponsiveTabs, {
+  ResponsiveTabList,
+  ResponsiveTab,
+  ResponsiveTabPanels,
+  ResponsiveTabPanel,
+} from "../../../components/common/ResponsiveTabs";
 
 // Helper function to get user's full name from either format
 const getUserFullName = (user) => {
@@ -80,6 +81,7 @@ const FindingCard = ({
   const borderColor = useColorModeValue("gray.200", "gray.600");
   const labelColor = useColorModeValue("gray.600", "gray.400");
   const reportBg = useColorModeValue("gray.50", "gray.800");
+  const [activeTabIndex, setActiveTabIndex] = useState(0);
 
   const complianceInfo =
     COMPLIANCE_DISPLAY[finding.compliance] || COMPLIANCE_DISPLAY.OBSERVATIONS;
@@ -324,15 +326,20 @@ const FindingCard = ({
 
               {/* Tabs for Report, Action Plan, and Verification - Only for MINOR_NC/MAJOR_NC with report */}
               {shouldShowActionPlan ? (
-                <Tabs colorScheme="brandPrimary">
-                  <TabList>
-                    <Tab>
+                <ResponsiveTabs
+                  colorScheme="purple"
+                  index={activeTabIndex}
+                  onChange={(index) => setActiveTabIndex(index)}
+                  triggerUpdate={isExpanded}
+                >
+                  <ResponsiveTabList>
+                    <ResponsiveTab>
                       <HStack spacing={2}>
                         <FiFileText />
                         <Text>Report</Text>
                       </HStack>
-                    </Tab>
-                    <Tab>
+                    </ResponsiveTab>
+                    <ResponsiveTab>
                       <HStack spacing={2}>
                         <Center position="relative">
                           <FiTool />
@@ -347,8 +354,8 @@ const FindingCard = ({
                         </Center>
                         <Text>Action Plan</Text>
                       </HStack>
-                    </Tab>
-                    <Tab>
+                    </ResponsiveTab>
+                    <ResponsiveTab>
                       <HStack spacing={2}>
                         <Center pos="relative">
                           <FiCheckCircle />
@@ -363,12 +370,12 @@ const FindingCard = ({
                         </Center>
                         <Text>Verification</Text>
                       </HStack>
-                    </Tab>
-                  </TabList>
+                    </ResponsiveTab>
+                  </ResponsiveTabList>
 
-                  <TabPanels>
+                  <ResponsiveTabPanels>
                     {/* Report Tab Panel */}
-                    <TabPanel px={0} py={4}>
+                    <ResponsiveTabPanel px={0} py={4}>
                       <Box
                         p={3}
                         bg={reportBg}
@@ -530,10 +537,10 @@ const FindingCard = ({
                           </HStack>
                         </VStack>
                       </Box>
-                    </TabPanel>
+                    </ResponsiveTabPanel>
 
                     {/* Action Plan Tab Panel */}
-                    <TabPanel px={0} py={4}>
+                    <ResponsiveTabPanel px={0} py={4}>
                       {isEditingActionPlan ? (
                         <ActionPlanForm
                           initialData={finding.actionPlan}
@@ -593,10 +600,10 @@ const FindingCard = ({
                           </Button>
                         </Center>
                       )}
-                    </TabPanel>
+                    </ResponsiveTabPanel>
 
                     {/* Verification Tab Panel */}
-                    <TabPanel px={0} py={4}>
+                    <ResponsiveTabPanel px={0} py={4}>
                       {needsActionPlan ? (
                         <Center w="full" flexDir="column" minH="xs">
                           <Text
@@ -688,9 +695,9 @@ const FindingCard = ({
                           </Button>
                         </Center>
                       )}
-                    </TabPanel>
-                  </TabPanels>
-                </Tabs>
+                    </ResponsiveTabPanel>
+                  </ResponsiveTabPanels>
+                </ResponsiveTabs>
               ) : (
                 /* Report Section - For findings without tabs (non-NC or without report) */
                 finding.report && (
