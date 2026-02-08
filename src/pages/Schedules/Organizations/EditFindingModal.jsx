@@ -17,12 +17,18 @@ import {
   Text,
   Divider,
   useColorModeValue,
+  useDisclosure,
+  Wrap,
+  WrapItem,
+  Badge,
+  IconButton,
 } from "@chakra-ui/react";
 import { Select } from "chakra-react-select";
 import { useState, useEffect } from "react";
 import { FiSave, FiX } from "react-icons/fi";
 import { SingleDatepicker } from "chakra-dayzed-datepicker";
 import UserAsyncSelect from "../../../components/UserAsyncSelect";
+import ClauseSelectionModal from "../../../components/ClauseSelectionModal";
 
 // Helper function to check if compliance type is a Non-Conformity
 const isNonConformity = (complianceType) => {
@@ -62,15 +68,16 @@ const EditFindingModal = ({
   isOpen,
   onClose,
   finding,
-  teamObjectives = [],
+  auditStandardClauses = [], // Changed from teamObjectives to auditStandardClauses
   onSave,
 }) => {
   const labelColor = useColorModeValue("gray.600", "gray.400");
+  const { isOpen: isClauseModalOpen, onOpen: onClauseModalOpen, onClose: onClauseModalClose } = useDisclosure();
 
   const [formData, setFormData] = useState({
     title: "",
     details: "",
-    objective: "",
+    clauses: [], // Changed from objective to clauses array
     compliance: "",
     report: {
       reportNo: "",
@@ -87,10 +94,25 @@ const EditFindingModal = ({
   // Initialize form data when finding changes
   useEffect(() => {
     if (finding) {
+      // Handle backward compatibility for clauses
+      let clauses = [];
+      if (finding.clauses && Array.isArray(finding.clauses)) {
+        clauses = finding.clauses;
+      } else if (finding.objectives && Array.isArray(finding.objectives)) {
+        // Old format: objectives - convert to clauses
+        clauses = finding.objectives.map(obj => ({
+          id: obj._id || obj.id,
+          name: obj.title,
+        }));
+      } else if (finding.objective) {
+        // Very old format: single objective - ignore for now
+        clauses = [];
+      }
+
       setFormData({
         title: finding.title || "",
         details: finding.details || "",
-        objective: finding.objective || "",
+        clauses: clauses,
         compliance: finding.compliance || "",
         report: {
           reportNo: finding.report?.reportNo || "",
@@ -141,8 +163,8 @@ const EditFindingModal = ({
     if (!formData.details.trim()) {
       newErrors.details = "Details are required";
     }
-    if (!formData.objective) {
-      newErrors.objective = "Objective is required";
+    if (!formData.clauses || formData.clauses.length === 0) {
+      newErrors.clauses = "At least one clause is required";
     }
     if (!formData.compliance) {
       newErrors.compliance = "Compliance type is required";
@@ -183,7 +205,7 @@ const EditFindingModal = ({
         ...finding, // Preserve _id and other fields
         title: formData.title,
         details: formData.details,
-        objective: formData.objective,
+        clauses: formData.clauses, // Use clauses instead of objective
         compliance: formData.compliance,
       };
 
@@ -238,34 +260,69 @@ const EditFindingModal = ({
         <ModalBody>
           <VStack align="stretch" spacing={4}>
             {" "}
-            {/* Objective */}
-            <FormControl isInvalid={!!errors.objective} isRequired>
-              <FormLabel fontSize="sm">Objective</FormLabel>
-              <Select
-                size="sm"
-                value={teamObjectives
-                  .map((obj) => ({
-                    value: obj._id || obj.title,
-                    label: obj.title,
-                  }))
-                  .find((opt) => opt.value === formData.objective)}
-                onChange={(option) =>
-                  handleChange("objective", option?.value || "")
-                }
-                options={teamObjectives.map((obj) => ({
-                  value: obj._id || obj.title,
-                  label: obj.title,
-                }))}
-                placeholder="Select an objective"
-                isClearable
-                useBasicStyles
-              />
-              {errors.objective && (
+            {/* Clauses Selection */}
+            <FormControl isInvalid={!!errors.clauses} isRequired>
+              <FormLabel fontSize="sm">Clauses</FormLabel>
+              <VStack align="stretch" spacing={2}>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={onClauseModalOpen}
+                  colorScheme="brandPrimary"
+                >
+                  {formData.clauses.length > 0
+                    ? `${formData.clauses.length} Clause${formData.clauses.length > 1 ? 's' : ''} Selected`
+                    : 'Select Clauses'}
+                </Button>
+                {formData.clauses.length > 0 && (
+                  <Wrap spacing={2}>
+                    {formData.clauses.map((clause) => (
+                      <WrapItem key={clause.id}>
+                        <Badge
+                          colorScheme="brandPrimary"
+                          fontSize="xs"
+                          px={2}
+                          py={1}
+                          display="flex"
+                          alignItems="center"
+                          gap={1}
+                        >
+                          <Text>{clause.name}</Text>
+                          <IconButton
+                            icon={<FiX />}
+                            size="xs"
+                            variant="ghost"
+                            minW="auto"
+                            h="auto"
+                            p={0}
+                            onClick={() => {
+                              handleChange(
+                                "clauses",
+                                formData.clauses.filter((c) => c.id !== clause.id)
+                              );
+                            }}
+                            aria-label="Remove clause"
+                          />
+                        </Badge>
+                      </WrapItem>
+                    ))}
+                  </Wrap>
+                )}
+              </VStack>
+              {errors.clauses && (
                 <Text fontSize="xs" color="red.500" mt={1}>
-                  {errors.objective}
+                  {errors.clauses}
                 </Text>
               )}
             </FormControl>
+
+            <ClauseSelectionModal
+              isOpen={isClauseModalOpen}
+              onClose={onClauseModalClose}
+              clauses={auditStandardClauses}
+              value={formData.clauses}
+              onChange={(selectedClauses) => handleChange("clauses", selectedClauses)}
+            />
             {/* Compliance */}
             <FormControl isInvalid={!!errors.compliance} isRequired>
               <FormLabel fontSize="sm">Compliance Type</FormLabel>

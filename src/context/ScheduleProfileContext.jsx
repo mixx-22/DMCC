@@ -71,6 +71,8 @@ const initialScheduleData = {
   standard: "",
   previousAudit: null,
   status: 0,
+  auditYear: new Date().getFullYear().toString(),
+  auditNumber: "",
 };
 
 // Reducer with uniform FETCHING/FETCHED pattern
