@@ -393,8 +393,6 @@ const ReportsTab = ({ schedule }) => {
     delete cleanFinding.visitIndex;
     delete cleanFinding.organizationId;
 
-    console.log({ cleanFinding });
-
     // Defensive check: Ensure _id is present in cleanFinding
     if (!cleanFinding._id) {
       console.error("Error: cleanFinding missing _id property:", cleanFinding);
