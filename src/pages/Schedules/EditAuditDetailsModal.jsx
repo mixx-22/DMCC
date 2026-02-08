@@ -9,15 +9,15 @@ import {
   Button,
   FormControl,
   FormLabel,
-  Input,
   Select,
   VStack,
   FormErrorMessage,
-  FormHelperText,
 } from "@chakra-ui/react";
 import { useState, useEffect } from "react";
 import { FiSave } from "react-icons/fi";
 import PreviousAuditAsyncSelect from "../../components/PreviousAuditAsyncSelect";
+import StandardsAsyncSelect from "../../components/StandardsAsyncSelect";
+import { generateAuditCode, parseAuditCode } from "../../utils/auditHelpers";
 
 const EditAuditDetailsModal = ({
   isOpen,
@@ -28,30 +28,54 @@ const EditAuditDetailsModal = ({
   currentScheduleId = null,
 }) => {
   const [formData, setFormData] = useState({
-    auditCode: "",
     auditType: "",
     standard: "",
     previousAudit: null,
+    auditYear: new Date().getFullYear().toString(),
+    auditNumber: "",
   });
   const [validationErrors, setValidationErrors] = useState({});
 
   useEffect(() => {
     if (auditData && isOpen) {
+      // Parse existing audit code if present
+      const { auditYear, auditNumber } = parseAuditCode(auditData.auditCode);
+
       setFormData({
-        auditCode: auditData.auditCode || "",
         auditType: auditData.auditType || "",
         standard: auditData.standard || "",
         previousAudit: auditData.previousAudit || null,
+        auditYear,
+        auditNumber,
       });
       setValidationErrors({});
     }
   }, [auditData, isOpen]);
 
   const handleFieldChange = (field, value) => {
-    setFormData((prev) => ({
-      ...prev,
-      [field]: value,
-    }));
+    setFormData((prev) => {
+      const updated = {
+        ...prev,
+        [field]: value,
+      };
+
+      // Auto-generate audit code when type, year, or number changes
+      if (
+        field === "auditType" ||
+        field === "auditYear" ||
+        field === "auditNumber"
+      ) {
+        const type = field === "auditType" ? value : prev.auditType;
+        const year = field === "auditYear" ? value : prev.auditYear;
+        const number = field === "auditNumber" ? value : prev.auditNumber;
+
+        if (type) {
+          updated.auditCode = generateAuditCode(type, year, number);
+        }
+      }
+
+      return updated;
+    });
 
     if (validationErrors[field]) {
       setValidationErrors((prev) => ({
@@ -64,9 +88,6 @@ const EditAuditDetailsModal = ({
   const validateForm = () => {
     const errors = {};
 
-    if (!formData.auditCode.trim()) {
-      errors.auditCode = "Audit code is required";
-    }
     if (!formData.auditType) {
       errors.auditType = "Audit type is required";
     }
@@ -85,11 +106,14 @@ const EditAuditDetailsModal = ({
     setValidationErrors({});
     // Reset form data to original values
     if (auditData) {
+      const { auditYear, auditNumber } = parseAuditCode(auditData.auditCode);
+
       setFormData({
-        auditCode: auditData.auditCode || "",
         auditType: auditData.auditType || "",
         standard: auditData.standard || "",
         previousAudit: auditData.previousAudit || null,
+        auditYear,
+        auditNumber,
       });
     }
     onClose();
@@ -103,19 +127,6 @@ const EditAuditDetailsModal = ({
         <ModalCloseButton />
         <ModalBody>
           <VStack spacing={4}>
-            <FormControl isRequired isInvalid={!!validationErrors.auditCode}>
-              <FormLabel>Audit Code</FormLabel>
-              <Input
-                value={formData.auditCode}
-                onChange={(e) => handleFieldChange("auditCode", e.target.value)}
-                placeholder="e.g., AUD-2024-001"
-              />
-              <FormHelperText>
-                Unique identifier for this audit schedule
-              </FormHelperText>
-              <FormErrorMessage>{validationErrors.auditCode}</FormErrorMessage>
-            </FormControl>
-
             <FormControl isRequired isInvalid={!!validationErrors.auditType}>
               <FormLabel>Audit Type</FormLabel>
               <Select
@@ -132,17 +143,11 @@ const EditAuditDetailsModal = ({
               <FormErrorMessage>{validationErrors.auditType}</FormErrorMessage>
             </FormControl>
 
-            <FormControl>
-              <FormLabel>Standard</FormLabel>
-              <Input
-                value={formData.standard}
-                onChange={(e) => handleFieldChange("standard", e.target.value)}
-                placeholder="e.g., ISO 9001, SOX, ISO 27001"
-              />
-              <FormHelperText>
-                The audit standard or framework being followed (optional)
-              </FormHelperText>
-            </FormControl>
+            <StandardsAsyncSelect
+              value={formData.standard}
+              onChange={(standard) => handleFieldChange("standard", standard)}
+              label="Standard"
+            />
 
             <PreviousAuditAsyncSelect
               value={formData.previousAudit}

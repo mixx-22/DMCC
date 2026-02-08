@@ -12,14 +12,18 @@ import {
   useColorModeValue,
   Divider,
   IconButton,
+  useDisclosure,
+  Wrap,
+  WrapItem,
+  Badge,
 } from "@chakra-ui/react";
 import { Select } from "chakra-react-select";
 import { useState } from "react";
 import { FiSave, FiX } from "react-icons/fi";
 import { SingleDatepicker } from "chakra-dayzed-datepicker";
-import UserAsyncSelect from "../../../components/UserAsyncSelect";
 import OrganizationAuditorsSelect from "../../../components/OrganizationAuditorsSelect";
 import TeamLeadersSelect from "../../../components/TeamLeadersSelect";
+import ClauseSelectionModal from "../../../components/ClauseSelectionModal";
 import { useLayout } from "../../../context/_useContext";
 
 // Helper function to check if compliance type is a Non-Conformity
@@ -62,9 +66,9 @@ const COMPLIANCE_OPTIONS = [
 ];
 
 const FindingsForm = ({
-  teamObjectives = [],
   team = null, // NEW: Accept full team object for updatedAt
   organizationAuditors = [], // List of auditors from organization
+  auditStandardClauses = [], // Changed from teamObjectives to auditStandardClauses
   initialData = null,
   mode = "add",
   onAddFinding,
@@ -73,35 +77,38 @@ const FindingsForm = ({
   const bg = useColorModeValue("brandPrimary.50", "brandPrimary.900");
   const borderColor = useColorModeValue("brandPrimary.200", "brandPrimary.700");
   const { pageRef } = useLayout();
+  const {
+    isOpen: isClauseModalOpen,
+    onOpen: onClauseModalOpen,
+    onClose: onClauseModalClose,
+  } = useDisclosure();
 
   // Initialize form data based on mode
   const getInitialFormData = () => {
     if (mode === "edit" && initialData) {
-      // Handle backward compatibility: convert old single objective to array
-      let objectives = [];
-      if (initialData.objectives && Array.isArray(initialData.objectives)) {
-        objectives = initialData.objectives;
+      // Handle backward compatibility: clauses should be an array
+      let clauses = [];
+      if (initialData.clauses && Array.isArray(initialData.clauses)) {
+        clauses = initialData.clauses;
+      } else if (
+        initialData.objectives &&
+        Array.isArray(initialData.objectives)
+      ) {
+        // Old format: objectives - convert to clauses
+        clauses = initialData.objectives.map((obj) => ({
+          id: obj._id || obj.id,
+          name: obj.title,
+        }));
       } else if (initialData.objective) {
-        // Old format: single objective - convert to array with snapshot
-        const matchingObj = teamObjectives.find(
-          (obj) => (obj._id || obj.title) === initialData.objective,
-        );
-        if (matchingObj) {
-          objectives = [
-            {
-              _id: matchingObj._id || matchingObj.title,
-              title: matchingObj.title,
-              teamUpdatedAt: team?.updatedAt || new Date().toISOString(),
-            },
-          ];
-        }
+        // Very old format: single objective - ignore for now
+        clauses = [];
       }
 
       return {
         _id: initialData._id,
         title: initialData.title || "",
         details: initialData.details || "",
-        objectives: objectives, // NEW: Array of objective snapshots
+        clauses: clauses, // NEW: Array of clause objects { id, name }
         compliance: initialData.compliance || "",
         currentCompliance:
           initialData.currentCompliance || initialData.compliance || "",
@@ -146,7 +153,7 @@ const FindingsForm = ({
     return {
       title: "",
       details: "",
-      objectives: [], // NEW: Array instead of single value
+      clauses: [], // NEW: Array instead of objectives
       compliance: "",
       currentCompliance: "",
       corrected: -1,
@@ -200,8 +207,8 @@ const FindingsForm = ({
     if (!formData.details.trim()) {
       newErrors.details = "Details are required";
     }
-    if (!formData.objectives || formData.objectives.length === 0) {
-      newErrors.objectives = "At least one clause is required";
+    if (!formData.clauses || formData.clauses.length === 0) {
+      newErrors.clauses = "At least one clause is required";
     }
     if (!formData.compliance) {
       newErrors.compliance = "Compliance type is required";
@@ -268,7 +275,7 @@ const FindingsForm = ({
           setFormData({
             title: "",
             details: "",
-            objective: "",
+            clauses: [],
             compliance: "",
             report: {
               reportNo: "",
@@ -311,49 +318,71 @@ const FindingsForm = ({
             />
           )}
         </HStack>
-        {/* Objectives Multi-Select */}
-        <FormControl isInvalid={!!errors.objectives}>
+        {/* Clauses Selection */}
+        <FormControl isInvalid={!!errors.clauses}>
           <FormLabel fontSize="sm">Clause/s</FormLabel>
-          <Select
-            isMulti
-            size="sm"
-            value={formData.objectives.map((obj) => ({
-              value: obj._id,
-              label: obj.title,
-            }))}
-            onChange={(selectedOptions) => {
-              // Create snapshot of selected objectives with team updatedAt
-              const objectivesSnapshot = (selectedOptions || []).map(
-                (option) => {
-                  const matchingObj = teamObjectives.find(
-                    (obj) => (obj._id || obj.title) === option.value,
-                  );
-                  return {
-                    _id: option.value,
-                    title: option.label,
-                    teamUpdatedAt:
-                      team?.updatedAt ||
-                      matchingObj?.updatedAt ||
-                      new Date().toISOString(),
-                  };
-                },
-              );
-              handleChange("objectives", objectivesSnapshot);
-            }}
-            options={teamObjectives.map((obj) => ({
-              value: obj._id || obj.title,
-              label: obj.title,
-            }))}
-            placeholder="Select objectives"
-            isClearable
-            useBasicStyles
-          />
-          {errors.objectives && (
+          <VStack align="stretch" spacing={2}>
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={onClauseModalOpen}
+              colorScheme="brandPrimary"
+            >
+              {formData.clauses.length > 0
+                ? `${formData.clauses.length} Clause${formData.clauses.length > 1 ? "s" : ""} Selected`
+                : "Select Clauses"}
+            </Button>
+            {formData.clauses.length > 0 && (
+              <Wrap spacing={2}>
+                {formData.clauses.map((clause) => (
+                  <WrapItem key={clause.id}>
+                    <Badge
+                      colorScheme="brandPrimary"
+                      fontSize="xs"
+                      px={2}
+                      py={1}
+                      display="flex"
+                      alignItems="center"
+                      gap={1}
+                    >
+                      <Text>{clause.name}</Text>
+                      <IconButton
+                        icon={<FiX />}
+                        size="xs"
+                        variant="ghost"
+                        minW="auto"
+                        h="auto"
+                        p={0}
+                        onClick={() => {
+                          handleChange(
+                            "clauses",
+                            formData.clauses.filter((c) => c.id !== clause.id),
+                          );
+                        }}
+                        aria-label="Remove clause"
+                      />
+                    </Badge>
+                  </WrapItem>
+                ))}
+              </Wrap>
+            )}
+          </VStack>
+          {errors.clauses && (
             <FormHelperText color="red.500" fontSize="xs">
-              {errors.objectives}
+              {errors.clauses}
             </FormHelperText>
           )}
         </FormControl>
+
+        <ClauseSelectionModal
+          isOpen={isClauseModalOpen}
+          onClose={onClauseModalClose}
+          clauses={auditStandardClauses}
+          value={formData.clauses}
+          onChange={(selectedClauses) =>
+            handleChange("clauses", selectedClauses)
+          }
+        />
 
         {/* Compliance Dropdown */}
         <FormControl isInvalid={!!errors.compliance}>

@@ -64,9 +64,9 @@ const COMPLIANCE_DISPLAY = {
 
 const FindingCard = ({
   finding,
-  teamObjectives,
   team, // NEW: Accept team object
   organizationAuditors = [], // NEW: Accept organization auditors
+  auditStandardClauses, // Changed from teamObjectives to auditStandardClauses
   onEdit,
   onDelete,
   onSaveEdit,
@@ -173,9 +173,9 @@ const FindingCard = ({
       >
         <CardBody>
           <FindingsForm
-            teamObjectives={teamObjectives}
             team={team} // NEW: Pass team object
             organizationAuditors={organizationAuditors} // NEW: Pass organization auditors
+            auditStandardClauses={auditStandardClauses}
             initialData={finding}
             mode="edit"
             onAddFinding={handleSave}
@@ -221,34 +221,38 @@ const FindingCard = ({
                   {finding.title}
                 </Text>
               </HStack>
-              {/* Objectives Display */}
-              {finding.objectives && finding.objectives.length > 0 && (
+              {/* Clauses Display */}
+              {finding.clauses && finding.clauses.length > 0 && (
                 <Box>
                   <Wrap spacing={1}>
-                    {finding.objectives.map((obj, idx) => (
-                      <WrapItem key={`obj-${obj._id}-${idx}`}>
-                        <Tooltip
-                          label={`Updated: ${moment(obj.teamUpdatedAt).format("MMMM DD, YYYY")}`}
-                          placement="top"
-                        >
-                          <Badge fontSize="2xs" px={2} py={1} borderRadius="md">
-                            {obj.title}
-                          </Badge>
-                        </Tooltip>
+                    {finding.clauses.map((clause, idx) => (
+                      <WrapItem key={`clause-${clause.id}-${idx}`}>
+                        <Badge fontSize="2xs" px={2} py={1} borderRadius="md">
+                          {clause.name}
+                        </Badge>
                       </WrapItem>
                     ))}
-                    <WrapItem>
-                      <Text as="span" fontSize="xs" color="gray.500" mt={1}>
-                        {moment(finding.objectives[0]?.teamUpdatedAt).format(
-                          "MMM DD, YYYY",
-                        )}
-                      </Text>
-                    </WrapItem>
                   </Wrap>
                 </Box>
               )}
+              {/* Backward compatibility for old objectives */}
+              {!finding.clauses &&
+                finding.objectives &&
+                finding.objectives.length > 0 && (
+                  <Box>
+                    <Wrap spacing={1}>
+                      {finding.objectives.map((obj, idx) => (
+                        <WrapItem key={`obj-${obj._id}-${idx}`}>
+                          <Badge fontSize="2xs" px={2} py={1} borderRadius="md">
+                            {obj.title}
+                          </Badge>
+                        </WrapItem>
+                      ))}
+                    </Wrap>
+                  </Box>
+                )}
               {/* Backward compatibility for old single objective */}
-              {!finding.objectives && finding.objective && (
+              {!finding.clauses && !finding.objectives && finding.objective && (
                 <Text fontSize="xs" color={labelColor}>
                   {finding.objective}
                 </Text>
@@ -441,9 +445,7 @@ const FindingCard = ({
                                           <WrapItem
                                             key={`auditor-${u.id}-${index}`}
                                           >
-                                            <Tooltip
-                                              label={fullName}
-                                            >
+                                            <Tooltip label={fullName}>
                                               <Card
                                                 variant="filled"
                                                 shadow="none"
@@ -491,9 +493,7 @@ const FindingCard = ({
                                           <WrapItem
                                             key={`auditee-${u.id}-${index}`}
                                           >
-                                            <Tooltip
-                                              label={fullName}
-                                            >
+                                            <Tooltip label={fullName}>
                                               <Card
                                                 variant="filled"
                                                 shadow="none"
@@ -766,9 +766,7 @@ const FindingCard = ({
                                   const fullName = getUserFullName(u);
                                   return (
                                     <WrapItem key={`auditor-${u.id}-${index}`}>
-                                      <Tooltip
-                                        label={fullName}
-                                      >
+                                      <Tooltip label={fullName}>
                                         <Card variant="filled" shadow="none">
                                           <CardBody px={2} py={1}>
                                             <HStack spacing={1}>
@@ -805,9 +803,7 @@ const FindingCard = ({
                                   const fullName = getUserFullName(u);
                                   return (
                                     <WrapItem key={`auditee-${u.id}-${index}`}>
-                                      <Tooltip
-                                        label={fullName}
-                                      >
+                                      <Tooltip label={fullName}>
                                         <Card variant="filled" shadow="none">
                                           <CardBody px={2} py={1}>
                                             <HStack spacing={1}>
@@ -848,9 +844,9 @@ const FindingCard = ({
 
 const FindingsList = ({
   findings = [],
-  teamObjectives = [],
   team = null, // NEW: Accept team object
   organizationAuditors = [], // NEW: Accept organization auditors
+  auditStandardClauses = [], // Changed from teamObjectives to auditStandardClauses
   onEdit,
   onDelete,
   onSaveEdit,
@@ -869,9 +865,9 @@ const FindingsList = ({
         <FindingCard
           key={finding._id || index}
           finding={finding}
-          teamObjectives={teamObjectives}
           team={team} // NEW: Pass team object
           organizationAuditors={organizationAuditors} // NEW: Pass organization auditors
+          auditStandardClauses={auditStandardClauses}
           onEdit={onEdit}
           onDelete={onDelete}
           onSaveEdit={onSaveEdit}

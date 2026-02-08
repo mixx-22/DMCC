@@ -402,8 +402,6 @@ const AuditKpiDashboard = () => {
 
         setTeamsMap(teamMapping);
         setObjectivesMap(objectiveMapping);
-        console.log("Teams mapping:", teamMapping);
-        console.log("Objectives mapping:", objectiveMapping);
       } catch (err) {
         console.error("Error fetching teams:", err);
       }
@@ -419,14 +417,10 @@ const AuditKpiDashboard = () => {
         setLoadingYears(true);
         const response = await apiService.request("/schedules");
 
-        console.log("Schedules response:", response);
-
         // Handle both direct array and wrapped response
         const schedulesData = Array.isArray(response)
           ? response
           : response?.data || [];
-
-        console.log("Schedules data:", schedulesData);
 
         if (schedulesData.length > 0) {
           // Extract unique years from schedules
@@ -454,8 +448,6 @@ const AuditKpiDashboard = () => {
                 .filter((year) => year !== null),
             ),
           ].sort((a, b) => b - a); // Sort descending (newest first)
-
-          console.log("Unique years:", uniqueYears);
 
           setYears(uniqueYears);
 
@@ -486,8 +478,6 @@ const AuditKpiDashboard = () => {
         setLoadingSchedules(true);
         const response = await apiService.request("/schedules");
 
-        console.log("Schedules response for filtering:", response);
-
         // Handle both direct array and wrapped response
         const schedulesData = Array.isArray(response)
           ? response
@@ -502,8 +492,6 @@ const AuditKpiDashboard = () => {
             }
             return false;
           });
-
-          console.log("Year schedules filtered:", yearSchedules);
 
           setSchedules(yearSchedules);
 
@@ -547,8 +535,7 @@ const AuditKpiDashboard = () => {
           return;
         }
 
-        console.log("Fetching KPI data for scheduleId:", scheduleId);
-        console.log("Selected year:", selectedYear);
+        console.warn({ scheduleId });
 
         // Build query parameters - always include both year and scheduleId
         const params = new URLSearchParams();
@@ -573,8 +560,6 @@ const AuditKpiDashboard = () => {
         const queryString = params.toString();
         const endpoint = `/schedules/latest/kpis${queryString ? `?${queryString}` : ""}`;
 
-        console.log("API endpoint:", endpoint);
-
         // Add timeout to prevent infinite loading
         const timeoutPromise = new Promise((_, reject) =>
           setTimeout(
@@ -587,8 +572,6 @@ const AuditKpiDashboard = () => {
           apiService.request(endpoint),
           timeoutPromise,
         ]);
-
-        console.log("KPI Response:", response);
 
         if (!response || !response.data) {
           throw new Error("No data received from server");
@@ -656,17 +639,6 @@ const AuditKpiDashboard = () => {
           // Include metadata for reference
           metadata: metadata || {},
         };
-
-        console.log("Transformed KPI data:", transformedData);
-        console.log("ncMetricsPerTeam:", transformedData.ncMetricsPerTeam);
-        console.log(
-          "ncContributionPerTeam:",
-          transformedData.ncContributionPerTeam,
-        );
-        console.log(
-          "overallNcPercentage:",
-          transformedData.overallNcPercentage,
-        );
 
         setKpiData(transformedData);
       } catch (err) {

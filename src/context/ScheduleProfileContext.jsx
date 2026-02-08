@@ -67,11 +67,12 @@ const MOCK_SCHEDULE = MOCK_SCHEDULES[0];
 const initialScheduleData = {
   title: "",
   description: "",
-  auditCode: "",
   auditType: "",
   standard: "",
   previousAudit: null,
   status: 0,
+  auditYear: new Date().getFullYear().toString(),
+  auditNumber: "",
 };
 
 // Reducer with uniform FETCHING/FETCHED pattern
@@ -137,11 +138,14 @@ export const ScheduleProfileProvider = ({ children }) => {
     dispatch({ type: "FETCHING" });
 
     if (!USE_API) {
-      // Mock mode
+      // Mock mode - generate audit code
       await new Promise((resolve) => setTimeout(resolve, 800));
+      const timestamp = Date.now();
+      const randomSuffix = Math.floor(Math.random() * 1000).toString().padStart(3, '0');
       const newSchedule = {
         ...scheduleData,
-        _id: `schedule-${Date.now()}`,
+        _id: `schedule-${timestamp}`,
+        auditCode: `AUD-${new Date().getFullYear()}-${randomSuffix}`,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
       };
@@ -200,9 +204,10 @@ export const ScheduleProfileProvider = ({ children }) => {
           `${SCHEDULES_ENDPOINT}/${scheduleId}`,
           { method: "PUT", body: JSON.stringify(scheduleData) },
         );
-        const { success = false } = response;
+        const { success = false, data } = response;
         if (success) {
-          const updatedSchedule = {
+          // Use backend response data if available, otherwise merge with existing
+          const updatedSchedule = data || {
             ...state.schedule,
             ...scheduleData,
             updatedAt: new Date().toISOString(),
