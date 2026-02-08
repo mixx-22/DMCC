@@ -36,6 +36,9 @@ import {
   Stack,
   Spacer,
   CardHeader,
+  Editable,
+  EditablePreview,
+  EditableTextarea,
 } from "@chakra-ui/react";
 import {
   FiArrowLeft,
@@ -252,10 +255,6 @@ const StandardPage = () => {
     onClose: onClauseSelectionClose,
   } = useDisclosure();
   const [selectedClauses, setSelectedClauses] = useState([]);
-  const [standardForm, setStandardForm] = useState({
-    standard: "",
-    description: "",
-  });
   const [clauseForm, setClauseForm] = useState({
     id: uuidv4(),
     clause: "",
@@ -279,10 +278,6 @@ const StandardPage = () => {
         // Use mock data for demo purposes
         if (id === "demo") {
           setStandard(MOCK_STANDARD_WITH_CLAUSES);
-          setStandardForm({
-            standard: MOCK_STANDARD_WITH_CLAUSES.standard,
-            description: MOCK_STANDARD_WITH_CLAUSES.description,
-          });
           return;
         }
         setStandard(null);
@@ -295,18 +290,10 @@ const StandardPage = () => {
 
       const data = response?.data || response;
       setStandard(data);
-      setStandardForm({
-        standard: data?.standard || data?.title || data?.name || "",
-        description: data?.description || "",
-      });
     } catch (error) {
       // Fall back to mock data for demo purposes
       if (id === "demo") {
         setStandard(MOCK_STANDARD_WITH_CLAUSES);
-        setStandardForm({
-          standard: MOCK_STANDARD_WITH_CLAUSES.standard,
-          description: MOCK_STANDARD_WITH_CLAUSES.description,
-        });
       } else {
         setStandard(null);
       }
@@ -532,24 +519,24 @@ const StandardPage = () => {
   const standardTitle =
     standard.standard || standard.title || standard.name || "Standard";
 
-  const handleStandardFieldChange = (field, value) => {
-    setStandardForm((prev) => ({
-      ...prev,
-      [field]: value,
-    }));
-  };
+  const handleTitleBlur = async (newTitle) => {
+    const trimmedTitle = newTitle?.trim() || "";
 
-  const handleSaveStandard = async () => {
-    if (!standardForm.standard.trim()) {
+    if (!trimmedTitle) {
       toast.error("Standard title is required.");
       return;
     }
 
-    setIsSavingClause(true);
+    if (
+      trimmedTitle === (standard?.standard || standard?.title || standard?.name)
+    ) {
+      return;
+    }
+
     try {
       const payload = {
-        standard: standardForm.standard.trim(),
-        description: standardForm.description.trim(),
+        standard: trimmedTitle,
+        description: standard?.description || "",
         clauses: standard?.clauses || [],
       };
 
@@ -558,28 +545,53 @@ const StandardPage = () => {
           method: "PUT",
           body: JSON.stringify(payload),
         });
-        toast.success("Standard updated.");
-        await fetchStandard();
       }
 
       setStandard((prev) => ({
         ...prev,
-        ...payload,
+        standard: trimmedTitle,
       }));
-      setIsEditMode(false);
+
+      toast.success(USE_API ? "Title updated." : "Title updated (demo mode).");
     } catch (error) {
-      toast.error("Failed to update standard.");
-    } finally {
-      setIsSavingClause(false);
+      toast.error("Failed to update title.");
+      console.error("Failed to update title:", error);
     }
   };
 
-  const handleCancelEdit = () => {
-    setIsEditMode(false);
-    setStandardForm({
-      standard: standard?.standard || standard?.title || standard?.name || "",
-      description: standard?.description || "",
-    });
+  const handleDescriptionBlur = async (newDescription) => {
+    const trimmedDescription = newDescription?.trim() || "";
+
+    if (trimmedDescription === (standard?.description || "")) {
+      return;
+    }
+
+    try {
+      const payload = {
+        standard: standard?.standard || standard?.title || standard?.name || "",
+        description: trimmedDescription,
+        clauses: standard?.clauses || [],
+      };
+
+      if (USE_API) {
+        await apiService.request(`${STANDARDS_ENDPOINT}/${id}`, {
+          method: "PUT",
+          body: JSON.stringify(payload),
+        });
+      }
+
+      setStandard((prev) => ({
+        ...prev,
+        description: trimmedDescription,
+      }));
+
+      toast.success(
+        USE_API ? "Description updated." : "Description updated (demo mode).",
+      );
+    } catch (error) {
+      toast.error("Failed to update description.");
+      console.error("Failed to update description:", error);
+    }
   };
 
   const handleDeleteStandard = async () => {
@@ -661,22 +673,16 @@ const StandardPage = () => {
                 colorScheme="brandPrimary"
                 onClick={() => setIsEditMode(true)}
               >
-                Edit Standard
+                Edit Clauses
               </Button>
             </HStack>
           ) : (
-            <>
-              <Button variant="outline" onClick={handleCancelEdit}>
-                Cancel
-              </Button>
-              <Button
-                colorScheme="brandPrimary"
-                onClick={handleSaveStandard}
-                isLoading={isSavingClause}
-              >
-                Save Changes
-              </Button>
-            </>
+            <Button
+              colorScheme="brandPrimary"
+              onClick={() => setIsEditMode(false)}
+            >
+              Done Editing Clauses
+            </Button>
           )}
         </Flex>
       </PageFooter>
@@ -686,77 +692,75 @@ const StandardPage = () => {
           <Card>
             <CardBody>
               <VStack align="stretch" spacing={4}>
-                <Box>
-                  <Text
-                    fontSize="xs"
-                    color="gray.500"
-                    textTransform="uppercase"
-                  >
-                    Standard
-                  </Text>
-                  {isEditMode ? (
-                    <Input
-                      mt={2}
-                      value={standardForm.standard}
-                      onChange={(e) =>
-                        handleStandardFieldChange("standard", e.target.value)
-                      }
-                      placeholder="Standard title"
-                    />
-                  ) : (
-                    <Heading size="md" mt={1}>
-                      {standardTitle}
-                    </Heading>
-                  )}
-                </Box>
+                <Editable
+                  key={`title-${standard?.id}`}
+                  defaultValue={standardTitle}
+                  onSubmit={handleTitleBlur}
+                  fontSize="2xl"
+                  fontWeight="bold"
+                  w="full"
+                  isPreviewFocusable={true}
+                  submitOnBlur={true}
+                  selectAllOnFocus={false}
+                >
+                  <EditablePreview
+                    w="full"
+                    borderRadius="md"
+                    _hover={{
+                      background: "gray.100",
+                      cursor: "pointer",
+                    }}
+                  />
+                  <EditableTextarea
+                    py={2}
+                    px={2}
+                    resize="vertical"
+                    minH="auto"
+                    fontSize="2xl"
+                    fontWeight="bold"
+                  />
+                </Editable>
 
                 <Divider />
 
-                <Box>
-                  <Text
-                    fontSize="xs"
-                    color="gray.500"
-                    textTransform="uppercase"
-                  >
-                    Description
-                  </Text>
-                  {isEditMode ? (
-                    <Textarea
-                      mt={2}
-                      value={standardForm.description}
-                      onChange={(e) =>
-                        handleStandardFieldChange("description", e.target.value)
-                      }
-                      placeholder="Standard description"
-                      rows={4}
-                    />
-                  ) : (
-                    <Text mt={1} fontSize="sm">
-                      {standard.description || "No description available."}
-                    </Text>
-                  )}
-                </Box>
+                <Editable
+                  w="full"
+                  key={`description-${standard?.id}`}
+                  defaultValue={standard.description || ""}
+                  onSubmit={handleDescriptionBlur}
+                  placeholder="Add a description..."
+                  isPreviewFocusable={true}
+                  submitOnBlur={true}
+                  selectAllOnFocus={false}
+                >
+                  <EditablePreview
+                    w="full"
+                    borderRadius="md"
+                    color={standard?.description ? "gray.700" : "gray.400"}
+                    _hover={{
+                      background: "gray.100",
+                      cursor: "pointer",
+                    }}
+                  />
+                  <EditableTextarea
+                    py={2}
+                    px={2}
+                    minH="60px"
+                    resize="vertical"
+                  />
+                </Editable>
 
                 <Divider />
 
-                <Box>
-                  <Text
-                    fontSize="xs"
-                    color="gray.500"
-                    textTransform="uppercase"
-                  >
+                <Box flex={1}>
+                  <Text fontSize="sm" color="gray.600">
                     Last Modified
                   </Text>
-                  <Timestamp
-                    date={
-                      standard.updatedAt ||
-                      standard.updated_at ||
-                      standard.modifiedAt ||
-                      standard.lastModified
-                    }
-                    showTime={true}
-                    fontSize="sm"
-                  />
+                  <Text fontSize="sm" mt={2}>
+                    <Timestamp
+                      date={standard.updatedAt || standard.createdAt}
+                    />
+                  </Text>
                 </Box>
               </VStack>
             </CardBody>
