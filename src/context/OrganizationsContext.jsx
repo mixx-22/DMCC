@@ -6,6 +6,31 @@ import { OrganizationsContext } from "./_contexts";
 const ORGANIZATIONS_ENDPOINT = "/organizations";
 const USE_API = import.meta.env.VITE_USE_API !== "false";
 
+// Helper function to merge organization updates while preserving populated fields
+// This ensures we don't lose populated data like team.leadersData when receiving
+// partial updates from the API (where team/auditors are just IDs)
+function mergeOrganizationUpdate(existingOrg, update) {
+  const merged = { ...existingOrg, ...update };
+  
+  // If team in update is just an ID string, keep the existing populated team object
+  if (update.team && typeof update.team === 'string' && existingOrg.team && typeof existingOrg.team === 'object') {
+    merged.team = existingOrg.team;
+  }
+  
+  // If auditors in update is array of ID strings, keep the existing populated auditors array
+  if (update.auditors && Array.isArray(update.auditors) && existingOrg.auditors && Array.isArray(existingOrg.auditors)) {
+    const updateHasObjects = update.auditors.some(a => typeof a === 'object');
+    const existingHasObjects = existingOrg.auditors.some(a => typeof a === 'object');
+    
+    // Keep existing if it has objects and update only has strings
+    if (existingHasObjects && !updateHasObjects) {
+      merged.auditors = existingOrg.auditors;
+    }
+  }
+  
+  return merged;
+}
+
 // Mock data for development
 const MOCK_ORGANIZATIONS = [
   {
@@ -213,11 +238,13 @@ function organizationsReducer(state, action) {
         ...state,
         loading: false,
         organizations: state.organizations.map((org) =>
-          org._id === action.payload._id ? action.payload : org,
+          org._id === action.payload._id 
+            ? mergeOrganizationUpdate(org, action.payload)
+            : org,
         ),
         currentOrganization:
           state.currentOrganization?._id === action.payload._id
-            ? action.payload
+            ? mergeOrganizationUpdate(state.currentOrganization, action.payload)
             : state.currentOrganization,
       };
     case "DELETE_ORGANIZATION":
