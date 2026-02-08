@@ -35,14 +35,6 @@ const getUserFullName = (user) => {
 
 const noOptionsMessage = () => "No team leaders available";
 
-// Cache for team leaders with timestamp
-const leadersCache = new Map();
-const CACHE_DURATION = 10 * 60 * 1000; // 10 minutes in milliseconds
-
-/**
- * Component to select leaders from a team's leaders list
- * Similar to OrganizationAuditorsSelect but for team leaders with caching
- */
 const TeamLeadersSelect = ({
   value = [],
   onChange,
@@ -57,29 +49,14 @@ const TeamLeadersSelect = ({
 }) => {
   const [teamLeaders, setTeamLeaders] = useState([]);
 
-  // Load team leaders with caching
   useEffect(() => {
     if (!team) {
       setTeamLeaders([]);
       return;
     }
 
-    const teamId = team._id || team.id;
-    const cachedData = leadersCache.get(teamId);
-    const now = Date.now();
-
-    // Check if we have valid cached data
-    if (cachedData && now - cachedData.timestamp < CACHE_DURATION) {
-      setTeamLeaders(cachedData.leadersData);
-      return;
-    }
-
-    // Load leaders from team and cache them
     const leaders = team.leadersData || [];
-    leadersCache.set(teamId, {
-      leaders,
-      timestamp: now,
-    });
+
     setTeamLeaders(leaders);
   }, [team]);
 
@@ -101,7 +78,7 @@ const TeamLeadersSelect = ({
   };
 
   // Convert team leaders to select options
-  const leaderOptions = teamLeaders.map((leader) => ({
+  const leaderOptions = (teamLeaders || []).map((leader) => ({
     value: getUserId(leader),
     label: getUserFullName(leader) || "Unknown",
     user: leader,
