@@ -345,20 +345,27 @@ const ReportsTab = ({ schedule }) => {
   const isScheduleOngoing = useMemo(() => schedule?.status === 0, [schedule]);
   const organizationColor = useColorModeValue("purple.600", "purple.200");
 
-  // Collect all findings grouped by organization
+  // Collect all findings grouped by organization (only Major/Minor NC)
   const organizationsWithFindings = useMemo(() => {
     if (!organizations || organizations.length === 0) return [];
 
     return organizations
       .map((org) => {
         // Collect all findings from all visits for this organization
+        // Filter to only show Major NC and Minor NC (items that need resolutions)
         const findings =
           org?.visits?.flatMap((visit, visitIndex) =>
-            (visit.findings || []).map((finding) => ({
-              ...finding,
-              visitIndex, // Store visit index for updates
-              organizationId: org._id,
-            })),
+            (visit.findings || [])
+              .filter(
+                (finding) =>
+                  finding.compliance === "MAJOR_NC" ||
+                  finding.compliance === "MINOR_NC",
+              )
+              .map((finding) => ({
+                ...finding,
+                visitIndex, // Store visit index for updates
+                organizationId: org._id,
+              })),
           ) || [];
 
         return {
@@ -411,10 +418,10 @@ const ReportsTab = ({ schedule }) => {
           <VStack spacing={3} py={8}>
             <FiFileText size={48} opacity={0.3} />
             <Text fontSize="lg" fontWeight="medium" color="gray.500">
-              No findings to display
+              No non-conformity items to display
             </Text>
             <Text fontSize="sm" color="gray.400">
-              Add organizations and findings to see them here
+              Only Major NC and Minor NC findings that need resolutions are shown here
             </Text>
           </VStack>
         </CardBody>
@@ -425,13 +432,13 @@ const ReportsTab = ({ schedule }) => {
   return (
     <VStack align="stretch" spacing={6}>
       <Flex justify="space-between" align="center">
-        <Heading size="md">All Reports</Heading>
+        <Heading size="md">Non-Conformity Items</Heading>
         <Text fontSize="xs" color="gray.500">
           {organizationsWithFindings.reduce(
             (acc, item) => acc + item.findings.length,
             0,
           )}{" "}
-          Total Findings
+          NC Items Requiring Resolution
         </Text>
       </Flex>
 
