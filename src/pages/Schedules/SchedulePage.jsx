@@ -210,11 +210,16 @@ const SchedulePageContent = () => {
 
     try {
       // Normalize the data before submitting
+      const { standard, ...rest } = formData || {};
+
       const submitData = {
-        ...formData,
-        // Convert standard object to string if it's an object
-        standard: formData.standard?.standard || formData.standard || "",
-        // previousAudit is already in the right format (object with _id, title, auditCode)
+        ...rest,
+        ...(standard && {
+          standard: {
+            standard: standard.standard,
+            id: standard._id ?? standard.id,
+          },
+        }),
       };
 
       if (isNewSchedule) {
@@ -912,7 +917,7 @@ const SchedulePageContent = () => {
       title: formData.title,
       description: formData.description,
       auditType: formData.auditType,
-      standard: formData.standard?.standard || formData.standard || "",
+      standard: formData.standard || {},
       status: formData.status,
       ...overrides,
     };
@@ -973,9 +978,16 @@ const SchedulePageContent = () => {
 
   const handleSaveAuditDetails = async (detailsData) => {
     try {
+      const { standard } = detailsData || {};
+
       const updatePayload = buildUpdatePayload({
         auditType: detailsData.auditType,
-        standard: detailsData.standard?.standard || detailsData.standard || "",
+        ...(standard && {
+          standard: {
+            standard: standard.standard,
+            id: standard._id ?? standard.id,
+          },
+        }),
         previousAudit: detailsData.previousAudit,
       });
       const updatedSchedule = await updateSchedule(id, updatePayload);
