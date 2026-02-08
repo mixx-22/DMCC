@@ -107,6 +107,7 @@ const OrganizationCard = ({
   isExpanded = false,
   onToggleExpanded = () => {},
   schedule = {},
+  standardClausesFromParent = null,
 }) => {
   const { deleteOrganization, updateOrganization, dispatch } =
     useOrganizations();
@@ -170,7 +171,15 @@ const OrganizationCard = ({
   ]);
 
   // Fetch standard clauses when component mounts or when standard changes
+  // Use clauses from parent if available, otherwise fetch
   useEffect(() => {
+    // If parent has provided clauses (even if empty array), use them directly
+    // This prevents duplicate fetches when parent has already fetched
+    if (standardClausesFromParent !== null) {
+      setStandardClauses(standardClausesFromParent);
+      return;
+    }
+
     const fetchStandardClauses = async () => {
       // Get standard ID or object from schedule
       const standard = schedule?.standard;
@@ -412,7 +421,7 @@ const OrganizationCard = ({
     };
 
     fetchStandardClauses();
-  }, [schedule?.standard, loadingClauses]);
+  }, [schedule?.standard, standardClausesFromParent]);
 
   const handleDeleteOrganization = async (organization) => {
     const result = await Swal.fire({
