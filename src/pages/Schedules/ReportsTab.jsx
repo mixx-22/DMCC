@@ -23,6 +23,7 @@ import {
   WrapItem,
   Tooltip,
   Divider,
+  SimpleGrid,
 } from "@chakra-ui/react";
 import { useMemo } from "react";
 import { FiFileText, FiTool, FiCheckCircle } from "react-icons/fi";
@@ -95,7 +96,10 @@ const ReportCard = ({ finding, organization, onSave, isScheduleOngoing }) => {
 
     if (onSave) {
       // Pass finding with temporary routing properties for handleSaveFinding
-      await onSave({ ...updatedFinding, visitIndex, organizationId }, organization);
+      await onSave(
+        { ...updatedFinding, visitIndex, organizationId },
+        organization,
+      );
     }
     onActionPlanClose();
   };
@@ -117,7 +121,10 @@ const ReportCard = ({ finding, organization, onSave, isScheduleOngoing }) => {
 
     if (onSave) {
       // Pass finding with temporary routing properties for handleSaveFinding
-      await onSave({ ...updatedFinding, visitIndex, organizationId }, organization);
+      await onSave(
+        { ...updatedFinding, visitIndex, organizationId },
+        organization,
+      );
     }
     onVerificationClose();
   };
@@ -171,9 +178,9 @@ const ReportCard = ({ finding, organization, onSave, isScheduleOngoing }) => {
                       ))}
                       <WrapItem>
                         <Text as="span" fontSize="xs" color="gray.500" mt={1}>
-                          {moment(
-                            finding.objectives[0]?.teamUpdatedAt,
-                          ).format("MMM DD, YYYY")}
+                          {moment(finding.objectives[0]?.teamUpdatedAt).format(
+                            "MMM DD, YYYY",
+                          )}
                         </Text>
                       </WrapItem>
                     </Wrap>
@@ -217,31 +224,29 @@ const ReportCard = ({ finding, organization, onSave, isScheduleOngoing }) => {
                       Report
                     </Text>
                   </HStack>
-                  <HStack>
-                    {/* Report Number */}
-                    {finding.report.reportNo && (
-                      <HStack flex={1} spacing={2}>
-                        <Text fontSize="xs" color={labelColor} minW="80px">
-                          Report No:
-                        </Text>
-                        <Text fontSize="sm" fontWeight="medium">
-                          {finding.report.reportNo}
-                        </Text>
-                      </HStack>
-                    )}
+                  {/* Report Number */}
+                  {finding.report.reportNo && (
+                    <HStack flex={1} spacing={2}>
+                      <Text fontSize="xs" color={labelColor} minW="80px">
+                        Report No:
+                      </Text>
+                      <Text fontSize="sm" fontWeight="medium">
+                        {finding.report.reportNo}
+                      </Text>
+                    </HStack>
+                  )}
 
-                    {/* Date Issued */}
-                    {finding.report.date && (
-                      <HStack flex={1} spacing={2}>
-                        <Text fontSize="xs" color={labelColor} minW="80px">
-                          Date Issued:
-                        </Text>
-                        <Text fontSize="sm">
-                          {moment(finding.report.date).format(DATE_FORMAT_LONG)}
-                        </Text>
-                      </HStack>
-                    )}
-                  </HStack>
+                  {/* Date Issued */}
+                  {finding.report.date && (
+                    <HStack flex={1} spacing={2}>
+                      <Text fontSize="xs" color={labelColor} minW="80px">
+                        Date Issued:
+                      </Text>
+                      <Text fontSize="sm">
+                        {moment(finding.report.date).format(DATE_FORMAT_LONG)}
+                      </Text>
+                    </HStack>
+                  )}
 
                   {/* Report Details */}
                   {finding.report.details && (
@@ -338,6 +343,7 @@ const ReportCard = ({ finding, organization, onSave, isScheduleOngoing }) => {
 const ReportsTab = ({ schedule }) => {
   const { loading, organizations, updateOrganization } = useOrganizations();
   const isScheduleOngoing = useMemo(() => schedule?.status === 0, [schedule]);
+  const organizationColor = useColorModeValue("purple.600", "purple.200");
 
   // Collect all findings grouped by organization
   const organizationsWithFindings = useMemo(() => {
@@ -369,7 +375,9 @@ const ReportsTab = ({ schedule }) => {
 
     // Remove temporary routing properties before persisting
     // eslint-disable-next-line no-unused-vars
-    const { visitIndex: _visitIndex, organizationId: _organizationId, ...cleanFinding } = updatedFinding;
+    const cleanFinding = { ...updatedFinding };
+    delete cleanFinding.visitIndex;
+    delete cleanFinding.organizationId;
 
     // Calculate updated visits with the edited finding
     const updatedVisits = organization.visits.map((v, i) => {
@@ -433,8 +441,10 @@ const ReportsTab = ({ schedule }) => {
         <Box key={organization._id}>
           {/* Organization Header */}
           <HStack mb={3} spacing={3}>
-            <Heading size="sm" color="brandPrimary.500">
-              {organization.team?.name || organization.teamName || "Unknown Team"}
+            <Heading size="sm" color={organizationColor}>
+              {organization.team?.name ||
+                organization.teamName ||
+                "Unknown Team"}
             </Heading>
             <Spacer />
             <Badge colorScheme="gray" fontSize="xs">
@@ -443,7 +453,7 @@ const ReportsTab = ({ schedule }) => {
           </HStack>
 
           {/* Findings List */}
-          <VStack align="stretch" spacing={3} mb={6}>
+          <SimpleGrid columns={[1, 1, 2]} spacing={3} mb={6}>
             {findings.map((finding) => (
               <ReportCard
                 key={finding._id}
@@ -453,7 +463,7 @@ const ReportsTab = ({ schedule }) => {
                 isScheduleOngoing={isScheduleOngoing}
               />
             ))}
-          </VStack>
+          </SimpleGrid>
 
           <Divider />
         </Box>

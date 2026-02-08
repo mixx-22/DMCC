@@ -39,11 +39,6 @@ import {
   EditablePreview,
   useDisclosure,
   InputGroup,
-  Tabs,
-  TabList,
-  Tab,
-  TabPanels,
-  TabPanel,
 } from "@chakra-ui/react";
 import {
   FiArrowLeft,
@@ -80,6 +75,12 @@ import Organizations from "./Organizations";
 import ReportsTab from "./ReportsTab";
 import PreviousAuditAsyncSelect from "../../components/PreviousAuditAsyncSelect";
 import StandardsAsyncSelect from "../../components/StandardsAsyncSelect";
+import ResponsiveTabs, {
+  ResponsiveTab,
+  ResponsiveTabList,
+  ResponsiveTabPanel,
+  ResponsiveTabPanels,
+} from "../../components/common/ResponsiveTabs";
 
 // Inner component that uses organizations context
 const SchedulePageContent = () => {
@@ -121,6 +122,11 @@ const SchedulePageContent = () => {
     onOpen: onCloseAuditOpen,
     onClose: onCloseAuditClose,
   } = useDisclosure();
+
+  const [tabIndex, setTabIndex] = useState(0);
+  const handleTabsChange = (index) => {
+    setTabIndex(index);
+  };
 
   const [isClosingAudit, setIsClosingAudit] = useState(false);
 
@@ -1279,7 +1285,9 @@ const SchedulePageContent = () => {
                           Standard:
                         </Text>
                         <Text>
-                          {formData.standard?.standard || formData.standard || "-"}
+                          {formData.standard?.standard ||
+                            formData.standard ||
+                            "-"}
                         </Text>
                       </HStack>
                       <HStack>
@@ -1598,21 +1606,29 @@ const SchedulePageContent = () => {
 
           {/* Right Column - Organizations and Reports */}
           <Stack spacing={4} flex={1}>
-            <Tabs colorScheme="brandPrimary" isLazy>
-              <TabList>
-                <Tab>Organizations</Tab>
-                <Tab>Reports</Tab>
-              </TabList>
+            <ResponsiveTabs
+              isLazy
+              index={tabIndex}
+              colorScheme="purple"
+              onChange={handleTabsChange}
+            >
+              <ResponsiveTabList>
+                <ResponsiveTab>Organizations</ResponsiveTab>
+                <ResponsiveTab>Reports</ResponsiveTab>
+              </ResponsiveTabList>
 
-              <TabPanels>
-                <TabPanel px={0} py={4}>
-                  <Organizations schedule={schedule ?? {}} {...{ setFormData }} />
-                </TabPanel>
-                <TabPanel px={0} py={4}>
+              <ResponsiveTabPanels>
+                <ResponsiveTabPanel px={0} py={4}>
+                  <Organizations
+                    schedule={schedule ?? {}}
+                    {...{ setFormData }}
+                  />
+                </ResponsiveTabPanel>
+                <ResponsiveTabPanel px={0} py={4}>
                   <ReportsTab schedule={schedule ?? {}} />
-                </TabPanel>
-              </TabPanels>
-            </Tabs>
+                </ResponsiveTabPanel>
+              </ResponsiveTabPanels>
+            </ResponsiveTabs>
           </Stack>
         </Flex>
       </Box>
