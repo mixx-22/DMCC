@@ -309,6 +309,8 @@ const ReportCard = ({ finding, organization, onSave, isScheduleOngoing }) => {
               mode={finding.actionPlan ? "edit" : "add"}
               onSave={handleSaveActionPlan}
               onCancel={onActionPlanClose}
+              team={organization.team}
+              organizationAuditors={organization.auditors || []}
             />
           </ModalBody>
         </ModalContent>

@@ -6,6 +6,31 @@ import { OrganizationsContext } from "./_contexts";
 const ORGANIZATIONS_ENDPOINT = "/organizations";
 const USE_API = import.meta.env.VITE_USE_API !== "false";
 
+// Helper function to merge organization updates while preserving populated fields
+// This ensures we don't lose populated data like team.leadersData when receiving
+// partial updates from the API (where team/auditors are just IDs)
+function mergeOrganizationUpdate(existingOrg, update) {
+  const merged = { ...existingOrg, ...update };
+  
+  // If team in update is just an ID string, keep the existing populated team object
+  if (update.team && typeof update.team === 'string' && existingOrg.team && typeof existingOrg.team === 'object') {
+    merged.team = existingOrg.team;
+  }
+  
+  // If auditors in update is array of ID strings, keep the existing populated auditors array
+  if (update.auditors && Array.isArray(update.auditors) && existingOrg.auditors && Array.isArray(existingOrg.auditors)) {
+    const updateHasObjects = update.auditors.some(a => typeof a === 'object' && a !== null);
+    const existingHasObjects = existingOrg.auditors.some(a => typeof a === 'object' && a !== null);
+    
+    // Keep existing if it has objects and update only has strings
+    if (existingHasObjects && !updateHasObjects) {
+      merged.auditors = existingOrg.auditors;
+    }
+  }
+  
+  return merged;
+}
+
 // Mock data for development
 const MOCK_ORGANIZATIONS = [
   {
@@ -213,11 +238,13 @@ function organizationsReducer(state, action) {
         ...state,
         loading: false,
         organizations: state.organizations.map((org) =>
-          org._id === action.payload._id ? action.payload : org,
+          org._id === action.payload._id 
+            ? mergeOrganizationUpdate(org, action.payload)
+            : org,
         ),
         currentOrganization:
           state.currentOrganization?._id === action.payload._id
-            ? action.payload
+            ? mergeOrganizationUpdate(state.currentOrganization, action.payload)
             : state.currentOrganization,
       };
     case "DELETE_ORGANIZATION":
@@ -378,9 +405,18 @@ export const OrganizationsProvider = ({ children, scheduleId }) => {
       try {
         const updated = {
           ...organizationData,
-          team: organizationData.team._id ?? organizationData.team.id,
-          auditors: organizationData.auditors.map((a) => a._id ?? a.id),
         };
+        
+        // Only process team if it's provided in the update
+        if (organizationData.team) {
+          updated.team = organizationData.team._id ?? organizationData.team.id;
+        }
+        
+        // Only process auditors if they're provided in the update
+        if (organizationData.auditors) {
+          updated.auditors = organizationData.auditors.map((a) => a._id ?? a.id);
+        }
+        
         const response = await apiService.request(
           `${ORGANIZATIONS_ENDPOINT}/${organizationId}`,
           {
@@ -389,13 +425,14 @@ export const OrganizationsProvider = ({ children, scheduleId }) => {
           },
         );
 
-        if (response.success && (organizationData._id || organizationData.id)) {
-          dispatch({ type: "UPDATE_ORGANIZATION", payload: organizationData });
+        if (response.success && response.organization) {
+          // Use the organization data from the response
+          dispatch({ type: "UPDATE_ORGANIZATION", payload: response.organization });
           toast.success("Organization Updated", {
             description: "Organization has been successfully updated",
             duration: 2000,
           });
-          return organizationData;
+          return response.organization;
         } else {
           console.error("Invalid response format:", response);
           const error = new Error("Failed to update organization");
