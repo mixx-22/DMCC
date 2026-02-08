@@ -32,6 +32,7 @@ import { useOrganizations } from "../../context/_useContext";
 import ActionPlanForm from "./Organizations/ActionPlanForm";
 import VerificationForm from "./Organizations/VerificationForm";
 import NotifBadge from "../../components/NotifBadge";
+import Can from "../../components/Can";
 
 // Constants
 const DATE_FORMAT_LONG = "MMMM DD, YYYY";
@@ -264,33 +265,37 @@ const ReportCard = ({ finding, organization, onSave, isScheduleOngoing }) => {
             )}
 
             {/* Action Buttons */}
-            {shouldShowActionPlan && isScheduleOngoing && (
-              <HStack spacing={2}>
-                <Spacer />
-                <Button
-                  size="sm"
-                  colorScheme="purple"
-                  leftIcon={<FiTool />}
-                  onClick={onActionPlanOpen}
-                  variant={needsActionPlan ? "solid" : "outline"}
-                >
-                  {finding.actionPlan ? "Edit Action Plan" : "Add Action Plan"}
-                </Button>
-                {finding.actionPlan && (
+            <Can to="audit.response.u">
+              {shouldShowActionPlan && isScheduleOngoing && (
+                <HStack spacing={2}>
+                  <Spacer />
                   <Button
-                    leftIcon={<FiCheckCircle />}
                     size="sm"
-                    colorScheme="green"
-                    variant={needsVerification ? "solid" : "outline"}
-                    onClick={onVerificationOpen}
+                    colorScheme="purple"
+                    leftIcon={<FiTool />}
+                    onClick={onActionPlanOpen}
+                    variant={needsActionPlan ? "solid" : "outline"}
                   >
-                    {finding.corrected === -1
-                      ? "Set Verification"
-                      : "Edit Verification"}
+                    {finding.actionPlan
+                      ? "Edit Action Plan"
+                      : "Add Action Plan"}
                   </Button>
-                )}
-              </HStack>
-            )}
+                  {finding.actionPlan && (
+                    <Button
+                      leftIcon={<FiCheckCircle />}
+                      size="sm"
+                      colorScheme="green"
+                      variant={needsVerification ? "solid" : "outline"}
+                      onClick={onVerificationOpen}
+                    >
+                      {finding.corrected === -1
+                        ? "Set Verification"
+                        : "Edit Verification"}
+                    </Button>
+                  )}
+                </HStack>
+              )}
+            </Can>
           </VStack>
         </CardBody>
       </Card>

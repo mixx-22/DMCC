@@ -582,25 +582,45 @@ const FindingCard = ({
                         </Box>
                       ) : (
                         <Center w="full" flexDir="column" minH="xs">
-                          <Text
-                            mb={2}
-                            fontSize="xs"
-                            color="gray.500"
-                            textAlign="center"
+                          {" "}
+                          <Can
+                            to="audit.response.c"
+                            fallback={
+                              <>
+                                <Text
+                                  mb={2}
+                                  fontSize="xs"
+                                  color="gray.500"
+                                  textAlign="center"
+                                >
+                                  No Action Plan Set Yet.
+                                  <br />
+                                  Wait for the team leader to add one.
+                                </Text>
+                              </>
+                            }
                           >
-                            No Action Plan Set Yet.
-                            <br />
-                            Add one now by clicking the button below.
-                          </Text>
-                          <Button
-                            size="sm"
-                            leftIcon={<FiPlus />}
-                            colorScheme="brandPrimary"
-                            variant="outline"
-                            onClick={() => setIsEditingActionPlan(true)}
-                          >
-                            Add Action Plan
-                          </Button>
+                            <Text
+                              mb={2}
+                              fontSize="xs"
+                              color="gray.500"
+                              textAlign="center"
+                            >
+                              No Action Plan Set Yet.
+                              <br />
+                              Add one now by clicking the button below.
+                            </Text>
+
+                            <Button
+                              size="sm"
+                              leftIcon={<FiPlus />}
+                              colorScheme="brandPrimary"
+                              variant="outline"
+                              onClick={() => setIsEditingActionPlan(true)}
+                            >
+                              Add Action Plan
+                            </Button>
+                          </Can>
                         </Center>
                       )}
                     </ResponsiveTabPanel>
