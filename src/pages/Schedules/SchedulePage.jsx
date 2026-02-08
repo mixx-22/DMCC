@@ -445,7 +445,7 @@ const SchedulePageContent = () => {
             </div>
             <div class="info-row">
               <span class="info-label">Standard :</span>
-              <span class="info-value">${schedule?.standard || formData?.standard || "-"}</span>
+              <span class="info-value">${schedule?.standard?.standard || formData?.standard?.standard || schedule?.standard || formData?.standard || "-"}</span>
             </div>
             <div class="info-row">
               <span class="info-label">Status :</span>
@@ -801,7 +801,7 @@ const SchedulePageContent = () => {
           <div class="footer-info">
             Audit Code: ${schedule?.auditCode || formData?.auditCode || "-"} | 
             Type: ${schedule?.auditType ? getAuditTypeLabel(schedule.auditType) : formData?.auditType ? getAuditTypeLabel(formData.auditType) : "-"} | 
-            Standard: ${schedule?.standard || formData?.standard || "-"}
+            Standard: ${schedule?.standard?.standard || formData?.standard?.standard || schedule?.standard || formData?.standard || "-"}
           </div>
 
           <div class="footer-bar"></div>

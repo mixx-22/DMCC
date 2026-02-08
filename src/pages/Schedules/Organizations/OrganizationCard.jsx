@@ -881,7 +881,7 @@ const OrganizationCard = ({
               <th>Scope of Audit</th>
             </tr>
             <tr>
-              <td style="height: 60px;">${schedule?.standard || ""}</td>
+              <td style="height: 60px;">${schedule?.standard?.standard || schedule?.standard || ""}</td>
               <td>${schedule?.scope || team?.description || ""}</td>
             </tr>
           </table>
