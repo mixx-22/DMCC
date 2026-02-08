@@ -5,11 +5,6 @@ import {
   Center,
   Stack,
   Text,
-  Tabs,
-  TabList,
-  TabPanels,
-  Tab,
-  TabPanel,
   Flex,
   Button,
   Hide,
@@ -25,6 +20,12 @@ import QualityDocumentUploadModal from "../components/Document/modals/QualityDoc
 import { ListView } from "../components/Document/ListView";
 import Pagination from "../components/Pagination";
 import apiService from "../services/api";
+import ResponsiveTabs, {
+  ResponsiveTabList,
+  ResponsiveTab,
+  ResponsiveTabPanels,
+  ResponsiveTabPanel,
+} from "../components/common/ResponsiveTabs";
 
 const ITEMS_PER_PAGE = 10;
 
@@ -214,19 +215,19 @@ const QualityDocuments = () => {
         </Flex>
       </PageFooter>
 
-      <Tabs
+      <ResponsiveTabs
         index={activeTab}
         onChange={handleTabChange}
-        colorScheme="brandPrimary"
+        colorScheme="error"
       >
-        <TabList>
-          <Tab>All Quality Documents</Tab>
-          <Tab>Obsolete Documents</Tab>
-        </TabList>
+        <ResponsiveTabList>
+          <ResponsiveTab>All Quality Documents</ResponsiveTab>
+          <ResponsiveTab>Obsolete Documents</ResponsiveTab>
+        </ResponsiveTabList>
 
-        <TabPanels>
+        <ResponsiveTabPanels>
           {/* All Quality Documents Tab */}
-          <TabPanel px={0}>
+          <ResponsiveTabPanel px={0}>
             <Stack spacing={{ base: 4, lg: 6 }}>
               {loading ? (
                 <Center py={12}>
@@ -261,10 +262,10 @@ const QualityDocuments = () => {
                 </>
               )}
             </Stack>
-          </TabPanel>
+          </ResponsiveTabPanel>
 
           {/* Obsolete Documents Tab */}
-          <TabPanel px={0}>
+          <ResponsiveTabPanel px={0}>
             <Stack spacing={{ base: 4, lg: 6 }}>
               {loading ? (
                 <Center py={12}>
@@ -299,9 +300,9 @@ const QualityDocuments = () => {
                 </>
               )}
             </Stack>
-          </TabPanel>
-        </TabPanels>
-      </Tabs>
+          </ResponsiveTabPanel>
+        </ResponsiveTabPanels>
+      </ResponsiveTabs>
 
       <QualityDocumentUploadModal
         isOpen={isQualityDocumentModalOpen}
