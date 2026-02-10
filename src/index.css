@@ -18,4 +18,67 @@ body {
   height: 100vh;
 }
 
+/* Tour Guide Custom Styling */
+.tg-dialog {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+  border-radius: 8px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+}
+
+.tg-dialog-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #2D3748;
+}
+
+.tg-dialog-body {
+  font-size: 0.95rem;
+  line-height: 1.6;
+  color: #4A5568;
+}
+
+.tg-dialog-footer {
+  padding-top: 1rem;
+}
+
+.tg-dialog-btn {
+  padding: 0.5rem 1rem;
+  font-size: 0.9rem;
+  border-radius: 6px;
+  font-weight: 500;
+  transition: all 0.2s;
+}
+
+.tg-dialog-btn-primary {
+  background: #3182CE;
+  color: white;
+}
+
+.tg-dialog-btn-primary:hover {
+  background: #2C5282;
+}
+
+.tg-dialog-btn-secondary {
+  background: #E2E8F0;
+  color: #2D3748;
+}
+
+.tg-dialog-btn-secondary:hover {
+  background: #CBD5E0;
+}
+
+.tg-backdrop {
+  background-color: rgba(0, 0, 0, 0.5);
+}
+
+/* Tour progress dots */
+.tg-step-dot {
+  background-color: #CBD5E0;
+}
+
+.tg-step-dot-active {
+  background-color: #3182CE;
+}
 
