@@ -281,17 +281,19 @@ const ReportCard = ({ finding, organization, onSave, isScheduleOngoing }) => {
                       : "Add Action Plan"}
                   </Button>
                   {finding.actionPlan && (
-                    <Button
-                      leftIcon={<FiCheckCircle />}
-                      size="sm"
-                      colorScheme="green"
-                      variant={needsVerification ? "solid" : "outline"}
-                      onClick={onVerificationOpen}
-                    >
-                      {finding.corrected === -1
-                        ? "Set Verification"
-                        : "Edit Verification"}
-                    </Button>
+                    <Can to="audit.verify.u">
+                      <Button
+                        leftIcon={<FiCheckCircle />}
+                        size="sm"
+                        colorScheme="green"
+                        variant={needsVerification ? "solid" : "outline"}
+                        onClick={onVerificationOpen}
+                      >
+                        {finding.corrected === -1
+                          ? "Set Verification"
+                          : "Edit Verification"}
+                      </Button>
+                    </Can>
                   )}
                 </HStack>
               )}

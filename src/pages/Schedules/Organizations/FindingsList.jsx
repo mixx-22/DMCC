@@ -693,29 +693,48 @@ const FindingCard = ({
                         </Box>
                       ) : (
                         <Center w="full" flexDir="column" minH="xs">
-                          <Text
-                            mb={2}
-                            fontSize="xs"
-                            color="gray.500"
-                            textAlign="center"
+                          {" "}
+                          <Can
+                            to="audit.findings.c"
+                            fallback={
+                              <>
+                                <Text
+                                  mb={2}
+                                  fontSize="xs"
+                                  color="gray.500"
+                                  textAlign="center"
+                                >
+                                  No Verification Set Yet.
+                                  <br />
+                                  Wait for the auditors verification.
+                                </Text>
+                              </>
+                            }
                           >
-                            No Verification Yet.
-                            <br />
-                            Verify this finding now by clicking the button
-                            below.
-                            <br />
-                            This action is irreversible to its pending status
-                            once saved
-                          </Text>
-                          <Button
-                            size="sm"
-                            leftIcon={<FiPlus />}
-                            colorScheme="green"
-                            variant="outline"
-                            onClick={() => setIsEditingVerification(true)}
-                          >
-                            Set Verification
-                          </Button>
+                            <Text
+                              mb={2}
+                              fontSize="xs"
+                              color="gray.500"
+                              textAlign="center"
+                            >
+                              No Verification Yet.
+                              <br />
+                              Verify this finding now by clicking the button
+                              below.
+                              <br />
+                              This action is irreversible to its pending status
+                              once saved
+                            </Text>
+                            <Button
+                              size="sm"
+                              leftIcon={<FiPlus />}
+                              colorScheme="green"
+                              variant="outline"
+                              onClick={() => setIsEditingVerification(true)}
+                            >
+                              Set Verification
+                            </Button>
+                          </Can>
                         </Center>
                       )}
                     </ResponsiveTabPanel>
