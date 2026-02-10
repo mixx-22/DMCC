@@ -432,7 +432,7 @@ export const apiService = {
     }
 
     const response = await this.request(
-      `/request/${documentId}?type=checkout`,
+      `/request/${documentId}?type=checked-out`,
       {
         method: "PUT",
         body: JSON.stringify({

@@ -62,8 +62,7 @@ export const ListView = ({
 
   const renderTableRow = (doc) => {
     const docId = doc?.id || doc?._id;
-    const isFolderType =
-      doc?.type === "folder" || doc?.type === "auditSchedule";
+    const isFolderType = doc?.type === "folder";
     const isValid = isDocumentValid(doc);
     const isSelected = selectedDocument?.id === docId;
 

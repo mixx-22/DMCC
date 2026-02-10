@@ -1257,16 +1257,14 @@ const DocumentDetail = () => {
             <MenuList>
               <MenuItem icon={<FiMove />} onClick={onMoveOpen}>
                 Move{" "}
-                {document?.type === "auditSchedule"
-                  ? "Audit Schedule"
-                  : document?.type === "formTemplate"
-                    ? "Form Template"
-                    : document?.type === "formResponse"
-                      ? "Form Response"
-                      : document?.type
-                        ? document?.type.charAt(0).toUpperCase() +
-                          document?.type.slice(1)
-                        : "Unknown"}
+                {document?.type === "formTemplate"
+                  ? "Form Template"
+                  : document?.type === "formResponse"
+                    ? "Form Response"
+                    : document?.type
+                      ? document?.type.charAt(0).toUpperCase() +
+                        document?.type.slice(1)
+                      : "Unknown"}
               </MenuItem>
               <Divider />
               {isDeleteAllowed && (
@@ -1276,16 +1274,14 @@ const DocumentDetail = () => {
                   color={errorColor}
                 >
                   Delete{" "}
-                  {document?.type === "auditSchedule"
-                    ? "Audit Schedule"
-                    : document?.type === "formTemplate"
-                      ? "Form Template"
-                      : document?.type === "formResponse"
-                        ? "Form Response"
-                        : document?.type
-                          ? document?.type.charAt(0).toUpperCase() +
-                            document?.type.slice(1)
-                          : "Unknown"}
+                  {document?.type === "formTemplate"
+                    ? "Form Template"
+                    : document?.type === "formResponse"
+                      ? "Form Response"
+                      : document?.type
+                        ? document?.type.charAt(0).toUpperCase() +
+                          document?.type.slice(1)
+                        : "Unknown"}
                 </MenuItem>
               )}
             </MenuList>

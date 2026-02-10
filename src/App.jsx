@@ -19,6 +19,10 @@ import Teams from "./pages/Teams";
 import TeamPage from "./pages/Teams/TeamPage";
 import { TeamsProvider } from "./context/TeamsContext";
 import { TeamProfileProvider } from "./context/TeamProfileContext";
+import Schedules from "./pages/Schedules";
+import SchedulePage from "./pages/Schedules/SchedulePage";
+import { SchedulesProvider } from "./context/SchedulesContext";
+import { ScheduleProfileProvider } from "./context/ScheduleProfileContext";
 import Archive from "./pages/Archive";
 import Roles from "./pages/Roles";
 import RolePage from "./pages/Roles/RolePage";
@@ -38,6 +42,9 @@ import FormTemplateBuilder from "./pages/FormTemplateBuilder";
 import FormResponse from "./pages/Document/FormResponse";
 import QualityDocuments from "./pages/QualityDocuments";
 import Request from "./pages/Request/Request";
+import ResponsiveTabsDemo from "./pages/ResponsiveTabsDemo";
+import OrganizationTabsDemo from "./pages/OrganizationTabsDemo";
+import AuditKpiDashboard from "./pages/AuditKpiDashboard";
 
 const ProtectedRoute = ({ children }) => {
   const { currentUser } = useApp();
@@ -68,6 +75,14 @@ function App() {
             }
           />
           <Route
+            path="/demo/responsive-tabs"
+            element={<ResponsiveTabsDemo />}
+          />
+          <Route
+            path="/demo/organization-tabs"
+            element={<OrganizationTabsDemo />}
+          />
+          <Route
             path="/*"
             element={
               <ProtectedRoute>
@@ -81,6 +96,18 @@ function App() {
                     <Route path="/menu" element={<Menu />} />
                     <Route path="/notifications" element={<Notifications />} />
                     <Route path="/profile" element={<Profile />} />
+                    <Route
+                      path="/schedules/:auditScheduleId/kpis"
+                      element={<AuditKpiDashboard />}
+                    />
+                    <Route
+                      path="/schedules/latest/kpis"
+                      element={<AuditKpiDashboard />}
+                    />
+                    <Route
+                      path="/schedules/latest/kpis"
+                      element={<AuditKpiDashboard />}
+                    />
                     <Route
                       path="/change-password"
                       element={<ChangePassword />}
@@ -149,6 +176,22 @@ function App() {
                         <TeamProfileProvider>
                           <TeamPage />
                         </TeamProfileProvider>
+                      }
+                    />
+                    <Route
+                      path="/audit-schedules"
+                      element={
+                        <SchedulesProvider>
+                          <Schedules />
+                        </SchedulesProvider>
+                      }
+                    />
+                    <Route
+                      path="/audit-schedule/:id"
+                      element={
+                        <ScheduleProfileProvider>
+                          <SchedulePage />
+                        </ScheduleProfileProvider>
                       }
                     />
                     <Route

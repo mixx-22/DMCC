@@ -9,7 +9,6 @@ import {
   ModalCloseButton,
   Button,
   VStack,
-  HStack,
   Text,
   Box,
   Icon,
@@ -32,6 +31,7 @@ import { FiUploadCloud, FiFile, FiX, FiEdit } from "react-icons/fi";
 import { toast } from "sonner";
 import { useDocuments, useUser } from "../../../context/_useContext";
 import apiService from "../../../services/api";
+import { SingleDatepicker } from "chakra-dayzed-datepicker";
 
 const FILE_TYPES_ENDPOINT = "/file-types";
 const TEAMS_ENDPOINT = import.meta.env.VITE_API_PACKAGE_TEAMS || "/teams";
@@ -45,7 +45,7 @@ const MOCK_FILE_TYPES = [
   { _id: "5", id: "5", name: "Procedure", isQualityDocument: true },
 ];
 
-const QualityDocumentUploadModal = ({ isOpen, onClose, parentId, path }) => {
+const QualityDocumentUploadModal = ({ isOpen, onClose, parentId, path, teamId }) => {
   const { createDocument } = useDocuments();
   const { user: currentUser } = useUser();
   const [files, setFiles] = useState([]);
@@ -57,21 +57,10 @@ const QualityDocumentUploadModal = ({ isOpen, onClose, parentId, path }) => {
   const [editingMetadata, setEditingMetadata] = useState(null);
   const [tempMetadata, setTempMetadata] = useState({
     documentNumber: "",
-    issuedDate: "",
-    effectivityDate: "",
+    issuedDate: new Date(),
+    effectivityDate: new Date(),
     team: null,
   });
-
-  // Fetch file types when modal opens
-  useEffect(() => {
-    if (isOpen) {
-      fetchFileTypes();
-      fetchTeams();
-    } else {
-      // Reset files when modal closes
-      setFiles([]);
-    }
-  }, [isOpen]);
 
   const fetchFileTypes = async () => {
     setLoadingFileTypes(true);
@@ -103,7 +92,7 @@ const QualityDocumentUploadModal = ({ isOpen, onClose, parentId, path }) => {
     }
   };
 
-  const fetchTeams = async () => {
+  const fetchTeams = useCallback(async () => {
     setLoadingTeams(true);
     try {
       if (!USE_API) {
@@ -144,7 +133,19 @@ const QualityDocumentUploadModal = ({ isOpen, onClose, parentId, path }) => {
     } finally {
       setLoadingTeams(false);
     }
-  };
+  }, [currentUser]);
+
+  // Fetch file types when modal opens
+  useEffect(() => {
+    if (isOpen) {
+      fetchFileTypes();
+      fetchTeams();
+    } else {
+      // Reset files when modal closes
+      setFiles([]);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isOpen]);
 
   const onDrop = useCallback((acceptedFiles) => {
     const newFiles = acceptedFiles.map((file) => ({
@@ -189,18 +190,12 @@ const QualityDocumentUploadModal = ({ isOpen, onClose, parentId, path }) => {
     );
   };
 
-  const handleMetadataChange = (fileId, field, value) => {
-    setFiles((prev) =>
-      prev.map((f) => (f.id === fileId ? { ...f, [field]: value } : f)),
-    );
-  };
-
   const handleOpenMetadataModal = (fileItem) => {
     setEditingMetadata(fileItem.id);
     setTempMetadata({
       documentNumber: fileItem.documentNumber || "",
-      issuedDate: fileItem.issuedDate || "",
-      effectivityDate: fileItem.effectivityDate || "",
+      issuedDate: fileItem.issuedDate || new Date(),
+      effectivityDate: fileItem.effectivityDate || new Date(),
       team: fileItem.team || null,
     });
   };
@@ -209,8 +204,8 @@ const QualityDocumentUploadModal = ({ isOpen, onClose, parentId, path }) => {
     setEditingMetadata(null);
     setTempMetadata({
       documentNumber: "",
-      issuedDate: "",
-      effectivityDate: "",
+      issuedDate: new Date(),
+      effectivityDate: new Date(),
       team: null,
     });
   };
@@ -330,6 +325,7 @@ const QualityDocumentUploadModal = ({ isOpen, onClose, parentId, path }) => {
             parentId,
             path,
             status: 0,
+            teamId,
             metadata: {
               file: fileItem.file,
               filename: fileItem.file.name,
@@ -800,26 +796,42 @@ const QualityDocumentUploadModal = ({ isOpen, onClose, parentId, path }) => {
               </FormControl>
               <FormControl>
                 <FormLabel>Issued Date</FormLabel>
-                <Input
-                  type="date"
-                  value={tempMetadata.issuedDate}
-                  onChange={(e) =>
+                <SingleDatepicker
+                  name="issuedDate"
+                  date={
+                    tempMetadata?.issuedDate
+                      ? new Date(tempMetadata.issuedDate)
+                      : new Date()
+                  }
+                  configs={{
+                    dateFormat: "MMMM dd, yyyy",
+                  }}
+                  propsConfigs={{ triggerBtnProps: { w: "full" } }}
+                  onDateChange={(date) =>
                     setTempMetadata({
                       ...tempMetadata,
-                      issuedDate: e.target.value,
+                      issuedDate: date,
                     })
                   }
                 />
               </FormControl>
               <FormControl>
                 <FormLabel>Effectivity Date</FormLabel>
-                <Input
-                  type="date"
-                  value={tempMetadata.effectivityDate}
-                  onChange={(e) =>
+                <SingleDatepicker
+                  name="effectivityDate"
+                  date={
+                    tempMetadata?.effectivityDate
+                      ? new Date(tempMetadata.effectivityDate)
+                      : new Date()
+                  }
+                  configs={{
+                    dateFormat: "MMMM dd, yyyy",
+                  }}
+                  propsConfigs={{ triggerBtnProps: { w: "full" } }}
+                  onDateChange={(date) =>
                     setTempMetadata({
                       ...tempMetadata,
-                      effectivityDate: e.target.value,
+                      effectivityDate: date,
                     })
                   }
                 />

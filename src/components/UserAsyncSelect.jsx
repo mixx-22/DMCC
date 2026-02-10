@@ -341,11 +341,17 @@ const UserAsyncSelect = ({
             formatOptionLabel={formatOptionLabel}
             isClearable
             cacheOptions
-            defaultOptions={false}
+            defaultOptions={[]}
             loadingMessage={() => "Loading users..."}
             colorScheme="brandPrimary"
             useBasicStyles
             menuPortalTarget={document.body}
+            styles={{
+              menuPortal: (provided) => ({
+                ...provided,
+                zIndex: 1500,
+              }),
+            }}
           />
         </Box>
         {!readonly && (
