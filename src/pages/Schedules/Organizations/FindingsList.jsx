@@ -692,8 +692,18 @@ const FindingCard = ({
                           />
                         </Box>
                       ) : (
-                        <Center w="full" flexDir="column" minH="xs">
-                          {" "}
+                        <Center
+                          w="full"
+                          flexDir="column"
+                          minH="xs"
+                          sx={{
+                            ">div": {
+                              display: "flex",
+                              flexDir: "column",
+                              alignItems: "center",
+                            },
+                          }}
+                        >
                           <Can
                             to="audit.findings.c"
                             fallback={
