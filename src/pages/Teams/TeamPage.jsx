@@ -211,11 +211,13 @@ const TeamPage = () => {
       text: "This action is irreversible and cannot be undone.",
       icon: "warning",
       showCancelButton: true,
-      confirmButtonColor: "#E53E3E",
-      cancelButtonColor: "#718096",
+      buttonsStyling: false,
       confirmButtonText: "Delete",
       cancelButtonText: "Cancel",
       reverseButtons: true,
+      customClass: {
+        popup: "danger",
+      },
     });
 
     if (result.isConfirmed) {

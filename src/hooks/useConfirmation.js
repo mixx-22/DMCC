@@ -30,10 +30,12 @@ export function useDeleteConfirmation({
         text: customOptions.text || text,
         icon: "warning",
         showCancelButton: true,
-        confirmButtonColor: "#d33",
-        cancelButtonColor: "#3085d6",
+        buttonsStyling: false,
         confirmButtonText: customOptions.confirmButtonText || confirmButtonText,
         cancelButtonText: customOptions.cancelButtonText || cancelButtonText,
+        customClass: {
+          popup: "warning",
+        },
         ...customOptions,
       });
 
@@ -68,8 +70,6 @@ export function useConfirmation() {
       icon = "question",
       confirmButtonText = "Confirm",
       cancelButtonText = "Cancel",
-      confirmButtonColor = "#3085d6",
-      cancelButtonColor = "#6c757d",
       ...rest
     } = options;
 
@@ -78,10 +78,12 @@ export function useConfirmation() {
       text,
       icon,
       showCancelButton: true,
-      confirmButtonColor,
-      cancelButtonColor,
+      buttonsStyling: false,
       confirmButtonText,
       cancelButtonText,
+      customClass: {
+        popup: "info",
+      },
       ...rest,
     });
 
@@ -102,6 +104,7 @@ export function useSuccessMessage() {
       icon: "success",
       title,
       text,
+      buttonsStyling: false,
       timer: 2000,
       timerProgressBar: true,
       showConfirmButton: false,
@@ -123,7 +126,11 @@ export function useErrorMessage() {
       icon: "error",
       title,
       text,
+      buttonsStyling: false,
       confirmButtonText: "OK",
+      customClass: {
+        popup: "danger",
+      },
       ...options,
     });
   }, []);

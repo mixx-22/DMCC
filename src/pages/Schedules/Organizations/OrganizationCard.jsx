@@ -173,10 +173,12 @@ const OrganizationCard = ({
       text: `Are you sure you want to remove this team from the audit schedule? This action cannot be undone.`,
       icon: "warning",
       showCancelButton: true,
-      confirmButtonColor: "#d33",
-      cancelButtonColor: "#3085d6",
+      buttonsStyling: false,
       confirmButtonText: "Yes, Delete Organization",
       cancelButtonText: "Cancel",
+      customClass: {
+        popup: "danger",
+      },
     });
 
     if (result.isConfirmed) {
@@ -196,10 +198,12 @@ const OrganizationCard = ({
       text: "Are you sure you want to delete this finding? Upon proceeding, this finding will no longer be recorded. This action is irreversible.",
       icon: "warning",
       showCancelButton: true,
-      confirmButtonColor: "#d33",
-      cancelButtonColor: "#3085d6",
+      buttonsStyling: false,
       confirmButtonText: "Yes, Delete Finding",
       cancelButtonText: "Cancel",
+      customClass: {
+        popup: "danger",
+      },
     });
     if (result.isConfirmed) {
       // Calculate updated visits without the deleted finding

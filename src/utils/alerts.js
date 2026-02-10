@@ -7,7 +7,7 @@ import Swal from "sweetalert2";
 
 // Base configuration for all alerts
 const baseConfig = {
-  buttonsStyling: true,
+  buttonsStyling: false,
   backdrop: true,
   allowOutsideClick: true,
   allowEscapeKey: true,
@@ -22,10 +22,11 @@ export const alertPresets = {
     text: "You won't be able to revert this!",
     icon: "warning",
     showCancelButton: true,
-    confirmButtonColor: "#d33",
-    cancelButtonColor: "#3085d6",
     confirmButtonText: "Yes, delete it!",
     cancelButtonText: "Cancel",
+    customClass: {
+      popup: "warning",
+    },
   },
 
   // Generic confirmation
@@ -34,10 +35,11 @@ export const alertPresets = {
     title: "Are you sure?",
     icon: "question",
     showCancelButton: true,
-    confirmButtonColor: "#3085d6",
-    cancelButtonColor: "#6c757d",
     confirmButtonText: "Confirm",
     cancelButtonText: "Cancel",
+    customClass: {
+      popup: "info",
+    },
   },
 
   // Success message
@@ -54,7 +56,9 @@ export const alertPresets = {
     ...baseConfig,
     icon: "error",
     confirmButtonText: "OK",
-    confirmButtonColor: "#d33",
+    customClass: {
+      popup: "danger",
+    },
   },
 
   // Warning message
@@ -62,7 +66,9 @@ export const alertPresets = {
     ...baseConfig,
     icon: "warning",
     confirmButtonText: "OK",
-    confirmButtonColor: "#f0ad4e",
+    customClass: {
+      popup: "warning",
+    },
   },
 
   // Info message
@@ -70,7 +76,9 @@ export const alertPresets = {
     ...baseConfig,
     icon: "info",
     confirmButtonText: "OK",
-    confirmButtonColor: "#5bc0de",
+    customClass: {
+      popup: "info",
+    },
   },
 
   // Loading/processing message

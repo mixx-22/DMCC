@@ -33,6 +33,32 @@ const tabBtn = defineStyle((props) => {
   };
 });
 
+const brandPrimary = defineStyle((props) => {
+  return {
+    color: mode("white", "white")(props),
+    bg: mode("brandPrimary.600", "brandPrimary.500")(props),
+    _hover: {
+      bg: mode("brandPrimary.700", "brandPrimary.600")(props),
+    },
+    _active: {
+      bg: mode("brandPrimary.800", "brandPrimary.700")(props),
+    },
+  };
+});
+
+const brandSecondary = defineStyle((props) => {
+  return {
+    color: mode("gray.800", "gray.800")(props),
+    bg: mode("brandSecondary.500", "brandSecondary.400")(props),
+    _hover: {
+      bg: mode("brandSecondary.600", "brandSecondary.500")(props),
+    },
+    _active: {
+      bg: mode("brandSecondary.700", "brandSecondary.600")(props),
+    },
+  };
+});
+
 export const buttonTheme = defineStyleConfig({
-  variants: { teamStats, tabBtn },
+  variants: { teamStats, tabBtn, brandPrimary, brandSecondary },
 });
