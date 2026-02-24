@@ -14,6 +14,7 @@ import { useOrganizations, useUser } from "../../../context/_useContext";
 import PropTypes from "prop-types";
 import OrganizationForm from "./OrganizationForm";
 import apiService from "../../../services/api";
+import Can from "../../../components/Can";
 
 const Organizations = ({ schedule = {}, setFormData = () => {} }) => {
   const { loading, organizations } = useOrganizations();
@@ -368,27 +369,29 @@ const Organizations = ({ schedule = {}, setFormData = () => {} }) => {
       )}
 
       {/* Show form or Add Organization button */}
-      {isScheduleOngoing && (
-        <>
-          {loading || !shouldShowForm ? (
-            <Button
-              leftIcon={<FiPlus />}
-              onClick={() => setShowOrgForm(true)}
-              colorScheme="brandPrimary"
-              variant="outline"
-              size="md"
-            >
-              Add Organization
-            </Button>
-          ) : (
-            <OrganizationForm
-              {...{ schedule, setFormData }}
-              onCancel={() => setShowOrgForm(false)}
-              onSuccess={() => setShowOrgForm(false)}
-            />
-          )}
-        </>
-      )}
+      <Can to="audit.organizations.c">
+        {isScheduleOngoing && (
+          <>
+            {loading || !shouldShowForm ? (
+              <Button
+                leftIcon={<FiPlus />}
+                onClick={() => setShowOrgForm(true)}
+                colorScheme="brandPrimary"
+                variant="outline"
+                size="md"
+              >
+                Add Organization
+              </Button>
+            ) : (
+              <OrganizationForm
+                {...{ schedule, setFormData }}
+                onCancel={() => setShowOrgForm(false)}
+                onSuccess={() => setShowOrgForm(false)}
+              />
+            )}
+          </>
+        )}
+      </Can>
     </VStack>
   );
 };

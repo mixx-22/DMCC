@@ -47,7 +47,10 @@ const Can = ({
   }
 
   if (allowed) {
-    return <motion.div {...motionValues}>{children}</motion.div>;
+    if (typeof children === "function") return children();
+
+    // Return children directly (no wrapper) so Chakra components keep their styling
+    return <>{children}</>;
   }
 
   if (fallbackText) {
