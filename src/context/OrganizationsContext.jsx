@@ -11,23 +11,37 @@ const USE_API = import.meta.env.VITE_USE_API !== "false";
 // partial updates from the API (where team/auditors are just IDs)
 function mergeOrganizationUpdate(existingOrg, update) {
   const merged = { ...existingOrg, ...update };
-  
+
   // If team in update is just an ID string, keep the existing populated team object
-  if (update.team && typeof update.team === 'string' && existingOrg.team && typeof existingOrg.team === 'object') {
+  if (
+    update.team &&
+    typeof update.team === "string" &&
+    existingOrg.team &&
+    typeof existingOrg.team === "object"
+  ) {
     merged.team = existingOrg.team;
   }
-  
+
   // If auditors in update is array of ID strings, keep the existing populated auditors array
-  if (update.auditors && Array.isArray(update.auditors) && existingOrg.auditors && Array.isArray(existingOrg.auditors)) {
-    const updateHasObjects = update.auditors.some(a => typeof a === 'object' && a !== null);
-    const existingHasObjects = existingOrg.auditors.some(a => typeof a === 'object' && a !== null);
-    
+  if (
+    update.auditors &&
+    Array.isArray(update.auditors) &&
+    existingOrg.auditors &&
+    Array.isArray(existingOrg.auditors)
+  ) {
+    const updateHasObjects = update.auditors.some(
+      (a) => typeof a === "object" && a !== null,
+    );
+    const existingHasObjects = existingOrg.auditors.some(
+      (a) => typeof a === "object" && a !== null,
+    );
+
     // Keep existing if it has objects and update only has strings
     if (existingHasObjects && !updateHasObjects) {
       merged.auditors = existingOrg.auditors;
     }
   }
-  
+
   return merged;
 }
 
@@ -238,7 +252,7 @@ function organizationsReducer(state, action) {
         ...state,
         loading: false,
         organizations: state.organizations.map((org) =>
-          org._id === action.payload._id 
+          org._id === action.payload._id
             ? mergeOrganizationUpdate(org, action.payload)
             : org,
         ),
@@ -355,12 +369,14 @@ export const OrganizationsProvider = ({ children, scheduleId }) => {
       });
 
       const { success = false, organization: data } = response;
-      if (success && data) {
+      // Handle different response formats
+      const orgData = data || (response._id ? response : null);
+      if (orgData) {
         toast.success("Organization Added", {
           description: "Organization has been successfully added",
           duration: 2000,
         });
-        return data;
+        return orgData;
       } else {
         const error = new Error("Failed to create organization");
         dispatch({ type: "ERROR", payload: error.message });
@@ -406,17 +422,19 @@ export const OrganizationsProvider = ({ children, scheduleId }) => {
         const updated = {
           ...organizationData,
         };
-        
+
         // Only process team if it's provided in the update
         if (organizationData.team) {
           updated.team = organizationData.team._id ?? organizationData.team.id;
         }
-        
+
         // Only process auditors if they're provided in the update
         if (organizationData.auditors) {
-          updated.auditors = organizationData.auditors.map((a) => a._id ?? a.id);
+          updated.auditors = organizationData.auditors.map(
+            (a) => a._id ?? a.id,
+          );
         }
-        
+
         const response = await apiService.request(
           `${ORGANIZATIONS_ENDPOINT}/${organizationId}`,
           {
@@ -427,7 +445,10 @@ export const OrganizationsProvider = ({ children, scheduleId }) => {
 
         if (response.success && response.organization) {
           // Use the organization data from the response
-          dispatch({ type: "UPDATE_ORGANIZATION", payload: response.organization });
+          dispatch({
+            type: "UPDATE_ORGANIZATION",
+            payload: response.organization,
+          });
           toast.success("Organization Updated", {
             description: "Organization has been successfully updated",
             duration: 2000,

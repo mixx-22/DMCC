@@ -65,6 +65,7 @@ import { validateAuditScheduleClosure } from "../../utils/helpers";
 import EditAuditDetailsModal from "./EditAuditDetailsModal";
 import CloseAuditModal from "./CloseAuditModal";
 import { OrganizationsProvider } from "../../context/OrganizationsContext";
+import { TeamsProvider } from "../../context/TeamsContext";
 import Timestamp from "../../components/Timestamp";
 import Organizations from "./Organizations";
 import ReportsTab from "./ReportsTab";
@@ -1706,10 +1707,12 @@ const SchedulePageContent = () => {
               <ResponsiveTabPanels>
                 {isOrganizationsAllowed && (
                   <ResponsiveTabPanel px={0} py={4}>
-                    <Organizations
-                      schedule={schedule ?? {}}
-                      {...{ setFormData }}
-                    />
+                    <TeamsProvider>
+                      <Organizations
+                        schedule={schedule ?? {}}
+                        {...{ setFormData }}
+                      />
+                    </TeamsProvider>
                   </ResponsiveTabPanel>
                 )}
                 {isReportsAllowed && (

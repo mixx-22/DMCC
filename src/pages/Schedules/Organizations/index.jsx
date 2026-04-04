@@ -10,7 +10,11 @@ import {
 import { useState, useCallback, useMemo, useEffect } from "react";
 import { FiPlus } from "react-icons/fi";
 import OrganizationCard from "./OrganizationCard";
-import { useOrganizations, useUser } from "../../../context/_useContext";
+import {
+  useOrganizations,
+  useUser,
+  useTeams,
+} from "../../../context/_useContext";
 import PropTypes from "prop-types";
 import OrganizationForm from "./OrganizationForm";
 import apiService from "../../../services/api";
@@ -19,6 +23,7 @@ import Can from "../../../components/Can";
 const Organizations = ({ schedule = {}, setFormData = () => {} }) => {
   const { loading, organizations } = useOrganizations();
   const { user } = useUser();
+  const { teams } = useTeams();
   const isScheduleOngoing = useMemo(() => schedule?.status === 0, [schedule]);
 
   // Track which organization cards are expanded (by ID)
@@ -44,6 +49,39 @@ const Organizations = ({ schedule = {}, setFormData = () => {} }) => {
       return newSet;
     });
   }, []);
+
+  const resolveTeam = (org) => {
+    if (!org) return { name: "Unknown Team" };
+
+    const teamSource = org.team || org.teamId || org.teamName;
+
+    if (teamSource && typeof teamSource === "object") {
+      return {
+        ...teamSource,
+        name:
+          teamSource.name ||
+          teamSource.teamName ||
+          teamSource.title ||
+          teamSource.label ||
+          "Unknown Team",
+      };
+    }
+
+    if (teamSource && typeof teamSource === "string") {
+      const teamFromList = teams?.find(
+        (t) =>
+          t._id === teamSource ||
+          t.id === teamSource ||
+          t.name === teamSource ||
+          t.teamName === teamSource,
+      );
+      if (teamFromList) return teamFromList;
+
+      return { name: org.teamName || org.team || org.teamId || teamSource };
+    }
+
+    return { name: org.teamName || "Unknown Team" };
+  };
 
   // Fetch standard clauses once for the schedule
   // Note: loadingClauses is intentionally NOT in the dependency array to avoid infinite loops
@@ -357,7 +395,7 @@ const Organizations = ({ schedule = {}, setFormData = () => {} }) => {
               key={org._id}
               loading={loading}
               organization={org}
-              team={org.team || { name: org.teamName || "Unknown Team" }}
+              team={resolveTeam(org)}
               auditors={org.auditors || []}
               isExpanded={expandedOrgIds.has(org._id)}
               onToggleExpanded={() => toggleExpanded(org._id)}

@@ -127,6 +127,7 @@ const OrganizationCard = ({
   const borderColor = useColorModeValue("gray.200", "gray.600");
   const hoverBg = useColorModeValue("gray.50", "gray.600");
   const headerHoverBg = useColorModeValue("gray.100", "gray.650");
+  const tabPanelBg = useColorModeValue("gray.100", "gray.800");
   const [tabColor, brandPrimaryColor, brandSecondaryColor] = useToken(
     "colors",
     ["gray.500", "brandPrimary.600", "brandSecondary.600"],
@@ -134,6 +135,24 @@ const OrganizationCard = ({
   const $tabColor = cssVar("tabs-color");
 
   const isScheduleOngoing = useMemo(() => schedule?.status === 0, [schedule]);
+
+  const resolvedTeamName = useMemo(() => {
+    if (!team) {
+      return organization?.teamName || "Unknown Team";
+    }
+
+    if (typeof team === "string") {
+      return team || organization?.teamName || "Unknown Team";
+    }
+
+    return (
+      team?.name ||
+      team?.teamName ||
+      team?.title ||
+      organization?.teamName ||
+      "Unknown Team"
+    );
+  }, [team, organization]);
 
   // State to store loaded standard clauses
   const [standardClauses, setStandardClauses] = useState([]);
@@ -153,6 +172,10 @@ const OrganizationCard = ({
     useState(null);
 
   const [isFindingsCreateAllowed, setIsFindingsCreateAllowed] = useState(false);
+
+  const [isFindingsUpdateAllowed, setIsFindingsUpdateAllowed] = useState(false);
+
+  const [isScheduleUpdateAllowed, setIsScheduleUpdateAllowed] = useState(false);
 
   // State to track verdict modal
   const [isVerdictModalOpen, setIsVerdictModalOpen] = useState(false);
@@ -181,12 +204,18 @@ const OrganizationCard = ({
     const checkPermissions = async () => {
       try {
         const allowed = await isAllowedTo("audit.findings.c");
+        const allowedToUpdate = await isAllowedTo("audit.findings.u");
+        const allowedToEditSchedule = await isAllowedTo("audit.schedule.u");
         if (isActive) {
           setIsFindingsCreateAllowed(allowed);
+          setIsFindingsUpdateAllowed(allowedToUpdate);
+          setIsScheduleUpdateAllowed(allowedToEditSchedule);
         }
       } catch (error) {
         if (isActive) {
           setIsFindingsCreateAllowed(false);
+          setIsFindingsUpdateAllowed(false);
+          setIsScheduleUpdateAllowed(false);
         }
         console.error("Failed to check findings permission:", error);
       }
@@ -1120,7 +1149,7 @@ const OrganizationCard = ({
           >
             <HStack align="center" spacing={2}>
               <Box pos="relative" boxSize={8}>
-                <Avatar size="sm" name={team.name} />
+                <Avatar size="sm" name={resolvedTeamName} />
                 <NotifBadge
                   boxSize={3}
                   right={-0.5}
@@ -1131,7 +1160,7 @@ const OrganizationCard = ({
                 />
               </Box>
               <Text fontWeight="bold" fontSize="lg">
-                {team?.name || "Unknown Team"}
+                {resolvedTeamName}
               </Text>
               {loading && <Spinner size="sm" />}
             </HStack>
@@ -1201,43 +1230,53 @@ const OrganizationCard = ({
                   onClick={(e) => e.stopPropagation()}
                 />
                 <MenuList>
-                  <MenuItem
-                    color={verdictColor}
-                    icon={<FiCheckCircle />}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setIsVerdictModalOpen(true);
-                    }}
-                    isDisabled={
-                      !isScheduleOngoing || !canSetVerdict(organization).can
-                    }
-                  >
-                    {organization.verdict
-                      ? "Change Final Verdict"
-                      : "Set Final Verdict"}
-                  </MenuItem>
-                  <MenuItem
-                    icon={<FiEdit />}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      onEdit(organization);
-                    }}
-                    isDisabled={!isScheduleOngoing}
-                  >
-                    Edit Organization
-                  </MenuItem>
-                  <Divider />
-                  <MenuItem
-                    icon={<FiTrash2 />}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleDeleteOrganization(organization);
-                    }}
-                    isDisabled={!isScheduleOngoing}
-                    color={errorColor}
-                  >
-                    Delete
-                  </MenuItem>
+                  {isFindingsUpdateAllowed ? (
+                    <MenuItem
+                      color={verdictColor}
+                      icon={<FiCheckCircle />}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setIsVerdictModalOpen(true);
+                      }}
+                      isDisabled={
+                        !isScheduleOngoing || !canSetVerdict(organization).can
+                      }
+                    >
+                      {organization.verdict
+                        ? "Change Final Verdict"
+                        : "Set Final Verdict"}
+                    </MenuItem>
+                  ) : (
+                    ""
+                  )}
+                  {isScheduleUpdateAllowed ? (
+                    <>
+                      <MenuItem
+                        icon={<FiEdit />}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onEdit(organization);
+                        }}
+                        isDisabled={!isScheduleOngoing}
+                      >
+                        Edit Organization
+                      </MenuItem>
+                      <Divider />
+                      <MenuItem
+                        icon={<FiTrash2 />}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleDeleteOrganization(organization);
+                        }}
+                        isDisabled={!isScheduleOngoing}
+                        color={errorColor}
+                      >
+                        Delete
+                      </MenuItem>
+                    </>
+                  ) : (
+                    ""
+                  )}
                 </MenuList>
               </Menu>{" "}
             </HStack>
@@ -1309,7 +1348,7 @@ const OrganizationCard = ({
                   </ResponsiveTab>
                 </ResponsiveTabList>
 
-                <ResponsiveTabPanels>
+                <ResponsiveTabPanels bg={tabPanelBg}>
                   {/* Visit Details Tab */}
                   <ResponsiveTabPanel p={0}>
                     {!showVisitForm && (
