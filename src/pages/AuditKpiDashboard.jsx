@@ -1173,14 +1173,6 @@ const AuditKpiDashboard = () => {
                         ISO Clause
                       </Th>
                       <Th
-                        fontWeight="700"
-                        textTransform="uppercase"
-                        fontSize="xs"
-                        letterSpacing="wider"
-                      >
-                        Description
-                      </Th>
-                      <Th
                         isNumeric
                         fontWeight="700"
                         textTransform="uppercase"
@@ -1202,14 +1194,6 @@ const AuditKpiDashboard = () => {
                       >
                         <Td fontWeight="600" color={clauseColor}>
                           {item.clause || "N/A"}
-                        </Td>
-                        <Td
-                          color={tableTextColor}
-                          maxW="400px"
-                          isTruncated
-                          title={item.description}
-                        >
-                          {item.description || "N/A"}
                         </Td>
                         <Td isNumeric>
                           <Badge
