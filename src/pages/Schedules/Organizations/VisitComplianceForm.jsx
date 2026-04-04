@@ -26,12 +26,8 @@ import Timestamp from "../../../components/Timestamp";
 // Compliance options matching FindingsForm
 const COMPLIANCE_OPTIONS = [
   {
-    value: "OBSERVATIONS",
-    label: "OBSERVATIONS",
-  },
-  {
-    value: "OPPORTUNITIES_FOR_IMPROVEMENTS",
-    label: "OPPORTUNITIES FOR IMPROVEMENTS",
+    value: "MINOR_NC",
+    label: "MINOR NON-CONFORMITY",
   },
   {
     value: "MINOR_NC",

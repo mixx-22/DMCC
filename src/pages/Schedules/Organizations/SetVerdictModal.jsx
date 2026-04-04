@@ -31,18 +31,6 @@ const VERDICT_OPTIONS = [
     description: "No major or minor non-conformities found",
   },
   {
-    value: "OBSERVATIONS",
-    label: "OBSERVATIONS",
-    color: "blue",
-    description: "Findings noted but no non-conformities",
-  },
-  {
-    value: "OPPORTUNITIES_FOR_IMPROVEMENTS",
-    label: "OPPORTUNITIES FOR IMPROVEMENTS",
-    color: "yellow",
-    description: "Areas for improvement identified",
-  },
-  {
     value: "MINOR_NC",
     label: "MINOR NON-CONFORMITY",
     color: "orange",
