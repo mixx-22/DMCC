@@ -102,6 +102,7 @@ const BaseTeamsProvider = createCRUDProvider({
   endpoint: TEAMS_ENDPOINT,
   mockData: MOCK_TEAMS,
   filterMockData: filterTeams,
+  readFilters: { myTeams: 1 },
 });
 
 // Wrapper to add initial fetch on mount
