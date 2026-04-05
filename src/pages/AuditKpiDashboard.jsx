@@ -42,6 +42,7 @@ import {
   IconButton,
   InputLeftElement,
   TableContainer,
+  Flex,
 } from "@chakra-ui/react";
 import { motion } from "framer-motion"; // v10.16.16 - Used for smooth animations and transitions
 import { InfoIcon, ChevronDownIcon } from "@chakra-ui/icons";
@@ -51,6 +52,7 @@ import { useUser } from "../context/_useContext";
 import apiService from "../services/api";
 import NcMetricsBarChart from "../components/NcMetricsBarChart";
 import NcContributionBarChart from "../components/NcContributionBarChart";
+import PageFooter from "../components/PageFooter";
 
 // Constants
 const HIGH_FINDING_COUNT_THRESHOLD = 5; // Threshold for highlighting high finding counts
@@ -903,480 +905,538 @@ Corrective Action Closure Rate = (Closed Corrective Actions / Total Corrective A
   };
 
   return (
-    <Container maxW="container.2xl" py={8} px={{ base: 4, md: 6, lg: 8 }}>
-      {/* Page Header - Matching Main Dashboard Style */}
-      <MotionBox
-        variants={cardVariants}
-        initial="hidden"
-        animate="visible"
-        mb={8}
-      >
-        <Stack
-          spacing={4}
-          flexDir="column"
-          alignItems="center"
-          justifyContent="center"
+    <>
+      <PageFooter>
+        <Flex gap={4} justifyContent="flex-end">
+          <Button
+            variant="outline"
+            colorScheme="brandPrimary"
+            leftIcon={<FiPrinter />}
+            onClick={handlePrintReport}
+            isDisabled={!kpiData}
+          >
+            Print KPI Report
+          </Button>
+        </Flex>
+      </PageFooter>
+      <Container maxW="container.2xl" py={8} px={{ base: 4, md: 6, lg: 8 }}>
+        {/* Page Header - Matching Main Dashboard Style */}
+        <MotionBox
+          variants={cardVariants}
+          initial="hidden"
+          animate="visible"
+          mb={8}
         >
-          {/* Greeting Section */}
-          <Center flexDir="column">
-            <Text
-              textAlign="center"
-              fontSize={{ base: "2xl", md: "3xl" }}
-              fontWeight="300"
-              color={greetingColor}
-            >
-              {greeting},{" "}
-              {currentUser?.firstName || currentUser?.name || "User"}
-            </Text>
-            <Text
-              textAlign="center"
-              fontSize={{ base: "md", md: "lg" }}
-              fontWeight="300"
-              color={dateColor}
-            >
-              {currentDate}
-            </Text>
-            <Center mt={4}>
-              <Button
-                leftIcon={<FiPrinter />}
-                colorScheme="blue"
-                variant="outline"
-                size="sm"
-                onClick={handlePrintReport}
-                isDisabled={!kpiData}
+          <Stack
+            spacing={4}
+            flexDir="column"
+            alignItems="center"
+            justifyContent="center"
+          >
+            {/* Greeting Section */}
+            <Center flexDir="column">
+              <Text
+                textAlign="center"
+                fontSize={{ base: "2xl", md: "3xl" }}
+                fontWeight="300"
+                color={greetingColor}
               >
-                Print KPI Report
-              </Button>
+                {greeting},{" "}
+                {currentUser?.firstName || currentUser?.name || "User"}
+              </Text>
+              <Text
+                textAlign="center"
+                fontSize={{ base: "md", md: "lg" }}
+                fontWeight="300"
+                color={dateColor}
+              >
+                {currentDate}
+              </Text>
             </Center>
-          </Center>
 
-          {/* Filters as Button Group (Team Stats Style) */}
-          <Box>
-            <ButtonGroup isAttached variant="teamStats" size="sm">
-              {/* Year Filter */}
-              <Menu>
-                <MenuButton
-                  as={Button}
-                  rightIcon={<ChevronDownIcon />}
-                  borderRightRadius={0}
-                  isDisabled={loadingYears}
-                >
-                  Year: {selectedYearDisplay}
-                </MenuButton>
-                <MenuList>
-                  {years.length === 0 ? (
-                    <MenuItem isDisabled>No years available</MenuItem>
-                  ) : (
-                    years.map((year) => (
-                      <MenuItem
-                        key={year}
-                        onClick={() => setSelectedYear(year.toString())}
-                      >
-                        {year}
-                      </MenuItem>
-                    ))
-                  )}
-                </MenuList>
-              </Menu>
-
-              {/* Schedule Filter */}
-              <Menu>
-                <MenuButton
-                  as={Button}
-                  rightIcon={<ChevronDownIcon />}
-                  borderRadius={
-                    selectedScheduleDisplay !== kpiData?.metadata?.scheduleTitle
-                      ? 0
-                      : "md"
-                  }
-                  isDisabled={loadingSchedules || !selectedYear}
-                >
-                  {selectedScheduleDisplay}
-                </MenuButton>
-                <MenuList>
-                  {schedules.length === 0 ? (
-                    <MenuItem isDisabled>No schedules available</MenuItem>
-                  ) : (
-                    <>
-                      <MenuItem onClick={() => setSelectedSchedule("all")}>
-                        All Schedules
-                      </MenuItem>
-                      {schedules.map((schedule) => (
-                        <MenuItem
-                          key={schedule._id}
-                          onClick={() => setSelectedSchedule(schedule._id)}
-                        >
-                          {schedule.title ||
-                            schedule.auditCode ||
-                            "Untitled Schedule"}
-                        </MenuItem>
-                      ))}
-                    </>
-                  )}
-                </MenuList>
-              </Menu>
-
-              {/* Stats Display */}
-              {selectedScheduleDisplay !== kpiData?.metadata?.scheduleTitle && (
-                <Button borderLeftRadius={0}>
-                  {kpiData?.metadata?.scheduleTitle || "Audit KPIs"}
-                </Button>
-              )}
-            </ButtonGroup>
-          </Box>
-
-          {/* Search Input */}
-          <Box w="full" maxW="md">
-            <InputGroup w="full">
-              <Input
-                value={searchKeyword}
-                onChange={(e) => setSearchKeyword(e.target.value)}
-                onKeyDown={handleKeyDown}
-                placeholder="Search audit schedules..."
-                variant="search"
-              />
-              <InputLeftElement>
-                <IconButton
-                  isRound
-                  icon={<FiSearch />}
-                  onClick={handleSearch}
-                  aria-label="Search"
-                  variant="ghost"
-                  size="sm"
-                />
-              </InputLeftElement>
-            </InputGroup>
-          </Box>
-        </Stack>
-      </MotionBox>
-
-      {/* Main KPI Grid - Bento Layout */}
-      <MotionBox variants={staggerContainer} initial="hidden" animate="visible">
-        {/* KPI Summary Section - Bento Grid */}
-        <SectionHeader
-          title="Performance Metrics"
-          description="Key performance indicators tracking audit completion and execution rates"
-        />
-
-        {/* Asymmetric Bento Grid */}
-        <Grid
-          templateColumns={{
-            base: "1fr",
-            md: "repeat(2, 1fr)",
-            lg: "repeat(4, 1fr)",
-          }}
-          gap={6}
-          mb={8}
-        >
-          {/* Audit Completion Rate */}
-          <MotionGridItem colSpan={{ base: 1, lg: 1 }} variants={cardVariants}>
-            <KpiCard
-              label="Audit Completion Rate"
-              value={kpiData.auditCompletionRate?.toFixed(1) || 0}
-              unit="%"
-              helpText="Audits completed vs planned"
-              colorScheme={
-                kpiData.auditCompletionRate >= 90 ? "success" : "warning"
-              }
-              description="Percentage of scheduled audits that have been completed"
-            />
-          </MotionGridItem>
-
-          {/* Audit Execution Rate */}
-          <MotionGridItem colSpan={{ base: 1, lg: 1 }} variants={cardVariants}>
-            <KpiCard
-              label="Audit Execution Rate"
-              value={kpiData.auditExecutionRate?.toFixed(1) || 0}
-              unit="%"
-              helpText="Audits executed vs scheduled"
-              colorScheme={
-                kpiData.auditExecutionRate >= 90 ? "success" : "warning"
-              }
-              description="Percentage of audits that have been executed"
-            />
-          </MotionGridItem>
-
-          {/* Average Audit Duration - Taller card */}
-          <MotionGridItem colSpan={{ base: 1, lg: 1 }} variants={cardVariants}>
-            <KpiCard
-              label="Average Duration"
-              value={kpiData.averageAuditDuration?.toFixed(1) || 0}
-              unit="days"
-              helpText="Average time per audit"
-              colorScheme="blue"
-              description="Mean time taken to complete an audit"
-            />
-          </MotionGridItem>
-
-          {/* Total Findings */}
-          <MotionGridItem colSpan={{ base: 1, lg: 1 }} variants={cardVariants}>
-            <KpiCard
-              label="Total Findings"
-              value={kpiData.totalFindings || 0}
-              helpText="All findings recorded"
-              colorScheme="purple"
-              description="Total number of audit findings across all schedules"
-            />
-          </MotionGridItem>
-        </Grid>
-
-        {/* Non-Conformity Analysis - Wide card */}
-        <SectionHeader
-          title="Non-Conformity Analysis"
-          description="Detailed breakdown of non-conformity rates and their impact on overall quality"
-        />
-
-        <Grid
-          templateColumns={{ base: "1fr", lg: "repeat(3, 1fr)" }}
-          gap={6}
-          mb={8}
-        >
-          {/* NC Rate - Takes 1 column */}
-          <MotionGridItem colSpan={{ base: 1, lg: 1 }} variants={cardVariants}>
-            <KpiCard
-              h="full"
-              label="Non-Conformity Rate"
-              value={kpiData.nonConformityRate?.toFixed(1) || 0}
-              unit="%"
-              helpText="NC findings vs total findings"
-              colorScheme={kpiData.nonConformityRate > 10 ? "error" : "success"}
-              description="Percentage of findings that are non-conformities"
-            />
-          </MotionGridItem>
-
-          {/* Major/Minor NC Breakdown - Takes 2 columns */}
-          <MotionGridItem colSpan={{ base: 1, lg: 2 }} variants={cardVariants}>
-            <MotionCard
-              bg={whiteBg}
-              borderRadius="xl"
-              boxShadow="md"
-              overflow="hidden"
-              whileHover={{
-                y: -4,
-                boxShadow: "0 12px 24px rgba(0, 90, 238, 0.15)",
-              }}
-              transition={{ duration: 0.2 }}
-            >
-              <Box bgGradient="linear(to-r, error.500, error.400)" h="4px" />
-              <CardHeader pb={2}>
-                <HStack justify="space-between">
-                  <VStack align="start" spacing={0}>
-                    <Heading size="sm" color={headingColor}>
-                      Findings Breakdown
-                    </Heading>
-                    <Text fontSize="xs" color={textTertiaryColor}>
-                      Distribution of major and minor non-conformities
-                    </Text>
-                  </VStack>
-                </HStack>
-              </CardHeader>
-              <CardBody pt={2}>
-                <HStack spacing={6} justify="space-around">
-                  <VStack spacing={2}>
-                    <Text
-                      fontSize="xs"
-                      color={textTertiaryColor}
-                      fontWeight="600"
-                      textTransform="uppercase"
-                    >
-                      Major NC
-                    </Text>
-                    <Box
-                      bgGradient="linear(to-br, error.500, error.600)"
-                      color="white"
-                      fontSize="3xl"
-                      fontWeight="bold"
-                      px={6}
-                      py={3}
-                      borderRadius="xl"
-                      boxShadow="md"
-                    >
-                      {kpiData.majorVsMinorCount?.MAJOR_NC || 0}
-                    </Box>
-                  </VStack>
-
-                  <Divider orientation="vertical" h="80px" />
-
-                  <VStack spacing={2}>
-                    <Text
-                      fontSize="xs"
-                      color={textTertiaryColor}
-                      fontWeight="600"
-                      textTransform="uppercase"
-                    >
-                      Minor NC
-                    </Text>
-                    <Box
-                      bgGradient="linear(to-br, warning.500, warning.600)"
-                      color="white"
-                      fontSize="3xl"
-                      fontWeight="bold"
-                      px={6}
-                      py={3}
-                      borderRadius="xl"
-                      boxShadow="md"
-                    >
-                      {kpiData.majorVsMinorCount?.MINOR_NC || 0}
-                    </Box>
-                  </VStack>
-
-                  <Divider orientation="vertical" h="80px" />
-
-                  <VStack spacing={2}>
-                    <Text
-                      fontSize="xs"
-                      color={textTertiaryColor}
-                      fontWeight="600"
-                      textTransform="uppercase"
-                    >
-                      Observations
-                    </Text>
-                    <Box
-                      bgGradient="linear(to-br, info.500, info.600)"
-                      color="white"
-                      fontSize="3xl"
-                      fontWeight="bold"
-                      px={6}
-                      py={3}
-                      borderRadius="xl"
-                      boxShadow="md"
-                    >
-                      {kpiData.majorVsMinorCount?.OBSERVATIONS || 0}
-                    </Box>
-                  </VStack>
-                </HStack>
-              </CardBody>
-            </MotionCard>
-          </MotionGridItem>
-        </Grid>
-
-        {/* Corrective Action Closure Rate */}
-        <MotionCard
-          variants={cardVariants}
-          bg={whiteBg}
-          borderRadius="xl"
-          boxShadow="md"
-          overflow="hidden"
-          mb={8}
-        >
-          <Box bgGradient="linear(to-r, success.500, success.400)" h="3px" />
-          <CardBody p={6}>
-            <ProgressWithColor
-              value={kpiData.correctiveActionClosureRate || 0}
-              label="Corrective Action Closure Rate"
-              description="Percentage of corrective actions that have been completed and closed"
-              progressBarBg={progressBarBg}
-            />
-          </CardBody>
-        </MotionCard>
-
-        {/* Clause-Based Findings Table */}
-        <SectionHeader
-          title="Findings by ISO Clause"
-          description="Detailed breakdown of findings mapped to specific ISO standard clauses"
-        />
-
-        <MotionCard
-          variants={cardVariants}
-          bg={whiteBg}
-          borderRadius="xl"
-          boxShadow="md"
-          overflow="hidden"
-          mb={8}
-        >
-          <Box
-            bgGradient="linear(to-r, brandPrimary.500, purple.500)"
-            h="3px"
-          />
-          <CardBody p={0}>
-            {kpiData.findingsPerClause &&
-            kpiData.findingsPerClause.length > 0 ? (
-              <TableContainer maxH="500px" overflowY="auto" tabIndex={0}>
-                <Table variant="simple">
-                  <Thead
-                    bg={tableHeaderBg}
-                    position="sticky"
-                    top={0}
-                    zIndex={1}
+            {/* Filters as Button Group (Team Stats Style) */}
+            <Box>
+              <ButtonGroup isAttached variant="teamStats" size="sm">
+                {/* Year Filter */}
+                <Menu>
+                  <MenuButton
+                    as={Button}
+                    rightIcon={<ChevronDownIcon />}
+                    borderRightRadius={0}
+                    isDisabled={loadingYears}
                   >
-                    <Tr>
-                      <Th
-                        fontWeight="700"
-                        textTransform="uppercase"
-                        fontSize="xs"
-                        letterSpacing="wider"
-                      >
-                        ISO Clause
-                      </Th>
-                      <Th
-                        isNumeric
-                        fontWeight="700"
-                        textTransform="uppercase"
-                        fontSize="xs"
-                        letterSpacing="wider"
-                      >
-                        Count
-                      </Th>
-                    </Tr>
-                  </Thead>
-                  <Tbody>
-                    {kpiData.findingsPerClause.map((item, index) => (
-                      <Tr
-                        key={index}
-                        _hover={{
-                          bg: tableHoverBg,
-                        }}
-                        transition="background 0.2s"
-                      >
-                        <Td fontWeight="600" color={clauseColor}>
-                          {item.clause || "N/A"}
-                        </Td>
-                        <Td isNumeric>
-                          <Badge
-                            bgGradient={
-                              item.count > HIGH_FINDING_COUNT_THRESHOLD
-                                ? "linear(to-r, error.500, error.600)"
-                                : "linear(to-r, brandPrimary.500, brandPrimary.600)"
-                            }
-                            color="white"
-                            fontSize="md"
-                            px={3}
-                            py={1}
-                            borderRadius="full"
-                            fontWeight="bold"
-                          >
-                            {item.count}
-                          </Badge>
-                        </Td>
-                      </Tr>
-                    ))}
-                  </Tbody>
-                </Table>
-              </TableContainer>
-            ) : (
-              <Box p={12} textAlign="center">
-                <Text color={textSecondaryColor} fontSize="lg">
-                  No findings recorded for selected schedules
-                </Text>
-              </Box>
-            )}
-          </CardBody>
-        </MotionCard>
+                    Year: {selectedYearDisplay}
+                  </MenuButton>
+                  <MenuList>
+                    {years.length === 0 ? (
+                      <MenuItem isDisabled>No years available</MenuItem>
+                    ) : (
+                      years.map((year) => (
+                        <MenuItem
+                          key={year}
+                          onClick={() => setSelectedYear(year.toString())}
+                        >
+                          {year}
+                        </MenuItem>
+                      ))
+                    )}
+                  </MenuList>
+                </Menu>
 
-        <SimpleGrid
-          columns={
-            kpiData.ncMetricsPerTeam && kpiData.ncMetricsPerTeam.length > 0
-              ? [1, 1, 1, 2]
-              : 1
-          }
-          gap={6}
+                {/* Schedule Filter */}
+                <Menu>
+                  <MenuButton
+                    as={Button}
+                    rightIcon={<ChevronDownIcon />}
+                    borderRadius={
+                      selectedScheduleDisplay !==
+                      kpiData?.metadata?.scheduleTitle
+                        ? 0
+                        : "md"
+                    }
+                    isDisabled={loadingSchedules || !selectedYear}
+                  >
+                    {selectedScheduleDisplay}
+                  </MenuButton>
+                  <MenuList>
+                    {schedules.length === 0 ? (
+                      <MenuItem isDisabled>No schedules available</MenuItem>
+                    ) : (
+                      <>
+                        <MenuItem onClick={() => setSelectedSchedule("all")}>
+                          All Schedules
+                        </MenuItem>
+                        {schedules.map((schedule) => (
+                          <MenuItem
+                            key={schedule._id}
+                            onClick={() => setSelectedSchedule(schedule._id)}
+                          >
+                            {schedule.title ||
+                              schedule.auditCode ||
+                              "Untitled Schedule"}
+                          </MenuItem>
+                        ))}
+                      </>
+                    )}
+                  </MenuList>
+                </Menu>
+
+                {/* Stats Display */}
+                {selectedScheduleDisplay !==
+                  kpiData?.metadata?.scheduleTitle && (
+                  <Button borderLeftRadius={0}>
+                    {kpiData?.metadata?.scheduleTitle || "Audit KPIs"}
+                  </Button>
+                )}
+              </ButtonGroup>
+            </Box>
+
+            {/* Search Input */}
+            <Box w="full" maxW="md">
+              <InputGroup w="full">
+                <Input
+                  value={searchKeyword}
+                  onChange={(e) => setSearchKeyword(e.target.value)}
+                  onKeyDown={handleKeyDown}
+                  placeholder="Search audit schedules..."
+                  variant="search"
+                />
+                <InputLeftElement>
+                  <IconButton
+                    isRound
+                    icon={<FiSearch />}
+                    onClick={handleSearch}
+                    aria-label="Search"
+                    variant="ghost"
+                    size="sm"
+                  />
+                </InputLeftElement>
+              </InputGroup>
+            </Box>
+          </Stack>
+        </MotionBox>
+
+        {/* Main KPI Grid - Bento Layout */}
+        <MotionBox
+          variants={staggerContainer}
+          initial="hidden"
+          animate="visible"
         >
-          {/* NC and Findings per Team Chart */}
-          {kpiData.ncMetricsPerTeam && kpiData.ncMetricsPerTeam.length > 0 && (
+          {/* KPI Summary Section - Bento Grid */}
+          <SectionHeader
+            title="Performance Metrics"
+            description="Key performance indicators tracking audit completion and execution rates"
+          />
+
+          {/* Asymmetric Bento Grid */}
+          <Grid
+            templateColumns={{
+              base: "1fr",
+              md: "repeat(2, 1fr)",
+              lg: "repeat(4, 1fr)",
+            }}
+            gap={6}
+            mb={8}
+          >
+            {/* Audit Completion Rate */}
+            <MotionGridItem
+              colSpan={{ base: 1, lg: 1 }}
+              variants={cardVariants}
+            >
+              <KpiCard
+                label="Audit Completion Rate"
+                value={kpiData.auditCompletionRate?.toFixed(1) || 0}
+                unit="%"
+                helpText="Audits completed vs planned"
+                colorScheme={
+                  kpiData.auditCompletionRate >= 90 ? "success" : "warning"
+                }
+                description="Percentage of scheduled audits that have been completed"
+              />
+            </MotionGridItem>
+
+            {/* Audit Execution Rate */}
+            <MotionGridItem
+              colSpan={{ base: 1, lg: 1 }}
+              variants={cardVariants}
+            >
+              <KpiCard
+                label="Audit Execution Rate"
+                value={kpiData.auditExecutionRate?.toFixed(1) || 0}
+                unit="%"
+                helpText="Audits executed vs scheduled"
+                colorScheme={
+                  kpiData.auditExecutionRate >= 90 ? "success" : "warning"
+                }
+                description="Percentage of audits that have been executed"
+              />
+            </MotionGridItem>
+
+            {/* Average Audit Duration - Taller card */}
+            <MotionGridItem
+              colSpan={{ base: 1, lg: 1 }}
+              variants={cardVariants}
+            >
+              <KpiCard
+                label="Average Duration"
+                value={kpiData.averageAuditDuration?.toFixed(1) || 0}
+                unit="days"
+                helpText="Average time per audit"
+                colorScheme="blue"
+                description="Mean time taken to complete an audit"
+              />
+            </MotionGridItem>
+
+            {/* Total Findings */}
+            <MotionGridItem
+              colSpan={{ base: 1, lg: 1 }}
+              variants={cardVariants}
+            >
+              <KpiCard
+                label="Total Findings"
+                value={kpiData.totalFindings || 0}
+                helpText="All findings recorded"
+                colorScheme="purple"
+                description="Total number of audit findings across all schedules"
+              />
+            </MotionGridItem>
+          </Grid>
+
+          {/* Non-Conformity Analysis - Wide card */}
+          <SectionHeader
+            title="Non-Conformity Analysis"
+            description="Detailed breakdown of non-conformity rates and their impact on overall quality"
+          />
+
+          <Grid
+            templateColumns={{ base: "1fr", lg: "repeat(3, 1fr)" }}
+            gap={6}
+            mb={8}
+          >
+            {/* NC Rate - Takes 1 column */}
+            <MotionGridItem
+              colSpan={{ base: 1, lg: 1 }}
+              variants={cardVariants}
+            >
+              <KpiCard
+                h="full"
+                label="Non-Conformity Rate"
+                value={kpiData.nonConformityRate?.toFixed(1) || 0}
+                unit="%"
+                helpText="NC findings vs total findings"
+                colorScheme={
+                  kpiData.nonConformityRate > 10 ? "error" : "success"
+                }
+                description="Percentage of findings that are non-conformities"
+              />
+            </MotionGridItem>
+
+            {/* Major/Minor NC Breakdown - Takes 2 columns */}
+            <MotionGridItem
+              colSpan={{ base: 1, lg: 2 }}
+              variants={cardVariants}
+            >
+              <MotionCard
+                bg={whiteBg}
+                borderRadius="xl"
+                boxShadow="md"
+                overflow="hidden"
+                whileHover={{
+                  y: -4,
+                  boxShadow: "0 12px 24px rgba(0, 90, 238, 0.15)",
+                }}
+                transition={{ duration: 0.2 }}
+              >
+                <Box bgGradient="linear(to-r, error.500, error.400)" h="4px" />
+                <CardHeader pb={2}>
+                  <HStack justify="space-between">
+                    <VStack align="start" spacing={0}>
+                      <Heading size="sm" color={headingColor}>
+                        Findings Breakdown
+                      </Heading>
+                      <Text fontSize="xs" color={textTertiaryColor}>
+                        Distribution of major and minor non-conformities
+                      </Text>
+                    </VStack>
+                  </HStack>
+                </CardHeader>
+                <CardBody pt={2}>
+                  <HStack spacing={6} justify="space-around">
+                    <VStack spacing={2}>
+                      <Text
+                        fontSize="xs"
+                        color={textTertiaryColor}
+                        fontWeight="600"
+                        textTransform="uppercase"
+                      >
+                        Major NC
+                      </Text>
+                      <Box
+                        bgGradient="linear(to-br, error.500, error.600)"
+                        color="white"
+                        fontSize="3xl"
+                        fontWeight="bold"
+                        px={6}
+                        py={3}
+                        borderRadius="xl"
+                        boxShadow="md"
+                      >
+                        {kpiData.majorVsMinorCount?.MAJOR_NC || 0}
+                      </Box>
+                    </VStack>
+
+                    <Divider orientation="vertical" h="80px" />
+
+                    <VStack spacing={2}>
+                      <Text
+                        fontSize="xs"
+                        color={textTertiaryColor}
+                        fontWeight="600"
+                        textTransform="uppercase"
+                      >
+                        Minor NC
+                      </Text>
+                      <Box
+                        bgGradient="linear(to-br, warning.500, warning.600)"
+                        color="white"
+                        fontSize="3xl"
+                        fontWeight="bold"
+                        px={6}
+                        py={3}
+                        borderRadius="xl"
+                        boxShadow="md"
+                      >
+                        {kpiData.majorVsMinorCount?.MINOR_NC || 0}
+                      </Box>
+                    </VStack>
+
+                    <Divider orientation="vertical" h="80px" />
+
+                    <VStack spacing={2}>
+                      <Text
+                        fontSize="xs"
+                        color={textTertiaryColor}
+                        fontWeight="600"
+                        textTransform="uppercase"
+                      >
+                        Observations
+                      </Text>
+                      <Box
+                        bgGradient="linear(to-br, info.500, info.600)"
+                        color="white"
+                        fontSize="3xl"
+                        fontWeight="bold"
+                        px={6}
+                        py={3}
+                        borderRadius="xl"
+                        boxShadow="md"
+                      >
+                        {kpiData.majorVsMinorCount?.OBSERVATIONS || 0}
+                      </Box>
+                    </VStack>
+                  </HStack>
+                </CardBody>
+              </MotionCard>
+            </MotionGridItem>
+          </Grid>
+
+          {/* Corrective Action Closure Rate */}
+          <MotionCard
+            variants={cardVariants}
+            bg={whiteBg}
+            borderRadius="xl"
+            boxShadow="md"
+            overflow="hidden"
+            mb={8}
+          >
+            <Box bgGradient="linear(to-r, success.500, success.400)" h="3px" />
+            <CardBody p={6}>
+              <ProgressWithColor
+                value={kpiData.correctiveActionClosureRate || 0}
+                label="Corrective Action Closure Rate"
+                description="Percentage of corrective actions that have been completed and closed"
+                progressBarBg={progressBarBg}
+              />
+            </CardBody>
+          </MotionCard>
+
+          {/* Clause-Based Findings Table */}
+          <SectionHeader
+            title="Findings by ISO Clause"
+            description="Detailed breakdown of findings mapped to specific ISO standard clauses"
+          />
+
+          <MotionCard
+            variants={cardVariants}
+            bg={whiteBg}
+            borderRadius="xl"
+            boxShadow="md"
+            overflow="hidden"
+            mb={8}
+          >
+            <Box
+              bgGradient="linear(to-r, brandPrimary.500, purple.500)"
+              h="3px"
+            />
+            <CardBody p={0}>
+              {kpiData.findingsPerClause &&
+              kpiData.findingsPerClause.length > 0 ? (
+                <TableContainer maxH="500px" overflowY="auto" tabIndex={0}>
+                  <Table variant="simple">
+                    <Thead
+                      bg={tableHeaderBg}
+                      position="sticky"
+                      top={0}
+                      zIndex={1}
+                    >
+                      <Tr>
+                        <Th
+                          fontWeight="700"
+                          textTransform="uppercase"
+                          fontSize="xs"
+                          letterSpacing="wider"
+                        >
+                          ISO Clause
+                        </Th>
+                        <Th
+                          isNumeric
+                          fontWeight="700"
+                          textTransform="uppercase"
+                          fontSize="xs"
+                          letterSpacing="wider"
+                        >
+                          Count
+                        </Th>
+                      </Tr>
+                    </Thead>
+                    <Tbody>
+                      {kpiData.findingsPerClause.map((item, index) => (
+                        <Tr
+                          key={index}
+                          _hover={{
+                            bg: tableHoverBg,
+                          }}
+                          transition="background 0.2s"
+                        >
+                          <Td fontWeight="600" color={clauseColor}>
+                            {item.clause || "N/A"}
+                          </Td>
+                          <Td isNumeric>
+                            <Badge
+                              bgGradient={
+                                item.count > HIGH_FINDING_COUNT_THRESHOLD
+                                  ? "linear(to-r, error.500, error.600)"
+                                  : "linear(to-r, brandPrimary.500, brandPrimary.600)"
+                              }
+                              color="white"
+                              fontSize="md"
+                              px={3}
+                              py={1}
+                              borderRadius="full"
+                              fontWeight="bold"
+                            >
+                              {item.count}
+                            </Badge>
+                          </Td>
+                        </Tr>
+                      ))}
+                    </Tbody>
+                  </Table>
+                </TableContainer>
+              ) : (
+                <Box p={12} textAlign="center">
+                  <Text color={textSecondaryColor} fontSize="lg">
+                    No findings recorded for selected schedules
+                  </Text>
+                </Box>
+              )}
+            </CardBody>
+          </MotionCard>
+
+          <SimpleGrid
+            columns={
+              kpiData.ncMetricsPerTeam && kpiData.ncMetricsPerTeam.length > 0
+                ? [1, 1, 1, 2]
+                : 1
+            }
+            gap={6}
+          >
+            {/* NC and Findings per Team Chart */}
+            {kpiData.ncMetricsPerTeam &&
+              kpiData.ncMetricsPerTeam.length > 0 && (
+                <Stack>
+                  <SectionHeader
+                    title="Team Performance Metrics"
+                    description="Non-conformities and findings breakdown by team"
+                  />
+
+                  <MotionCard
+                    variants={cardVariants}
+                    bg={whiteBg}
+                    borderRadius="xl"
+                    boxShadow="md"
+                    overflow="hidden"
+                    h="full"
+                  >
+                    <Box
+                      bgGradient="linear(to-r, blue.500, purple.500)"
+                      h="3px"
+                    />
+                    <CardBody p={6}>
+                      <NcMetricsBarChart
+                        data={kpiData.ncMetricsPerTeam}
+                        loading={loading}
+                      />
+                    </CardBody>
+                  </MotionCard>
+                </Stack>
+              )}
+
+            {/* Team Contribution Chart */}
             <Stack>
               <SectionHeader
-                title="Team Performance Metrics"
-                description="Non-conformities and findings breakdown by team"
+                title="Team Contribution Analysis"
+                description="Each team's contribution to the overall non-conformity percentage"
               />
 
               <MotionCard
@@ -1387,45 +1447,20 @@ Corrective Action Closure Rate = (Closed Corrective Actions / Total Corrective A
                 overflow="hidden"
                 h="full"
               >
-                <Box bgGradient="linear(to-r, blue.500, purple.500)" h="3px" />
+                <Box bgGradient="linear(to-r, purple.500, pink.500)" h="3px" />
                 <CardBody p={6}>
-                  <NcMetricsBarChart
-                    data={kpiData.ncMetricsPerTeam}
+                  <NcContributionBarChart
+                    overallNcPercentage={kpiData.overallNcPercentage}
+                    data={kpiData.ncContributionPerTeam}
                     loading={loading}
                   />
                 </CardBody>
               </MotionCard>
             </Stack>
-          )}
-
-          {/* Team Contribution Chart */}
-          <Stack>
-            <SectionHeader
-              title="Team Contribution Analysis"
-              description="Each team's contribution to the overall non-conformity percentage"
-            />
-
-            <MotionCard
-              variants={cardVariants}
-              bg={whiteBg}
-              borderRadius="xl"
-              boxShadow="md"
-              overflow="hidden"
-              h="full"
-            >
-              <Box bgGradient="linear(to-r, purple.500, pink.500)" h="3px" />
-              <CardBody p={6}>
-                <NcContributionBarChart
-                  overallNcPercentage={kpiData.overallNcPercentage}
-                  data={kpiData.ncContributionPerTeam}
-                  loading={loading}
-                />
-              </CardBody>
-            </MotionCard>
-          </Stack>
-        </SimpleGrid>
-      </MotionBox>
-    </Container>
+          </SimpleGrid>
+        </MotionBox>
+      </Container>
+    </>
   );
 };
 
