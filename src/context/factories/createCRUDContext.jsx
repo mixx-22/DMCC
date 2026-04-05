@@ -26,6 +26,7 @@ export function createCRUDProvider({
   mockData = [],
   filterMockData = (data) => data,
   additionalState = {},
+  readFilters = {},
 }) {
   const SET_ACTION = `SET_${resourceName.toUpperCase()}`;
 
@@ -54,7 +55,7 @@ export function createCRUDProvider({
           [resourceKey]: state[resourceKey].map((item) =>
             (item.id || item._id) === payload.itemId
               ? { ...item, ...payload.updates }
-              : item
+              : item,
           ),
         };
       case "SET_LOADING":
@@ -147,6 +148,11 @@ export function createCRUDProvider({
           // Only add keyword param if it's at least 2 characters
           if (search && search.length >= 2) {
             params.keyword = search;
+          }
+
+          if (readFilters) {
+            const newParams = { ...params, ...readFilters };
+            Object.assign(params, newParams);
           }
 
           const data = await apiService.request(endpoint, {
