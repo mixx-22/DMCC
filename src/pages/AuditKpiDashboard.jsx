@@ -496,8 +496,10 @@ const AuditKpiDashboard = () => {
 
           setSchedules(yearSchedules);
 
-          // Auto-select 'all' by default
-          if (yearSchedules.length > 0) {
+          // Auto-select based on number of schedules
+          if (yearSchedules.length === 1) {
+            setSelectedSchedule(yearSchedules[0]._id);
+          } else if (yearSchedules.length > 0) {
             setSelectedSchedule("all");
           } else {
             setSelectedSchedule("");
@@ -1164,10 +1166,8 @@ const AuditKpiDashboard = () => {
                 </Menu>
 
                 {/* Schedule Filter */}
-                <Menu>
-                  <MenuButton
-                    as={Button}
-                    rightIcon={<ChevronDownIcon />}
+                {schedules.length === 1 ? (
+                  <Button
                     borderRadius={
                       selectedScheduleDisplay !==
                       kpiData?.metadata?.scheduleTitle
@@ -1177,29 +1177,45 @@ const AuditKpiDashboard = () => {
                     isDisabled={loadingSchedules || !selectedYear}
                   >
                     {selectedScheduleDisplay}
-                  </MenuButton>
-                  <MenuList>
-                    {schedules.length === 0 ? (
-                      <MenuItem isDisabled>No schedules available</MenuItem>
-                    ) : (
-                      <>
-                        <MenuItem onClick={() => setSelectedSchedule("all")}>
-                          All Schedules
-                        </MenuItem>
-                        {schedules.map((schedule) => (
-                          <MenuItem
-                            key={schedule._id}
-                            onClick={() => setSelectedSchedule(schedule._id)}
-                          >
-                            {schedule.title ||
-                              schedule.auditCode ||
-                              "Untitled Schedule"}
+                  </Button>
+                ) : (
+                  <Menu>
+                    <MenuButton
+                      as={Button}
+                      rightIcon={<ChevronDownIcon />}
+                      borderRadius={
+                        selectedScheduleDisplay !==
+                        kpiData?.metadata?.scheduleTitle
+                          ? 0
+                          : "md"
+                      }
+                      isDisabled={loadingSchedules || !selectedYear}
+                    >
+                      {selectedScheduleDisplay}
+                    </MenuButton>
+                    <MenuList>
+                      {schedules.length === 0 ? (
+                        <MenuItem isDisabled>No schedules available</MenuItem>
+                      ) : (
+                        <>
+                          <MenuItem onClick={() => setSelectedSchedule("all")}>
+                            All Schedules
                           </MenuItem>
-                        ))}
-                      </>
-                    )}
-                  </MenuList>
-                </Menu>
+                          {schedules.map((schedule) => (
+                            <MenuItem
+                              key={schedule._id}
+                              onClick={() => setSelectedSchedule(schedule._id)}
+                            >
+                              {schedule.title ||
+                                schedule.auditCode ||
+                                "Untitled Schedule"}
+                            </MenuItem>
+                          ))}
+                        </>
+                      )}
+                    </MenuList>
+                  </Menu>
+                )}
 
                 {/* Stats Display */}
                 {selectedScheduleDisplay !==
