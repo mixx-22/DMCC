@@ -100,6 +100,12 @@ const COMPLIANCE_DISPLAY = {
   COMPLIANT: { label: "Compliant", color: "success" },
 };
 
+const WEIGHT_COLORS = {
+  low: "success",
+  medium: "brandSecondary",
+  high: "error",
+};
+
 const OrganizationCard = ({
   loading = false,
   organization,
@@ -128,6 +134,7 @@ const OrganizationCard = ({
   const hoverBg = useColorModeValue("gray.50", "gray.600");
   const headerHoverBg = useColorModeValue("gray.100", "gray.650");
   const tabPanelBg = useColorModeValue("gray.100", "gray.800");
+  const objectiveBg = useColorModeValue("gray.50", "gray.700");
   const [tabColor, brandPrimaryColor, brandSecondaryColor] = useToken(
     "colors",
     ["gray.500", "brandPrimary.600", "brandSecondary.600"],
@@ -1914,6 +1921,56 @@ const OrganizationCard = ({
                             Description
                           </Text>
                           <Text fontSize="sm">{team.description}</Text>
+                        </Box>
+                      )}
+
+                      {/* Team Objectives */}
+                      {team?.objectives && team.objectives.length > 0 && (
+                        <Box>
+                          <Text fontSize="sm" color="gray.500" mb={2}>
+                            Objectives
+                          </Text>
+                          <Card
+                            variant="inset"
+                            boxShadow="none"
+                            bg="blackAlpha.100"
+                          >
+                            <CardBody p={2}>
+                              <Stack spacing={2}>
+                                {team.objectives.map((objective, index) => (
+                                  <Box
+                                    key={objective.id || `objective-${index}`}
+                                    p={3}
+                                    borderWidth={1}
+                                    borderRadius="md"
+                                    borderColor={borderColor}
+                                    bg={objectiveBg}
+                                  >
+                                    <Flex
+                                      justify="space-between"
+                                      align="start"
+                                      mb={2}
+                                    >
+                                      <Text fontWeight="bold" fontSize="sm">
+                                        {objective.title}
+                                      </Text>
+                                      <Badge
+                                        colorScheme={
+                                          WEIGHT_COLORS[objective.weight]
+                                        }
+                                        fontSize="xs"
+                                      >
+                                        {objective.weight}
+                                      </Badge>
+                                    </Flex>
+                                    <Text fontSize="sm" color="gray.600">
+                                      {objective.description}
+                                    </Text>
+                                  </Box>
+                                ))}
+                              </Stack>
+                            </CardBody>
+                          </Card>
                         </Box>
                       )}
 
