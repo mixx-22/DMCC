@@ -11,29 +11,23 @@ import {
   Divider,
   Button,
   HStack,
-  IconButton,
   Spinner,
   Tabs,
   TabList,
   Tab,
 } from "@chakra-ui/react";
-import {
-  FiBell,
-  FiCheck,
-  FiCheckCircle,
-  FiTrash2,
-} from "react-icons/fi";
+import { FiBell, FiCheckCircle } from "react-icons/fi";
 import Timestamp from "../components/Timestamp";
 import Pagination from "../components/Pagination";
 import { useNotifications } from "../context/_useContext";
 import NOTIFICATION_CONFIG from "../helpers/notificationConfig";
+import { useState } from "react";
 
 // ── Colour helpers ───────────────────────────────────────────────────
-const getColorScheme = (type) =>
-  NOTIFICATION_CONFIG[type]?.color || "gray";
+const getColorScheme = (type) => NOTIFICATION_CONFIG[type]?.color || "gray";
 
 // ── Single notification row ──────────────────────────────────────────
-const NotificationItem = ({ notification, onRead, onDelete }) => {
+const NotificationItem = ({ notification, onRead }) => {
   const bgColor = useColorModeValue("white", "gray.800");
   const unreadBg = useColorModeValue("blue.50", "gray.700");
   const hoverBg = useColorModeValue("gray.50", "gray.700");
@@ -59,53 +53,37 @@ const NotificationItem = ({ notification, onRead, onDelete }) => {
         if (!notification.read) onRead(notification._id);
       }}
     >
-      {/* Unread indicator */}
-      {!notification.read && (
-        <Box w={2} h={2} borderRadius="full" bg="blue.500" flexShrink={0} />
-      )}
-
-      <Box flex={1} ml={notification.read ? 5 : 0}>
+      <Box flex={1} ml={0}>
         <HStack mb={1} spacing={2}>
           <Text fontSize="sm" fontWeight="semibold" color={textColor}>
             {notification.title}
           </Text>
-          <Badge colorScheme={colorScheme} fontSize="2xs">
-            {NOTIFICATION_CONFIG[notification.type]?.label || notification.type}
-          </Badge>
         </HStack>
         <Text fontSize="sm" color={textColor} noOfLines={2}>
           {notification.message}
         </Text>
         <Text fontSize="xs" color={dateColor} mt={1}>
-          <Timestamp date={notification.createdAt} />
+          <Badge colorScheme={colorScheme} fontSize="2xs" as="span">
+            {NOTIFICATION_CONFIG[notification.type]?.label || notification.type}
+          </Badge>{" "}
+          &middot; <Timestamp date={notification.createdAt} />
         </Text>
       </Box>
 
-      <HStack spacing={1} flexShrink={0}>
-        {!notification.read && (
-          <IconButton
-            aria-label="Mark as read"
-            icon={<FiCheck />}
-            size="sm"
-            variant="ghost"
-            onClick={(e) => {
-              e.stopPropagation();
-              onRead(notification._id);
-            }}
-          />
-        )}
-        <IconButton
-          aria-label="Delete notification"
-          icon={<FiTrash2 />}
-          size="sm"
-          variant="ghost"
-          colorScheme="red"
+      {/* Unread indicator */}
+      {!notification.read && (
+        <Box
+          w={2}
+          h={2}
+          borderRadius="full"
+          bg="blue.500"
+          flexShrink={0}
           onClick={(e) => {
             e.stopPropagation();
-            onDelete(notification._id);
+            onRead(notification._id);
           }}
         />
-      </HStack>
+      )}
     </Flex>
   );
 };
@@ -119,7 +97,6 @@ const Notifications = () => {
     notifications,
     unreadCount,
     meta,
-    isLoading,
     filter,
     markAsRead,
     markAllAsRead,
@@ -132,6 +109,8 @@ const Notifications = () => {
   const headingColor = useColorModeValue("gray.800", "gray.100");
   const containerBg = useColorModeValue("white", "gray.800");
   const emptyTextColor = useColorModeValue("gray.500", "gray.400");
+
+  const [isLoading] = useState(false);
 
   const tabIndex = FILTER_MAP.indexOf(filter);
 

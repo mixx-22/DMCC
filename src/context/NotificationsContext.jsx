@@ -97,36 +97,33 @@ export const NotificationsProvider = ({ children }) => {
   const listenerAttached = useRef(false);
 
   // ---- Fetch notifications (paginated, filtered) --------------------
-  const fetchNotifications = useCallback(
-    async (page = 1, filter = "all") => {
-      dispatch({ type: "SET_LOADING", value: true });
-      try {
-        const params = { page, limit: 20 };
-        if (filter === "unread") params.read = "false";
-        else if (filter === "read") params.read = "true";
+  const fetchNotifications = useCallback(async (page = 1, filter = "all") => {
+    dispatch({ type: "SET_LOADING", value: true });
+    try {
+      const params = { page, limit: 20 };
+      if (filter === "unread") params.read = "false";
+      else if (filter === "read") params.read = "true";
 
-        const res = await apiService.request(NOTIFICATIONS_ENDPOINT, {
-          params,
-        });
+      const res = await apiService.request(NOTIFICATIONS_ENDPOINT, {
+        params,
+      });
 
-        dispatch({
-          type: "SET_NOTIFICATIONS",
-          notifications: res.data ?? [],
-          meta: res.meta ?? {
-            total: 0,
-            page,
-            limit: 20,
-            totalPages: 1,
-          },
-          unreadCount: res.unreadCount ?? 0,
-        });
-      } catch (err) {
-        console.error("Failed to fetch notifications:", err);
-        dispatch({ type: "SET_LOADING", value: false });
-      }
-    },
-    [],
-  );
+      dispatch({
+        type: "SET_NOTIFICATIONS",
+        notifications: res.data ?? [],
+        meta: res.meta ?? {
+          total: 0,
+          page,
+          limit: 20,
+          totalPages: 1,
+        },
+        unreadCount: res.unreadCount ?? 0,
+      });
+    } catch (err) {
+      console.error("Failed to fetch notifications:", err);
+      dispatch({ type: "SET_LOADING", value: false });
+    }
+  }, []);
 
   // ---- Fetch unread count only --------------------------------------
   const fetchUnreadCount = useCallback(async () => {
@@ -141,19 +138,16 @@ export const NotificationsProvider = ({ children }) => {
   }, []);
 
   // ---- Mark single notification as read ----------------------------
-  const markAsRead = useCallback(
-    async (id) => {
-      try {
-        await apiService.request(`${NOTIFICATIONS_ENDPOINT}/${id}/read`, {
-          method: "PATCH",
-        });
-        dispatch({ type: "MARK_READ", id });
-      } catch (err) {
-        console.error("Failed to mark notification as read:", err);
-      }
-    },
-    [],
-  );
+  const markAsRead = useCallback(async (id) => {
+    try {
+      await apiService.request(`${NOTIFICATIONS_ENDPOINT}/${id}/read`, {
+        method: "PATCH",
+      });
+      dispatch({ type: "MARK_READ", id });
+    } catch (err) {
+      console.error("Failed to mark notification as read:", err);
+    }
+  }, []);
 
   // ---- Mark all as read --------------------------------------------
   const markAllAsRead = useCallback(async () => {
@@ -164,18 +158,6 @@ export const NotificationsProvider = ({ children }) => {
       dispatch({ type: "MARK_ALL_READ" });
     } catch (err) {
       console.error("Failed to mark all as read:", err);
-    }
-  }, []);
-
-  // ---- Delete a notification ---------------------------------------
-  const deleteNotification = useCallback(async (id) => {
-    try {
-      await apiService.request(`${NOTIFICATIONS_ENDPOINT}/${id}`, {
-        method: "DELETE",
-      });
-      dispatch({ type: "DELETE_NOTIFICATION", id });
-    } catch (err) {
-      console.error("Failed to delete notification:", err);
     }
   }, []);
 
@@ -214,7 +196,7 @@ export const NotificationsProvider = ({ children }) => {
         // Show in-app toast via sonner
         const config = NOTIFICATION_CONFIG[notification.type] || {};
         const borderColor = getBorderColorForToast(config.color);
-        toast(notification.title, {
+        toast.info(notification.title, {
           description: notification.message,
           duration: 6000,
           ...(borderColor ? { style: { borderLeft: borderColor } } : {}),
@@ -288,7 +270,7 @@ export const NotificationsProvider = ({ children }) => {
     fetchUnreadCount,
     markAsRead,
     markAllAsRead,
-    deleteNotification,
+    // deleteNotification removed
     setFilter,
     setPage,
   };
