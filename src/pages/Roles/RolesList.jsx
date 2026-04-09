@@ -22,6 +22,7 @@ import { useEffect } from "react";
 import { useRoles } from "../../context/_useContext";
 import { generateRoleDescriptions } from "../../helpers/describePermissions";
 import { Link as RouterLink } from "react-router-dom";
+import { RoleTypeBadges } from "../../components/RoleTypeMultiSelect";
 import Pagination from "../../components/Pagination";
 import RolesSkeleton from "../../components/RolesSkeleton";
 import Timestamp from "../../components/Timestamp";
@@ -145,13 +146,19 @@ const RolesList = () => {
                   roles.map((role) => (
                     <LinkBox as={Tr} key={role._id || role.id}>
                       <Td fontWeight="semibold">
+                        {role.roleTypes && role.roleTypes.length > 0 && (
+                          <RoleTypeBadges
+                            roleTypes={role.roleTypes}
+                            size="sm"
+                            mt={1}
+                          />
+                        )}
                         <LinkOverlay
                           as={RouterLink}
                           to={`/roles/${role._id || role.id}`}
                         >
                           {role.title}
                         </LinkOverlay>
-
                         <Text
                           fontWeight="normal"
                           fontSize="sm"
@@ -169,7 +176,11 @@ const RolesList = () => {
                       </Td>
 
                       <Td>
-                        <Timestamp date={role.updatedAt} showTime={true} fontSize="sm" />
+                        <Timestamp
+                          date={role.updatedAt}
+                          showTime={true}
+                          fontSize="sm"
+                        />
                       </Td>
                     </LinkBox>
                   ))

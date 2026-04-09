@@ -11,6 +11,7 @@ const MOCK_ROLES = [
     id: "1",
     title: "Admin",
     description: "Full system access with all permissions",
+    roleTypes: ["admin"],
     permissions: {
       documents: { c: 1, r: 1, u: 1, d: 1 },
       certifications: { c: 1, r: 1, u: 1, d: 1 },
@@ -26,6 +27,7 @@ const MOCK_ROLES = [
     id: "2",
     title: "Manager",
     description: "Can manage documents and view reports",
+    roleTypes: ["teamLeader"],
     permissions: {
       documents: { c: 1, r: 1, u: 1, d: 0 },
       certifications: { c: 1, r: 1, u: 1, d: 0 },
@@ -41,6 +43,7 @@ const MOCK_ROLES = [
     id: "3",
     title: "User",
     description: "Basic user with read-only access",
+    roleTypes: [],
     permissions: {
       documents: { c: 0, r: 1, u: 0, d: 0 },
       certifications: { c: 0, r: 1, u: 0, d: 0 },
@@ -56,6 +59,7 @@ const MOCK_ROLES = [
     id: "4",
     title: "Document Editor",
     description: "Can create and edit documents only",
+    roleTypes: ["auditor"],
     permissions: {
       documents: { c: 1, r: 1, u: 1, d: 0 },
       certifications: { c: 0, r: 1, u: 0, d: 0 },
