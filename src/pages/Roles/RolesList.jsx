@@ -146,12 +146,6 @@ const RolesList = () => {
                   roles.map((role) => (
                     <LinkBox as={Tr} key={role._id || role.id}>
                       <Td fontWeight="semibold">
-                        <LinkOverlay
-                          as={RouterLink}
-                          to={`/roles/${role._id || role.id}`}
-                        >
-                          {role.title}
-                        </LinkOverlay>
                         {role.roleTypes && role.roleTypes.length > 0 && (
                           <RoleTypeBadges
                             roleTypes={role.roleTypes}
@@ -159,6 +153,12 @@ const RolesList = () => {
                             mt={1}
                           />
                         )}
+                        <LinkOverlay
+                          as={RouterLink}
+                          to={`/roles/${role._id || role.id}`}
+                        >
+                          {role.title}
+                        </LinkOverlay>
                         <Text
                           fontWeight="normal"
                           fontSize="sm"
@@ -176,7 +176,11 @@ const RolesList = () => {
                       </Td>
 
                       <Td>
-                        <Timestamp date={role.updatedAt} showTime={true} fontSize="sm" />
+                        <Timestamp
+                          date={role.updatedAt}
+                          showTime={true}
+                          fontSize="sm"
+                        />
                       </Td>
                     </LinkBox>
                   ))
