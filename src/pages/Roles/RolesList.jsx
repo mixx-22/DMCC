@@ -22,6 +22,7 @@ import { useEffect } from "react";
 import { useRoles } from "../../context/_useContext";
 import { generateRoleDescriptions } from "../../helpers/describePermissions";
 import { Link as RouterLink } from "react-router-dom";
+import { RoleTypeBadges } from "../../components/RoleTypeMultiSelect";
 import Pagination from "../../components/Pagination";
 import RolesSkeleton from "../../components/RolesSkeleton";
 import Timestamp from "../../components/Timestamp";
@@ -151,7 +152,13 @@ const RolesList = () => {
                         >
                           {role.title}
                         </LinkOverlay>
-
+                        {role.roleTypes && role.roleTypes.length > 0 && (
+                          <RoleTypeBadges
+                            roleTypes={role.roleTypes}
+                            size="sm"
+                            mt={1}
+                          />
+                        )}
                         <Text
                           fontWeight="normal"
                           fontSize="sm"

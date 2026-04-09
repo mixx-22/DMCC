@@ -38,6 +38,7 @@ import PermissionsCheckboxGroup from "../../components/PermissionsCheckboxGroup"
 import PageHeader from "../../components/PageHeader";
 import PageFooter from "../../components/PageFooter";
 import Timestamp from "../../components/Timestamp";
+import RoleTypeMultiSelect, { RoleTypeBadges } from "../../components/RoleTypeMultiSelect";
 import { useRole } from "../../context/_useContext";
 
 const RolePage = () => {
@@ -52,6 +53,7 @@ const RolePage = () => {
   const [formData, setFormData] = useState({
     title: "",
     description: "",
+    roleTypes: [],
     permissions: {
       users: { c: 0, r: 0, u: 0, d: 0 },
       teams: {
@@ -146,6 +148,7 @@ const RolePage = () => {
       setFormData({
         title: role.title || "",
         description: role.description || "",
+        roleTypes: role.roleTypes || [],
         permissions: normalizePermissions(role.permissions || {}),
         isSystemRole: role.isSystemRole || false,
       });
@@ -361,6 +364,7 @@ const RolePage = () => {
         setFormData({
           title: role.title || "",
           description: role.description || "",
+          roleTypes: role.roleTypes || [],
           permissions: normalizePermissions(role.permissions || {}),
           isSystemRole: role.isSystemRole || false,
         });
@@ -546,6 +550,12 @@ const RolePage = () => {
                         {validationErrors.description}
                       </FormErrorMessage>
                     </FormControl>
+                    <RoleTypeMultiSelect
+                      value={formData.roleTypes}
+                      onChange={(types) =>
+                        handleFieldChange("roleTypes", types)
+                      }
+                    />
                   </>
                 ) : (
                   <>
@@ -571,6 +581,17 @@ const RolePage = () => {
                       </Text>
                       <Text>{role.description}</Text>
                     </Box>
+                    {role.roleTypes && role.roleTypes.length > 0 && (
+                      <>
+                        <Divider />
+                        <Box>
+                          <Text fontSize="sm" color="gray.500" mb={2}>
+                            Role Types
+                          </Text>
+                          <RoleTypeBadges roleTypes={role.roleTypes} size="md" />
+                        </Box>
+                      </>
+                    )}
                   </>
                 )}
 

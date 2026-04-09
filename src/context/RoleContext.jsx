@@ -11,6 +11,7 @@ const MOCK_ROLE = {
   _id: "694d2b5b686103d27347104a",
   title: "User",
   description: "Full control to all",
+  roleTypes: ["admin"],
   permissions: {
     users: {
       c: 1,
