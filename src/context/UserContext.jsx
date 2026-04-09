@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useReducer } from "react";
 import apiService from "../services/api";
 import cookieService from "../services/cookieService";
+import { connectSocket, disconnectSocket } from "../services/socket";
 import { UserContext } from "./_contexts";
 
 const USER_KEY = import.meta.env.VITE_USER_KEY || "currentUser";
@@ -75,6 +76,13 @@ export const UserProvider = ({ children }) => {
     }
   }, [state.user]);
 
+  // Reconnect socket if user is already authenticated on page load / refresh
+  useEffect(() => {
+    if (state.authToken && state.user) {
+      connectSocket(state.authToken);
+    }
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
   const login = useCallback(async (username, password) => {
     dispatch({ type: "SET_LOADING", value: true });
     dispatch({ type: "SET_ERROR", value: null });
@@ -107,6 +115,9 @@ export const UserProvider = ({ children }) => {
       dispatch({ type: "SET_USER", user: userData });
       dispatch({ type: "SET_AUTH_TOKEN", authToken: tokenValue });
 
+      // Open WebSocket connection for real-time notifications
+      connectSocket(tokenValue);
+
       return { success: true, user: userData };
     } catch (err) {
       const errorMessage = err.message || "Login failed";
@@ -119,6 +130,9 @@ export const UserProvider = ({ children }) => {
 
   const logout = useCallback(() => {
     try {
+      // Close WebSocket connection
+      disconnectSocket();
+
       dispatch({ type: "LOGOUT" });
 
       // Clear cookie

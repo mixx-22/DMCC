@@ -18,6 +18,7 @@ import {
   Portal,
   MenuGroup,
   Avatar,
+  Badge,
 } from "@chakra-ui/react";
 import { NavLink, useLocation, useNavigate } from "react-router-dom";
 import {
@@ -41,7 +42,7 @@ import logoDefault from "../images/auptilyze.png";
 import logoWhite from "../images/auptilyze-white.png";
 import logoIconDefault from "../images/auptilyze-icon.svg";
 import logoIconWhite from "../images/auptilyze-icon-white.svg";
-import { usePermissions, useUser } from "../context/_useContext";
+import { usePermissions, useUser, useNotifications } from "../context/_useContext";
 
 const isRouteMatch = (location, target) => {
   const [targetPath, targetQuery] = target.split("?");
@@ -159,6 +160,7 @@ const Sidebar = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const { user: currentUser } = useUser();
+  const { unreadCount } = useNotifications();
 
   const logoSrc = useColorModeValue(logoDefault, logoWhite);
   const logoIconSrc = useColorModeValue(logoIconDefault, logoIconWhite);
@@ -595,20 +597,38 @@ const Sidebar = () => {
             />
 
             {/* Notifications Button */}
-            <IconButton
-              aria-label="Notifications"
-              icon={<FiBell size={24} />}
-              variant="ghost"
-              onClick={() => navigate("/notifications")}
-              position="relative"
-              h="auto"
-              py={2}
-              color={
-                location.pathname === "/notifications" ? activeColor : textColor
-              }
-              _hover={{ bg: hoverBg }}
-              borderRadius="md"
-            ></IconButton>
+            <Box position="relative">
+              <IconButton
+                aria-label="Notifications"
+                icon={<FiBell size={24} />}
+                variant="ghost"
+                onClick={() => navigate("/notifications")}
+                h="auto"
+                py={2}
+                color={
+                  location.pathname === "/notifications"
+                    ? activeColor
+                    : textColor
+                }
+                _hover={{ bg: hoverBg }}
+                borderRadius="md"
+              />
+              {unreadCount > 0 && (
+                <Badge
+                  position="absolute"
+                  top={1}
+                  right={0}
+                  colorScheme="red"
+                  borderRadius="full"
+                  fontSize="2xs"
+                  minW={4}
+                  textAlign="center"
+                  pointerEvents="none"
+                >
+                  {unreadCount > 99 ? "99+" : unreadCount}
+                </Badge>
+              )}
+            </Box>
 
             {/* User Menu Button */}
             <IconButton

@@ -4,7 +4,6 @@ import { useMemo } from "react";
 import {
   Flex,
   Text,
-  Badge,
   IconButton,
   Menu,
   MenuButton,
@@ -28,13 +27,13 @@ import {
 } from "react-icons/fi";
 import Swal from "sweetalert2";
 import { useNavigate } from "react-router-dom";
-import { useApp, useLayout, useUser } from "../context/_useContext";
+import { useLayout, useUser, useNotifications } from "../context/_useContext";
+import NotifBadge from "./NotifBadge";
 const PageHeader = ({ children }) => {
-  const { getExpiringCertifications } = useApp();
   const { user: currentUser, logout } = useUser();
   const { headerRef } = useLayout();
   const navigate = useNavigate();
-  const expiringCerts = getExpiringCertifications();
+  const { unreadCount } = useNotifications();
   const { colorMode, toggleColorMode } = useColorMode();
   const bgColor = useColorModeValue("gray.50", "gray.900");
 
@@ -85,27 +84,29 @@ const PageHeader = ({ children }) => {
           <Box w="full">{children}</Box>
           {showDesktopMenu && (
             <Flex align="center" gap={0}>
-              <IconButton
-                aria-label="Notifications"
-                icon={<FiBell />}
-                variant="ghost"
-                position="relative"
-                isRound
-                onClick={() => navigate("/notifications")}
-              >
-                {expiringCerts.length > 0 && (
-                  <Badge
+              <Box position="relative">
+                <IconButton
+                  aria-label="Notifications"
+                  icon={<FiBell />}
+                  variant="ghost"
+                  isRound
+                  onClick={() => navigate("/notifications")}
+                />
+                {unreadCount > 0 && (
+                  <NotifBadge
+                    show={true}
+                    message={`${unreadCount} unread notification${unreadCount > 1 ? "s" : ""}`}
+                    boxSize={3}
                     position="absolute"
-                    top={0}
-                    right={0}
-                    colorScheme="red"
-                    borderRadius="full"
-                    fontSize="xs"
+                    top={2}
+                    right={2}
                   >
-                    {expiringCerts.length}
-                  </Badge>
+                    <Text fontSize="xs" color="white">
+                      {unreadCount}
+                    </Text>
+                  </NotifBadge>
                 )}
-              </IconButton>
+              </Box>
               <Menu>
                 <MenuButton
                   as={IconButton}
