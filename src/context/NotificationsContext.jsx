@@ -8,6 +8,21 @@ import { useUser } from "./_useContext";
 
 const NOTIFICATIONS_ENDPOINT = "/notifications";
 
+// Socket listener may need a few retries because the socket connection
+// is initiated in UserContext and may not be ready when this effect runs.
+const SOCKET_RETRY_INTERVAL_MS = 500;
+const SOCKET_MAX_RETRIES = 10;
+
+// Map notification color → toast border style
+const TOAST_BORDER_COLORS = {
+  red: "4px solid var(--chakra-colors-red-500)",
+  orange: "4px solid var(--chakra-colors-orange-500)",
+  green: "4px solid var(--chakra-colors-green-500)",
+  purple: "4px solid var(--chakra-colors-purple-500)",
+};
+
+const getBorderColorForToast = (color) => TOAST_BORDER_COLORS[color] || null;
+
 // ── Reducer ──────────────────────────────────────────────────────────
 const reducer = (state, action) => {
   switch (action.type) {
@@ -198,18 +213,11 @@ export const NotificationsProvider = ({ children }) => {
 
         // Show in-app toast via sonner
         const config = NOTIFICATION_CONFIG[notification.type] || {};
+        const borderColor = getBorderColorForToast(config.color);
         toast(notification.title, {
           description: notification.message,
           duration: 6000,
-          ...(config.color === "red"
-            ? { style: { borderLeft: "4px solid var(--chakra-colors-red-500)" } }
-            : config.color === "orange"
-              ? {
-                  style: {
-                    borderLeft: "4px solid var(--chakra-colors-orange-500)",
-                  },
-                }
-              : {}),
+          ...(borderColor ? { style: { borderLeft: borderColor } } : {}),
         });
 
         // Browser notification (if tab is hidden & permission granted)
@@ -237,18 +245,15 @@ export const NotificationsProvider = ({ children }) => {
       };
     };
 
-    // The socket may not be ready yet (connectSocket is async in UserContext).
-    // Retry a few times with a short delay.
     let cleanup;
     let retries = 0;
-    const maxRetries = 10;
     const interval = setInterval(() => {
       cleanup = attachListener();
       retries++;
-      if (listenerAttached.current || retries >= maxRetries) {
+      if (listenerAttached.current || retries >= SOCKET_MAX_RETRIES) {
         clearInterval(interval);
       }
-    }, 500);
+    }, SOCKET_RETRY_INTERVAL_MS);
 
     return () => {
       clearInterval(interval);

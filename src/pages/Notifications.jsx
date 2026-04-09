@@ -29,16 +29,8 @@ import { useNotifications } from "../context/_useContext";
 import NOTIFICATION_CONFIG from "../helpers/notificationConfig";
 
 // ── Colour helpers ───────────────────────────────────────────────────
-const colorSchemeMap = {
-  blue: "blue",
-  green: "green",
-  red: "red",
-  orange: "orange",
-  purple: "purple",
-};
-
 const getColorScheme = (type) =>
-  colorSchemeMap[NOTIFICATION_CONFIG[type]?.color] || "gray";
+  NOTIFICATION_CONFIG[type]?.color || "gray";
 
 // ── Single notification row ──────────────────────────────────────────
 const NotificationItem = ({ notification, onRead, onDelete }) => {
