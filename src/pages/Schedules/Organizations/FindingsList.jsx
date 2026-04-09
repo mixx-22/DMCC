@@ -40,6 +40,7 @@ import ResponsiveTabs, {
   ResponsiveTabPanels,
   ResponsiveTabPanel,
 } from "../../../components/common/ResponsiveTabs";
+import Can from "../../../components/Can";
 
 // Helper function to get user's full name from either format
 const getUserFullName = (user) => {
@@ -281,26 +282,28 @@ const FindingCard = ({
                 onClick={() => setIsExpanded(!isExpanded)}
                 aria-label={isExpanded ? "Collapse" : "Expand"}
               />
-              {isScheduleOngoing && onEdit && (
-                <IconButton
-                  icon={<FiEdit />}
-                  size="sm"
-                  variant="ghost"
-                  colorScheme="brandPrimary"
-                  onClick={handleEditClick}
-                  aria-label="Edit finding"
-                />
-              )}
-              {isScheduleOngoing && onDelete && (
-                <IconButton
-                  icon={<FiTrash2 />}
-                  size="sm"
-                  variant="ghost"
-                  colorScheme="error"
-                  onClick={() => onDelete(finding)}
-                  aria-label="Delete finding"
-                />
-              )}
+              <Can to="audit.findings.u">
+                {isScheduleOngoing && onEdit && (
+                  <IconButton
+                    icon={<FiEdit />}
+                    size="sm"
+                    variant="ghost"
+                    colorScheme="brandPrimary"
+                    onClick={handleEditClick}
+                    aria-label="Edit finding"
+                  />
+                )}
+                {isScheduleOngoing && onDelete && (
+                  <IconButton
+                    icon={<FiTrash2 />}
+                    size="sm"
+                    variant="ghost"
+                    colorScheme="error"
+                    onClick={() => onDelete(finding)}
+                    aria-label="Delete finding"
+                  />
+                )}
+              </Can>
             </HStack>
           </HStack>
 
@@ -579,25 +582,45 @@ const FindingCard = ({
                         </Box>
                       ) : (
                         <Center w="full" flexDir="column" minH="xs">
-                          <Text
-                            mb={2}
-                            fontSize="xs"
-                            color="gray.500"
-                            textAlign="center"
+                          {" "}
+                          <Can
+                            to="audit.response.c"
+                            fallback={
+                              <>
+                                <Text
+                                  mb={2}
+                                  fontSize="xs"
+                                  color="gray.500"
+                                  textAlign="center"
+                                >
+                                  No Action Plan Set Yet.
+                                  <br />
+                                  Wait for the team leader to add one.
+                                </Text>
+                              </>
+                            }
                           >
-                            No Action Plan Set Yet.
-                            <br />
-                            Add one now by clicking the button below.
-                          </Text>
-                          <Button
-                            size="sm"
-                            leftIcon={<FiPlus />}
-                            colorScheme="brandPrimary"
-                            variant="outline"
-                            onClick={() => setIsEditingActionPlan(true)}
-                          >
-                            Add Action Plan
-                          </Button>
+                            <Text
+                              mb={2}
+                              fontSize="xs"
+                              color="gray.500"
+                              textAlign="center"
+                            >
+                              No Action Plan Set Yet.
+                              <br />
+                              Add one now by clicking the button below.
+                            </Text>
+
+                            <Button
+                              size="sm"
+                              leftIcon={<FiPlus />}
+                              colorScheme="brandPrimary"
+                              variant="outline"
+                              onClick={() => setIsEditingActionPlan(true)}
+                            >
+                              Add Action Plan
+                            </Button>
+                          </Can>
                         </Center>
                       )}
                     </ResponsiveTabPanel>
@@ -669,30 +692,59 @@ const FindingCard = ({
                           />
                         </Box>
                       ) : (
-                        <Center w="full" flexDir="column" minH="xs">
-                          <Text
-                            mb={2}
-                            fontSize="xs"
-                            color="gray.500"
-                            textAlign="center"
+                        <Center
+                          w="full"
+                          flexDir="column"
+                          minH="xs"
+                          sx={{
+                            ">div": {
+                              display: "flex",
+                              flexDir: "column",
+                              alignItems: "center",
+                            },
+                          }}
+                        >
+                          <Can
+                            to="audit.findings.c"
+                            fallback={
+                              <>
+                                <Text
+                                  mb={2}
+                                  fontSize="xs"
+                                  color="gray.500"
+                                  textAlign="center"
+                                >
+                                  No Verification Set Yet.
+                                  <br />
+                                  Wait for the auditors verification.
+                                </Text>
+                              </>
+                            }
                           >
-                            No Verification Yet.
-                            <br />
-                            Verify this finding now by clicking the button
-                            below.
-                            <br />
-                            This action is irreversible to its pending status
-                            once saved
-                          </Text>
-                          <Button
-                            size="sm"
-                            leftIcon={<FiPlus />}
-                            colorScheme="green"
-                            variant="outline"
-                            onClick={() => setIsEditingVerification(true)}
-                          >
-                            Set Verification
-                          </Button>
+                            <Text
+                              mb={2}
+                              fontSize="xs"
+                              color="gray.500"
+                              textAlign="center"
+                            >
+                              No Verification Yet.
+                              <br />
+                              Verify this finding now by clicking the button
+                              below.
+                              <br />
+                              This action is irreversible to its pending status
+                              once saved
+                            </Text>
+                            <Button
+                              size="sm"
+                              leftIcon={<FiPlus />}
+                              colorScheme="green"
+                              variant="outline"
+                              onClick={() => setIsEditingVerification(true)}
+                            >
+                              Set Verification
+                            </Button>
+                          </Can>
                         </Center>
                       )}
                     </ResponsiveTabPanel>

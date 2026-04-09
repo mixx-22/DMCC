@@ -38,6 +38,7 @@ const StandardsAsyncSelect = ({
   placeholder = "Type at least 2 characters to search standards...",
   helperText = "The audit standard or framework being followed (optional)",
   limit = 10,
+  allowEmptySearch = false,
   debounceTimeout = 300,
   ...props
 }) => {
@@ -53,7 +54,7 @@ const StandardsAsyncSelect = ({
 
   const loadOptions = useCallback(
     async (inputValue) => {
-      if (inputValue.length < 2) {
+      if (!allowEmptySearch && inputValue.length < 2) {
         return [];
       }
 
@@ -68,6 +69,7 @@ const StandardsAsyncSelect = ({
             const filtered = MOCK_STANDARDS.filter((standard) => {
               const standardName = (standard.standard || "").toLowerCase();
               const description = (standard.description || "").toLowerCase();
+              if (!inputValue.length) return true;
               return (
                 standardName.includes(searchLower) ||
                 description.includes(searchLower)
@@ -88,7 +90,9 @@ const StandardsAsyncSelect = ({
             const response = await apiService.request(STANDARDS_ENDPOINT, {
               method: "GET",
               params: {
-                keyword: inputValue,
+                ...(allowEmptySearch || inputValue.length
+                  ? { keyword: inputValue }
+                  : {}),
                 limit,
               },
             });
@@ -111,7 +115,7 @@ const StandardsAsyncSelect = ({
         }, debounceTimeout);
       });
     },
-    [limit, debounceTimeout]
+    [limit, debounceTimeout, allowEmptySearch],
   );
 
   // Convert value to option format for display
@@ -138,11 +142,13 @@ const StandardsAsyncSelect = ({
         placeholder={placeholder}
         isClearable
         noOptionsMessage={({ inputValue }) => {
-          if (!inputValue || inputValue.length < 2) {
+          if (!allowEmptySearch && (!inputValue || inputValue.length < 2)) {
             return "Type at least 2 characters to search";
           }
           return "No standards found";
         }}
+        defaultOptions={allowEmptySearch}
+        openMenuOnFocus={allowEmptySearch}
         chakraStyles={{
           container: (provided) => ({
             ...provided,
@@ -162,7 +168,7 @@ const StandardsAsyncSelect = ({
       />
       {helperText && (
         <Text fontSize="sm" color="gray.500" mt={1}>
-          {helperText}
+          {allowEmptySearch ? "Click to view available standards" : helperText}
         </Text>
       )}
     </FormControl>

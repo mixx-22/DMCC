@@ -198,11 +198,11 @@ const FindingCard = ({
                                     key={
                                       person._id ||
                                       person.id ||
-                                      `${person.firstName}-${person.lastName}-${person.employeeId}`
+                                      `${person.name}-${person.employeeId}`
                                     }
                                   >
                                     <Badge colorScheme="blue" fontSize="xs">
-                                      {person.firstName} {person.lastName}
+                                      {person.name}
                                       {person.employeeId &&
                                         ` (${person.employeeId})`}
                                     </Badge>
@@ -223,11 +223,11 @@ const FindingCard = ({
                                     key={
                                       person._id ||
                                       person.id ||
-                                      `${person.firstName}-${person.lastName}-${person.employeeId}`
+                                      `${person.name}-${person.employeeId}`
                                     }
                                   >
                                     <Badge colorScheme="purple" fontSize="xs">
-                                      {person.firstName} {person.lastName}
+                                      {person.name}
                                       {person.employeeId &&
                                         ` (${person.employeeId})`}
                                     </Badge>
@@ -308,11 +308,11 @@ const FindingCard = ({
                                     key={
                                       person._id ||
                                       person.id ||
-                                      `${person.firstName}-${person.lastName}-${person.employeeId}`
+                                      `${person.name}-${person.employeeId}`
                                     }
                                   >
                                     <Badge colorScheme="green" fontSize="xs">
-                                      {person.firstName} {person.lastName}
+                                      {person.name}
                                       {person.employeeId &&
                                         ` (${person.employeeId})`}
                                     </Badge>
@@ -333,11 +333,11 @@ const FindingCard = ({
                                     key={
                                       person._id ||
                                       person.id ||
-                                      `${person.firstName}-${person.lastName}-${person.employeeId}`
+                                      `${person.name}-${person.employeeId}`
                                     }
                                   >
                                     <Badge colorScheme="teal" fontSize="xs">
-                                      {person.firstName} {person.lastName}
+                                      {person.name}
                                       {person.employeeId &&
                                         ` (${person.employeeId})`}
                                     </Badge>

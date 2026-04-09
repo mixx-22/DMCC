@@ -25,6 +25,7 @@ import OrganizationAuditorsSelect from "../../../components/OrganizationAuditors
 import TeamLeadersSelect from "../../../components/TeamLeadersSelect";
 import ClauseSelectionModal from "../../../components/ClauseSelectionModal";
 import { useLayout } from "../../../context/_useContext";
+import Can from "../../../components/Can";
 
 // Helper function to check if compliance type is a Non-Conformity
 const isNonConformity = (complianceType) => {
@@ -295,290 +296,294 @@ const FindingsForm = ({
   };
 
   return (
-    <Box
-      p={4}
-      bg={bg}
-      borderWidth={2}
-      borderRadius="md"
-      borderStyle="dashed"
-      borderColor={borderColor}
-    >
-      <VStack align="stretch" spacing={4}>
-        <HStack justify="space-between">
-          <Text fontWeight="semibold" fontSize="md">
-            {mode === "edit" ? "Edit Finding" : "Add New Finding"}
-          </Text>
-          {onCancel && (
-            <IconButton
-              icon={<FiX />}
-              size="sm"
-              variant="ghost"
-              onClick={onCancel}
-              aria-label="Cancel"
-            />
-          )}
-        </HStack>
-        {/* Clauses Selection */}
-        <FormControl isInvalid={!!errors.clauses}>
-          <FormLabel fontSize="sm">Clause/s</FormLabel>
-          <VStack align="stretch" spacing={2}>
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={onClauseModalOpen}
-              colorScheme="brandPrimary"
-            >
-              {formData.clauses.length > 0
-                ? `${formData.clauses.length} Clause${formData.clauses.length > 1 ? "s" : ""} Selected`
-                : "Select Clauses"}
-            </Button>
-            {formData.clauses.length > 0 && (
-              <Wrap spacing={2}>
-                {formData.clauses.map((clause) => (
-                  <WrapItem key={clause.id}>
-                    <Badge
-                      colorScheme="brandPrimary"
-                      fontSize="xs"
-                      px={2}
-                      py={1}
-                      display="flex"
-                      alignItems="center"
-                      gap={1}
-                    >
-                      <Text>{clause.name}</Text>
-                      <IconButton
-                        icon={<FiX />}
-                        size="xs"
-                        variant="ghost"
-                        minW="auto"
-                        h="auto"
-                        p={0}
-                        onClick={() => {
-                          handleChange(
-                            "clauses",
-                            formData.clauses.filter((c) => c.id !== clause.id),
-                          );
-                        }}
-                        aria-label="Remove clause"
-                      />
-                    </Badge>
-                  </WrapItem>
-                ))}
-              </Wrap>
+    <Can to="audit.findings.u">
+      <Box
+        p={4}
+        bg={bg}
+        borderWidth={2}
+        borderRadius="md"
+        borderStyle="dashed"
+        borderColor={borderColor}
+      >
+        <VStack align="stretch" spacing={4}>
+          <HStack justify="space-between">
+            <Text fontWeight="semibold" fontSize="md">
+              {mode === "edit" ? "Edit Finding" : "Add New Finding"}
+            </Text>
+            {onCancel && (
+              <IconButton
+                icon={<FiX />}
+                size="sm"
+                variant="ghost"
+                onClick={onCancel}
+                aria-label="Cancel"
+              />
             )}
-          </VStack>
-          {errors.clauses && (
-            <FormHelperText color="red.500" fontSize="xs">
-              {errors.clauses}
-            </FormHelperText>
-          )}
-        </FormControl>
-
-        <ClauseSelectionModal
-          isOpen={isClauseModalOpen}
-          onClose={onClauseModalClose}
-          clauses={auditStandardClauses}
-          value={formData.clauses}
-          onChange={(selectedClauses) =>
-            handleChange("clauses", selectedClauses)
-          }
-        />
-
-        {/* Compliance Dropdown */}
-        <FormControl isInvalid={!!errors.compliance}>
-          <FormLabel fontSize="sm">Compliance</FormLabel>
-          <Select
-            size="sm"
-            value={COMPLIANCE_OPTIONS.find(
-              (opt) => opt.value === formData.compliance,
-            )}
-            onChange={(option) =>
-              handleChange("compliance", option?.value || "")
-            }
-            options={COMPLIANCE_OPTIONS}
-            placeholder="Select compliance type"
-            isClearable
-            useBasicStyles
-            menuPortalTarget={document.body}
-          />
-          {errors.compliance && (
-            <FormHelperText color="red.500" fontSize="xs">
-              {errors.compliance}
-            </FormHelperText>
-          )}
-          {formData.compliance && (
-            <FormHelperText fontSize="xs" mt={1}>
-              {
-                COMPLIANCE_OPTIONS.find(
-                  (opt) => opt.value === formData.compliance,
-                )?.description
-              }
-            </FormHelperText>
-          )}
-        </FormControl>
-
-        {/* Title */}
-        <FormControl isInvalid={!!errors.title}>
-          <FormLabel fontSize="sm">Title</FormLabel>
-          <Input
-            size="sm"
-            value={formData.title}
-            onChange={(e) => handleChange("title", e.target.value)}
-            placeholder="Enter finding title"
-          />
-          {errors.title && (
-            <FormHelperText color="red.500" fontSize="xs">
-              {errors.title}
-            </FormHelperText>
-          )}
-        </FormControl>
-
-        {/* Details */}
-        <FormControl isInvalid={!!errors.details}>
-          <FormLabel fontSize="sm">Details</FormLabel>
-          <Textarea
-            size="sm"
-            value={formData.details}
-            onChange={(e) => handleChange("details", e.target.value)}
-            placeholder="Enter detailed description of the finding"
-            rows={3}
-          />
-          {errors.details && (
-            <FormHelperText color="red.500" fontSize="xs">
-              {errors.details}
-            </FormHelperText>
-          )}
-        </FormControl>
-
-        {/* Report Section - Only shown for Non-Conformity types */}
-        {isNonConformity(formData.compliance) && (
-          <>
-            <Divider />
-            <VStack align="stretch" spacing={4}>
-              <Text fontSize="sm" fontWeight="semibold" color="gray.700">
-                Report Details (Required for Non-Conformity)
-              </Text>
-
-              {/* Report Number */}
-              <FormControl isInvalid={!!errors["report.reportNo"]}>
-                <FormLabel fontSize="sm">Report Number</FormLabel>
-                <Input
-                  size="sm"
-                  value={formData.report.reportNo}
-                  onChange={(e) =>
-                    handleReportChange("reportNo", e.target.value)
-                  }
-                  placeholder="Enter report number"
-                />
-                {errors["report.reportNo"] && (
-                  <FormHelperText color="red.500" fontSize="xs">
-                    {errors["report.reportNo"]}
-                  </FormHelperText>
-                )}
-              </FormControl>
-
-              {/* Report Details */}
-              <FormControl isInvalid={!!errors["report.details"]}>
-                <FormLabel fontSize="sm">Report Details</FormLabel>
-                <Textarea
-                  size="sm"
-                  value={formData.report.details}
-                  onChange={(e) =>
-                    handleReportChange("details", e.target.value)
-                  }
-                  placeholder="Enter report details"
-                  rows={3}
-                />
-                {errors["report.details"] && (
-                  <FormHelperText color="red.500" fontSize="xs">
-                    {errors["report.details"]}
-                  </FormHelperText>
-                )}
-              </FormControl>
-
-              {/* Date Issued */}
-              <FormControl>
-                <FormLabel fontSize="sm">Date Issued</FormLabel>
-                <SingleDatepicker
-                  date={formData.report.date}
-                  onDateChange={(date) => handleReportChange("date", date)}
-                  configs={{ dateFormat: "MMMM dd, yyyy" }}
-                  propsConfigs={{
-                    inputProps: {
-                      size: "sm",
-                    },
-                    triggerBtnProps: {
-                      size: "sm",
-                      w: "full",
-                    },
-                  }}
-                  usePortal
-                  portalRef={pageRef}
-                />
-              </FormControl>
-
-              {/* Auditor */}
-              <FormControl isInvalid={!!errors["report.auditor"]}>
-                <FormLabel fontSize="sm">Auditor</FormLabel>
-                <OrganizationAuditorsSelect
-                  label=""
-                  value={formData.report.auditor || []}
-                  onChange={(users) => handleReportChange("auditor", users)}
-                  placeholder="Select Auditor(s)"
-                  displayMode="none"
-                  organizationAuditors={organizationAuditors}
-                />
-                {errors["report.auditor"] && (
-                  <FormHelperText color="red.500" fontSize="xs">
-                    {errors["report.auditor"]}
-                  </FormHelperText>
-                )}
-              </FormControl>
-
-              {/* Auditee */}
-              <FormControl isInvalid={!!errors["report.auditee"]}>
-                <FormLabel fontSize="sm">Auditee</FormLabel>
-                <TeamLeadersSelect
-                  label=""
-                  value={formData.report.auditee || []}
-                  onChange={(users) => handleReportChange("auditee", users)}
-                  placeholder="Select Auditee(s)"
-                  displayMode="none"
-                  team={team}
-                />
-                {errors["report.auditee"] && (
-                  <FormHelperText color="red.500" fontSize="xs">
-                    {errors["report.auditee"]}
-                  </FormHelperText>
-                )}
-              </FormControl>
+          </HStack>
+          {/* Clauses Selection */}
+          <FormControl isInvalid={!!errors.clauses}>
+            <FormLabel fontSize="sm">Clause/s</FormLabel>
+            <VStack align="stretch" spacing={2}>
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={onClauseModalOpen}
+                colorScheme="brandPrimary"
+              >
+                {formData.clauses.length > 0
+                  ? `${formData.clauses.length} Clause${formData.clauses.length > 1 ? "s" : ""} Selected`
+                  : "Select Clauses"}
+              </Button>
+              {formData.clauses.length > 0 && (
+                <Wrap spacing={2}>
+                  {formData.clauses.map((clause) => (
+                    <WrapItem key={clause.id}>
+                      <Badge
+                        colorScheme="brandPrimary"
+                        fontSize="xs"
+                        px={2}
+                        py={1}
+                        display="flex"
+                        alignItems="center"
+                        gap={1}
+                      >
+                        <Text>{clause.name}</Text>
+                        <IconButton
+                          icon={<FiX />}
+                          size="xs"
+                          variant="ghost"
+                          minW="auto"
+                          h="auto"
+                          p={0}
+                          onClick={() => {
+                            handleChange(
+                              "clauses",
+                              formData.clauses.filter(
+                                (c) => c.id !== clause.id,
+                              ),
+                            );
+                          }}
+                          aria-label="Remove clause"
+                        />
+                      </Badge>
+                    </WrapItem>
+                  ))}
+                </Wrap>
+              )}
             </VStack>
-          </>
-        )}
+            {errors.clauses && (
+              <FormHelperText color="red.500" fontSize="xs">
+                {errors.clauses}
+              </FormHelperText>
+            )}
+          </FormControl>
 
-        {/* Action Buttons */}
-        <HStack justify="flex-end" pt={2}>
-          {onCancel && (
+          <ClauseSelectionModal
+            isOpen={isClauseModalOpen}
+            onClose={onClauseModalClose}
+            clauses={auditStandardClauses}
+            value={formData.clauses}
+            onChange={(selectedClauses) =>
+              handleChange("clauses", selectedClauses)
+            }
+          />
+
+          {/* Compliance Dropdown */}
+          <FormControl isInvalid={!!errors.compliance}>
+            <FormLabel fontSize="sm">Compliance</FormLabel>
+            <Select
+              size="sm"
+              value={COMPLIANCE_OPTIONS.find(
+                (opt) => opt.value === formData.compliance,
+              )}
+              onChange={(option) =>
+                handleChange("compliance", option?.value || "")
+              }
+              options={COMPLIANCE_OPTIONS}
+              placeholder="Select compliance type"
+              isClearable
+              useBasicStyles
+              menuPortalTarget={document.body}
+            />
+            {errors.compliance && (
+              <FormHelperText color="red.500" fontSize="xs">
+                {errors.compliance}
+              </FormHelperText>
+            )}
+            {formData.compliance && (
+              <FormHelperText fontSize="xs" mt={1}>
+                {
+                  COMPLIANCE_OPTIONS.find(
+                    (opt) => opt.value === formData.compliance,
+                  )?.description
+                }
+              </FormHelperText>
+            )}
+          </FormControl>
+
+          {/* Title */}
+          <FormControl isInvalid={!!errors.title}>
+            <FormLabel fontSize="sm">Title</FormLabel>
+            <Input
+              size="sm"
+              value={formData.title}
+              onChange={(e) => handleChange("title", e.target.value)}
+              placeholder="Enter finding title"
+            />
+            {errors.title && (
+              <FormHelperText color="red.500" fontSize="xs">
+                {errors.title}
+              </FormHelperText>
+            )}
+          </FormControl>
+
+          {/* Details */}
+          <FormControl isInvalid={!!errors.details}>
+            <FormLabel fontSize="sm">Details</FormLabel>
+            <Textarea
+              size="sm"
+              value={formData.details}
+              onChange={(e) => handleChange("details", e.target.value)}
+              placeholder="Enter detailed description of the finding"
+              rows={3}
+            />
+            {errors.details && (
+              <FormHelperText color="red.500" fontSize="xs">
+                {errors.details}
+              </FormHelperText>
+            )}
+          </FormControl>
+
+          {/* Report Section - Only shown for Non-Conformity types */}
+          {isNonConformity(formData.compliance) && (
+            <>
+              <Divider />
+              <VStack align="stretch" spacing={4}>
+                <Text fontSize="sm" fontWeight="semibold" color="gray.700">
+                  Report Details (Required for Non-Conformity)
+                </Text>
+
+                {/* Report Number */}
+                <FormControl isInvalid={!!errors["report.reportNo"]}>
+                  <FormLabel fontSize="sm">Report Number</FormLabel>
+                  <Input
+                    size="sm"
+                    value={formData.report.reportNo}
+                    onChange={(e) =>
+                      handleReportChange("reportNo", e.target.value)
+                    }
+                    placeholder="Enter report number"
+                  />
+                  {errors["report.reportNo"] && (
+                    <FormHelperText color="red.500" fontSize="xs">
+                      {errors["report.reportNo"]}
+                    </FormHelperText>
+                  )}
+                </FormControl>
+
+                {/* Report Details */}
+                <FormControl isInvalid={!!errors["report.details"]}>
+                  <FormLabel fontSize="sm">Report Details</FormLabel>
+                  <Textarea
+                    size="sm"
+                    value={formData.report.details}
+                    onChange={(e) =>
+                      handleReportChange("details", e.target.value)
+                    }
+                    placeholder="Enter report details"
+                    rows={3}
+                  />
+                  {errors["report.details"] && (
+                    <FormHelperText color="red.500" fontSize="xs">
+                      {errors["report.details"]}
+                    </FormHelperText>
+                  )}
+                </FormControl>
+
+                {/* Date Issued */}
+                <FormControl>
+                  <FormLabel fontSize="sm">Date Issued</FormLabel>
+                  <SingleDatepicker
+                    date={formData.report.date}
+                    onDateChange={(date) => handleReportChange("date", date)}
+                    configs={{ dateFormat: "MMMM dd, yyyy" }}
+                    propsConfigs={{
+                      inputProps: {
+                        size: "sm",
+                      },
+                      triggerBtnProps: {
+                        size: "sm",
+                        w: "full",
+                      },
+                    }}
+                    usePortal
+                    portalRef={pageRef}
+                  />
+                </FormControl>
+
+                {/* Auditor */}
+                <FormControl isInvalid={!!errors["report.auditor"]}>
+                  <FormLabel fontSize="sm">Auditor</FormLabel>
+                  <OrganizationAuditorsSelect
+                    label=""
+                    value={formData.report.auditor || []}
+                    onChange={(users) => handleReportChange("auditor", users)}
+                    placeholder="Select Auditor(s)"
+                    displayMode="none"
+                    organizationAuditors={organizationAuditors}
+                  />
+                  {errors["report.auditor"] && (
+                    <FormHelperText color="red.500" fontSize="xs">
+                      {errors["report.auditor"]}
+                    </FormHelperText>
+                  )}
+                </FormControl>
+
+                {/* Auditee */}
+                <FormControl isInvalid={!!errors["report.auditee"]}>
+                  <FormLabel fontSize="sm">Auditee</FormLabel>
+                  <TeamLeadersSelect
+                    label=""
+                    value={formData.report.auditee || []}
+                    onChange={(users) => handleReportChange("auditee", users)}
+                    placeholder="Select Auditee(s)"
+                    displayMode="none"
+                    team={team}
+                  />
+                  {errors["report.auditee"] && (
+                    <FormHelperText color="red.500" fontSize="xs">
+                      {errors["report.auditee"]}
+                    </FormHelperText>
+                  )}
+                </FormControl>
+              </VStack>
+            </>
+          )}
+
+          {/* Action Buttons */}
+          <HStack justify="flex-end" pt={2}>
+            {onCancel && (
+              <Button
+                size="sm"
+                variant="ghost"
+                onClick={onCancel}
+                leftIcon={<FiX />}
+              >
+                Cancel
+              </Button>
+            )}
             <Button
               size="sm"
-              variant="ghost"
-              onClick={onCancel}
-              leftIcon={<FiX />}
+              colorScheme="brandPrimary"
+              leftIcon={<FiSave />}
+              onClick={handleSubmit}
             >
-              Cancel
+              {mode === "edit" ? "Save Changes" : "Add Finding"}
             </Button>
-          )}
-          <Button
-            size="sm"
-            colorScheme="brandPrimary"
-            leftIcon={<FiSave />}
-            onClick={handleSubmit}
-          >
-            {mode === "edit" ? "Save Changes" : "Add Finding"}
-          </Button>
-        </HStack>
-      </VStack>
-    </Box>
+          </HStack>
+        </VStack>
+      </Box>
+    </Can>
   );
 };
 

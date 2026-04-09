@@ -68,6 +68,7 @@ const AuditScheduleFieldsDemo = () => {
                     setSelectedPreviousAudit(audit);
                   }}
                   label="Previous Audit"
+                  allowEmptySearch
                 />
                 {selectedPreviousAudit && (
                   <Box mt={4} p={4} bg="green.50" borderRadius="md">

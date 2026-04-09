@@ -20,6 +20,7 @@ import DocumentDrawer from "../../components/Document/DocumentDrawer";
 import QualityDocumentUploadModal from "../../components/Document/modals/QualityDocumentUploadModal";
 import { ListView } from "../../components/Document/ListView";
 import Pagination from "../../components/Pagination";
+import Can from "../../components/Can";
 import apiService from "../../services/api";
 import { useDocuments } from "../../context/_useContext";
 import ResponsiveTabs, {
@@ -504,8 +505,12 @@ const Request = () => {
         >
           <ResponsiveTabList>
             <ResponsiveTab>My Requests</ResponsiveTab>
-            <ResponsiveTab>For Approval</ResponsiveTab>
-            <ResponsiveTab>For Publish</ResponsiveTab>
+            <Can to="request.approval.r">
+              <ResponsiveTab>For Approval</ResponsiveTab>
+            </Can>
+            <Can to="request.publish.r">
+              <ResponsiveTab>For Publish</ResponsiveTab>
+            </Can>
             <ResponsiveTab>Request History</ResponsiveTab>
           </ResponsiveTabList>
 

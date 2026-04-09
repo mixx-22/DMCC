@@ -70,6 +70,9 @@ const UserAsyncSelect = ({
   label = "Users",
   placeholder = "Type at least 2 characters to search users...",
   limit = 10,
+  roleFilter = null,
+  roleIdFilter = null,
+  allowEmptySearch = false,
   displayMode = "badges",
   readonly = false,
   tableProps = {},
@@ -86,9 +89,68 @@ const UserAsyncSelect = ({
     };
   }, []);
 
+  const matchesRoleFilter = useCallback(
+    (user) => {
+      if (!roleFilter && !roleIdFilter) return true;
+
+      const roles = user?.role || user?.roles || [];
+      const roleList = Array.isArray(roles) ? roles : [roles];
+      const normalizedRoleNames = roleList
+        .map((role) => {
+          if (!role) return null;
+          if (typeof role === "string") return role;
+          return role.title || role.name || role.role || null;
+        })
+        .filter(Boolean)
+        .map((role) => role.toLowerCase());
+
+      const normalizedRoleIds = roleList
+        .map((role) => {
+          if (!role) return null;
+          if (typeof role === "string") return role;
+          return role._id || role.id || role.roleId || null;
+        })
+        .filter(Boolean)
+        .map((roleId) => String(roleId));
+
+      if (roleIdFilter) {
+        const roleIdList = Array.isArray(roleIdFilter)
+          ? roleIdFilter
+          : [roleIdFilter];
+        const normalizedRoleIdFilters = roleIdList
+          .filter(Boolean)
+          .map((roleId) => String(roleId));
+
+        if (
+          normalizedRoleIdFilters.some((roleId) =>
+            normalizedRoleIds.includes(roleId),
+          )
+        ) {
+          return true;
+        }
+      }
+
+      if (roleFilter) {
+        const filterList = Array.isArray(roleFilter)
+          ? roleFilter
+          : [roleFilter];
+        const normalizedFilters = filterList
+          .filter(Boolean)
+          .map((role) => role.toLowerCase());
+
+        return normalizedFilters.some((filter) =>
+          normalizedRoleNames.some((role) => role.includes(filter)),
+        );
+      }
+
+      return false;
+    },
+    [roleFilter, roleIdFilter],
+  );
+
   const loadOptions = useCallback(
     async (inputValue) => {
-      if (inputValue.length < 2) {
+      if (!allowEmptySearch && inputValue.length < 2) {
         return [];
       }
 
@@ -103,10 +165,11 @@ const UserAsyncSelect = ({
               const fullName =
                 `${user.firstName} ${user.lastName}`.toLowerCase();
               const email = user.email.toLowerCase();
-              return (
-                fullName.includes(inputValue.toLowerCase()) ||
-                email.includes(inputValue.toLowerCase())
-              );
+              const matchesSearch = inputValue.length
+                ? fullName.includes(inputValue.toLowerCase()) ||
+                  email.includes(inputValue.toLowerCase())
+                : true;
+              return matchesSearch && matchesRoleFilter(user);
             });
             resolve(
               filtered.slice(0, limit).map((user) => ({
@@ -119,17 +182,35 @@ const UserAsyncSelect = ({
           }
 
           try {
+            const params = {
+              limit,
+              ...(allowEmptySearch || inputValue.length
+                ? { keyword: inputValue }
+                : {}),
+              ...(roleIdFilter
+                ? {
+                    role: Array.isArray(roleIdFilter)
+                      ? roleIdFilter.join(",")
+                      : roleIdFilter,
+                  }
+                : {}),
+              ...(roleFilter
+                ? {
+                    role: Array.isArray(roleFilter)
+                      ? roleFilter.join(",")
+                      : roleFilter,
+                  }
+                : {}),
+            };
             const data = await apiService.request(USERS_ENDPOINT, {
               method: "GET",
-              params: {
-                keyword: inputValue,
-                limit,
-              },
+              params,
             });
 
             const users = data.data || data.users || [];
+            const filteredUsers = users.filter(matchesRoleFilter);
             resolve(
-              users.map((user) => ({
+              filteredUsers.map((user) => ({
                 value: getUserId(user),
                 label: `${user.firstName} ${user.lastName}`,
                 user: user,
@@ -142,7 +223,14 @@ const UserAsyncSelect = ({
         }, debounceTimeout);
       });
     },
-    [limit, debounceTimeout],
+    [
+      limit,
+      debounceTimeout,
+      allowEmptySearch,
+      matchesRoleFilter,
+      roleIdFilter,
+      roleFilter,
+    ],
   );
 
   const handleChange = (selectedOptions) => {
@@ -334,14 +422,15 @@ const UserAsyncSelect = ({
             loadOptions={loadOptions}
             placeholder={placeholder}
             noOptionsMessage={({ inputValue }) =>
-              inputValue.length < 2
+              !allowEmptySearch && inputValue.length < 2
                 ? "Type at least 2 characters to search"
                 : "No users found"
             }
             formatOptionLabel={formatOptionLabel}
             isClearable
             cacheOptions
-            defaultOptions={[]}
+            defaultOptions={allowEmptySearch}
+            openMenuOnFocus={allowEmptySearch}
             loadingMessage={() => "Loading users..."}
             colorScheme="brandPrimary"
             useBasicStyles
@@ -356,7 +445,9 @@ const UserAsyncSelect = ({
         </Box>
         {!readonly && (
           <Text fontSize="xs" color="gray.500" mt={1}>
-            Type at least 2 characters to search for users
+            {allowEmptySearch
+              ? "Click to view available users"
+              : "Type at least 2 characters to search for users"}
           </Text>
         )}
       </FormControl>

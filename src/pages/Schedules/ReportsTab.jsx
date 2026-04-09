@@ -28,10 +28,11 @@ import {
 import { useMemo } from "react";
 import { FiFileText, FiTool, FiCheckCircle } from "react-icons/fi";
 import moment from "moment";
-import { useOrganizations } from "../../context/_useContext";
+import { useOrganizations, useUser } from "../../context/_useContext";
 import ActionPlanForm from "./Organizations/ActionPlanForm";
 import VerificationForm from "./Organizations/VerificationForm";
 import NotifBadge from "../../components/NotifBadge";
+import Can from "../../components/Can";
 
 // Constants
 const DATE_FORMAT_LONG = "MMMM DD, YYYY";
@@ -264,33 +265,39 @@ const ReportCard = ({ finding, organization, onSave, isScheduleOngoing }) => {
             )}
 
             {/* Action Buttons */}
-            {shouldShowActionPlan && isScheduleOngoing && (
-              <HStack spacing={2}>
-                <Spacer />
-                <Button
-                  size="sm"
-                  colorScheme="purple"
-                  leftIcon={<FiTool />}
-                  onClick={onActionPlanOpen}
-                  variant={needsActionPlan ? "solid" : "outline"}
-                >
-                  {finding.actionPlan ? "Edit Action Plan" : "Add Action Plan"}
-                </Button>
-                {finding.actionPlan && (
+            <Can to="audit.response.u">
+              {shouldShowActionPlan && isScheduleOngoing && (
+                <HStack spacing={2}>
+                  <Spacer />
                   <Button
-                    leftIcon={<FiCheckCircle />}
                     size="sm"
-                    colorScheme="green"
-                    variant={needsVerification ? "solid" : "outline"}
-                    onClick={onVerificationOpen}
+                    colorScheme="purple"
+                    leftIcon={<FiTool />}
+                    onClick={onActionPlanOpen}
+                    variant={needsActionPlan ? "solid" : "outline"}
                   >
-                    {finding.corrected === -1
-                      ? "Set Verification"
-                      : "Edit Verification"}
+                    {finding.actionPlan
+                      ? "Edit Action Plan"
+                      : "Add Action Plan"}
                   </Button>
-                )}
-              </HStack>
-            )}
+                  {finding.actionPlan && (
+                    <Can to="audit.verify.u">
+                      <Button
+                        leftIcon={<FiCheckCircle />}
+                        size="sm"
+                        colorScheme="green"
+                        variant={needsVerification ? "solid" : "outline"}
+                        onClick={onVerificationOpen}
+                      >
+                        {finding.corrected === -1
+                          ? "Set Verification"
+                          : "Edit Verification"}
+                      </Button>
+                    </Can>
+                  )}
+                </HStack>
+              )}
+            </Can>
           </VStack>
         </CardBody>
       </Card>
@@ -345,14 +352,47 @@ const ReportCard = ({ finding, organization, onSave, isScheduleOngoing }) => {
 
 const ReportsTab = ({ schedule }) => {
   const { loading, organizations, updateOrganization } = useOrganizations();
+  const { user } = useUser();
   const isScheduleOngoing = useMemo(() => schedule?.status === 0, [schedule]);
   const organizationColor = useColorModeValue("purple.600", "purple.200");
 
+  const userTeamIds = useMemo(() => {
+    const teams = user?.team || user?.teams || [];
+    const teamList = Array.isArray(teams) ? teams : [teams];
+
+    return teamList
+      .map((team) => {
+        if (!team) return null;
+        if (typeof team === "object") {
+          return team._id || team.id || team.teamId || null;
+        }
+        return team;
+      })
+      .filter(Boolean)
+      .map((id) => String(id));
+  }, [user]);
+
+  const visibleOrganizations = useMemo(() => {
+    if (!userTeamIds.length) {
+      return organizations || [];
+    }
+
+    return (organizations || []).filter((org) => {
+      const teamId =
+        org?.team?._id ||
+        org?.team?.id ||
+        org?.teamId ||
+        org?.team?.teamId ||
+        null;
+      return teamId ? userTeamIds.includes(String(teamId)) : false;
+    });
+  }, [organizations, userTeamIds]);
+
   // Collect all findings grouped by organization (only Major/Minor NC)
   const organizationsWithFindings = useMemo(() => {
-    if (!organizations || organizations.length === 0) return [];
+    if (!visibleOrganizations || visibleOrganizations.length === 0) return [];
 
-    return organizations
+    return visibleOrganizations
       .map((org) => {
         // Collect all findings from all visits for this organization
         // Filter to only show Major NC and Minor NC (items that need resolutions)
@@ -377,7 +417,7 @@ const ReportsTab = ({ schedule }) => {
         };
       })
       .filter((item) => item.findings.length > 0); // Only include orgs with findings
-  }, [organizations]);
+  }, [visibleOrganizations]);
 
   const handleSaveFinding = async (updatedFinding, organization) => {
     // Find the visit index from the finding
@@ -448,7 +488,7 @@ const ReportsTab = ({ schedule }) => {
     });
   };
 
-  if (loading && organizations?.length < 1) {
+  if (loading && visibleOrganizations?.length < 1) {
     return (
       <Flex justify="center" py={8}>
         <Spinner size="md" />
