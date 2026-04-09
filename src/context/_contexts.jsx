@@ -16,6 +16,7 @@ const DocumentsContext = createContext();
 const FileTypesContext = createContext();
 const FileTypeContext = createContext();
 const OrganizationsContext = createContext();
+const NotificationsContext = createContext();
 
 export {
   AppContext,
@@ -34,4 +35,5 @@ export {
   FileTypesContext,
   FileTypeContext,
   OrganizationsContext,
+  NotificationsContext,
 };

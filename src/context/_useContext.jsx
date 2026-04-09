@@ -16,6 +16,7 @@ import {
   FileTypeContext,
   PermissionContext,
   OrganizationsContext,
+  NotificationsContext,
 } from "./_contexts";
 
 export const useApp = () => {
@@ -140,6 +141,16 @@ export const useOrganizations = () => {
   if (!context) {
     throw new Error(
       "useOrganizations must be used within OrganizationsProvider",
+    );
+  }
+  return context;
+};
+
+export const useNotifications = () => {
+  const context = useContext(NotificationsContext);
+  if (!context) {
+    throw new Error(
+      "useNotifications must be used within NotificationsProvider",
     );
   }
   return context;

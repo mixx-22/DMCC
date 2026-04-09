@@ -6,6 +6,7 @@ import theme from "./theme";
 import { AppProvider } from "./context/AppContext";
 import { UserProvider } from "./context/UserContext";
 import { DocumentsProvider } from "./context/DocumentsContext";
+import { NotificationsProvider } from "./context/NotificationsContext";
 import "./index.css";
 import Fonts from "./components/Fonts";
 import { LayoutProvider } from "./context/Layout";
@@ -18,10 +19,12 @@ ReactDOM.createRoot(document.getElementById("root")).render(
         <PermissionProvider>
           <AppProvider>
             <DocumentsProvider>
-              <LayoutProvider>
-                <Fonts />
-                <App />
-              </LayoutProvider>
+              <NotificationsProvider>
+                <LayoutProvider>
+                  <Fonts />
+                  <App />
+                </LayoutProvider>
+              </NotificationsProvider>
             </DocumentsProvider>
           </AppProvider>
         </PermissionProvider>
