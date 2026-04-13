@@ -1890,7 +1890,7 @@ const OrganizationCard = ({
                                 onClick={handleSaveAuditors}
                                 isLoading={isSavingAuditors}
                               >
-                                Save Auditors
+                                Apply Changes
                               </Button>
                             </HStack>
                           ) : (
@@ -1900,13 +1900,11 @@ const OrganizationCard = ({
                               colorScheme="brandPrimary"
                               leftIcon={<FiEdit2 />}
                               onClick={() => {
-                                setEditingAuditors(
-                                  auditors.map((a) => ({ ...a })),
-                                );
+                                setEditingAuditors([...auditors]);
                                 setIsEditingAuditors(true);
                               }}
                             >
-                              Edit Auditors
+                              Update Auditors
                             </Button>
                           )}
                         </Flex>
