@@ -57,6 +57,7 @@ import {
   useDocuments,
   useLayout,
   usePermissions,
+  useUser,
 } from "../../../context/_useContext";
 import Timestamp from "../../../components/Timestamp";
 import apiService from "../../../services/api";
@@ -130,6 +131,7 @@ const OrganizationCard = ({
   const { isAllowedTo } = usePermissions();
   const { selectedDocument, closeDocumentDrawer, handleDocumentClick } =
     useLayout();
+  const { user } = useUser();
   const cardBg = useColorModeValue("white", "gray.700");
   const verdictColor = useColorModeValue("success.600", "success.400");
   const errorColor = useColorModeValue("error.600", "error.400");
@@ -195,6 +197,21 @@ const OrganizationCard = ({
   const [isSavingAuditors, setIsSavingAuditors] = useState(false);
   // Calculate the organization verdict
   const calculatedVerdict = calculateOrganizationVerdict(organization);
+
+  // Count findings logged by each auditor across all visits
+  const findingsCountByAuditor = useMemo(() => {
+    const counts = {};
+    (organization?.visits || []).forEach((visit) => {
+      (visit.findings || []).forEach((finding) => {
+        const logger = finding.loggedBy;
+        if (!logger) return;
+        const id = logger._id || logger.id;
+        if (!id) return;
+        counts[id] = (counts[id] || 0) + 1;
+      });
+    });
+    return counts;
+  }, [organization?.visits]);
 
   useEffect(() => {
     // Only fetch documents if organization is expanded AND user is on Other Documents tab
@@ -526,6 +543,29 @@ const OrganizationCard = ({
       });
       return;
     }
+
+    // Block removal of auditors who have logged at least one finding
+    const editingIds = new Set(
+      editingAuditors.map((a) => String(a._id || a.id)).filter(Boolean),
+    );
+    const blockedAuditors = auditors.filter((a) => {
+      const id = String(a._id || a.id);
+      return !editingIds.has(id) && (findingsCountByAuditor[id] || 0) > 0;
+    });
+    if (blockedAuditors.length > 0) {
+      const names = blockedAuditors
+        .map(
+          (a) =>
+            `${a.firstName || ""} ${a.lastName || ""}`.trim() || a.name || "Auditor",
+        )
+        .join(", ");
+      toast.error("Cannot remove auditor(s)", {
+        description: `${names} ha${blockedAuditors.length === 1 ? "s" : "ve"} logged findings and cannot be removed.`,
+        duration: 5000,
+      });
+      return;
+    }
+
     setIsSavingAuditors(true);
     try {
       await updateOrganization(organization._id, {
@@ -1700,6 +1740,11 @@ const OrganizationCard = ({
                                                     onAddFinding={async (
                                                       findingData,
                                                     ) => {
+                                                      // Attach the current logged-in user as loggedBy
+                                                      const findingWithLogger = {
+                                                        ...findingData,
+                                                        loggedBy: user || null,
+                                                      };
                                                       // Calculate updated visits with new finding
                                                       const updatedVisits =
                                                         organization.visits.map(
@@ -1710,7 +1755,7 @@ const OrganizationCard = ({
                                                                 findings: [
                                                                   ...(v.findings ||
                                                                     []),
-                                                                  findingData,
+                                                                  findingWithLogger,
                                                                 ],
                                                               };
                                                             }
@@ -1938,6 +1983,8 @@ const OrganizationCard = ({
                                     : auditor.name || `User ${index + 1}`;
                                 const employeeId = auditor.employeeId;
                                 const email = auditor.email;
+                                const findingsCount =
+                                  findingsCountByAuditor[String(userId)] || 0;
 
                                 return (
                                   <WrapItem key={userId || index}>
@@ -1955,6 +2002,11 @@ const OrganizationCard = ({
                                               {employeeId}
                                             </Text>
                                           )}
+                                          <Text fontSize="xs">
+                                            {findingsCount} finding
+                                            {findingsCount !== 1 ? "s" : ""}{" "}
+                                            logged
+                                          </Text>
                                         </VStack>
                                       }
                                       hasArrow
@@ -1979,14 +2031,22 @@ const OrganizationCard = ({
                                             >
                                               {fullName}
                                             </Text>
-                                            {employeeId && (
+                                            {email && (
                                               <Text
                                                 fontSize="xs"
                                                 color="gray.500"
                                               >
-                                                {employeeId}
+                                                {email}
                                               </Text>
                                             )}
+                                            <Text
+                                              fontSize="xs"
+                                              color="gray.500"
+                                            >
+                                              {findingsCount} finding
+                                              {findingsCount !== 1 ? "s" : ""}{" "}
+                                              logged
+                                            </Text>
                                           </VStack>
                                         </HStack>
                                       </Box>

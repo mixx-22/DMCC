@@ -467,7 +467,7 @@ const UserAsyncSelect = ({
                           {fullName}
                         </Text>
                         <Text fontSize="xs" color="gray.500">
-                          {user.employeeId || "-"}
+                          {user.email || user.employeeId || "-"}
                         </Text>
                       </VStack>
                     </HStack>
