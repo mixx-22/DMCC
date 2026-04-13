@@ -1,10 +1,12 @@
 import { useCallback, useEffect, useReducer, useRef } from "react";
 import { toast } from "sonner";
+import { useNavigate } from "react-router-dom";
 import apiService from "../services/api";
 import { getSocket } from "../services/socket";
 import NOTIFICATION_CONFIG from "../helpers/notificationConfig";
 import { NotificationsContext } from "./_contexts";
 import { useUser } from "./_useContext";
+import { Button } from "@chakra-ui/react";
 
 const NOTIFICATIONS_ENDPOINT = "/notifications";
 
@@ -95,6 +97,7 @@ export const NotificationsProvider = ({ children }) => {
   const [state, dispatch] = useReducer(reducer, initialState);
   const { user, authToken } = useUser();
   const listenerAttached = useRef(false);
+  const navigate = useNavigate();
 
   // ---- Fetch notifications (paginated, filtered) --------------------
   const fetchNotifications = useCallback(async (page = 1, filter = "all") => {
@@ -196,10 +199,29 @@ export const NotificationsProvider = ({ children }) => {
         // Show in-app toast via sonner
         const config = NOTIFICATION_CONFIG[notification.type] || {};
         const borderColor = getBorderColorForToast(config.color);
+        const path = config.path ? config.path(notification.data || {}) : null;
         toast.info(notification.title, {
           description: notification.message,
           duration: 6000,
           ...(borderColor ? { style: { borderLeft: borderColor } } : {}),
+          ...(path
+            ? {
+                action: (
+                  <Button
+                    px={4}
+                    size="xs"
+                    variant="outline"
+                    colorScheme={config.color || "blue"}
+                    onClick={() => {
+                      navigate(path);
+                      window.location.reload();
+                    }}
+                  >
+                    View
+                  </Button>
+                ),
+              }
+            : {}),
         });
 
         // Browser notification (if tab is hidden & permission granted)
@@ -242,7 +264,7 @@ export const NotificationsProvider = ({ children }) => {
       if (typeof cleanup === "function") cleanup();
       listenerAttached.current = false;
     };
-  }, [user, authToken]);
+  }, [user, authToken, navigate]);
 
   // ---- Initial fetch when user logs in / provider mounts ------------
   useEffect(() => {

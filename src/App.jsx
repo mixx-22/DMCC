@@ -49,6 +49,7 @@ import OrganizationTabsDemo from "./pages/OrganizationTabsDemo";
 import AuditKpiDashboard from "./pages/AuditKpiDashboard";
 import ClauseSelectionDemo from "./pages/ClauseSelectionDemo";
 import SidebarDemo from "./pages/SidebarDemo";
+import { NotificationsProvider } from "./context/NotificationsContext";
 import AuditScheduleFieldsDemo from "./pages/AuditScheduleFieldsDemo";
 
 const ProtectedRoute = ({ children }) => {
@@ -72,7 +73,8 @@ function App() {
     <>
       <Toaster position={position} richColors />
       <Router future={{ v7_relativeSplatPath: true, v7_startTransition: true }}>
-        <Routes>
+        <NotificationsProvider>
+          <Routes>
           <Route
             path="/login"
             element={
@@ -240,6 +242,7 @@ function App() {
             }
           />
         </Routes>
+        </NotificationsProvider>
       </Router>
     </>
   );
