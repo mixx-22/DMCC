@@ -66,6 +66,7 @@ const COMPLIANCE_DISPLAY = {
 
 const FindingCard = ({
   finding,
+  findingIndex = 1, // 1-based index of this finding in the list
   team, // NEW: Accept team object
   organizationAuditors = [], // NEW: Accept organization auditors
   auditStandardClauses, // Changed from teamObjectives to auditStandardClauses
@@ -181,6 +182,7 @@ const FindingCard = ({
             auditStandardClauses={auditStandardClauses}
             initialData={finding}
             mode="edit"
+            findingIndex={findingIndex}
             onAddFinding={handleSave}
             onCancel={handleCancel}
           />
@@ -941,6 +943,7 @@ const FindingsList = ({
         <FindingCard
           key={finding._id || index}
           finding={finding}
+          findingIndex={index + 1}
           team={team} // NEW: Pass team object
           organizationAuditors={organizationAuditors} // NEW: Pass organization auditors
           auditStandardClauses={auditStandardClauses}

@@ -24,7 +24,7 @@ import { SingleDatepicker } from "chakra-dayzed-datepicker";
 import OrganizationAuditorsSelect from "../../../components/OrganizationAuditorsSelect";
 import TeamLeadersSelect from "../../../components/TeamLeadersSelect";
 import ClauseSelectionModal from "../../../components/ClauseSelectionModal";
-import { useLayout } from "../../../context/_useContext";
+import { useLayout, useUser } from "../../../context/_useContext";
 import Can from "../../../components/Can";
 
 // Helper function to check if compliance type is a Non-Conformity
@@ -72,17 +72,31 @@ const FindingsForm = ({
   auditStandardClauses = [], // Changed from teamObjectives to auditStandardClauses
   initialData = null,
   mode = "add",
+  findingIndex = 1, // Index of this finding, used to suggest report number
   onAddFinding,
   onCancel,
 }) => {
   const bg = useColorModeValue("brandPrimary.50", "brandPrimary.900");
   const borderColor = useColorModeValue("brandPrimary.200", "brandPrimary.700");
   const { pageRef } = useLayout();
+  const { user } = useUser();
   const {
     isOpen: isClauseModalOpen,
     onOpen: onClauseModalOpen,
     onClose: onClauseModalClose,
   } = useDisclosure();
+
+  // Generate a suggested report number in AA-NNNN format
+  const getSuggestedReportNo = () => {
+    const initials = [
+      user?.firstName?.charAt(0) || "",
+      user?.lastName?.charAt(0) || "",
+    ]
+      .join("")
+      .toUpperCase();
+    const index = String(findingIndex).padStart(4, "0");
+    return `${initials}-${index}`;
+  };
 
   // Initialize form data based on mode
   const getInitialFormData = () => {
@@ -161,7 +175,7 @@ const FindingsForm = ({
       correctionDate: null,
       remarks: "",
       report: {
-        reportNo: "",
+        reportNo: getSuggestedReportNo(),
         details: "",
         date: new Date(),
         auditee: [],
@@ -472,7 +486,7 @@ const FindingsForm = ({
                     onChange={(e) =>
                       handleReportChange("reportNo", e.target.value)
                     }
-                    placeholder="Enter report number"
+                    placeholder={getSuggestedReportNo()}
                   />
                   {errors["report.reportNo"] && (
                     <FormHelperText color="red.500" fontSize="xs">
