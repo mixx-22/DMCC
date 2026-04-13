@@ -556,7 +556,9 @@ const OrganizationCard = ({
       const names = blockedAuditors
         .map(
           (a) =>
-            `${a.firstName || ""} ${a.lastName || ""}`.trim() || a.name || "Auditor",
+            `${a.firstName || ""} ${a.lastName || ""}`.trim() ||
+            a.name ||
+            "Auditor",
         )
         .join(", ");
       toast.error("Cannot remove auditor(s)", {
@@ -1749,10 +1751,12 @@ const OrganizationCard = ({
                                                       findingData,
                                                     ) => {
                                                       // Attach the current logged-in user as loggedBy
-                                                      const findingWithLogger = {
-                                                        ...findingData,
-                                                        loggedBy: user || null,
-                                                      };
+                                                      const findingWithLogger =
+                                                        {
+                                                          ...findingData,
+                                                          loggedBy:
+                                                            user || null,
+                                                        };
                                                       // Calculate updated visits with new finding
                                                       const updatedVisits =
                                                         organization.visits.map(
@@ -1989,8 +1993,6 @@ const OrganizationCard = ({
                                   auditor.firstName && auditor.lastName
                                     ? `${auditor.firstName} ${auditor.lastName}`
                                     : auditor.name || `User ${index + 1}`;
-                                const employeeId = auditor.employeeId;
-                                const email = auditor.email;
                                 const findingsCount =
                                   findingsCountByAuditor[String(userId)] || 0;
 
@@ -2002,17 +2004,11 @@ const OrganizationCard = ({
                                           <Text fontWeight="bold">
                                             {fullName}
                                           </Text>
-                                          {email && (
-                                            <Text fontSize="xs">{email}</Text>
-                                          )}
-                                          {employeeId && (
-                                            <Text fontSize="xs">
-                                              {employeeId}
-                                            </Text>
-                                          )}
                                           <Text fontSize="xs">
                                             {findingsCount} finding
-                                            {findingsCount !== 1 ? "s" : ""}{" "}
+                                            {findingsCount !== 1
+                                              ? "s"
+                                              : ""}{" "}
                                             logged
                                           </Text>
                                         </VStack>
@@ -2039,20 +2035,14 @@ const OrganizationCard = ({
                                             >
                                               {fullName}
                                             </Text>
-                                            {email && (
-                                              <Text
-                                                fontSize="xs"
-                                                color="gray.500"
-                                              >
-                                                {email}
-                                              </Text>
-                                            )}
                                             <Text
                                               fontSize="xs"
                                               color="gray.500"
                                             >
                                               {findingsCount} finding
-                                              {findingsCount !== 1 ? "s" : ""}{" "}
+                                              {findingsCount !== 1
+                                                ? "s"
+                                                : ""}{" "}
                                               logged
                                             </Text>
                                           </VStack>
