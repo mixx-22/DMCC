@@ -36,7 +36,6 @@ import {
 } from "@chakra-ui/react";
 import {
   FiMoreVertical,
-  FiEdit,
   FiTrash2,
   FiChevronDown,
   FiChevronUp,
@@ -45,10 +44,14 @@ import {
   FiCalendar,
   FiCheckCircle,
   FiPrinter,
+  FiEdit2,
+  FiX,
+  FiSave,
 } from "react-icons/fi";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Link as RouterLink } from "react-router-dom";
 import Swal from "sweetalert2";
+import { toast } from "sonner";
 import {
   useOrganizations,
   useDocuments,
@@ -66,8 +69,8 @@ import FindingsList from "./FindingsList";
 import VisitManager from "./VisitManager";
 import VisitComplianceForm from "./VisitComplianceForm";
 import SetVerdictModal from "./SetVerdictModal";
-import EditOrganizationModal from "./EditOrganizationModal";
 import { calculateOrganizationVerdict } from "../../../utils/helpers";
+import UserAsyncSelect from "../../../components/UserAsyncSelect";
 import TeamQualityDocuments from "../../../components/TeamQualityDocuments";
 import PreviousAuditFindings from "./PreviousAuditFindings";
 import ResponsiveTabs, {
@@ -186,8 +189,10 @@ const OrganizationCard = ({
 
   // State to track verdict modal
   const [isVerdictModalOpen, setIsVerdictModalOpen] = useState(false);
-  // State to track edit organization modal
-  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  // State to track inline auditor editing
+  const [isEditingAuditors, setIsEditingAuditors] = useState(false);
+  const [editingAuditors, setEditingAuditors] = useState([]);
+  const [isSavingAuditors, setIsSavingAuditors] = useState(false);
   // Calculate the organization verdict
   const calculatedVerdict = calculateOrganizationVerdict(organization);
 
@@ -510,6 +515,27 @@ const OrganizationCard = ({
       } catch (error) {
         console.error("Failed to Delete Organization:", error);
       }
+    }
+  };
+
+  const handleSaveAuditors = async () => {
+    if (!editingAuditors || editingAuditors.length === 0) {
+      toast.error("Invalid Auditors", {
+        description: "At least one auditor is required",
+        duration: 3000,
+      });
+      return;
+    }
+    setIsSavingAuditors(true);
+    try {
+      await updateOrganization(organization._id, {
+        auditors: editingAuditors,
+      });
+      setIsEditingAuditors(false);
+    } catch (error) {
+      console.error("Failed to update auditors:", error);
+    } finally {
+      setIsSavingAuditors(false);
     }
   };
 
@@ -1261,17 +1287,6 @@ const OrganizationCard = ({
                   {isScheduleUpdateAllowed ? (
                     <>
                       <MenuItem
-                        icon={<FiEdit />}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setIsEditModalOpen(true);
-                        }}
-                        isDisabled={!isScheduleOngoing}
-                      >
-                        Edit Organization
-                      </MenuItem>
-                      <Divider />
-                      <MenuItem
                         icon={<FiTrash2 />}
                         onClick={(e) => {
                           e.stopPropagation();
@@ -1846,76 +1861,147 @@ const OrganizationCard = ({
                       </Box>
                     </Can>
                   </ResponsiveTabPanel>
-                  {/* Team Details Tab */}
+                  {/* Auditors Tab */}
                   <ResponsiveTabPanel>
-                    {/* Auditors Section - Always Visible */}
-                    <Box mb={4}>
-                      <Text fontSize="sm" color="gray.500" mb={2}>
-                        Auditors ({auditors.length})
-                      </Text>
-                      {auditors && auditors.length > 0 ? (
-                        <Wrap>
-                          {auditors.map((auditor, index) => {
-                            const userId = auditor._id || auditor.id || auditor;
-                            const fullName =
-                              auditor.firstName && auditor.lastName
-                                ? `${auditor.firstName} ${auditor.lastName}`
-                                : auditor.name || `User ${index + 1}`;
-                            const employeeId = auditor.employeeId;
-                            const email = auditor.email;
-
-                            return (
-                              <WrapItem key={userId || index}>
-                                <Tooltip
-                                  label={
-                                    <VStack align="start" spacing={0}>
-                                      <Text fontWeight="bold">{fullName}</Text>
-                                      {email && (
-                                        <Text fontSize="xs">{email}</Text>
-                                      )}
-                                      {employeeId && (
-                                        <Text fontSize="xs">{employeeId}</Text>
-                                      )}
-                                    </VStack>
-                                  }
-                                  hasArrow
-                                  placement="top"
-                                >
-                                  <Box
-                                    px={3}
-                                    py={2}
-                                    borderRadius="md"
-                                    borderWidth="1px"
-                                    borderColor={borderColor}
-                                    _hover={{ bg: hoverBg }}
-                                    cursor="pointer"
-                                    transition="all 0.2s"
-                                  >
-                                    <HStack spacing={2}>
-                                      <Avatar name={fullName} size="xs" />
-                                      <VStack align="start" spacing={0}>
-                                        <Text fontSize="sm" fontWeight="medium">
-                                          {fullName}
-                                        </Text>
-                                        {employeeId && (
-                                          <Text fontSize="xs" color="gray.500">
-                                            {employeeId}
-                                          </Text>
-                                        )}
-                                      </VStack>
-                                    </HStack>
-                                  </Box>
-                                </Tooltip>
-                              </WrapItem>
-                            );
-                          })}
-                        </Wrap>
-                      ) : (
-                        <Text fontSize="sm" color="gray.500" fontStyle="italic">
-                          No auditors assigned
-                        </Text>
+                    <VStack align="stretch" spacing={4}>
+                      {/* Header row with Edit button */}
+                      {isScheduleUpdateAllowed && isScheduleOngoing && (
+                        <Flex justify="flex-end">
+                          {isEditingAuditors ? (
+                            <HStack>
+                              <Button
+                                size="sm"
+                                variant="ghost"
+                                leftIcon={<FiX />}
+                                onClick={() => setIsEditingAuditors(false)}
+                                isDisabled={isSavingAuditors}
+                              >
+                                Cancel
+                              </Button>
+                              <Button
+                                size="sm"
+                                colorScheme="brandPrimary"
+                                leftIcon={<FiSave />}
+                                onClick={handleSaveAuditors}
+                                isLoading={isSavingAuditors}
+                              >
+                                Save Auditors
+                              </Button>
+                            </HStack>
+                          ) : (
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              colorScheme="brandPrimary"
+                              leftIcon={<FiEdit2 />}
+                              onClick={() => {
+                                setEditingAuditors(auditors);
+                                setIsEditingAuditors(true);
+                              }}
+                            >
+                              Edit Auditors
+                            </Button>
+                          )}
+                        </Flex>
                       )}
-                    </Box>
+
+                      {/* Inline editor */}
+                      {isEditingAuditors ? (
+                        <UserAsyncSelect
+                          value={editingAuditors}
+                          placeholder="Start searching for Users..."
+                          onChange={setEditingAuditors}
+                          displayMode="none"
+                          label="Auditors"
+                          limit={5}
+                          roleFilter="Internal Auditor"
+                          allowEmptySearch
+                        />
+                      ) : (
+                        <Box>
+                          <Text fontSize="sm" color="gray.500" mb={2}>
+                            Auditors ({auditors.length})
+                          </Text>
+                          {auditors && auditors.length > 0 ? (
+                            <Wrap>
+                              {auditors.map((auditor, index) => {
+                                const userId =
+                                  auditor._id || auditor.id || auditor;
+                                const fullName =
+                                  auditor.firstName && auditor.lastName
+                                    ? `${auditor.firstName} ${auditor.lastName}`
+                                    : auditor.name || `User ${index + 1}`;
+                                const employeeId = auditor.employeeId;
+                                const email = auditor.email;
+
+                                return (
+                                  <WrapItem key={userId || index}>
+                                    <Tooltip
+                                      label={
+                                        <VStack align="start" spacing={0}>
+                                          <Text fontWeight="bold">
+                                            {fullName}
+                                          </Text>
+                                          {email && (
+                                            <Text fontSize="xs">{email}</Text>
+                                          )}
+                                          {employeeId && (
+                                            <Text fontSize="xs">
+                                              {employeeId}
+                                            </Text>
+                                          )}
+                                        </VStack>
+                                      }
+                                      hasArrow
+                                      placement="top"
+                                    >
+                                      <Box
+                                        px={3}
+                                        py={2}
+                                        borderRadius="md"
+                                        borderWidth="1px"
+                                        borderColor={borderColor}
+                                        _hover={{ bg: hoverBg }}
+                                        cursor="pointer"
+                                        transition="all 0.2s"
+                                      >
+                                        <HStack spacing={2}>
+                                          <Avatar name={fullName} size="xs" />
+                                          <VStack align="start" spacing={0}>
+                                            <Text
+                                              fontSize="sm"
+                                              fontWeight="medium"
+                                            >
+                                              {fullName}
+                                            </Text>
+                                            {employeeId && (
+                                              <Text
+                                                fontSize="xs"
+                                                color="gray.500"
+                                              >
+                                                {employeeId}
+                                              </Text>
+                                            )}
+                                          </VStack>
+                                        </HStack>
+                                      </Box>
+                                    </Tooltip>
+                                  </WrapItem>
+                                );
+                              })}
+                            </Wrap>
+                          ) : (
+                            <Text
+                              fontSize="sm"
+                              color="gray.500"
+                              fontStyle="italic"
+                            >
+                              No auditors assigned
+                            </Text>
+                          )}
+                        </Box>
+                      )}
+                    </VStack>
                   </ResponsiveTabPanel>
                   {/* Team Details Tab */}
                   <ResponsiveTabPanel>
@@ -2101,11 +2187,6 @@ const OrganizationCard = ({
         organization={organization}
         calculatedVerdict={calculatedVerdict}
         onSave={handleSetVerdict}
-      />
-      <EditOrganizationModal
-        isOpen={isEditModalOpen}
-        onClose={() => setIsEditModalOpen(false)}
-        organization={organization}
       />
     </>
   );
