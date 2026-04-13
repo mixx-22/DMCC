@@ -1873,7 +1873,10 @@ const OrganizationCard = ({
                                 size="sm"
                                 variant="ghost"
                                 leftIcon={<FiX />}
-                                onClick={() => setIsEditingAuditors(false)}
+                                onClick={() => {
+                                  setEditingAuditors([]);
+                                  setIsEditingAuditors(false);
+                                }}
                                 isDisabled={isSavingAuditors}
                               >
                                 Cancel
@@ -1895,7 +1898,7 @@ const OrganizationCard = ({
                               colorScheme="brandPrimary"
                               leftIcon={<FiEdit2 />}
                               onClick={() => {
-                                setEditingAuditors(auditors);
+                                setEditingAuditors(auditors.map((a) => ({ ...a })));
                                 setIsEditingAuditors(true);
                               }}
                             >
