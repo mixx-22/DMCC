@@ -373,7 +373,9 @@ const Organizations = ({ schedule = {}, setFormData = () => {} }) => {
   return (
     <VStack align="stretch" spacing={4}>
       <Flex justify="space-between" align="center">
-        <Heading size="md">Organizations</Heading>
+        <Heading size="md">
+          {isInternalAuditor ? `Your Organizations` : `All Organizations`}
+        </Heading>
         <Spacer />
         <Text fontSize="xs" color="gray.500">
           {visibleOrganizations?.length > 0
