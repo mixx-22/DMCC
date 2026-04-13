@@ -24,6 +24,7 @@ import {
   Tooltip,
   Divider,
   SimpleGrid,
+  Center,
 } from "@chakra-ui/react";
 import { useMemo } from "react";
 import { FiFileText, FiTool, FiCheckCircle } from "react-icons/fi";
@@ -498,20 +499,20 @@ const ReportsTab = ({ schedule }) => {
 
   if (organizationsWithFindings.length === 0) {
     return (
-      <Card>
-        <CardBody>
-          <VStack spacing={3} py={8}>
-            <FiFileText size={48} opacity={0.3} />
-            <Text fontSize="lg" fontWeight="medium" color="gray.500">
-              No non-conformity items to display
-            </Text>
-            <Text fontSize="sm" color="gray.400">
-              Only Major NC and Minor NC findings that need resolutions are
-              shown here
-            </Text>
-          </VStack>
-        </CardBody>
-      </Card>
+      <Center p={8}>
+        <VStack spacing={3}>
+          <FiCheckCircle size={48} opacity={0.3} />
+          <Text fontSize="lg" fontWeight="medium" color="gray.500">
+            Everything is looking good!
+          </Text>
+          <Text fontSize="sm" color="gray.400" textAlign="center" maxW="md">
+            Looks like everything is compliant so far.
+            <br />
+            Only Major Non-Conformity and Minor Non-Conformity findings that
+            need resolutions are shown here.
+          </Text>
+        </VStack>
+      </Center>
     );
   }
 

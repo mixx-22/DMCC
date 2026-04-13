@@ -36,7 +36,6 @@ import {
 } from "@chakra-ui/react";
 import {
   FiMoreVertical,
-  FiEdit,
   FiTrash2,
   FiChevronDown,
   FiChevronUp,
@@ -45,15 +44,20 @@ import {
   FiCalendar,
   FiCheckCircle,
   FiPrinter,
+  FiEdit2,
+  FiX,
+  FiSave,
 } from "react-icons/fi";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Link as RouterLink } from "react-router-dom";
 import Swal from "sweetalert2";
+import { toast } from "sonner";
 import {
   useOrganizations,
   useDocuments,
   useLayout,
   usePermissions,
+  useUser,
 } from "../../../context/_useContext";
 import Timestamp from "../../../components/Timestamp";
 import apiService from "../../../services/api";
@@ -67,6 +71,7 @@ import VisitManager from "./VisitManager";
 import VisitComplianceForm from "./VisitComplianceForm";
 import SetVerdictModal from "./SetVerdictModal";
 import { calculateOrganizationVerdict } from "../../../utils/helpers";
+import UserAsyncSelect from "../../../components/UserAsyncSelect";
 import TeamQualityDocuments from "../../../components/TeamQualityDocuments";
 import PreviousAuditFindings from "./PreviousAuditFindings";
 import ResponsiveTabs, {
@@ -111,7 +116,6 @@ const OrganizationCard = ({
   organization,
   team,
   auditors = [],
-  onEdit = () => {},
   isExpanded = false,
   onToggleExpanded = () => {},
   schedule = {},
@@ -127,6 +131,7 @@ const OrganizationCard = ({
   const { isAllowedTo } = usePermissions();
   const { selectedDocument, closeDocumentDrawer, handleDocumentClick } =
     useLayout();
+  const { user } = useUser();
   const cardBg = useColorModeValue("white", "gray.700");
   const verdictColor = useColorModeValue("success.600", "success.400");
   const errorColor = useColorModeValue("error.600", "error.400");
@@ -186,8 +191,27 @@ const OrganizationCard = ({
 
   // State to track verdict modal
   const [isVerdictModalOpen, setIsVerdictModalOpen] = useState(false);
+  // State to track inline auditor editing
+  const [isEditingAuditors, setIsEditingAuditors] = useState(false);
+  const [editingAuditors, setEditingAuditors] = useState([]);
+  const [isSavingAuditors, setIsSavingAuditors] = useState(false);
   // Calculate the organization verdict
   const calculatedVerdict = calculateOrganizationVerdict(organization);
+
+  // Count findings logged by each auditor across all visits
+  const findingsCountByAuditor = useMemo(() => {
+    const counts = {};
+    (organization?.visits || []).forEach((visit) => {
+      (visit.findings || []).forEach((finding) => {
+        const logger = finding.loggedBy;
+        if (!logger) return;
+        const id = logger._id || logger.id;
+        if (!id) return;
+        counts[id] = (counts[id] || 0) + 1;
+      });
+    });
+    return counts;
+  }, [organization?.visits]);
 
   useEffect(() => {
     // Only fetch documents if organization is expanded AND user is on Other Documents tab
@@ -508,6 +532,60 @@ const OrganizationCard = ({
       } catch (error) {
         console.error("Failed to Delete Organization:", error);
       }
+    }
+  };
+
+  const handleSaveAuditors = async () => {
+    if (!editingAuditors || editingAuditors.length === 0) {
+      toast.error("Invalid Auditors", {
+        description: "At least one auditor is required",
+        duration: 3000,
+      });
+      return;
+    }
+
+    // Block removal of auditors who have logged at least one finding
+    const editingIds = new Set(
+      editingAuditors.map((a) => String(a._id || a.id)).filter(Boolean),
+    );
+    const blockedAuditors = auditors.filter((a) => {
+      const id = String(a._id || a.id);
+      return !editingIds.has(id) && (findingsCountByAuditor[id] || 0) > 0;
+    });
+    if (blockedAuditors.length > 0) {
+      const names = blockedAuditors
+        .map(
+          (a) =>
+            `${a.firstName || ""} ${a.lastName || ""}`.trim() ||
+            a.name ||
+            "Auditor",
+        )
+        .join(", ");
+      toast.error("Cannot remove auditor(s)", {
+        description: `${names} ha${blockedAuditors.length === 1 ? "s" : "ve"} logged findings and cannot be removed.`,
+        duration: 5000,
+      });
+      return;
+    }
+
+    setIsSavingAuditors(true);
+    try {
+      await updateOrganization(organization._id, {
+        auditors: editingAuditors,
+      });
+      // The API response has string-only auditor IDs which mergeOrganizationUpdate
+      // (in src/context/OrganizationsContext.jsx) preserves as the old objects.
+      // Dispatch again with the populated objects so the displayed list reflects
+      // the new selection immediately.
+      dispatch({
+        type: "UPDATE_ORGANIZATION",
+        payload: { ...organization, auditors: editingAuditors },
+      });
+      setIsEditingAuditors(false);
+    } catch (error) {
+      console.error("Failed to update auditors:", error);
+    } finally {
+      setIsSavingAuditors(false);
     }
   };
 
@@ -1259,17 +1337,6 @@ const OrganizationCard = ({
                   {isScheduleUpdateAllowed ? (
                     <>
                       <MenuItem
-                        icon={<FiEdit />}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          onEdit(organization);
-                        }}
-                        isDisabled={!isScheduleOngoing}
-                      >
-                        Edit Organization
-                      </MenuItem>
-                      <Divider />
-                      <MenuItem
                         icon={<FiTrash2 />}
                         onClick={(e) => {
                           e.stopPropagation();
@@ -1683,6 +1750,13 @@ const OrganizationCard = ({
                                                     onAddFinding={async (
                                                       findingData,
                                                     ) => {
+                                                      // Attach the current logged-in user as loggedBy
+                                                      const findingWithLogger =
+                                                        {
+                                                          ...findingData,
+                                                          loggedBy:
+                                                            user || null,
+                                                        };
                                                       // Calculate updated visits with new finding
                                                       const updatedVisits =
                                                         organization.visits.map(
@@ -1693,7 +1767,7 @@ const OrganizationCard = ({
                                                                 findings: [
                                                                   ...(v.findings ||
                                                                     []),
-                                                                  findingData,
+                                                                  findingWithLogger,
                                                                 ],
                                                               };
                                                             }
@@ -1800,15 +1874,17 @@ const OrganizationCard = ({
                               No Visits Scheduled
                             </Text>
                             {isScheduleOngoing && (
-                              <Button
-                                size="sm"
-                                variant="outline"
-                                colorScheme="purple"
-                                leftIcon={<FiCalendar />}
-                                onClick={() => setShowVisitForm(true)}
-                              >
-                                Manage Visits
-                              </Button>
+                              <Can to="audit.findings.c">
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  colorScheme="purple"
+                                  leftIcon={<FiCalendar />}
+                                  onClick={() => setShowVisitForm(true)}
+                                >
+                                  Manage Visits
+                                </Button>
+                              </Can>
                             )}
                           </Center>
                         )}
@@ -1844,76 +1920,151 @@ const OrganizationCard = ({
                       </Box>
                     </Can>
                   </ResponsiveTabPanel>
-                  {/* Team Details Tab */}
+                  {/* Auditors Tab */}
                   <ResponsiveTabPanel>
-                    {/* Auditors Section - Always Visible */}
-                    <Box mb={4}>
-                      <Text fontSize="sm" color="gray.500" mb={2}>
-                        Auditors ({auditors.length})
-                      </Text>
-                      {auditors && auditors.length > 0 ? (
-                        <Wrap>
-                          {auditors.map((auditor, index) => {
-                            const userId = auditor._id || auditor.id || auditor;
-                            const fullName =
-                              auditor.firstName && auditor.lastName
-                                ? `${auditor.firstName} ${auditor.lastName}`
-                                : auditor.name || `User ${index + 1}`;
-                            const employeeId = auditor.employeeId;
-                            const email = auditor.email;
-
-                            return (
-                              <WrapItem key={userId || index}>
-                                <Tooltip
-                                  label={
-                                    <VStack align="start" spacing={0}>
-                                      <Text fontWeight="bold">{fullName}</Text>
-                                      {email && (
-                                        <Text fontSize="xs">{email}</Text>
-                                      )}
-                                      {employeeId && (
-                                        <Text fontSize="xs">{employeeId}</Text>
-                                      )}
-                                    </VStack>
-                                  }
-                                  hasArrow
-                                  placement="top"
-                                >
-                                  <Box
-                                    px={3}
-                                    py={2}
-                                    borderRadius="md"
-                                    borderWidth="1px"
-                                    borderColor={borderColor}
-                                    _hover={{ bg: hoverBg }}
-                                    cursor="pointer"
-                                    transition="all 0.2s"
-                                  >
-                                    <HStack spacing={2}>
-                                      <Avatar name={fullName} size="xs" />
-                                      <VStack align="start" spacing={0}>
-                                        <Text fontSize="sm" fontWeight="medium">
-                                          {fullName}
-                                        </Text>
-                                        {employeeId && (
-                                          <Text fontSize="xs" color="gray.500">
-                                            {employeeId}
-                                          </Text>
-                                        )}
-                                      </VStack>
-                                    </HStack>
-                                  </Box>
-                                </Tooltip>
-                              </WrapItem>
-                            );
-                          })}
-                        </Wrap>
-                      ) : (
-                        <Text fontSize="sm" color="gray.500" fontStyle="italic">
-                          No auditors assigned
-                        </Text>
+                    <VStack align="stretch" spacing={4}>
+                      {/* Header row with Edit button */}
+                      {isScheduleUpdateAllowed && isScheduleOngoing && (
+                        <Flex justify="flex-end">
+                          {isEditingAuditors ? (
+                            <HStack>
+                              <Button
+                                size="sm"
+                                variant="ghost"
+                                leftIcon={<FiX />}
+                                onClick={() => {
+                                  setEditingAuditors([]);
+                                  setIsEditingAuditors(false);
+                                }}
+                                isDisabled={isSavingAuditors}
+                              >
+                                Cancel
+                              </Button>
+                              <Button
+                                size="sm"
+                                colorScheme="brandPrimary"
+                                leftIcon={<FiSave />}
+                                onClick={handleSaveAuditors}
+                                isLoading={isSavingAuditors}
+                              >
+                                Apply Changes
+                              </Button>
+                            </HStack>
+                          ) : (
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              colorScheme="brandPrimary"
+                              leftIcon={<FiEdit2 />}
+                              onClick={() => {
+                                setEditingAuditors([...auditors]);
+                                setIsEditingAuditors(true);
+                              }}
+                            >
+                              Update Auditors
+                            </Button>
+                          )}
+                        </Flex>
                       )}
-                    </Box>
+
+                      {/* Inline editor */}
+                      {isEditingAuditors ? (
+                        <UserAsyncSelect
+                          value={editingAuditors}
+                          placeholder="Start searching for Users..."
+                          onChange={setEditingAuditors}
+                          displayMode="none"
+                          label="Auditors"
+                          limit={5}
+                          roleFilter="Internal Auditor"
+                          allowEmptySearch
+                        />
+                      ) : (
+                        <Box>
+                          <Text fontSize="sm" color="gray.500" mb={2}>
+                            Auditors ({auditors.length})
+                          </Text>
+                          {auditors && auditors.length > 0 ? (
+                            <Wrap>
+                              {auditors.map((auditor, index) => {
+                                const userId =
+                                  auditor._id || auditor.id || auditor;
+                                const fullName =
+                                  auditor.firstName && auditor.lastName
+                                    ? `${auditor.firstName} ${auditor.lastName}`
+                                    : auditor.name || `User ${index + 1}`;
+                                const findingsCount =
+                                  findingsCountByAuditor[String(userId)] || 0;
+
+                                return (
+                                  <WrapItem key={userId || index}>
+                                    <Tooltip
+                                      label={
+                                        <VStack align="start" spacing={0}>
+                                          <Text fontWeight="bold">
+                                            {fullName}
+                                          </Text>
+                                          <Text fontSize="xs">
+                                            {findingsCount} finding
+                                            {findingsCount !== 1
+                                              ? "s"
+                                              : ""}{" "}
+                                            logged
+                                          </Text>
+                                        </VStack>
+                                      }
+                                      hasArrow
+                                      placement="top"
+                                    >
+                                      <Box
+                                        px={3}
+                                        py={2}
+                                        borderRadius="md"
+                                        borderWidth="1px"
+                                        borderColor={borderColor}
+                                        _hover={{ bg: hoverBg }}
+                                        cursor="pointer"
+                                        transition="all 0.2s"
+                                      >
+                                        <HStack spacing={2}>
+                                          <Avatar name={fullName} size="xs" />
+                                          <VStack align="start" spacing={0}>
+                                            <Text
+                                              fontSize="sm"
+                                              fontWeight="medium"
+                                            >
+                                              {fullName}
+                                            </Text>
+                                            <Text
+                                              fontSize="xs"
+                                              color="gray.500"
+                                            >
+                                              {findingsCount} finding
+                                              {findingsCount !== 1
+                                                ? "s"
+                                                : ""}{" "}
+                                              logged
+                                            </Text>
+                                          </VStack>
+                                        </HStack>
+                                      </Box>
+                                    </Tooltip>
+                                  </WrapItem>
+                                );
+                              })}
+                            </Wrap>
+                          ) : (
+                            <Text
+                              fontSize="sm"
+                              color="gray.500"
+                              fontStyle="italic"
+                            >
+                              No auditors assigned
+                            </Text>
+                          )}
+                        </Box>
+                      )}
+                    </VStack>
                   </ResponsiveTabPanel>
                   {/* Team Details Tab */}
                   <ResponsiveTabPanel>

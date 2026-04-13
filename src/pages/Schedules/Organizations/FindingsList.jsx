@@ -327,6 +327,23 @@ const FindingCard = ({
                 </Text>
               </Box>
 
+              {finding.loggedBy && (
+                <>
+                  <Divider my={4} />
+                  <HStack spacing={2}>
+                    <Text fontSize="xs" color={labelColor} minW="80px">
+                      Logged By:
+                    </Text>
+                    <Text fontSize="sm">
+                      {getUserFullName(finding.loggedBy)}
+                      {finding.loggedBy.email && (
+                        <> ({finding.loggedBy.email})</>
+                      )}
+                    </Text>
+                  </HStack>
+                </>
+              )}
+
               {/* Tabs for Report, Action Plan, and Verification - Only for MINOR_NC/MAJOR_NC with report */}
               {shouldShowActionPlan ? (
                 <ResponsiveTabs

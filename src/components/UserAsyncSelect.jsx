@@ -63,6 +63,12 @@ const MOCK_USERS = [
 
 const getUserId = (user) => user.id || user._id || user.userId;
 
+const getFullName = (user) => {
+  if (!user) return "";
+  const fromParts = `${user.firstName || ""} ${user.lastName || ""}`.trim();
+  return fromParts || user.name || "";
+};
+
 const UserAsyncSelect = ({
   value = [],
   onChange,
@@ -235,13 +241,9 @@ const UserAsyncSelect = ({
 
   const handleChange = (selectedOptions) => {
     const users = (selectedOptions || []).map((option) => ({
+      ...option.user,
       id: option.value,
       _id: option.value,
-      firstName: option.user.firstName,
-      lastName: option.user.lastName,
-      email: option.user.email,
-      employeeId: option.user.employeeId || "",
-      profilePicture: option.user.profilePicture,
     }));
     onChange(users);
   };
@@ -254,12 +256,12 @@ const UserAsyncSelect = ({
 
   const selectedValues = value.map((user) => ({
     value: getUserId(user),
-    label: `${user.firstName || ""} ${user.lastName || ""}`.trim(),
+    label: getFullName(user),
     user: user,
   }));
 
   const formatOptionLabel = ({ user }) => {
-    const fullName = `${user.firstName || ""} ${user.lastName || ""}`.trim();
+    const fullName = getFullName(user);
     return (
       <HStack>
         <Avatar size="sm" name={fullName} src={user.profilePicture} />
@@ -291,9 +293,7 @@ const UserAsyncSelect = ({
               <Tbody>
                 {value.map((user) => {
                   const userId = getUserId(user);
-                  const fullName = `${user.firstName || ""} ${
-                    user.lastName || ""
-                  }`.trim();
+                  const fullName = getFullName(user);
                   return (
                     <Tr key={getUserId(user)}>
                       <Td>
@@ -333,9 +333,7 @@ const UserAsyncSelect = ({
             <HStack spacing={2} wrap="wrap">
               {value.map((user) => {
                 const userId = getUserId(user);
-                const fullName = `${user.firstName || ""} ${
-                  user.lastName || ""
-                }`.trim();
+                const fullName = getFullName(user);
                 return (
                   <Link
                     key={userId}
@@ -383,9 +381,7 @@ const UserAsyncSelect = ({
             <HStack spacing={2} wrap="wrap" mb={2}>
               {value.map((user) => {
                 const userId = getUserId(user);
-                const fullName = `${user.firstName || ""} ${
-                  user.lastName || ""
-                }`.trim();
+                const fullName = getFullName(user);
                 return (
                   <Link
                     key={userId}
@@ -456,9 +452,7 @@ const UserAsyncSelect = ({
           <Tbody>
             {value.map((user) => {
               const userId = getUserId(user);
-              const fullName = `${user.firstName || ""} ${
-                user.lastName || ""
-              }`.trim();
+              const fullName = getFullName(user);
               return (
                 <Tr key={userId}>
                   <Td border="none">
@@ -473,7 +467,7 @@ const UserAsyncSelect = ({
                           {fullName}
                         </Text>
                         <Text fontSize="xs" color="gray.500">
-                          {user.employeeId || "-"}
+                          {user.email || user.employeeId || "-"}
                         </Text>
                       </VStack>
                     </HStack>
