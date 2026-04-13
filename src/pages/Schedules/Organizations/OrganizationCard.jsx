@@ -1817,15 +1817,17 @@ const OrganizationCard = ({
                               No Visits Scheduled
                             </Text>
                             {isScheduleOngoing && (
-                              <Button
-                                size="sm"
-                                variant="outline"
-                                colorScheme="purple"
-                                leftIcon={<FiCalendar />}
-                                onClick={() => setShowVisitForm(true)}
-                              >
-                                Manage Visits
-                              </Button>
+                              <Can to="audit.findings.c">
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  colorScheme="purple"
+                                  leftIcon={<FiCalendar />}
+                                  onClick={() => setShowVisitForm(true)}
+                                >
+                                  Manage Visits
+                                </Button>
+                              </Can>
                             )}
                           </Center>
                         )}
@@ -1898,7 +1900,9 @@ const OrganizationCard = ({
                               colorScheme="brandPrimary"
                               leftIcon={<FiEdit2 />}
                               onClick={() => {
-                                setEditingAuditors(auditors.map((a) => ({ ...a })));
+                                setEditingAuditors(
+                                  auditors.map((a) => ({ ...a })),
+                                );
                                 setIsEditingAuditors(true);
                               }}
                             >
