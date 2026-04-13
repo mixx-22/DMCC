@@ -7,11 +7,11 @@ import {
   Container,
   Flex,
   Icon,
-  Badge,
   Divider,
   Button,
   HStack,
   Spinner,
+  Badge,
   Tabs,
   TabList,
   Tab,
@@ -63,9 +63,12 @@ const NotificationItem = ({ notification, onRead }) => {
           {notification.message}
         </Text>
         <Text fontSize="xs" color={dateColor} mt={1}>
-          <Badge colorScheme={colorScheme} fontSize="2xs" as="span">
-            {NOTIFICATION_CONFIG[notification.type]?.label || notification.type}
-          </Badge>{" "}
+          <Icon
+            as={NOTIFICATION_CONFIG[notification.type]?.icon}
+            color={`${colorScheme}.500`}
+            boxSize={3}
+            verticalAlign="middle"
+          />{" "}
           &middot; <Timestamp date={notification.createdAt} />
         </Text>
       </Box>
