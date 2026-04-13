@@ -22,6 +22,7 @@ import Pagination from "../components/Pagination";
 import { useNotifications } from "../context/_useContext";
 import NOTIFICATION_CONFIG from "../helpers/notificationConfig";
 import { useState } from "react";
+import { Link as RouterLink } from "react-router-dom";
 
 // ── Colour helpers ───────────────────────────────────────────────────
 const getColorScheme = (type) => NOTIFICATION_CONFIG[type]?.color || "gray";
@@ -36,6 +37,10 @@ const NotificationItem = ({ notification, onRead }) => {
   const borderColor = useColorModeValue("gray.200", "gray.700");
 
   const colorScheme = getColorScheme(notification.type);
+
+  const path = NOTIFICATION_CONFIG[notification.type]?.path?.(
+    notification.data,
+  );
 
   return (
     <Flex
@@ -52,6 +57,8 @@ const NotificationItem = ({ notification, onRead }) => {
       onClick={() => {
         if (!notification.read) onRead(notification._id);
       }}
+      as={RouterLink}
+      to={path}
     >
       <Box flex={1} ml={0}>
         <HStack mb={1} spacing={2}>
@@ -83,6 +90,7 @@ const NotificationItem = ({ notification, onRead }) => {
           flexShrink={0}
           onClick={(e) => {
             e.stopPropagation();
+            e.preventDefault();
             onRead(notification._id);
           }}
         />

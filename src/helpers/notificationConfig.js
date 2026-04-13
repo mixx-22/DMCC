@@ -20,20 +20,76 @@ import {
  * Notifications page (icon badges).
  */
 const NOTIFICATION_CONFIG = {
-  SCHEDULE_CREATED: { color: "blue", icon: FaCalendarPlus },
-  SCHEDULE_UPDATED: { color: "blue", icon: FaCalendarDay },
-  SCHEDULE_CLOSED: { color: "green", icon: FaCalendarCheck },
-  SCHEDULE_DELETED: { color: "red", icon: FaCalendarXmark },
-  ORGANIZATION_ADDED: { color: "blue", icon: FaBuildingCircleCheck },
-  ORGANIZATION_DELETED: { color: "red", icon: FaBuildingCircleXmark },
-  TEAM_ADDED_AS_ORG: { color: "purple", icon: FaPeopleGroup },
-  FINDING_ADDED: { color: "orange", icon: FaMagnifyingGlass },
-  FINDING_NC_ADDED: { color: "red", icon: FaTriangleExclamation },
-  VERDICT_SET: { color: "green", icon: FaScaleBalanced },
-  AUDITOR_ASSIGNED: { color: "blue", icon: FaUserCheck },
-  AUDITOR_REMOVED: { color: "orange", icon: FaUserMinus },
-  ACTION_PLAN_SUBMITTED: { color: "green", icon: FaFileCircleCheck },
-  FINDING_VERIFIED: { color: "green", icon: FaFileCircleCheck },
+  SCHEDULE_CREATED: {
+    color: "blue",
+    icon: FaCalendarPlus,
+    path: (data) => `/audit-schedule/${data.scheduleId}`,
+  },
+  SCHEDULE_UPDATED: {
+    color: "blue",
+    icon: FaCalendarDay,
+    path: (data) => `/audit-schedule/${data.scheduleId}`,
+  },
+  SCHEDULE_CLOSED: {
+    color: "green",
+    icon: FaCalendarCheck,
+    path: (data) => `/audit-schedule/${data.scheduleId}`,
+  },
+  SCHEDULE_DELETED: {
+    color: "red",
+    icon: FaCalendarXmark,
+    path: (data) => `/audit-schedule/${data.scheduleId}`,
+  },
+  ORGANIZATION_ADDED: {
+    color: "blue",
+    icon: FaBuildingCircleCheck,
+    path: (data) => `/audit-schedule/${data.scheduleId}`,
+  },
+  ORGANIZATION_DELETED: {
+    color: "red",
+    icon: FaBuildingCircleXmark,
+    path: (data) => `/audit-schedule/${data.scheduleId}`,
+  },
+  TEAM_ADDED_AS_ORG: {
+    color: "purple",
+    icon: FaPeopleGroup,
+    path: (data) => `/audit-schedule/${data.scheduleId}`,
+  },
+  FINDING_ADDED: {
+    color: "orange",
+    icon: FaMagnifyingGlass,
+    path: (data) => `/audit-schedule/${data.scheduleId}`,
+  },
+  FINDING_NC_ADDED: {
+    color: "red",
+    icon: FaTriangleExclamation,
+    path: (data) => `/audit-schedule/${data.scheduleId}`,
+  },
+  VERDICT_SET: {
+    color: "green",
+    icon: FaScaleBalanced,
+    path: (data) => `/audit-schedule/${data.scheduleId}`,
+  },
+  AUDITOR_ASSIGNED: {
+    color: "blue",
+    icon: FaUserCheck,
+    path: (data) => `/audit-schedule/${data.scheduleId}`,
+  },
+  AUDITOR_REMOVED: {
+    color: "orange",
+    icon: FaUserMinus,
+    path: (data) => `/audit-schedule/${data.scheduleId}`,
+  },
+  ACTION_PLAN_SUBMITTED: {
+    color: "green",
+    icon: FaFileCircleCheck,
+    path: (data) => `/audit-schedule/${data.scheduleId}`,
+  },
+  FINDING_VERIFIED: {
+    color: "green",
+    icon: FaFileCircleCheck,
+    path: (data) => `/audit-schedule/${data.scheduleId}`,
+  },
 };
 
 export default NOTIFICATION_CONFIG;
