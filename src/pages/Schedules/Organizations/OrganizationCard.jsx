@@ -571,6 +571,13 @@ const OrganizationCard = ({
       await updateOrganization(organization._id, {
         auditors: editingAuditors,
       });
+      // The API response has string-only auditor IDs which mergeOrganizationUpdate
+      // preserves as the old objects. Dispatch again with the populated objects so
+      // the displayed list reflects the new selection immediately.
+      dispatch({
+        type: "UPDATE_ORGANIZATION",
+        payload: { ...organization, auditors: editingAuditors },
+      });
       setIsEditingAuditors(false);
     } catch (error) {
       console.error("Failed to update auditors:", error);
