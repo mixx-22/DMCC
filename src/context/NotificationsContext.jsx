@@ -6,6 +6,7 @@ import { getSocket } from "../services/socket";
 import NOTIFICATION_CONFIG from "../helpers/notificationConfig";
 import { NotificationsContext } from "./_contexts";
 import { useUser } from "./_useContext";
+import { Button } from "@chakra-ui/react";
 
 const NOTIFICATIONS_ENDPOINT = "/notifications";
 
@@ -204,7 +205,22 @@ export const NotificationsProvider = ({ children }) => {
           duration: 6000,
           ...(borderColor ? { style: { borderLeft: borderColor } } : {}),
           ...(path
-            ? { action: { label: "View", onClick: () => navigate(path) } }
+            ? {
+                action: (
+                  <Button
+                    px={4}
+                    size="xs"
+                    variant="outline"
+                    colorScheme={config.color || "blue"}
+                    onClick={() => {
+                      navigate(path);
+                      window.location.reload();
+                    }}
+                  >
+                    View
+                  </Button>
+                ),
+              }
             : {}),
         });
 
