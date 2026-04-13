@@ -66,6 +66,7 @@ import FindingsList from "./FindingsList";
 import VisitManager from "./VisitManager";
 import VisitComplianceForm from "./VisitComplianceForm";
 import SetVerdictModal from "./SetVerdictModal";
+import EditOrganizationModal from "./EditOrganizationModal";
 import { calculateOrganizationVerdict } from "../../../utils/helpers";
 import TeamQualityDocuments from "../../../components/TeamQualityDocuments";
 import PreviousAuditFindings from "./PreviousAuditFindings";
@@ -111,7 +112,6 @@ const OrganizationCard = ({
   organization,
   team,
   auditors = [],
-  onEdit = () => {},
   isExpanded = false,
   onToggleExpanded = () => {},
   schedule = {},
@@ -186,6 +186,8 @@ const OrganizationCard = ({
 
   // State to track verdict modal
   const [isVerdictModalOpen, setIsVerdictModalOpen] = useState(false);
+  // State to track edit organization modal
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   // Calculate the organization verdict
   const calculatedVerdict = calculateOrganizationVerdict(organization);
 
@@ -1262,7 +1264,7 @@ const OrganizationCard = ({
                         icon={<FiEdit />}
                         onClick={(e) => {
                           e.stopPropagation();
-                          onEdit(organization);
+                          setIsEditModalOpen(true);
                         }}
                         isDisabled={!isScheduleOngoing}
                       >
@@ -2099,6 +2101,11 @@ const OrganizationCard = ({
         organization={organization}
         calculatedVerdict={calculatedVerdict}
         onSave={handleSetVerdict}
+      />
+      <EditOrganizationModal
+        isOpen={isEditModalOpen}
+        onClose={() => setIsEditModalOpen(false)}
+        organization={organization}
       />
     </>
   );
