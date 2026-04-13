@@ -18,7 +18,7 @@ import {
   Badge,
 } from "@chakra-ui/react";
 import { Select } from "chakra-react-select";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { FiSave, FiX } from "react-icons/fi";
 import { SingleDatepicker } from "chakra-dayzed-datepicker";
 import OrganizationAuditorsSelect from "../../../components/OrganizationAuditorsSelect";
@@ -88,15 +88,15 @@ const FindingsForm = ({
 
   // Generate a suggested report number in AA-NNNN format
   const getSuggestedReportNo = () => {
-    const initials = [
-      user?.firstName?.charAt(0) || "",
-      user?.lastName?.charAt(0) || "",
-    ]
-      .join("")
-      .toUpperCase();
+    const firstInitial = user?.firstName?.charAt(0) || "";
+    const lastInitial = user?.lastName?.charAt(0) || "";
+    const initials = (firstInitial + lastInitial).toUpperCase();
+    if (!initials) return "";
     const index = String(findingIndex).padStart(4, "0");
     return `${initials}-${index}`;
   };
+
+  const suggestedReportNo = getSuggestedReportNo();
 
   // Initialize form data based on mode
   const getInitialFormData = () => {
@@ -175,7 +175,7 @@ const FindingsForm = ({
       correctionDate: null,
       remarks: "",
       report: {
-        reportNo: getSuggestedReportNo(),
+        reportNo: suggestedReportNo,
         details: "",
         date: new Date(),
         auditee: [],
@@ -187,6 +187,19 @@ const FindingsForm = ({
   const [formData, setFormData] = useState(getInitialFormData());
 
   const [errors, setErrors] = useState({});
+
+  // If user context loads after initial render and we're in add mode with an empty
+  // reportNo, update the default value with the suggested report number
+  useEffect(() => {
+    if (mode === "add" && suggestedReportNo && !formData.report.reportNo) {
+      setFormData((prev) => ({
+        ...prev,
+        report: { ...prev.report, reportNo: suggestedReportNo },
+      }));
+    }
+    // Only run when user loads for the first time (suggestedReportNo goes from "" to a value)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [suggestedReportNo]);
 
   const handleChange = (field, value) => {
     setFormData((prev) => ({
@@ -486,7 +499,7 @@ const FindingsForm = ({
                     onChange={(e) =>
                       handleReportChange("reportNo", e.target.value)
                     }
-                    placeholder={getSuggestedReportNo()}
+                    placeholder={suggestedReportNo || "e.g. AB-0001"}
                   />
                   {errors["report.reportNo"] && (
                     <FormHelperText color="red.500" fontSize="xs">
