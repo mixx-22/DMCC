@@ -241,13 +241,9 @@ const UserAsyncSelect = ({
 
   const handleChange = (selectedOptions) => {
     const users = (selectedOptions || []).map((option) => ({
+      ...option.user,
       id: option.value,
       _id: option.value,
-      firstName: option.user.firstName,
-      lastName: option.user.lastName,
-      email: option.user.email,
-      employeeId: option.user.employeeId || "",
-      profilePicture: option.user.profilePicture,
     }));
     onChange(users);
   };
