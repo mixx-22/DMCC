@@ -61,7 +61,7 @@ const EditOrganizationModal = ({ isOpen, onClose, organization }) => {
   const handleSave = useCallback(async () => {
     const v = validateForm();
     if (!v.isValid) {
-      toast.error("Failed to Update Organization", {
+      toast.error("Invalid Form Data", {
         description: Object.values(v.errors)?.[0],
         duration: 3000,
       });
@@ -87,6 +87,10 @@ const EditOrganizationModal = ({ isOpen, onClose, organization }) => {
       onClose();
     } catch (error) {
       console.error("Failed to update organization:", error);
+      toast.error("Failed to Update Organization", {
+        description: error.message || "Try again later or contact your System Administrator",
+        duration: 3000,
+      });
     } finally {
       setIsSubmitting(false);
     }
