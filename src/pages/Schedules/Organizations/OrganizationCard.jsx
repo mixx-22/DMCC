@@ -1359,7 +1359,7 @@ const OrganizationCard = ({
                         isDisabled={!isScheduleOngoing}
                         color={errorColor}
                       >
-                        Delete
+                        Delete Organization
                       </MenuItem>
                     </>
                   ) : (
