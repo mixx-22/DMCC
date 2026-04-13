@@ -106,9 +106,9 @@ const PrivacyDisplay = ({
         {generateSummary({ users, teams })}
       </Text>
       {/* Manage Access Button */}
-      {((document.metadata.fileType.isQualityDocument &&
+      {((document.metadata?.fileType?.isQualityDocument &&
         document.metadata.checkedOut === 1) ||
-        !document.metadata.fileType.isQualityDocument) && (
+        !document.metadata?.fileType?.isQualityDocument) && (
         <Box>
           <Button
             size={buttonSize ?? size}
