@@ -513,6 +513,20 @@ const OrganizationCard = ({
   }, [schedule?.standard, standardClausesFromParent]);
 
   const handleDeleteOrganization = async (organization) => {
+    const totalFindings = (organization?.visits || []).reduce(
+      (sum, visit) => sum + (visit?.findings?.length || 0),
+      0,
+    );
+
+    if (totalFindings > 0) {
+      toast.error("Cannot Delete Organization", {
+        description:
+          "This organization has findings recorded in one or more visits. Please remove all findings before deleting.",
+        duration: 5000,
+      });
+      return;
+    }
+
     const result = await Swal.fire({
       title: "Delete Organization?",
       text: `Are you sure you want to remove this team from the audit schedule? This action cannot be undone.`,
