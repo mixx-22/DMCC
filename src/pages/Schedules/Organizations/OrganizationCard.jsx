@@ -1740,7 +1740,7 @@ const OrganizationCard = ({
                                                     onAddFinding={async (
                                                       findingData,
                                                     ) => {
-                                                      // Attach the current auditor as loggedBy
+                                                      // Attach the current logged-in user as loggedBy
                                                       const findingWithLogger = {
                                                         ...findingData,
                                                         loggedBy: user || null,
