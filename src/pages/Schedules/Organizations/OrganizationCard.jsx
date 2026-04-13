@@ -1629,7 +1629,11 @@ const OrganizationCard = ({
                                               )}
                                             </Box>
 
-                                            <Divider my={4} />
+                                            {visit?.findings &&
+                                              visit.findings.length > 0 && (
+                                                <Divider my={4} />
+                                              )}
+
                                             {/* Findings List */}
                                             {visit.findings &&
                                               visit.findings.length > 0 && (
