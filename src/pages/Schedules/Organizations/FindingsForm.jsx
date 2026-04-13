@@ -18,7 +18,7 @@ import {
   Badge,
 } from "@chakra-ui/react";
 import { Select } from "chakra-react-select";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { FiSave, FiX } from "react-icons/fi";
 import { SingleDatepicker } from "chakra-dayzed-datepicker";
 import OrganizationAuditorsSelect from "../../../components/OrganizationAuditorsSelect";
@@ -188,18 +188,27 @@ const FindingsForm = ({
 
   const [errors, setErrors] = useState({});
 
-  // If user context loads after initial render and we're in add mode with an empty
-  // reportNo, update the default value with the suggested report number
+  // Track whether the suggested report number has been applied as a default
+  const hasAppliedSuggestion = useRef(false);
+
+  // If user context loads after initial render, apply the suggested report number
+  // once, only in add mode and only if the field is still untouched
   useEffect(() => {
-    if (mode === "add" && suggestedReportNo && !formData.report.reportNo) {
+    if (
+      mode === "add" &&
+      suggestedReportNo &&
+      !hasAppliedSuggestion.current
+    ) {
+      hasAppliedSuggestion.current = true;
       setFormData((prev) => ({
         ...prev,
-        report: { ...prev.report, reportNo: suggestedReportNo },
+        report: {
+          ...prev.report,
+          reportNo: prev.report.reportNo || suggestedReportNo,
+        },
       }));
     }
-    // Only run when user loads for the first time (suggestedReportNo goes from "" to a value)
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [suggestedReportNo]);
+  }, [mode, suggestedReportNo]);
 
   const handleChange = (field, value) => {
     setFormData((prev) => ({
