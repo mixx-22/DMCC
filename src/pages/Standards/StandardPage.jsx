@@ -628,8 +628,6 @@ const StandardPage = () => {
 
   const handleClauseSelection = (clauses) => {
     setSelectedClauses(clauses);
-    // No toast here since it would trigger on every change
-    console.log("Selected clauses:", clauses);
   };
 
   return (

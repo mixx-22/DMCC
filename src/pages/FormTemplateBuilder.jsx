@@ -288,20 +288,12 @@ const FormTemplateBuilder = () => {
         setLoadingForm(true);
         try {
           if (import.meta.env.DEV) {
-            console.log("Loading form template with id:", id);
           }
           const document = await fetchDocumentById(id);
           if (import.meta.env.DEV) {
-            console.log("Fetched document:", document);
           }
 
           if (document && document.type === "formTemplate") {
-            if (import.meta.env.DEV) {
-              console.log(
-                "Setting form data and questions:",
-                document.metadata?.questions,
-              );
-            }
             setFormData({
               title: document.title || "",
               description: document.description || "",
@@ -311,9 +303,6 @@ const FormTemplateBuilder = () => {
             setDocumentId(id);
             setOriginalDocument(document);
           } else {
-            if (import.meta.env.DEV) {
-              console.log("Document is not a formTemplate or doesn't exist");
-            }
             toast.error("Invalid Form Template", {
               description:
                 "This document is not a form template or does not exist.",

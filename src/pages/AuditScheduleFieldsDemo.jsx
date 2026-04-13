@@ -38,7 +38,6 @@ const AuditScheduleFieldsDemo = () => {
                 <StandardsAsyncSelect
                   value={selectedStandard}
                   onChange={(standard) => {
-                    console.log("Selected standard:", standard);
                     setSelectedStandard(standard);
                   }}
                   label="Standard"
@@ -64,7 +63,6 @@ const AuditScheduleFieldsDemo = () => {
                 <PreviousAuditAsyncSelect
                   value={selectedPreviousAudit}
                   onChange={(audit) => {
-                    console.log("Selected previous audit:", audit);
                     setSelectedPreviousAudit(audit);
                   }}
                   label="Previous Audit"

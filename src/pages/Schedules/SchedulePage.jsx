@@ -169,12 +169,6 @@ const SchedulePageContent = () => {
             isAllowedTo("audit.organizations.r"),
             isAllowedTo("audit.response.r"),
           ]);
-        console.log(
-          "Permissions - Organizations:",
-          orgAllowed,
-          "Reports:",
-          reportsAllowed,
-        );
 
         if (isActive) {
           setIsScheduleUpdateAllowed(scheduleUpdateAllowed);

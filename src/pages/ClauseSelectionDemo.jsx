@@ -224,7 +224,6 @@ const ClauseSelectionDemo = () => {
 
   const handleChange = (clauses) => {
     setSelectedClauses(clauses);
-    console.log("Selected clauses:", clauses);
   };
 
   return (
