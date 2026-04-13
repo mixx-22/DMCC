@@ -18,13 +18,13 @@ import {
   Badge,
 } from "@chakra-ui/react";
 import { Select } from "chakra-react-select";
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { FiSave, FiX } from "react-icons/fi";
 import { SingleDatepicker } from "chakra-dayzed-datepicker";
 import OrganizationAuditorsSelect from "../../../components/OrganizationAuditorsSelect";
 import TeamLeadersSelect from "../../../components/TeamLeadersSelect";
 import ClauseSelectionModal from "../../../components/ClauseSelectionModal";
-import { useLayout } from "../../../context/_useContext";
+import { useLayout, useUser } from "../../../context/_useContext";
 import Can from "../../../components/Can";
 
 // Helper function to check if compliance type is a Non-Conformity
@@ -72,17 +72,31 @@ const FindingsForm = ({
   auditStandardClauses = [], // Changed from teamObjectives to auditStandardClauses
   initialData = null,
   mode = "add",
+  findingIndex = 1, // Index of this finding, used to suggest report number
   onAddFinding,
   onCancel,
 }) => {
   const bg = useColorModeValue("brandPrimary.50", "brandPrimary.900");
   const borderColor = useColorModeValue("brandPrimary.200", "brandPrimary.700");
   const { pageRef } = useLayout();
+  const { user } = useUser();
   const {
     isOpen: isClauseModalOpen,
     onOpen: onClauseModalOpen,
     onClose: onClauseModalClose,
   } = useDisclosure();
+
+  // Generate a suggested report number in AA-NNNN format
+  const getSuggestedReportNo = () => {
+    const firstInitial = user?.firstName?.charAt(0) || "";
+    const lastInitial = user?.lastName?.charAt(0) || "";
+    const initials = (firstInitial + lastInitial).toUpperCase();
+    if (!initials) return "";
+    const index = String(findingIndex).padStart(4, "0");
+    return `${initials}-${index}`;
+  };
+
+  const suggestedReportNo = getSuggestedReportNo();
 
   // Initialize form data based on mode
   const getInitialFormData = () => {
@@ -161,7 +175,7 @@ const FindingsForm = ({
       correctionDate: null,
       remarks: "",
       report: {
-        reportNo: "",
+        reportNo: suggestedReportNo,
         details: "",
         date: new Date(),
         auditee: [],
@@ -173,6 +187,28 @@ const FindingsForm = ({
   const [formData, setFormData] = useState(getInitialFormData());
 
   const [errors, setErrors] = useState({});
+
+  // Track whether the suggested report number has been applied as a default
+  const hasAppliedSuggestion = useRef(false);
+
+  // If user context loads after initial render, apply the suggested report number
+  // once, only in add mode and only if the field is still untouched
+  useEffect(() => {
+    if (
+      mode === "add" &&
+      suggestedReportNo &&
+      !hasAppliedSuggestion.current
+    ) {
+      hasAppliedSuggestion.current = true;
+      setFormData((prev) => ({
+        ...prev,
+        report: {
+          ...prev.report,
+          reportNo: prev.report.reportNo || suggestedReportNo,
+        },
+      }));
+    }
+  }, [mode, suggestedReportNo]);
 
   const handleChange = (field, value) => {
     setFormData((prev) => ({
@@ -472,7 +508,7 @@ const FindingsForm = ({
                     onChange={(e) =>
                       handleReportChange("reportNo", e.target.value)
                     }
-                    placeholder="Enter report number"
+                    placeholder={suggestedReportNo || "e.g. AB-0001"}
                   />
                   {errors["report.reportNo"] && (
                     <FormHelperText color="red.500" fontSize="xs">

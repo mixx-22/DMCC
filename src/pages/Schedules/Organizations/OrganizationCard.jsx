@@ -1761,6 +1761,10 @@ const OrganizationCard = ({
                                                     auditStandardClauses={
                                                       standardClauses
                                                     }
+                                                    findingIndex={
+                                                      (visit.findings?.length ||
+                                                        0) + 1
+                                                    }
                                                     onAddFinding={async (
                                                       findingData,
                                                     ) => {
