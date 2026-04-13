@@ -29,7 +29,14 @@ const OrganizationForm = ({
   const { dispatch, scheduleId, organizations, createOrganization } =
     useOrganizations();
 
-  const existingTeamIds = organizations.map((org) => org.team?.id);
+  const existingTeamIds = organizations
+    .map((org) => {
+      const team = org.team;
+      if (!team) return null;
+      if (typeof team === "string") return team;
+      return team._id || team.id;
+    })
+    .filter(Boolean);
 
   const [formData, setFormData] = useState({
     team: null,
@@ -163,6 +170,7 @@ const OrganizationForm = ({
               isInvalid={!!validationErrors.team}
               label="Team"
               allowEmptySearch
+              disabledIds={existingTeamIds}
             />
             <Divider />
             <UserAsyncSelect

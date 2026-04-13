@@ -49,6 +49,7 @@ const TeamAsyncSelect = ({
   tableProps = {},
   isMulti = true,
   max,
+  disabledIds = [],
   ...props
 }) => {
   const loadOptions = useCallback(
@@ -305,7 +306,10 @@ const TeamAsyncSelect = ({
             loadingMessage={() => "Loading teams..."}
             colorScheme="green"
             useBasicStyles
-            isOptionDisabled={() => isMulti && max && value.length >= max}
+            isOptionDisabled={(option) =>
+              (isMulti && max && value.length >= max) ||
+              disabledIds.includes(option.value)
+            }
           />
         </Box>
         {!readonly && (
