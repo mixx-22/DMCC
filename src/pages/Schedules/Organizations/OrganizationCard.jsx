@@ -1213,8 +1213,6 @@ const OrganizationCard = ({
   const canSetVerdict = useCallback((organization) => {
     const { visits = [] } = organization;
 
-    console.log(organization.team.name, organization);
-
     if (!visits.length) {
       return {
         can: false,
@@ -1331,6 +1329,28 @@ const OrganizationCard = ({
                     </Badge>
                   </Tooltip>
                 )}
+                {isScheduleOngoing &&
+                  canSetVerdict(organization).canSet &&
+                  !organization?.verdict && (
+                    <Box>
+                      <Button
+                        size="xs"
+                        variant="solid"
+                        colorScheme={"green"}
+                        leftIcon={<FiCheckCircle />}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setIsVerdictModalOpen(true);
+                        }}
+                        isDisabled={
+                          !isScheduleOngoing ||
+                          !canSetVerdict(organization).canSet
+                        }
+                      >
+                        Set Final Verdict
+                      </Button>
+                    </Box>
+                  )}
               </Hide>
               <IconButton
                 icon={isExpanded ? <FiChevronUp /> : <FiChevronDown />}

@@ -30,10 +30,6 @@ const COMPLIANCE_OPTIONS = [
     label: "MINOR NON-CONFORMITY",
   },
   {
-    value: "MINOR_NC",
-    label: "MINOR NON-CONFORMITY",
-  },
-  {
     value: "MAJOR_NC",
     label: "MAJOR NON-CONFORMITY",
   },
