@@ -1179,7 +1179,11 @@ const OrganizationCard = ({
     const { findings = [] } = visit;
 
     if (!findings.length) {
-      return { can: false, message: "No findings recorded yet." };
+      return {
+        can: false,
+        canSet: false,
+        message: "No findings recorded yet.",
+      };
     }
 
     const allResolved = findings.every((f) => {
@@ -1188,14 +1192,28 @@ const OrganizationCard = ({
     });
 
     if (!allResolved) {
-      return { can: false, message: "Some findings are unresolved yet." };
+      return {
+        can: false,
+        canSet: false,
+        message: "Some findings are unresolved yet.",
+      };
     }
 
-    return { can: true, message: "" };
+    if (!visit?.complianceSetAt) {
+      return {
+        can: false,
+        canSet: true,
+        message: "Visit compliance not set yet.",
+      };
+    }
+
+    return { can: true, canSet: true, message: "" };
   }, []);
 
   const canSetVerdict = useCallback((organization) => {
     const { visits = [] } = organization;
+
+    console.log(organization.team.name, organization);
 
     if (!visits.length) {
       return {
@@ -1210,6 +1228,7 @@ const OrganizationCard = ({
       if (!findings.length) {
         return {
           can: false,
+          canSet: false,
           message: `Visit #${index + 1} - ${formatDateRange(visit.date.start, visit.date.end) || visit._id} has no findings.`,
         };
       }
@@ -1222,12 +1241,29 @@ const OrganizationCard = ({
       if (!allResolved) {
         return {
           can: false,
+          canSet: false,
           message: `Visit #${index + 1} - ${formatDateRange(visit.date.start, visit.date.end) || visit._id} has unresolved findings.`,
+        };
+      }
+
+      if (!visit?.complianceSetAt) {
+        return {
+          can: false,
+          canSet: false,
+          message: `No set Compliance yet for Visit #${index + 1} - ${formatDateRange(visit.date.start, visit.date.end) || visit._id}.`,
         };
       }
     }
 
-    return { can: true, message: "" };
+    if (!organization?.verdict) {
+      return {
+        can: false,
+        canSet: true,
+        message: `Final Verdict for ${organization.team.name} not set yet.`,
+      };
+    }
+
+    return { can: true, canSet: true, message: "" };
   }, []);
 
   return (
@@ -1338,7 +1374,8 @@ const OrganizationCard = ({
                         setIsVerdictModalOpen(true);
                       }}
                       isDisabled={
-                        !isScheduleOngoing || !canSetVerdict(organization).can
+                        !isScheduleOngoing ||
+                        !canSetVerdict(organization).canSet
                       }
                     >
                       {organization.verdict
@@ -1626,7 +1663,8 @@ const OrganizationCard = ({
                                                 Visit Compliance
                                               </Text>
 
-                                              {canSetCompliance(visit).can ? (
+                                              {canSetCompliance(visit)
+                                                .canSet ? (
                                                 <>
                                                   {isScheduleOngoing &&
                                                   isFindingsCreateAllowed &&
@@ -1701,6 +1739,7 @@ const OrganizationCard = ({
                                                   fontSize="sm"
                                                   color="gray.500"
                                                   opacity={0.8}
+                                                  mb={4}
                                                 >
                                                   {
                                                     canSetCompliance(visit)
@@ -1712,7 +1751,10 @@ const OrganizationCard = ({
 
                                             {visit?.findings &&
                                               visit.findings.length > 0 && (
-                                                <Divider my={4} />
+                                                <Divider
+                                                  my={4}
+                                                  borderColor="blackAlpha.400"
+                                                />
                                               )}
 
                                             {/* Findings List */}
