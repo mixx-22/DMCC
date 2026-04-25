@@ -1237,7 +1237,10 @@ const OrganizationCard = ({
 
       const allResolved = findings.every((f) => {
         const isMajorOrMinor = ["MAJOR_NC", "MINOR_NC"].includes(f.compliance);
-        return !isMajorOrMinor || Boolean(f.correctionDate);
+
+        const hasCorrection = f.actionPlans?.some((ap) => ap.correctionDate);
+
+        return !isMajorOrMinor || hasCorrection;
       });
 
       if (!allResolved) {
@@ -1336,24 +1339,26 @@ const OrganizationCard = ({
                 {isScheduleOngoing &&
                   canSetVerdict(organization).canSet &&
                   !organization?.verdict && (
-                    <Box>
-                      <Button
-                        size="xs"
-                        variant="solid"
-                        colorScheme={"green"}
-                        leftIcon={<FiCheckCircle />}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setIsVerdictModalOpen(true);
-                        }}
-                        isDisabled={
-                          !isScheduleOngoing ||
-                          !canSetVerdict(organization).canSet
-                        }
-                      >
-                        Set Final Verdict
-                      </Button>
-                    </Box>
+                    <Can to="audit.findings.u">
+                      <Box>
+                        <Button
+                          size="xs"
+                          variant="solid"
+                          colorScheme={"green"}
+                          leftIcon={<FiCheckCircle />}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setIsVerdictModalOpen(true);
+                          }}
+                          isDisabled={
+                            !isScheduleOngoing ||
+                            !canSetVerdict(organization).canSet
+                          }
+                        >
+                          Set Final Verdict
+                        </Button>
+                      </Box>
+                    </Can>
                   )}
               </Hide>
               <IconButton
