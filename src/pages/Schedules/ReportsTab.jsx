@@ -28,7 +28,7 @@ import {
   Avatar,
 } from "@chakra-ui/react";
 import { useMemo } from "react";
-import { FiFileText, FiTool } from "react-icons/fi";
+import { FiTool } from "react-icons/fi";
 import moment from "moment";
 import { useOrganizations, useUser } from "../../context/_useContext";
 import ActionPlanForm from "./Organizations/ActionPlanForm";
@@ -52,17 +52,27 @@ const COMPLIANCE_DISPLAY = {
 
 const getLatestActionPlan = (f) => f.actionPlans?.[f.actionPlans.length - 1];
 
+const getPreviousActionPlan = (f) => {
+  if (!f.actionPlans || f.actionPlans.length < 2) return null;
+  return f.actionPlans[f.actionPlans.length - 2];
+};
+
 const isNC = (f) => ["MINOR_NC", "MAJOR_NC"].includes(f.compliance);
 
 const getFindingStatus = (f) => {
   const latest = getLatestActionPlan(f);
   const status = latest?.corrected;
 
+  const needsActionPlan = !latest || status === 0;
+  const needsVerification = latest && status === -1;
+  const isResolved = status === 2;
+
   return {
     latest,
-    needsActionPlan: !latest || status === 0,
-    needsVerification: latest && (status === -1 || status === undefined),
-    isResolved: status === 2,
+    status,
+    needsActionPlan,
+    needsVerification,
+    isResolved,
   };
 };
 
@@ -71,6 +81,9 @@ const ReportCard = ({ finding, organization, onSave, isScheduleOngoing }) => {
   const borderColor = useColorModeValue("gray.200", "gray.600");
   const labelColor = useColorModeValue("gray.600", "gray.400");
   const reportBg = useColorModeValue("gray.50", "gray.800");
+
+  const remarksBg = useColorModeValue("orange.50", "orange.900");
+  const remarksBorder = useColorModeValue("orange.200", "orange.700");
 
   const actionModal = useDisclosure();
   const verifyModal = useDisclosure();
@@ -81,6 +94,8 @@ const ReportCard = ({ finding, organization, onSave, isScheduleOngoing }) => {
 
   const { latest, needsActionPlan, needsVerification } =
     getFindingStatus(finding);
+
+  const previous = getPreviousActionPlan(finding);
 
   const shouldHaveActionPlan = isNC(finding) && finding.report;
 
@@ -123,6 +138,10 @@ const ReportCard = ({ finding, organization, onSave, isScheduleOngoing }) => {
     verifyModal.onClose();
   };
 
+  const showRemarks =
+    (needsActionPlan && latest?.remarks) ||
+    (!needsActionPlan && previous?.remarks);
+
   return (
     <>
       <Card size="sm" variant="outline" borderColor={borderColor} bg={cardBg}>
@@ -164,32 +183,47 @@ const ReportCard = ({ finding, organization, onSave, isScheduleOngoing }) => {
                     ))}
                   </Wrap>
                 )}
+
+                {shouldHaveActionPlan && finding.report && (
+                  <Box>
+                    <Text fontSize="sm">
+                      Report No: {finding.report.reportNo}
+                    </Text>
+                    <Text fontSize="sm">
+                      Date:{" "}
+                      {moment(finding.report.date).format(DATE_FORMAT_LONG)}
+                    </Text>
+                    <Text fontSize="sm">{finding.report.details}</Text>
+                  </Box>
+                )}
               </VStack>
             </HStack>
 
-            <Text fontSize="sm" color={labelColor}>
-              {finding.details}
-            </Text>
-
-            {shouldHaveActionPlan && finding.report && (
+            {console.log(latest)}
+            {showRemarks && (
               <Box
                 p={3}
-                bg={reportBg}
+                bg={remarksBg}
                 borderWidth="1px"
-                borderColor={borderColor}
+                borderColor={remarksBorder}
+                borderRadius="md"
               >
-                <HStack mb={2}>
-                  <FiFileText />
-                  <Text fontWeight="semibold" fontSize="sm">
-                    Report
-                  </Text>
-                </HStack>
-
-                <Text fontSize="sm">Report No: {finding.report.reportNo}</Text>
-                <Text fontSize="sm">
-                  Date: {moment(finding.report.date).format(DATE_FORMAT_LONG)}
+                <Text fontSize="xs" fontWeight="bold" mb={1}>
+                  {needsActionPlan
+                    ? "Latest Verification Remarks"
+                    : "Previous Verification Remarks"}
                 </Text>
-                <Text fontSize="sm">{finding.report.details}</Text>
+                <Text fontSize="sm" opacity={0.7} mt={2}>
+                  As of{" "}
+                  {moment(
+                    needsActionPlan
+                      ? latest?.correctedDate
+                      : previous?.correctedDate,
+                  ).format(DATE_FORMAT_LONG)}
+                </Text>
+                <Text fontSize="sm">
+                  {needsActionPlan ? latest?.remarks : previous?.remarks}
+                </Text>
               </Box>
             )}
 
@@ -223,7 +257,7 @@ const ReportCard = ({ finding, organization, onSave, isScheduleOngoing }) => {
         </CardBody>
       </Card>
 
-      {/* Modals unchanged */}
+      {/* Action Plan Modal */}
       <Modal
         size="lg"
         isOpen={actionModal.isOpen}
@@ -244,6 +278,7 @@ const ReportCard = ({ finding, organization, onSave, isScheduleOngoing }) => {
         </ModalContent>
       </Modal>
 
+      {/* Verification Modal */}
       <Modal
         size="lg"
         isOpen={verifyModal.isOpen}
@@ -265,6 +300,7 @@ const ReportCard = ({ finding, organization, onSave, isScheduleOngoing }) => {
     </>
   );
 };
+
 const ReportsTab = ({ schedule }) => {
   const { loading, organizations, updateOrganization } = useOrganizations();
   const { user } = useUser();
