@@ -28,7 +28,7 @@ import {
   Avatar,
 } from "@chakra-ui/react";
 import { useMemo } from "react";
-import { FiFileText, FiTool, FiCheckCircle } from "react-icons/fi";
+import { FiFileText, FiTool } from "react-icons/fi";
 import moment from "moment";
 import { useOrganizations, useUser } from "../../context/_useContext";
 import ActionPlanForm from "./Organizations/ActionPlanForm";
@@ -54,6 +54,18 @@ const getLatestActionPlan = (f) => f.actionPlans?.[f.actionPlans.length - 1];
 
 const isNC = (f) => ["MINOR_NC", "MAJOR_NC"].includes(f.compliance);
 
+const getFindingStatus = (f) => {
+  const latest = getLatestActionPlan(f);
+  const status = latest?.corrected;
+
+  return {
+    latest,
+    needsActionPlan: !latest || status === 0,
+    needsVerification: latest && (status === -1 || status === undefined),
+    isResolved: status === 2,
+  };
+};
+
 const ReportCard = ({ finding, organization, onSave, isScheduleOngoing }) => {
   const cardBg = useColorModeValue("white", "gray.700");
   const borderColor = useColorModeValue("gray.200", "gray.600");
@@ -67,13 +79,10 @@ const ReportCard = ({ finding, organization, onSave, isScheduleOngoing }) => {
   const complianceInfo =
     COMPLIANCE_DISPLAY[compliance] || COMPLIANCE_DISPLAY.OBSERVATIONS;
 
-  const latest = getLatestActionPlan(finding);
-  const status = latest?.corrected;
+  const { latest, needsActionPlan, needsVerification } =
+    getFindingStatus(finding);
 
   const shouldHaveActionPlan = isNC(finding) && finding.report;
-  const needsActionPlan = shouldHaveActionPlan && (!latest || status === 0);
-  const needsVerification =
-    shouldHaveActionPlan && latest && (status < 1 || status === undefined);
 
   const handleSaveActionPlan = async (data) => {
     const { visitIndex, organizationId, ...rest } = finding;
@@ -120,10 +129,23 @@ const ReportCard = ({ finding, organization, onSave, isScheduleOngoing }) => {
         <CardBody>
           <VStack align="stretch" spacing={3}>
             <HStack justify="space-between">
-              <VStack align="start" flex={1}>
-                <Badge colorScheme={complianceInfo.color} fontSize="xs">
-                  {complianceInfo.label}
-                </Badge>
+              <VStack align="flex-start" flex={1}>
+                <HStack spacing={1}>
+                  <Badge colorScheme={complianceInfo.color} fontSize="xs">
+                    {complianceInfo.label}
+                  </Badge>
+
+                  <NotifBadge
+                    show={needsActionPlan || needsVerification}
+                    message={
+                      needsActionPlan
+                        ? "Action Plan Required"
+                        : needsVerification
+                          ? "Verification Pending"
+                          : ""
+                    }
+                  />
+                </HStack>
 
                 <Text fontWeight="semibold">{finding.title}</Text>
 
@@ -143,15 +165,6 @@ const ReportCard = ({ finding, organization, onSave, isScheduleOngoing }) => {
                   </Wrap>
                 )}
               </VStack>
-
-              <NotifBadge
-                show={needsActionPlan || needsVerification}
-                message={
-                  needsVerification
-                    ? "Verification Pending"
-                    : "Action Plan Required"
-                }
-              />
             </HStack>
 
             <Text fontSize="sm" color={labelColor}>
@@ -184,22 +197,22 @@ const ReportCard = ({ finding, organization, onSave, isScheduleOngoing }) => {
               {shouldHaveActionPlan && isScheduleOngoing && (
                 <HStack>
                   <Spacer />
-                  <Button
-                    size="sm"
-                    colorScheme="purple"
-                    leftIcon={<FiTool />}
-                    onClick={actionModal.onOpen}
-                    variant={"outline"}
-                  >
-                    {latest ? "Add Another Action Plan" : "Add Action Plan"}
-                  </Button>
 
-                  {latest && (
+                  {needsActionPlan && (
+                    <Button
+                      size="sm"
+                      colorScheme="purple"
+                      leftIcon={<FiTool />}
+                      onClick={actionModal.onOpen}
+                    >
+                      {latest ? "Add Another Action Plan" : "Add Action Plan"}
+                    </Button>
+                  )}
+
+                  {needsVerification && (
                     <Can to="audit.verify.u">
                       <Button size="sm" onClick={verifyModal.onOpen}>
-                        {(latest.corrected ?? -1) < 1
-                          ? "Set Verification"
-                          : "Edit Verification"}
+                        Set Verification
                       </Button>
                     </Can>
                   )}
@@ -210,6 +223,7 @@ const ReportCard = ({ finding, organization, onSave, isScheduleOngoing }) => {
         </CardBody>
       </Card>
 
+      {/* Modals unchanged */}
       <Modal
         size="lg"
         isOpen={actionModal.isOpen}
@@ -251,7 +265,6 @@ const ReportCard = ({ finding, organization, onSave, isScheduleOngoing }) => {
     </>
   );
 };
-
 const ReportsTab = ({ schedule }) => {
   const { loading, organizations, updateOrganization } = useOrganizations();
   const { user } = useUser();
@@ -277,15 +290,10 @@ const ReportsTab = ({ schedule }) => {
               .filter((f) => {
                 if (!isNC(f) || !f.report?.reportNo) return false;
 
-                const latest = getLatestActionPlan(f);
-                const status = latest?.corrected;
+                const { needsActionPlan, needsVerification, isResolved } =
+                  getFindingStatus(f);
 
-                return (
-                  !latest ||
-                  status === 0 ||
-                  status === -1 ||
-                  status === undefined
-                );
+                return !isResolved && (needsActionPlan || needsVerification);
               })
               .map((f) => ({
                 ...f,
@@ -341,7 +349,8 @@ const ReportsTab = ({ schedule }) => {
             <Text fontWeight="bold">{organization.team?.name}</Text>
             <Spacer />
             <Text color="gray.500" fontSize="xs">
-              {findings.length} Finding{findings.length !== 1 ? "s" : ""}
+              {findings.length} Finding
+              {findings.length !== 1 ? "s" : ""}
             </Text>
           </HStack>
 
