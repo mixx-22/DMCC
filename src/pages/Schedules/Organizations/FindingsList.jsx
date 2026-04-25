@@ -681,7 +681,9 @@ const FindingCard = ({
                                                 <Badge
                                                   colorScheme={
                                                     actionPlanItem.corrected ===
-                                                    2
+                                                      2 ||
+                                                    actionPlanItem.corrected ===
+                                                      1
                                                       ? "green"
                                                       : actionPlanItem.corrected ===
                                                           0
@@ -691,7 +693,8 @@ const FindingCard = ({
                                                   fontSize="xs"
                                                 >
                                                   {actionPlanItem.corrected ===
-                                                  2
+                                                    2 ||
+                                                  actionPlanItem.corrected === 1
                                                     ? "Corrected"
                                                     : actionPlanItem.corrected ===
                                                         0
@@ -771,15 +774,15 @@ const FindingCard = ({
                             >
                               {finding.actionPlans &&
                               finding.actionPlans.length > 0 ? (
-                                // Check if the latest action plan has been verified
                                 (() => {
                                   const latestActionPlan =
                                     finding.actionPlans[
                                       finding.actionPlans.length - 1
                                     ];
                                   const canAddAnother =
-                                    latestActionPlan.corrected !== undefined &&
-                                    latestActionPlan.corrected !== -1;
+                                    !finding.actionPlans ||
+                                    finding.actionPlans.length === 0 ||
+                                    latestActionPlan?.corrected === 0;
 
                                   return canAddAnother ? (
                                     <>
@@ -789,9 +792,9 @@ const FindingCard = ({
                                         color="gray.500"
                                         textAlign="center"
                                       >
-                                        The previous action plan has been
-                                        verified. Add another action plan if
-                                        needed.
+                                        {finding.actionPlans.length > 1
+                                          ? "The recent action plan was verified as non-corrective. Add another action plan as necessary."
+                                          : "The action plan was verified as non-corrective. Add another action plan as necessary."}
                                       </Text>
                                       <Button
                                         size="sm"
@@ -812,8 +815,12 @@ const FindingCard = ({
                                       color="gray.500"
                                       textAlign="center"
                                     >
-                                      The latest action plan must be verified
-                                      before adding another one.
+                                      {latestActionPlan?.corrected === 2 ||
+                                      latestActionPlan?.corrected === 1
+                                        ? "The latest action plan has been verified as corrective. No additional action plans needed."
+                                        : latestActionPlan?.corrected === -1
+                                          ? "The latest action plan is still pending verification. No additional action plans can be added yet."
+                                          : "The latest action plan verification status is undetermined. No additional action plans can be added yet."}
                                     </Text>
                                   );
                                 })()
@@ -874,12 +881,10 @@ const FindingCard = ({
                           {/* Show verification for each action plan */}
                           {finding.actionPlans &&
                             finding.actionPlans.map((actionPlanItem, index) => {
-                              const isLatestActionPlan =
-                                index === finding.actionPlans.length - 1;
                               const canVerifyThisPlan =
-                                isLatestActionPlan &&
                                 (actionPlanItem.corrected === undefined ||
-                                  actionPlanItem.corrected === -1);
+                                  actionPlanItem.corrected === -1) &&
+                                isScheduleOngoing;
 
                               return (
                                 <Box
@@ -898,21 +903,19 @@ const FindingCard = ({
                                       <Badge colorScheme="green" fontSize="xs">
                                         Action Plan #{index + 1} Verification
                                       </Badge>
-                                      {isScheduleOngoing &&
-                                        canVerifyThisPlan && (
-                                          <Button
-                                            size="xs"
-                                            leftIcon={<FiPlus />}
-                                            colorScheme="green"
-                                            variant="outline"
-                                            onClick={() => {
-                                              setIsEditingVerification(true);
-                                              // TODO: Set which action plan is being verified
-                                            }}
-                                          >
-                                            Verify
-                                          </Button>
-                                        )}
+                                      {canVerifyThisPlan && (
+                                        <Button
+                                          size="xs"
+                                          leftIcon={<FiPlus />}
+                                          colorScheme="green"
+                                          variant="outline"
+                                          onClick={() => {
+                                            setIsEditingVerification(index);
+                                          }}
+                                        >
+                                          Verify
+                                        </Button>
+                                      )}
                                     </HStack>
 
                                     {actionPlanItem.corrected !== undefined &&
@@ -932,9 +935,9 @@ const FindingCard = ({
                                         color="gray.500"
                                         textAlign="center"
                                       >
-                                        {isLatestActionPlan
+                                        {canVerifyThisPlan
                                           ? "Not verified yet"
-                                          : "Waiting for previous action plan to be verified first"}
+                                          : "Cannot verify - action plan has been verified"}
                                       </Text>
                                     )}
                                   </VStack>
@@ -943,7 +946,7 @@ const FindingCard = ({
                             })}
 
                           {/* Edit verification form */}
-                          {isEditingVerification && (
+                          {isEditingVerification !== false && (
                             <VerificationForm
                               initialData={{
                                 corrected: -1,
@@ -953,7 +956,7 @@ const FindingCard = ({
                               onSave={(data) =>
                                 handleSaveVerification(
                                   data,
-                                  finding.actionPlans?.length - 1,
+                                  isEditingVerification,
                                 )
                               }
                               onCancel={handleCancelVerification}
