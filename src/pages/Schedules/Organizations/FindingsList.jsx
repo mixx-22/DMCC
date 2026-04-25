@@ -24,7 +24,6 @@ import {
   FiEdit,
   FiTrash2,
   FiFileText,
-  FiCheckCircle,
   FiTool,
 } from "react-icons/fi";
 import moment from "moment";
@@ -38,7 +37,6 @@ import ResponsiveTabs, {
 } from "../../../components/common/ResponsiveTabs";
 import Can from "../../../components/Can";
 import ActionPlanHistory from "./FindingHistory/ActionPlanHistory";
-import VerificationHistory from "./FindingHistory/VerificationHistory";
 
 // Helper function to get user's full name from either format
 const getUserFullName = (user) => {
@@ -427,22 +425,6 @@ const FindingCard = ({
                           <Text>Action Plan</Text>
                         </HStack>
                       </ResponsiveTab>
-                      <ResponsiveTab>
-                        <HStack spacing={2}>
-                          <Center pos="relative">
-                            <FiCheckCircle />
-                            <NotifBadge
-                              bottom={-1}
-                              right={-1}
-                              boxSize={3}
-                              position="absolute"
-                              show={needsVerification}
-                              message={"Verification Pending"}
-                            />
-                          </Center>
-                          <Text>Verification</Text>
-                        </HStack>
-                      </ResponsiveTab>
                     </ResponsiveTabList>
 
                     <ResponsiveTabPanels>
@@ -617,24 +599,14 @@ const FindingCard = ({
                           {...{
                             team,
                             finding,
+                            isScheduleOngoing,
+                            isEditingVerification,
+                            setIsEditingVerification,
                             isEditingActionPlan,
                             setIsEditingActionPlan,
                             organizationAuditors,
                             handleSaveActionPlan,
                             handleCancelActionPlan,
-                          }}
-                        />
-                      </ResponsiveTabPanel>
-
-                      {/* Verification Tab Panel */}
-                      <ResponsiveTabPanel px={0} py={4}>
-                        <VerificationHistory
-                          {...{
-                            finding,
-                            isEditingVerification,
-                            setIsEditingVerification,
-                            isScheduleOngoing,
-                            needsActionPlan,
                             handleSaveVerification,
                             handleCancelVerification,
                           }}
