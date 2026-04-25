@@ -17,9 +17,15 @@ import moment from "moment";
 import ActionPlanForm from "../ActionPlanForm";
 import { FiPlus } from "react-icons/fi";
 import Can from "../../../../components/Can";
+import VerificationForm from "../VerificationForm";
 
 const ActionPlanHistory = ({
   finding,
+  isEditingVerification = false,
+  setIsEditingVerification = () => {},
+  isScheduleOngoing = true,
+  handleSaveVerification = () => {},
+  handleCancelVerification = () => {},
   isEditingActionPlan = false,
   setIsEditingActionPlan = () => {},
   organizationAuditors,
@@ -55,6 +61,10 @@ const ActionPlanHistory = ({
               .map((actionPlanItem, actionPlanIndex) => {
                 const isLatest =
                   finding.actionPlans.length - 1 === actionPlanIndex;
+                const canVerifyThisPlan =
+                  (actionPlanItem.corrected === undefined ||
+                    actionPlanItem.corrected === -1) &&
+                  isScheduleOngoing;
 
                 return (
                   <AccordionItem
@@ -141,86 +151,92 @@ const ActionPlanHistory = ({
                           <AccordionPanel px={0} pb={4}>
                             {actionPlanItem.corrected !== undefined &&
                               actionPlanItem.corrected !== -1 && (
-                                <Box
-                                  mb={2}
-                                  p={2}
-                                  bg={
-                                    actionPlanItem.corrected === 1 ||
-                                    actionPlanItem.corrected === 2
-                                      ? "green.50"
-                                      : "red.50"
-                                  }
-                                  borderRadius="md"
-                                  borderWidth="1px"
-                                  borderColor={
-                                    actionPlanItem.corrected === 1 ||
-                                    actionPlanItem.corrected === 2
-                                      ? "green.200"
-                                      : "red.200"
-                                  }
-                                >
-                                  <VStack align="stretch" spacing={2}>
-                                    <HStack justify="space-between">
-                                      <Text
-                                        fontSize="xs"
-                                        fontWeight="semibold"
-                                        color={
+                                <VStack w="full">
+                                  {canVerifyThisPlan &&
+                                    isEditingVerification !== actionPlanIndex &&
+                                    !readOnly && (
+                                      <>
+                                        <Can to="audit.findings.u">
+                                          <Button
+                                            size="sm"
+                                            leftIcon={<FiPlus />}
+                                            colorScheme="green"
+                                            variant="outline"
+                                            onClick={() => {
+                                              setIsEditingVerification(
+                                                actionPlanIndex,
+                                              );
+                                            }}
+                                          >
+                                            Verify
+                                          </Button>
+                                        </Can>
+                                      </>
+                                    )}
+                                  {isEditingVerification !== actionPlanIndex &&
+                                    !readOnly && (
+                                      <Box
+                                        w="full"
+                                        mb={2}
+                                        p={2}
+                                        bg={
                                           actionPlanItem.corrected === 1 ||
                                           actionPlanItem.corrected === 2
-                                            ? "green.700"
-                                            : "red.700"
+                                            ? "green.50"
+                                            : "red.50"
+                                        }
+                                        borderRadius="md"
+                                        borderWidth="1px"
+                                        borderColor={
+                                          actionPlanItem.corrected === 1 ||
+                                          actionPlanItem.corrected === 2
+                                            ? "green.200"
+                                            : "red.200"
                                         }
                                       >
-                                        Verification Status
-                                      </Text>
-                                      <Badge
-                                        colorScheme={
-                                          actionPlanItem.corrected === 2 ||
-                                          actionPlanItem.corrected === 1
-                                            ? "green"
-                                            : actionPlanItem.corrected === 0
-                                              ? "red"
-                                              : "orange"
-                                        }
-                                        fontSize="xs"
-                                      >
-                                        {actionPlanItem.corrected === 2 ||
-                                        actionPlanItem.corrected === 1
-                                          ? "Corrective"
-                                          : actionPlanItem.corrected === 0
-                                            ? "Non-Corrective"
-                                            : "Pending"}
-                                      </Badge>
-                                    </HStack>
-
-                                    {actionPlanItem.correctionDate && (
-                                      <Text fontSize="xs" color={labelColor}>
-                                        Correction Date:{" "}
-                                        {moment(
-                                          actionPlanItem.correctionDate,
-                                        ).format("MMMM DD, YYYY")}
-                                      </Text>
-                                    )}
-
-                                    {actionPlanItem.remarks && (
-                                      <Box>
                                         <Text
+                                          mb={2}
                                           fontSize="xs"
-                                          color={labelColor}
-                                          mb={1}
+                                          fontWeight="semibold"
+                                          color={
+                                            actionPlanItem.corrected === 1 ||
+                                            actionPlanItem.corrected === 2
+                                              ? "green.700"
+                                              : "red.700"
+                                          }
                                         >
-                                          Remarks:
+                                          Verification Status
                                         </Text>
-                                        <Text
-                                          fontSize="sm"
-                                          whiteSpace="pre-wrap"
-                                        >
-                                          {actionPlanItem.remarks}
-                                        </Text>
+                                        <VerificationForm
+                                          initialData={{
+                                            corrected: actionPlanItem.corrected,
+                                            correctionDate:
+                                              actionPlanItem.correctionDate,
+                                            remarks: actionPlanItem.remarks,
+                                          }}
+                                          readOnly={true}
+                                        />
                                       </Box>
                                     )}
-                                  </VStack>
-                                </Box>
+                                  {isEditingVerification ===
+                                    actionPlanIndex && (
+                                    <VerificationForm
+                                      initialData={{
+                                        corrected: -1,
+                                        correctionDate: new Date(),
+                                        remarks: "",
+                                      }}
+                                      onSave={(data) =>
+                                        handleSaveVerification(
+                                          data,
+                                          isEditingVerification,
+                                        )
+                                      }
+                                      onCancel={handleCancelVerification}
+                                      readOnly={false}
+                                    />
+                                  )}
+                                </VStack>
                               )}
                             <ActionPlanForm
                               initialData={actionPlanItem.actionPlan}
