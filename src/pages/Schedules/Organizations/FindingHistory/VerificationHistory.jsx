@@ -16,6 +16,7 @@ import {
 import moment from "moment";
 import { FiPlus } from "react-icons/fi";
 import VerificationForm from "../VerificationForm";
+import Can from "../../../../components/Can";
 
 const VerificationHistory = ({
   finding,
@@ -31,12 +32,10 @@ const VerificationHistory = ({
   const labelColor = useColorModeValue("gray.600", "gray.400");
   const plans = finding?.actionPlans || [];
 
-  const verifications = plans
-    .map((p, idx) => ({
-      ...p,
-      index: idx,
-    }))
-    .filter((p) => p.corrected !== -1 && p.corrected !== undefined);
+  const verifications = plans.map((p, idx) => ({
+    ...p,
+    index: idx,
+  }));
 
   if (!verifications.length) {
     return <Text fontSize="sm">No verifications yet.</Text>;
@@ -137,20 +136,22 @@ const VerificationHistory = ({
                       <VStack align="stretch" spacing={4}>
                         {canVerifyThisPlan &&
                           isEditingVerification !== actionPlanIndex &&
-                          !readOnly(
+                          !readOnly && (
                             <>
-                              <Button
-                                size="sm"
-                                leftIcon={<FiPlus />}
-                                colorScheme="green"
-                                variant="outline"
-                                onClick={() => {
-                                  setIsEditingVerification(actionPlanIndex);
-                                }}
-                              >
-                                Verify
-                              </Button>
-                            </>,
+                              <Can to="audit.findings.u">
+                                <Button
+                                  size="sm"
+                                  leftIcon={<FiPlus />}
+                                  colorScheme="green"
+                                  variant="outline"
+                                  onClick={() => {
+                                    setIsEditingVerification(actionPlanIndex);
+                                  }}
+                                >
+                                  Verify
+                                </Button>
+                              </Can>
+                            </>
                           )}
                         {isEditingVerification === actionPlanIndex && (
                           <VerificationForm
