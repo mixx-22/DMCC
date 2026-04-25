@@ -151,13 +151,7 @@ const ActionPlanForm = ({
   if (readOnly) {
     // Read-only display mode (following FindingsList user display pattern)
     return (
-      <Box
-        p={4}
-        bg={sectionBg}
-        borderWidth={1}
-        borderRadius="md"
-        borderColor={borderColor}
-      >
+      <Box>
         <VStack align="stretch" spacing={4}>
           {/* Root Cause Analysis Section */}
           <Box>
