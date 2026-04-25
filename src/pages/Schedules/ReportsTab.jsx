@@ -86,13 +86,19 @@ const ReportCard = ({ finding, organization, onSave, isScheduleOngoing }) => {
     shouldShowActionPlan &&
     (!finding.actionPlans || finding.actionPlans.length === 0);
 
-  // Check if verification is needed (has action plans but latest one not verified)
+  // Check if verification is needed (latest action plan not verified)
   const needsVerification =
     shouldShowActionPlan &&
     finding.actionPlans &&
     finding.actionPlans.length > 0 &&
-    (!finding.actionPlans[finding.actionPlans.length - 1].corrected ||
-      finding.actionPlans[finding.actionPlans.length - 1].corrected === -1);
+    (() => {
+      const latestActionPlan =
+        finding.actionPlans[finding.actionPlans.length - 1];
+      return (
+        latestActionPlan.corrected === undefined ||
+        latestActionPlan.corrected === -1
+      );
+    })();
 
   const handleSaveActionPlan = async (actionPlanData) => {
     // Add new action plan to the actionPlans array

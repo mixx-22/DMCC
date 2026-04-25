@@ -104,13 +104,19 @@ const FindingCard = ({
     shouldShowActionPlan &&
     (!finding.actionPlans || finding.actionPlans.length === 0);
 
-  // Check if verification is needed (has action plans but latest one not verified)
+  // Check if verification is needed (latest action plan not verified)
   const needsVerification =
     shouldShowActionPlan &&
     finding.actionPlans &&
     finding.actionPlans.length > 0 &&
-    (!finding.actionPlans[finding.actionPlans.length - 1].corrected ||
-      finding.actionPlans[finding.actionPlans.length - 1].corrected === -1);
+    (() => {
+      const latestActionPlan =
+        finding.actionPlans[finding.actionPlans.length - 1];
+      return (
+        latestActionPlan.corrected === undefined ||
+        latestActionPlan.corrected === -1
+      );
+    })();
 
   const handleEditClick = () => {
     setIsEditing(true);
@@ -763,30 +769,76 @@ const FindingCard = ({
                                 </>
                               }
                             >
-                              <Text
-                                mb={2}
-                                fontSize="xs"
-                                color="gray.500"
-                                textAlign="center"
-                              >
-                                {finding.actionPlans &&
-                                finding.actionPlans.length > 0
-                                  ? "Add another action plan or update if needed."
-                                  : "No Action Plan Set Yet. Add one now by clicking the button below."}
-                              </Text>
+                              {finding.actionPlans &&
+                              finding.actionPlans.length > 0 ? (
+                                // Check if the latest action plan has been verified
+                                (() => {
+                                  const latestActionPlan =
+                                    finding.actionPlans[
+                                      finding.actionPlans.length - 1
+                                    ];
+                                  const canAddAnother =
+                                    latestActionPlan.corrected !== undefined &&
+                                    latestActionPlan.corrected !== -1;
 
-                              <Button
-                                size="sm"
-                                leftIcon={<FiPlus />}
-                                colorScheme="brandPrimary"
-                                variant="outline"
-                                onClick={() => setIsEditingActionPlan(true)}
-                              >
-                                {finding.actionPlans &&
-                                finding.actionPlans.length > 0
-                                  ? "Add Another Action Plan"
-                                  : "Add Action Plan"}
-                              </Button>
+                                  return canAddAnother ? (
+                                    <>
+                                      <Text
+                                        mb={2}
+                                        fontSize="xs"
+                                        color="gray.500"
+                                        textAlign="center"
+                                      >
+                                        The previous action plan has been
+                                        verified. Add another action plan if
+                                        needed.
+                                      </Text>
+                                      <Button
+                                        size="sm"
+                                        leftIcon={<FiPlus />}
+                                        colorScheme="brandPrimary"
+                                        variant="outline"
+                                        onClick={() =>
+                                          setIsEditingActionPlan(true)
+                                        }
+                                      >
+                                        Add Another Action Plan
+                                      </Button>
+                                    </>
+                                  ) : (
+                                    <Text
+                                      mb={2}
+                                      fontSize="xs"
+                                      color="gray.500"
+                                      textAlign="center"
+                                    >
+                                      The latest action plan must be verified
+                                      before adding another one.
+                                    </Text>
+                                  );
+                                })()
+                              ) : (
+                                <>
+                                  <Text
+                                    mb={2}
+                                    fontSize="xs"
+                                    color="gray.500"
+                                    textAlign="center"
+                                  >
+                                    No Action Plan Set Yet. Add one now by
+                                    clicking the button below.
+                                  </Text>
+                                  <Button
+                                    size="sm"
+                                    leftIcon={<FiPlus />}
+                                    colorScheme="brandPrimary"
+                                    variant="outline"
+                                    onClick={() => setIsEditingActionPlan(true)}
+                                  >
+                                    Add Action Plan
+                                  </Button>
+                                </>
+                              )}
                             </Can>
                           </Center>
                         )}
@@ -821,61 +873,74 @@ const FindingCard = ({
 
                           {/* Show verification for each action plan */}
                           {finding.actionPlans &&
-                            finding.actionPlans.map((actionPlanItem, index) => (
-                              <Box
-                                key={actionPlanItem.id || index}
-                                p={3}
-                                bg={sectionBg}
-                                borderRadius="md"
-                                borderWidth="1px"
-                                borderColor={borderColor}
-                              >
-                                <VStack align="stretch" spacing={3}>
-                                  <HStack justify="space-between" align="start">
-                                    <Badge colorScheme="green" fontSize="xs">
-                                      Action Plan #{index + 1} Verification
-                                    </Badge>
-                                    {isScheduleOngoing &&
-                                      (actionPlanItem.corrected === undefined ||
-                                        actionPlanItem.corrected === -1) && (
-                                        <Button
-                                          size="xs"
-                                          leftIcon={<FiPlus />}
-                                          colorScheme="green"
-                                          variant="outline"
-                                          onClick={() => {
-                                            setIsEditingVerification(true);
-                                            // TODO: Set which action plan is being verified
-                                          }}
-                                        >
-                                          Verify
-                                        </Button>
-                                      )}
-                                  </HStack>
+                            finding.actionPlans.map((actionPlanItem, index) => {
+                              const isLatestActionPlan =
+                                index === finding.actionPlans.length - 1;
+                              const canVerifyThisPlan =
+                                isLatestActionPlan &&
+                                (actionPlanItem.corrected === undefined ||
+                                  actionPlanItem.corrected === -1);
 
-                                  {actionPlanItem.corrected !== undefined &&
-                                  actionPlanItem.corrected !== -1 ? (
-                                    <VerificationForm
-                                      initialData={{
-                                        corrected: actionPlanItem.corrected,
-                                        correctionDate:
-                                          actionPlanItem.correctionDate,
-                                        remarks: actionPlanItem.remarks,
-                                      }}
-                                      readOnly={true}
-                                    />
-                                  ) : (
-                                    <Text
-                                      fontSize="sm"
-                                      color="gray.500"
-                                      textAlign="center"
+                              return (
+                                <Box
+                                  key={actionPlanItem.id || index}
+                                  p={3}
+                                  bg={sectionBg}
+                                  borderRadius="md"
+                                  borderWidth="1px"
+                                  borderColor={borderColor}
+                                >
+                                  <VStack align="stretch" spacing={3}>
+                                    <HStack
+                                      justify="space-between"
+                                      align="start"
                                     >
-                                      Not verified yet
-                                    </Text>
-                                  )}
-                                </VStack>
-                              </Box>
-                            ))}
+                                      <Badge colorScheme="green" fontSize="xs">
+                                        Action Plan #{index + 1} Verification
+                                      </Badge>
+                                      {isScheduleOngoing &&
+                                        canVerifyThisPlan && (
+                                          <Button
+                                            size="xs"
+                                            leftIcon={<FiPlus />}
+                                            colorScheme="green"
+                                            variant="outline"
+                                            onClick={() => {
+                                              setIsEditingVerification(true);
+                                              // TODO: Set which action plan is being verified
+                                            }}
+                                          >
+                                            Verify
+                                          </Button>
+                                        )}
+                                    </HStack>
+
+                                    {actionPlanItem.corrected !== undefined &&
+                                    actionPlanItem.corrected !== -1 ? (
+                                      <VerificationForm
+                                        initialData={{
+                                          corrected: actionPlanItem.corrected,
+                                          correctionDate:
+                                            actionPlanItem.correctionDate,
+                                          remarks: actionPlanItem.remarks,
+                                        }}
+                                        readOnly={true}
+                                      />
+                                    ) : (
+                                      <Text
+                                        fontSize="sm"
+                                        color="gray.500"
+                                        textAlign="center"
+                                      >
+                                        {isLatestActionPlan
+                                          ? "Not verified yet"
+                                          : "Waiting for previous action plan to be verified first"}
+                                      </Text>
+                                    )}
+                                  </VStack>
+                                </Box>
+                              );
+                            })}
 
                           {/* Edit verification form */}
                           {isEditingVerification && (
