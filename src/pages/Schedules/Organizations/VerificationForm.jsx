@@ -27,7 +27,6 @@ const VerificationForm = ({
 }) => {
   const bg = useColorModeValue("green.50", "green.900");
   const borderColor = useColorModeValue("green.200", "green.700");
-  const sectionBg = useColorModeValue("white", "gray.800");
   const labelColor = useColorModeValue("gray.600", "gray.400");
   const { pageRef } = useLayout();
 

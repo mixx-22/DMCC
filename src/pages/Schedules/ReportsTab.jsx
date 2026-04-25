@@ -26,15 +26,18 @@ import {
   SimpleGrid,
   Center,
   Avatar,
+  IconButton,
 } from "@chakra-ui/react";
 import { useMemo } from "react";
 import { FiTool } from "react-icons/fi";
+import { FaHistory } from "react-icons/fa";
 import moment from "moment";
 import { useOrganizations, useUser } from "../../context/_useContext";
 import ActionPlanForm from "./Organizations/ActionPlanForm";
 import VerificationForm from "./Organizations/VerificationForm";
 import NotifBadge from "../../components/NotifBadge";
 import Can from "../../components/Can";
+import FindingHistory from "./Organizations/FindingHistory";
 
 const DATE_FORMAT_LONG = "MMMM DD, YYYY";
 
@@ -79,14 +82,13 @@ const getFindingStatus = (f) => {
 const ReportCard = ({ finding, organization, onSave, isScheduleOngoing }) => {
   const cardBg = useColorModeValue("white", "gray.700");
   const borderColor = useColorModeValue("gray.200", "gray.600");
-  const labelColor = useColorModeValue("gray.600", "gray.400");
-  const reportBg = useColorModeValue("gray.50", "gray.800");
 
   const remarksBg = useColorModeValue("orange.50", "orange.900");
   const remarksBorder = useColorModeValue("orange.200", "orange.700");
 
   const actionModal = useDisclosure();
   const verifyModal = useDisclosure();
+  const historyModal = useDisclosure();
 
   const compliance = finding.currentCompliance || finding.compliance;
   const complianceInfo =
@@ -199,7 +201,6 @@ const ReportCard = ({ finding, organization, onSave, isScheduleOngoing }) => {
               </VStack>
             </HStack>
 
-            {console.log(latest)}
             {showRemarks && (
               <Box
                 p={3}
@@ -230,8 +231,15 @@ const ReportCard = ({ finding, organization, onSave, isScheduleOngoing }) => {
             <Can to="audit.response.u">
               {shouldHaveActionPlan && isScheduleOngoing && (
                 <HStack>
+                  <Tooltip label="View History">
+                    <IconButton
+                      size="sm"
+                      aria-label="History"
+                      icon={<FaHistory />}
+                      onClick={historyModal.onOpen}
+                    />
+                  </Tooltip>
                   <Spacer />
-
                   {needsActionPlan && (
                     <Button
                       size="sm"
@@ -242,7 +250,6 @@ const ReportCard = ({ finding, organization, onSave, isScheduleOngoing }) => {
                       {latest ? "Add Another Action Plan" : "Add Action Plan"}
                     </Button>
                   )}
-
                   {needsVerification && (
                     <Can to="audit.verify.u">
                       <Button size="sm" onClick={verifyModal.onOpen}>
@@ -294,6 +301,22 @@ const ReportCard = ({ finding, organization, onSave, isScheduleOngoing }) => {
               onSave={handleSaveVerification}
               onCancel={verifyModal.onClose}
             />
+          </ModalBody>
+        </ModalContent>
+      </Modal>
+
+      {/* History Modal */}
+      <Modal
+        size="lg"
+        isOpen={historyModal.isOpen}
+        onClose={historyModal.onClose}
+      >
+        <ModalOverlay />
+        <ModalContent>
+          <ModalHeader px={4}>History</ModalHeader>
+          <ModalCloseButton />
+          <ModalBody p={0}>
+            <FindingHistory show={["actionPlans"]} readOnly {...{ finding }} />
           </ModalBody>
         </ModalContent>
       </Modal>
