@@ -25,17 +25,10 @@ import {
   Divider,
   SimpleGrid,
   Center,
-  Accordion,
-  AccordionItem,
-  AccordionButton,
-  AccordionPanel,
-  AccordionIcon,
   Avatar,
-  CardHeader,
-  CardFooter,
 } from "@chakra-ui/react";
 import { useMemo } from "react";
-import { FiFileText, FiTool, FiCheckCircle, FiPlus } from "react-icons/fi";
+import { FiFileText, FiTool, FiCheckCircle } from "react-icons/fi";
 import moment from "moment";
 import { useOrganizations, useUser } from "../../context/_useContext";
 import ActionPlanForm from "./Organizations/ActionPlanForm";
@@ -43,10 +36,8 @@ import VerificationForm from "./Organizations/VerificationForm";
 import NotifBadge from "../../components/NotifBadge";
 import Can from "../../components/Can";
 
-// Constants
 const DATE_FORMAT_LONG = "MMMM DD, YYYY";
 
-// Map compliance values to display names and colors
 const COMPLIANCE_DISPLAY = {
   OBSERVATIONS: { label: "Observations", color: "brandPrimary" },
   OPPORTUNITIES_FOR_IMPROVEMENTS: {
@@ -59,20 +50,9 @@ const COMPLIANCE_DISPLAY = {
   COMPLIANT: { label: "Compliant", color: "green" },
 };
 
-const getLatestActionPlan = (finding) =>
-  finding?.actionPlans?.length > 0
-    ? finding.actionPlans[finding.actionPlans.length - 1]
-    : null;
+const getLatestActionPlan = (f) => f.actionPlans?.[f.actionPlans.length - 1];
 
-const isLatestActionPlanOpen = (finding) => {
-  const latest = getLatestActionPlan(finding);
-  // Show if no action plans exist (needs action plan) OR latest action plan is not verified
-  return !latest || latest.corrected !== 2;
-};
-
-// Helper function to check if finding should have action plan
-const isNonConformityWithReport = (finding) =>
-  ["MINOR_NC", "MAJOR_NC"].includes(finding.compliance) && finding.report;
+const isNC = (f) => ["MINOR_NC", "MAJOR_NC"].includes(f.compliance);
 
 const ReportCard = ({ finding, organization, onSave, isScheduleOngoing }) => {
   const cardBg = useColorModeValue("white", "gray.700");
@@ -80,264 +60,144 @@ const ReportCard = ({ finding, organization, onSave, isScheduleOngoing }) => {
   const labelColor = useColorModeValue("gray.600", "gray.400");
   const reportBg = useColorModeValue("gray.50", "gray.800");
 
-  const {
-    isOpen: isActionPlanOpen,
-    onOpen: onActionPlanOpen,
-    onClose: onActionPlanClose,
-  } = useDisclosure();
-  const {
-    isOpen: isVerificationOpen,
-    onOpen: onVerificationOpen,
-    onClose: onVerificationClose,
-  } = useDisclosure();
+  const actionModal = useDisclosure();
+  const verifyModal = useDisclosure();
 
-  // Use currentCompliance if available, otherwise fallback to compliance
-  const currentComplianceInfo =
-    COMPLIANCE_DISPLAY[finding.currentCompliance || finding.compliance] ||
-    COMPLIANCE_DISPLAY.OBSERVATIONS;
+  const compliance = finding.currentCompliance || finding.compliance;
+  const complianceInfo =
+    COMPLIANCE_DISPLAY[compliance] || COMPLIANCE_DISPLAY.OBSERVATIONS;
 
-  // Check if finding should have action plan (MINOR_NC or MAJOR_NC with report)
-  const shouldShowActionPlan = isNonConformityWithReport(finding);
-  const latestActionPlan = getLatestActionPlan(finding);
-  const isLatestOpen = isLatestActionPlanOpen(finding);
+  const latest = getLatestActionPlan(finding);
+
+  const shouldHaveActionPlan = isNC(finding) && finding.report;
   const needsActionPlan =
-    isLatestOpen || (shouldShowActionPlan && !latestActionPlan);
-
-  // Check if verification is needed (latest action plan not verified)
+    shouldHaveActionPlan && (!latest || latest.corrected !== 2);
   const needsVerification =
-    shouldShowActionPlan &&
-    latestActionPlan &&
-    (latestActionPlan.corrected === undefined ||
-      latestActionPlan.corrected < 1);
+    shouldHaveActionPlan && latest && (latest.corrected ?? -1) < 1;
 
-  const handleSaveActionPlan = async (actionPlanData) => {
-    // Add new action plan to the actionPlans array
-    const { visitIndex, organizationId, ...findingData } = finding;
-    const newActionPlan = {
-      id: `action-plan-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-      actionPlan: actionPlanData,
-      corrected: -1, // Not verified yet
-      correctionDate: null,
+  const handleSaveActionPlan = async (data) => {
+    const { visitIndex, organizationId, ...rest } = finding;
+
+    const newPlan = {
+      id: `ap-${Date.now()}`,
+      actionPlan: data,
+      corrected: -1,
       createdAt: new Date().toISOString(),
     };
 
-    const updatedFinding = {
-      ...findingData,
-      actionPlans: [...(findingData.actionPlans || []), newActionPlan],
+    const updated = {
+      ...rest,
+      actionPlans: [...(rest.actionPlans || []), newPlan],
     };
 
-    if (onSave) {
-      // Pass finding with temporary routing properties for handleSaveFinding
-      await onSave(
-        { ...updatedFinding, visitIndex, organizationId },
-        organization,
-      );
-    }
-    onActionPlanClose();
+    await onSave?.({ ...updated, visitIndex, organizationId }, organization);
+    actionModal.onClose();
   };
 
-  const handleSaveVerification = async (verificationData) => {
-    // If no specific action plan index, use the last one
-    const index = finding.actionPlans?.length
-      ? finding.actionPlans.length - 1
-      : 0;
+  const handleSaveVerification = async (data) => {
+    const { visitIndex, organizationId, ...rest } = finding;
 
-    // Update the specific action plan with verification data
-    const { visitIndex, organizationId, ...findingData } = finding;
-    const updatedActionPlans = (findingData.actionPlans || []).map((ap, i) =>
-      i === index
-        ? {
-            ...ap,
-            corrected: verificationData.corrected,
-            correctionDate: verificationData.correctionDate,
-            remarks: verificationData.remarks,
-          }
-        : ap,
+    const updatedPlans = (rest.actionPlans || []).map((ap, i, arr) =>
+      i === arr.length - 1 ? { ...ap, ...data } : ap,
     );
 
-    // Calculate currentCompliance based on the latest action plan's corrected status
-    const latestActionPlan = updatedActionPlans[updatedActionPlans.length - 1];
-    const currentCompliance =
-      latestActionPlan.corrected === 2 ? "COMPLIANT" : finding.compliance;
+    const latestPlan = updatedPlans.at(-1);
 
-    // Save updated action plans at finding level
-    const updatedFinding = {
-      ...findingData,
-      actionPlans: updatedActionPlans,
-      currentCompliance: currentCompliance,
+    const updated = {
+      ...rest,
+      actionPlans: updatedPlans,
+      currentCompliance:
+        latestPlan.corrected === 2 ? "COMPLIANT" : finding.compliance,
     };
 
-    if (onSave) {
-      // Pass finding with temporary routing properties for handleSaveFinding
-      await onSave(
-        { ...updatedFinding, visitIndex, organizationId },
-        organization,
-      );
-    }
-    onVerificationClose();
+    await onSave?.({ ...updated, visitIndex, organizationId }, organization);
+    verifyModal.onClose();
   };
 
   return (
     <>
-      <Card
-        size="sm"
-        variant="outline"
-        borderColor={borderColor}
-        bg={cardBg}
-        boxShadow="sm"
-        _hover={{ boxShadow: "md" }}
-      >
+      <Card size="sm" variant="outline" borderColor={borderColor} bg={cardBg}>
         <CardBody>
           <VStack align="stretch" spacing={3}>
-            {/* Header */}
-            <HStack justify="space-between" align="start">
-              <VStack align="start" spacing={1} flex={1}>
-                <HStack spacing={2} flexWrap="wrap">
-                  <Badge
-                    colorScheme={currentComplianceInfo.color}
-                    fontSize="xs"
-                  >
-                    {currentComplianceInfo.label}
-                  </Badge>
-                </HStack>
-                <Text fontWeight="semibold" fontSize="md">
-                  {finding.title}
-                </Text>
-                {/* Objectives Display */}
-                {finding.objectives && finding.objectives.length > 0 && (
-                  <Box>
-                    <Wrap spacing={1}>
-                      {finding.objectives.map((obj, idx) => (
-                        <WrapItem key={`obj-${obj._id}-${idx}`}>
-                          <Tooltip
-                            label={`Updated: ${moment(obj.teamUpdatedAt).format(DATE_FORMAT_LONG)}`}
-                            placement="top"
-                          >
-                            <Badge
-                              fontSize="2xs"
-                              px={2}
-                              py={1}
-                              borderRadius="md"
-                            >
-                              {obj.title}
-                            </Badge>
-                          </Tooltip>
-                        </WrapItem>
-                      ))}
-                      <WrapItem>
-                        <Text as="span" fontSize="xs" color="gray.500" mt={1}>
-                          {moment(finding.objectives[0]?.teamUpdatedAt).format(
-                            "MMM DD, YYYY",
+            <HStack justify="space-between">
+              <VStack align="start" flex={1}>
+                <Badge colorScheme={complianceInfo.color} fontSize="xs">
+                  {complianceInfo.label}
+                </Badge>
+
+                <Text fontWeight="semibold">{finding.title}</Text>
+
+                {finding.objectives?.length > 0 && (
+                  <Wrap>
+                    {finding.objectives.map((o, i) => (
+                      <WrapItem key={i}>
+                        <Tooltip
+                          label={moment(o.teamUpdatedAt).format(
+                            DATE_FORMAT_LONG,
                           )}
-                        </Text>
+                        >
+                          <Badge fontSize="2xs">{o.title}</Badge>
+                        </Tooltip>
                       </WrapItem>
-                    </Wrap>
-                  </Box>
+                    ))}
+                  </Wrap>
                 )}
               </VStack>
-              <Box>
-                <NotifBadge
-                  show={needsActionPlan || needsVerification}
-                  message={
-                    needsVerification
-                      ? "Verification Pending"
-                      : needsActionPlan
-                        ? "Action Plan Required"
-                        : undefined
-                  }
-                />
-              </Box>
+
+              <NotifBadge
+                show={needsActionPlan || needsVerification}
+                message={
+                  needsVerification
+                    ? "Verification Pending"
+                    : "Action Plan Required"
+                }
+              />
             </HStack>
 
-            {/* Details */}
-            <Box>
-              <Text fontSize="sm" whiteSpace="pre-wrap" color={labelColor}>
-                {finding.details}
-              </Text>
-            </Box>
+            <Text fontSize="sm" color={labelColor}>
+              {finding.details}
+            </Text>
 
-            {/* Report Section - Only for MINOR_NC/MAJOR_NC with report */}
-            {shouldShowActionPlan && finding.report && (
+            {shouldHaveActionPlan && finding.report && (
               <Box
                 p={3}
                 bg={reportBg}
-                borderRadius="md"
                 borderWidth="1px"
                 borderColor={borderColor}
               >
-                <VStack align="stretch" spacing={2}>
-                  <HStack>
-                    <FiFileText />
-                    <Text fontWeight="semibold" fontSize="sm">
-                      Report
-                    </Text>
-                  </HStack>
-                  {/* Report Number */}
-                  {finding.report.reportNo && (
-                    <HStack flex={1} spacing={2}>
-                      <Text fontSize="xs" color={labelColor} minW="80px">
-                        Report No:
-                      </Text>
-                      <Text fontSize="sm" fontWeight="medium">
-                        {finding.report.reportNo}
-                      </Text>
-                    </HStack>
-                  )}
+                <HStack mb={2}>
+                  <FiFileText />
+                  <Text fontWeight="semibold" fontSize="sm">
+                    Report
+                  </Text>
+                </HStack>
 
-                  {/* Date Issued */}
-                  {finding.report.date && (
-                    <HStack flex={1} spacing={2}>
-                      <Text fontSize="xs" color={labelColor} minW="80px">
-                        Date Issued:
-                      </Text>
-                      <Text fontSize="sm">
-                        {moment(finding.report.date).format(DATE_FORMAT_LONG)}
-                      </Text>
-                    </HStack>
-                  )}
-
-                  {/* Report Details */}
-                  {finding.report.details && (
-                    <Box>
-                      <Text fontSize="xs" color={labelColor} mb={1}>
-                        Details:
-                      </Text>
-                      <Text fontSize="sm" whiteSpace="pre-wrap">
-                        {finding.report.details}
-                      </Text>
-                    </Box>
-                  )}
-                </VStack>
+                <Text fontSize="sm">Report No: {finding.report.reportNo}</Text>
+                <Text fontSize="sm">
+                  Date: {moment(finding.report.date).format(DATE_FORMAT_LONG)}
+                </Text>
+                <Text fontSize="sm">{finding.report.details}</Text>
               </Box>
             )}
 
-            {/* Action Buttons */}
             <Can to="audit.response.u">
-              {shouldShowActionPlan && isScheduleOngoing && (
-                <HStack spacing={2}>
+              {shouldHaveActionPlan && isScheduleOngoing && (
+                <HStack>
                   <Spacer />
                   <Button
                     size="sm"
                     colorScheme="purple"
                     leftIcon={<FiTool />}
-                    onClick={onActionPlanOpen}
-                    variant={needsActionPlan ? "solid" : "outline"}
+                    onClick={actionModal.onOpen}
+                    variant={"outline"}
                   >
-                    {latestActionPlan
-                      ? "Add Another Action Plan"
-                      : "Add Action Plan"}
+                    {latest ? "Add Another Action Plan" : "Add Action Plan"}
                   </Button>
-                  {latestActionPlan && (
+
+                  {latest && (
                     <Can to="audit.verify.u">
-                      <Button
-                        leftIcon={<FiCheckCircle />}
-                        size="sm"
-                        colorScheme="green"
-                        variant={needsVerification ? "solid" : "outline"}
-                        onClick={onVerificationOpen}
-                      >
-                        {latestActionPlan.corrected === -1 ||
-                        latestActionPlan.corrected === undefined
+                      <Button size="sm" onClick={verifyModal.onOpen}>
+                        {(latest.corrected ?? -1) < 1
                           ? "Set Verification"
                           : "Edit Verification"}
                       </Button>
@@ -350,46 +210,40 @@ const ReportCard = ({ finding, organization, onSave, isScheduleOngoing }) => {
         </CardBody>
       </Card>
 
-      {/* Action Plan Modal */}
-      <Modal isOpen={isActionPlanOpen} onClose={onActionPlanClose} size="lg">
+      <Modal
+        size="lg"
+        isOpen={actionModal.isOpen}
+        onClose={actionModal.onClose}
+      >
         <ModalOverlay />
         <ModalContent>
-          <ModalHeader>
-            {latestActionPlan ? "Add Another Action Plan" : "Add Action Plan"}
-          </ModalHeader>
+          <ModalHeader>Add Action Plan</ModalHeader>
           <ModalCloseButton />
-          <ModalBody pb={6}>
+          <ModalBody>
             <ActionPlanForm
-              initialData={null}
               mode="add"
               onSave={handleSaveActionPlan}
-              onCancel={onActionPlanClose}
+              onCancel={actionModal.onClose}
               team={organization.team}
-              organizationAuditors={organization.auditors || []}
             />
           </ModalBody>
         </ModalContent>
       </Modal>
 
-      {/* Verification Modal */}
       <Modal
-        isOpen={isVerificationOpen}
-        onClose={onVerificationClose}
         size="lg"
+        isOpen={verifyModal.isOpen}
+        onClose={verifyModal.onClose}
       >
         <ModalOverlay />
         <ModalContent>
-          <ModalHeader>Set Verification</ModalHeader>
+          <ModalHeader>Verification</ModalHeader>
           <ModalCloseButton />
-          <ModalBody pb={6}>
+          <ModalBody>
             <VerificationForm
-              initialData={{
-                corrected: latestActionPlan?.corrected,
-                correctionDate: latestActionPlan?.correctionDate,
-                remarks: latestActionPlan?.remarks,
-              }}
+              initialData={latest}
               onSave={handleSaveVerification}
-              onCancel={onVerificationClose}
+              onCancel={verifyModal.onClose}
             />
           </ModalBody>
         </ModalContent>
@@ -401,233 +255,98 @@ const ReportCard = ({ finding, organization, onSave, isScheduleOngoing }) => {
 const ReportsTab = ({ schedule }) => {
   const { loading, organizations, updateOrganization } = useOrganizations();
   const { user } = useUser();
-  const isScheduleOngoing = useMemo(() => schedule?.status === 0, [schedule]);
-  const organizationColor = useColorModeValue("purple.600", "purple.200");
 
-  const userTeamIds = useMemo(() => {
-    const teams = user?.team || user?.teams || [];
-    const teamList = Array.isArray(teams) ? teams : [teams];
+  const isOngoing = schedule?.status === 0;
 
-    return teamList
-      .map((team) => {
-        if (!team) return null;
-        if (typeof team === "object") {
-          return team._id || team.id || team.teamId || null;
-        }
-        return team;
-      })
-      .filter(Boolean)
-      .map((id) => String(id));
+  const teamIds = useMemo(() => {
+    const teams = [].concat(user?.team || user?.teams || []);
+    return teams.map((t) => String(t?._id || t));
   }, [user]);
 
-  const visibleOrganizations = useMemo(() => {
-    if (!userTeamIds.length) {
-      return organizations || [];
-    }
+  const visibleOrgs = useMemo(() => {
+    if (!teamIds.length) return organizations || [];
+    return organizations?.filter((o) => teamIds.includes(String(o.team?._id)));
+  }, [organizations, teamIds]);
 
-    return (organizations || []).filter((org) => {
-      const teamId =
-        org?.team?._id ||
-        org?.team?.id ||
-        org?.teamId ||
-        org?.team?.teamId ||
-        null;
-      return teamId ? userTeamIds.includes(String(teamId)) : false;
-    });
-  }, [organizations, userTeamIds]);
-
-  // Collect all findings grouped by organization (only Major/Minor NC with reports)
-  const organizationsWithFindings = useMemo(() => {
-    if (!visibleOrganizations || visibleOrganizations.length === 0) return [];
-
-    return visibleOrganizations
+  const data = useMemo(() => {
+    return visibleOrgs
       .map((org) => {
         const findings =
-          org?.visits?.flatMap((visit, visitIndex) =>
-            (visit.findings || [])
+          org.visits?.flatMap((v, vi) =>
+            (v.findings || [])
               .filter(
-                (finding) =>
-                  (["MAJOR_NC", "MINOR_NC"].includes(finding.compliance) &&
-                    finding?.report?.reportNo &&
-                    !finding?.actionPlans) ||
-                  (finding?.actionPlans?.length > 0 &&
-                    finding?.actionPlans[finding?.actionPlans?.length - 1]
-                      ?.corrected < 1),
+                (f) =>
+                  isNC(f) &&
+                  f.report?.reportNo &&
+                  (!f.actionPlans || getLatestActionPlan(f)?.corrected < 1),
               )
-              .map((finding) => ({
-                ...finding,
-                visitIndex,
-                organizationId: org._id,
-              })),
+              .map((f) => ({ ...f, visitIndex: vi, organizationId: org._id })),
           ) || [];
 
-        findings.sort((a, b) => {
-          const aDate =
-            new Date(
-              a.actionPlans?.[a.actionPlans.length - 1]?.createdAt,
-            ).getTime() || 0;
-          const bDate =
-            new Date(
-              b.actionPlans?.[b.actionPlans.length - 1]?.createdAt,
-            ).getTime() || 0;
-          return bDate - aDate;
-        });
-
-        return {
-          organization: org,
-          findings,
-        };
+        return { organization: org, findings };
       })
-      .filter((item) => item.findings.length > 0);
-  }, [visibleOrganizations]);
+      .filter((d) => d.findings.length);
+  }, [visibleOrgs]);
 
-  const handleSaveFinding = async (updatedFinding, organization) => {
-    // Find the visit index from the finding
-    const visitIndex = updatedFinding.visitIndex;
+  const handleSave = async (updated, org) => {
+    const { visitIndex, ...clean } = updated;
 
-    // Defensive check: Ensure visitIndex is valid
-    if (typeof visitIndex !== "number" || visitIndex < 0) {
-      console.error("Error: Invalid visitIndex:", visitIndex);
-      throw new Error("Invalid visitIndex for finding update");
-    }
-
-    const cleanFinding = { ...updatedFinding };
-    delete cleanFinding.visitIndex;
-    delete cleanFinding.organizationId;
-
-    // Defensive check: Ensure _id is present in cleanFinding
-    if (!cleanFinding._id) {
-      console.error("Error: cleanFinding missing _id property:", cleanFinding);
-      console.error("Original updatedFinding:", updatedFinding);
-      throw new Error("Finding must have an _id property to be saved");
-    }
-
-    // Defensive check: Ensure organization has visits array
-    if (!organization.visits || !Array.isArray(organization.visits)) {
-      console.error("Error: Organization missing visits array:", organization);
-      throw new Error("Organization must have a visits array");
-    }
-
-    // Calculate updated visits with the edited finding
-    const updatedVisits = organization.visits.map((v, i) => {
-      if (i === visitIndex) {
-        // Defensive check: Ensure visit has findings array
-        if (!v.findings || !Array.isArray(v.findings)) {
-          console.warn(
-            "Warning: Visit missing findings array, initializing empty array",
-          );
-          return {
+    const visits = org.visits.map((v, i) =>
+      i === visitIndex
+        ? {
             ...v,
-            findings: [cleanFinding],
-          };
-        }
+            findings: v.findings.map((f) => (f._id === clean._id ? clean : f)),
+          }
+        : v,
+    );
 
-        return {
-          ...v,
-          findings: v.findings.map((f) => {
-            // Defensive check: Skip if finding is null/undefined
-            if (!f) {
-              console.warn(
-                "Warning: Null/undefined finding in array, skipping",
-              );
-              return f;
-            }
-            // Defensive check: If finding has no _id, skip it
-            if (!f._id) {
-              console.warn("Warning: Finding in array missing _id:", f);
-              return f;
-            }
-            return f._id === cleanFinding._id ? cleanFinding : f;
-          }),
-        };
-      }
-      return v;
-    });
-
-    // Update organization with new visits
-    await updateOrganization(organization._id, {
-      visits: updatedVisits,
-    });
+    await updateOrganization(org._id, { visits });
   };
 
-  if (loading && visibleOrganizations?.length < 1) {
+  if (loading && !data.length) {
     return (
-      <Flex justify="center" py={8}>
-        <Spinner size="md" />
+      <Flex justify="center">
+        <Spinner />
       </Flex>
     );
   }
 
-  if (organizationsWithFindings.length === 0) {
+  if (!data.length) {
     return (
       <Center p={8}>
-        <VStack spacing={3}>
-          <FiCheckCircle size={48} opacity={0.3} />
-          <Text fontSize="lg" fontWeight="medium" color="gray.500">
-            Everything is looking good!
-          </Text>
-          <Text fontSize="sm" color="gray.400" textAlign="center" maxW="md">
-            Looks like everything is compliant so far.
-            <br />
-            Only Major Non-Conformity and Minor Non-Conformity findings that
-            need resolutions are shown here.
-          </Text>
-        </VStack>
+        <Text color="gray.500">Everything is compliant</Text>
       </Center>
     );
   }
 
-  const count = organizationsWithFindings.reduce(
-    (acc, item) => acc + item.findings.length,
-    0,
-  );
-
-  const resolveTeamName = (organization) => {
-    return organization.team?.name || organization.teamName || "Unknown Team";
-  };
-
   return (
-    <VStack align="stretch" spacing={6}>
-      <Flex justify="space-between" align="center">
-        <Heading size="md">Non-Conformity Items</Heading>
-        <Text fontSize="xs" color="gray.500">
-          {count} {count === 1 ? `Item` : `Items`} Requiring Resolution
-        </Text>
-      </Flex>
+    <VStack spacing={6} align="stretch">
+      <Heading size="md">Non-Conformity Items</Heading>
 
-      {organizationsWithFindings.map(({ organization, findings }) => (
+      {data.map(({ organization, findings }) => (
         <Box key={organization._id}>
-          {/* Organization Header */}
-          <HStack mb={3} spacing={3}>
-            <HStack align="center" spacing={2}>
-              <Box pos="relative" boxSize={8}>
-                <Avatar size="sm" name={resolveTeamName(organization)} />
-              </Box>
-              <Text fontWeight="bold" fontSize="lg">
-                {resolveTeamName(organization)}
-              </Text>
-              {loading && <Spinner size="sm" />}
-            </HStack>
+          <HStack mb={3}>
+            <Avatar size="sm" name={organization.team?.name} />
+            <Text fontWeight="bold">{organization.team?.name}</Text>
             <Spacer />
             <Text color="gray.500" fontSize="xs">
               {findings.length} Finding{findings.length !== 1 ? "s" : ""}
             </Text>
           </HStack>
 
-          {/* Findings List */}
-          <SimpleGrid columns={[1, 1, 2]} spacing={3} mb={6}>
-            {findings.map((finding) => (
+          <SimpleGrid columns={[1, 2]} spacing={3}>
+            {findings.map((f) => (
               <ReportCard
-                key={finding._id}
-                finding={finding}
+                key={f._id}
+                finding={f}
                 organization={organization}
-                onSave={handleSaveFinding}
-                isScheduleOngoing={isScheduleOngoing}
+                onSave={handleSave}
+                isScheduleOngoing={isOngoing}
               />
             ))}
           </SimpleGrid>
 
-          <Divider />
+          <Divider mt={4} />
         </Box>
       ))}
     </VStack>
