@@ -100,13 +100,7 @@ const VerificationForm = ({
   if (readOnly) {
     // Read-only display mode
     return (
-      <Box
-        p={4}
-        bg={sectionBg}
-        borderWidth={1}
-        borderRadius="md"
-        borderColor={borderColor}
-      >
+      <Box>
         <VStack align="stretch" spacing={4}>
           <SimpleGrid columns={[1, 1, 2]} align="stretch" spacing={3}>
             <Box>
