@@ -86,7 +86,10 @@ const VisitManager = ({
 
       const allResolved = findings.every((f) => {
         const isMajorOrMinor = ["MAJOR_NC", "MINOR_NC"].includes(f.compliance);
-        return !isMajorOrMinor || Boolean(f.correctionDate);
+
+        const hasCorrection = f.actionPlans?.some((ap) => ap.correctionDate);
+
+        return !isMajorOrMinor || hasCorrection;
       });
 
       if (!allResolved) {
@@ -118,14 +121,16 @@ const VisitManager = ({
                 {formatDateRange(visit.date.start, visit.date.end)}
               </Badge>
             </HStack>
-            <IconButton
-              icon={<FiX />}
-              onClick={() => handleRemoveVisit(index)}
-              size="sm"
-              variant="ghost"
-              colorScheme="red"
-              aria-label="Remove visit"
-            />
+            {(!visit.findings || visit.findings.length === 0) && (
+              <IconButton
+                icon={<FiX />}
+                onClick={() => handleRemoveVisit(index)}
+                size="sm"
+                variant="ghost"
+                colorScheme="red"
+                aria-label="Remove visit"
+              />
+            )}
           </HStack>
         ))}
 
