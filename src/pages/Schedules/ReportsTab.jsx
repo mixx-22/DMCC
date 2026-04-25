@@ -25,9 +25,17 @@ import {
   Divider,
   SimpleGrid,
   Center,
+  Accordion,
+  AccordionItem,
+  AccordionButton,
+  AccordionPanel,
+  AccordionIcon,
+  Avatar,
+  CardHeader,
+  CardFooter,
 } from "@chakra-ui/react";
 import { useMemo } from "react";
-import { FiFileText, FiTool, FiCheckCircle } from "react-icons/fi";
+import { FiFileText, FiTool, FiCheckCircle, FiPlus } from "react-icons/fi";
 import moment from "moment";
 import { useOrganizations, useUser } from "../../context/_useContext";
 import ActionPlanForm from "./Organizations/ActionPlanForm";
@@ -51,10 +59,20 @@ const COMPLIANCE_DISPLAY = {
   COMPLIANT: { label: "Compliant", color: "green" },
 };
 
+const getLatestActionPlan = (finding) =>
+  finding?.actionPlans?.length > 0
+    ? finding.actionPlans[finding.actionPlans.length - 1]
+    : null;
+
+const isLatestActionPlanOpen = (finding) => {
+  const latest = getLatestActionPlan(finding);
+  // Show if no action plans exist (needs action plan) OR latest action plan is not verified
+  return !latest || latest.corrected !== 2;
+};
+
 // Helper function to check if finding should have action plan
 const isNonConformityWithReport = (finding) =>
-  (finding.compliance === "MINOR_NC" || finding.compliance === "MAJOR_NC") &&
-  finding.report;
+  ["MINOR_NC", "MAJOR_NC"].includes(finding.compliance) && finding.report;
 
 const ReportCard = ({ finding, organization, onSave, isScheduleOngoing }) => {
   const cardBg = useColorModeValue("white", "gray.700");
@@ -80,25 +98,17 @@ const ReportCard = ({ finding, organization, onSave, isScheduleOngoing }) => {
 
   // Check if finding should have action plan (MINOR_NC or MAJOR_NC with report)
   const shouldShowActionPlan = isNonConformityWithReport(finding);
-
-  // Check if action plan is missing (no action plans at all)
+  const latestActionPlan = getLatestActionPlan(finding);
+  const isLatestOpen = isLatestActionPlanOpen(finding);
   const needsActionPlan =
-    shouldShowActionPlan &&
-    (!finding.actionPlans || finding.actionPlans.length === 0);
+    isLatestOpen || (shouldShowActionPlan && !latestActionPlan);
 
   // Check if verification is needed (latest action plan not verified)
   const needsVerification =
     shouldShowActionPlan &&
-    finding.actionPlans &&
-    finding.actionPlans.length > 0 &&
-    (() => {
-      const latestActionPlan =
-        finding.actionPlans[finding.actionPlans.length - 1];
-      return (
-        latestActionPlan.corrected === undefined ||
-        latestActionPlan.corrected === -1
-      );
-    })();
+    latestActionPlan &&
+    (latestActionPlan.corrected === undefined ||
+      latestActionPlan.corrected < 1);
 
   const handleSaveActionPlan = async (actionPlanData) => {
     // Add new action plan to the actionPlans array
@@ -313,11 +323,11 @@ const ReportCard = ({ finding, organization, onSave, isScheduleOngoing }) => {
                     onClick={onActionPlanOpen}
                     variant={needsActionPlan ? "solid" : "outline"}
                   >
-                    {finding.actionPlan
-                      ? "Edit Action Plan"
+                    {latestActionPlan
+                      ? "Add Another Action Plan"
                       : "Add Action Plan"}
                   </Button>
-                  {finding.actionPlan && (
+                  {latestActionPlan && (
                     <Can to="audit.verify.u">
                       <Button
                         leftIcon={<FiCheckCircle />}
@@ -326,7 +336,8 @@ const ReportCard = ({ finding, organization, onSave, isScheduleOngoing }) => {
                         variant={needsVerification ? "solid" : "outline"}
                         onClick={onVerificationOpen}
                       >
-                        {finding.corrected === -1
+                        {latestActionPlan.corrected === -1 ||
+                        latestActionPlan.corrected === undefined
                           ? "Set Verification"
                           : "Edit Verification"}
                       </Button>
@@ -344,13 +355,13 @@ const ReportCard = ({ finding, organization, onSave, isScheduleOngoing }) => {
         <ModalOverlay />
         <ModalContent>
           <ModalHeader>
-            {finding.actionPlan ? "Edit Action Plan" : "Add Action Plan"}
+            {latestActionPlan ? "Add Another Action Plan" : "Add Action Plan"}
           </ModalHeader>
           <ModalCloseButton />
           <ModalBody pb={6}>
             <ActionPlanForm
-              initialData={finding.actionPlan}
-              mode={finding.actionPlan ? "edit" : "add"}
+              initialData={null}
+              mode="add"
               onSave={handleSaveActionPlan}
               onCancel={onActionPlanClose}
               team={organization.team}
@@ -373,9 +384,9 @@ const ReportCard = ({ finding, organization, onSave, isScheduleOngoing }) => {
           <ModalBody pb={6}>
             <VerificationForm
               initialData={{
-                corrected: finding.corrected,
-                correctionDate: finding.correctionDate,
-                remarks: finding.remarks,
+                corrected: latestActionPlan?.corrected,
+                correctionDate: latestActionPlan?.correctionDate,
+                remarks: latestActionPlan?.remarks,
               }}
               onSave={handleSaveVerification}
               onCancel={onVerificationClose}
@@ -425,35 +436,49 @@ const ReportsTab = ({ schedule }) => {
     });
   }, [organizations, userTeamIds]);
 
-  // Collect all findings grouped by organization (only Major/Minor NC)
+  // Collect all findings grouped by organization (only Major/Minor NC with reports)
   const organizationsWithFindings = useMemo(() => {
     if (!visibleOrganizations || visibleOrganizations.length === 0) return [];
 
     return visibleOrganizations
       .map((org) => {
-        // Collect all findings from all visits for this organization
-        // Filter to only show Major NC and Minor NC (items that need resolutions)
         const findings =
           org?.visits?.flatMap((visit, visitIndex) =>
             (visit.findings || [])
               .filter(
                 (finding) =>
-                  finding.compliance === "MAJOR_NC" ||
-                  finding.compliance === "MINOR_NC",
+                  (["MAJOR_NC", "MINOR_NC"].includes(finding.compliance) &&
+                    finding?.report?.reportNo &&
+                    !finding?.actionPlans) ||
+                  (finding?.actionPlans?.length > 0 &&
+                    finding?.actionPlans[finding?.actionPlans?.length - 1]
+                      ?.corrected < 1),
               )
               .map((finding) => ({
                 ...finding,
-                visitIndex, // Store visit index for updates
+                visitIndex,
                 organizationId: org._id,
               })),
           ) || [];
+
+        findings.sort((a, b) => {
+          const aDate =
+            new Date(
+              a.actionPlans?.[a.actionPlans.length - 1]?.createdAt,
+            ).getTime() || 0;
+          const bDate =
+            new Date(
+              b.actionPlans?.[b.actionPlans.length - 1]?.createdAt,
+            ).getTime() || 0;
+          return bDate - aDate;
+        });
 
         return {
           organization: org,
           findings,
         };
       })
-      .filter((item) => item.findings.length > 0); // Only include orgs with findings
+      .filter((item) => item.findings.length > 0);
   }, [visibleOrganizations]);
 
   const handleSaveFinding = async (updatedFinding, organization) => {
@@ -552,16 +577,21 @@ const ReportsTab = ({ schedule }) => {
     );
   }
 
+  const count = organizationsWithFindings.reduce(
+    (acc, item) => acc + item.findings.length,
+    0,
+  );
+
+  const resolveTeamName = (organization) => {
+    return organization.team?.name || organization.teamName || "Unknown Team";
+  };
+
   return (
     <VStack align="stretch" spacing={6}>
       <Flex justify="space-between" align="center">
         <Heading size="md">Non-Conformity Items</Heading>
         <Text fontSize="xs" color="gray.500">
-          {organizationsWithFindings.reduce(
-            (acc, item) => acc + item.findings.length,
-            0,
-          )}{" "}
-          NC Items Requiring Resolution
+          {count} {count === 1 ? `Item` : `Items`} Requiring Resolution
         </Text>
       </Flex>
 
@@ -569,11 +599,15 @@ const ReportsTab = ({ schedule }) => {
         <Box key={organization._id}>
           {/* Organization Header */}
           <HStack mb={3} spacing={3}>
-            <Heading size="sm" color={organizationColor}>
-              {organization.team?.name ||
-                organization.teamName ||
-                "Unknown Team"}
-            </Heading>
+            <HStack align="center" spacing={2}>
+              <Box pos="relative" boxSize={8}>
+                <Avatar size="sm" name={resolveTeamName(organization)} />
+              </Box>
+              <Text fontWeight="bold" fontSize="lg">
+                {resolveTeamName(organization)}
+              </Text>
+              {loading && <Spinner size="sm" />}
+            </HStack>
             <Spacer />
             <Text color="gray.500" fontSize="xs">
               {findings.length} Finding{findings.length !== 1 ? "s" : ""}
