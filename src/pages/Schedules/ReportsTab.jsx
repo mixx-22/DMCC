@@ -68,12 +68,12 @@ const ReportCard = ({ finding, organization, onSave, isScheduleOngoing }) => {
     COMPLIANCE_DISPLAY[compliance] || COMPLIANCE_DISPLAY.OBSERVATIONS;
 
   const latest = getLatestActionPlan(finding);
+  const status = latest?.corrected;
 
   const shouldHaveActionPlan = isNC(finding) && finding.report;
-  const needsActionPlan =
-    shouldHaveActionPlan && (!latest || latest.corrected !== 2);
+  const needsActionPlan = shouldHaveActionPlan && (!latest || status === 0);
   const needsVerification =
-    shouldHaveActionPlan && latest && (latest.corrected ?? -1) < 1;
+    shouldHaveActionPlan && latest && (status < 1 || status === undefined);
 
   const handleSaveActionPlan = async (data) => {
     const { visitIndex, organizationId, ...rest } = finding;
@@ -278,7 +278,10 @@ const ReportsTab = ({ schedule }) => {
                 (f) =>
                   isNC(f) &&
                   f.report?.reportNo &&
-                  (!f.actionPlans || getLatestActionPlan(f)?.corrected < 1),
+                  (!f.actionPlans ||
+                    status === 0 ||
+                    status === -1 ||
+                    status === undefined),
               )
               .map((f) => ({ ...f, visitIndex: vi, organizationId: org._id })),
           ) || [];
@@ -286,7 +289,7 @@ const ReportsTab = ({ schedule }) => {
         return { organization: org, findings };
       })
       .filter((d) => d.findings.length);
-  }, [visibleOrgs]);
+  }, [visibleOrgs, schedule, status]);
 
   const handleSave = async (updated, org) => {
     const { visitIndex, ...clean } = updated;
