@@ -12,10 +12,12 @@ import {
   Button,
   Center,
   useColorModeValue,
+  Flex,
+  Spacer,
 } from "@chakra-ui/react";
 import moment from "moment";
 import ActionPlanForm from "../ActionPlanForm";
-import { FiPlus } from "react-icons/fi";
+import { FiCheckCircle, FiPlus } from "react-icons/fi";
 import Can from "../../../../components/Can";
 import VerificationForm from "../VerificationForm";
 
@@ -65,6 +67,12 @@ const ActionPlanHistory = ({
                   (actionPlanItem.corrected === undefined ||
                     actionPlanItem.corrected === -1) &&
                   isScheduleOngoing;
+
+                const isVerified = actionPlanItem.corrected > 0;
+
+                const isEditing = isEditingVerification === actionPlanIndex;
+
+                const canShowVerifyButton = canVerifyThisPlan && !readOnly;
 
                 return (
                   <AccordionItem
@@ -149,95 +157,88 @@ const ActionPlanHistory = ({
                             </HStack>
                           </AccordionButton>
                           <AccordionPanel px={0} pb={4}>
-                            {actionPlanItem.corrected !== undefined &&
-                              actionPlanItem.corrected !== -1 && (
-                                <VStack w="full">
-                                  {canVerifyThisPlan &&
-                                    isEditingVerification !== actionPlanIndex &&
-                                    !readOnly && (
-                                      <>
-                                        <Can to="audit.findings.u">
-                                          <Button
-                                            size="sm"
-                                            leftIcon={<FiPlus />}
-                                            colorScheme="green"
-                                            variant="outline"
-                                            onClick={() => {
-                                              setIsEditingVerification(
-                                                actionPlanIndex,
-                                              );
-                                            }}
-                                          >
-                                            Verify
-                                          </Button>
-                                        </Can>
-                                      </>
-                                    )}
-                                  {isEditingVerification !== actionPlanIndex &&
-                                    !readOnly && (
-                                      <Box
-                                        w="full"
-                                        mb={2}
-                                        p={2}
-                                        bg={
-                                          actionPlanItem.corrected === 1 ||
-                                          actionPlanItem.corrected === 2
-                                            ? "green.50"
-                                            : "red.50"
-                                        }
-                                        borderRadius="md"
-                                        borderWidth="1px"
-                                        borderColor={
-                                          actionPlanItem.corrected === 1 ||
-                                          actionPlanItem.corrected === 2
-                                            ? "green.200"
-                                            : "red.200"
-                                        }
-                                      >
+                            <VStack w="full" mb={4}>
+                              {isEditing ? (
+                                <Box w="full">
+                                  <VerificationForm
+                                    initialData={{
+                                      corrected: -1,
+                                      correctionDate: new Date(),
+                                      remarks: "",
+                                    }}
+                                    onSave={(data) =>
+                                      handleSaveVerification(
+                                        data,
+                                        isEditingVerification,
+                                      )
+                                    }
+                                    onCancel={handleCancelVerification}
+                                    readOnly={false}
+                                  />
+                                </Box>
+                              ) : (
+                                <>
+                                  <Box
+                                    w="full"
+                                    mb={2}
+                                    p={2}
+                                    bg={isVerified ? "green.50" : "red.50"}
+                                    borderRadius="md"
+                                    borderWidth="1px"
+                                    borderColor={
+                                      isVerified ? "green.200" : "red.200"
+                                    }
+                                  >
+                                    <HStack spacing={2} mb={2} align="center">
+                                      <Box flex={1}>
                                         <Text
                                           mb={2}
                                           fontSize="xs"
                                           fontWeight="semibold"
                                           color={
-                                            actionPlanItem.corrected === 1 ||
-                                            actionPlanItem.corrected === 2
-                                              ? "green.700"
-                                              : "red.700"
+                                            isVerified ? "green.700" : "red.700"
                                           }
                                         >
                                           Verification Status
                                         </Text>
-                                        <VerificationForm
-                                          initialData={{
-                                            corrected: actionPlanItem.corrected,
-                                            correctionDate:
-                                              actionPlanItem.correctionDate,
-                                            remarks: actionPlanItem.remarks,
-                                          }}
-                                          readOnly={true}
-                                        />
                                       </Box>
-                                    )}
-                                  {isEditingVerification ===
-                                    actionPlanIndex && (
+                                      <Box>
+                                        {canShowVerifyButton && (
+                                          <Can to="audit.findings.u">
+                                            <Flex w="full">
+                                              <Spacer />
+                                              <Button
+                                                size="sm"
+                                                leftIcon={<FiCheckCircle />}
+                                                colorScheme="green"
+                                                variant="outline"
+                                                onClick={() =>
+                                                  setIsEditingVerification(
+                                                    actionPlanIndex,
+                                                  )
+                                                }
+                                              >
+                                                Verify
+                                              </Button>
+                                            </Flex>
+                                          </Can>
+                                        )}
+                                      </Box>
+                                    </HStack>
+
                                     <VerificationForm
                                       initialData={{
-                                        corrected: -1,
-                                        correctionDate: new Date(),
-                                        remarks: "",
+                                        corrected: actionPlanItem.corrected,
+                                        correctionDate:
+                                          actionPlanItem.correctionDate,
+                                        remarks: actionPlanItem.remarks,
                                       }}
-                                      onSave={(data) =>
-                                        handleSaveVerification(
-                                          data,
-                                          isEditingVerification,
-                                        )
-                                      }
-                                      onCancel={handleCancelVerification}
-                                      readOnly={false}
+                                      readOnly={true}
                                     />
-                                  )}
-                                </VStack>
+                                  </Box>
+                                </>
                               )}
+                            </VStack>
                             <ActionPlanForm
                               initialData={actionPlanItem.actionPlan}
                               organizationAuditors={organizationAuditors}
