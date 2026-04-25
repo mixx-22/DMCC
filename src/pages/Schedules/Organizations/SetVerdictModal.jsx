@@ -44,6 +44,21 @@ const VERDICT_OPTIONS = [
   },
 ];
 
+// Map calculated verdict to available options
+const mapVerdictToOption = (verdict) => {
+  const directMatch = VERDICT_OPTIONS.find((opt) => opt.value === verdict);
+  if (directMatch) return directMatch;
+
+  // Map unmapped verdicts to closest available option
+  const mappings = {
+    OPPORTUNITIES_FOR_IMPROVEMENTS: "COMPLIANT",
+    OBSERVATIONS: "COMPLIANT",
+  };
+
+  const mappedValue = mappings[verdict];
+  return VERDICT_OPTIONS.find((opt) => opt.value === mappedValue) || null;
+};
+
 const SetVerdictModal = ({
   isOpen,
   onClose,
@@ -58,9 +73,7 @@ const SetVerdictModal = ({
   // Initialize with calculated verdict when modal opens
   useEffect(() => {
     if (isOpen && calculatedVerdict) {
-      const defaultOption = VERDICT_OPTIONS.find(
-        (opt) => opt.value === calculatedVerdict,
-      );
+      const defaultOption = mapVerdictToOption(calculatedVerdict);
       setSelectedVerdict(defaultOption || null);
     }
   }, [isOpen, calculatedVerdict]);
@@ -89,6 +102,7 @@ const SetVerdictModal = ({
   const selectedOption = VERDICT_OPTIONS.find(
     (opt) => opt.value === selectedVerdict?.value,
   );
+  const recommendedOption = mapVerdictToOption(calculatedVerdict);
 
   return (
     <Modal isOpen={isOpen} onClose={handleClose} size="lg">
@@ -107,18 +121,8 @@ const SetVerdictModal = ({
                 </AlertTitle>
                 <AlertDescription fontSize="xs">
                   Based on all visits and findings, the recommended verdict is:{" "}
-                  <Badge
-                    colorScheme={
-                      VERDICT_OPTIONS.find(
-                        (opt) => opt.value === calculatedVerdict,
-                      )?.color || "gray"
-                    }
-                  >
-                    {
-                      VERDICT_OPTIONS.find(
-                        (opt) => opt.value === calculatedVerdict,
-                      )?.label
-                    }
+                  <Badge colorScheme={recommendedOption?.color || "gray"}>
+                    {recommendedOption?.label || "N/A"}
                   </Badge>
                 </AlertDescription>
               </VStack>
