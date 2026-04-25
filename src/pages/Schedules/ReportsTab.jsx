@@ -19,8 +19,6 @@ import {
   ModalCloseButton,
   useDisclosure,
   Button,
-  Wrap,
-  WrapItem,
   Tooltip,
   Divider,
   SimpleGrid,
@@ -170,22 +168,6 @@ const ReportCard = ({ finding, organization, onSave, isScheduleOngoing }) => {
 
                 <Text fontWeight="semibold">{finding.title}</Text>
 
-                {finding.objectives?.length > 0 && (
-                  <Wrap>
-                    {finding.objectives.map((o, i) => (
-                      <WrapItem key={i}>
-                        <Tooltip
-                          label={moment(o.teamUpdatedAt).format(
-                            DATE_FORMAT_LONG,
-                          )}
-                        >
-                          <Badge fontSize="2xs">{o.title}</Badge>
-                        </Tooltip>
-                      </WrapItem>
-                    ))}
-                  </Wrap>
-                )}
-
                 {shouldHaveActionPlan && finding.report && (
                   <Box>
                     <Text fontSize="sm">
@@ -332,12 +314,12 @@ const ReportsTab = ({ schedule }) => {
 
   const teamIds = useMemo(() => {
     const teams = [].concat(user?.team || user?.teams || []);
-    return teams.map((t) => String(t?._id || t));
+    return teams.map((t) => String(t?.teamId || t));
   }, [user]);
 
   const visibleOrgs = useMemo(() => {
     if (!teamIds.length) return organizations || [];
-    return organizations?.filter((o) => teamIds.includes(String(o.team?._id)));
+    return organizations?.filter((o) => teamIds.includes(String(o.team?.id)));
   }, [organizations, teamIds]);
 
   const data = useMemo(() => {
