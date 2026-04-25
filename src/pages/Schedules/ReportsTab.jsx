@@ -274,22 +274,30 @@ const ReportsTab = ({ schedule }) => {
         const findings =
           org.visits?.flatMap((v, vi) =>
             (v.findings || [])
-              .filter(
-                (f) =>
-                  isNC(f) &&
-                  f.report?.reportNo &&
-                  (!f.actionPlans ||
-                    status === 0 ||
-                    status === -1 ||
-                    status === undefined),
-              )
-              .map((f) => ({ ...f, visitIndex: vi, organizationId: org._id })),
+              .filter((f) => {
+                if (!isNC(f) || !f.report?.reportNo) return false;
+
+                const latest = getLatestActionPlan(f);
+                const status = latest?.corrected;
+
+                return (
+                  !latest ||
+                  status === 0 ||
+                  status === -1 ||
+                  status === undefined
+                );
+              })
+              .map((f) => ({
+                ...f,
+                visitIndex: vi,
+                organizationId: org._id,
+              })),
           ) || [];
 
         return { organization: org, findings };
       })
       .filter((d) => d.findings.length);
-  }, [visibleOrgs, schedule, status]);
+  }, [visibleOrgs]);
 
   const handleSave = async (updated, org) => {
     const { visitIndex, ...clean } = updated;
