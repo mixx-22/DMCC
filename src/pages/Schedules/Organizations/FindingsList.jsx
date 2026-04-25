@@ -635,32 +635,29 @@ const FindingCard = ({
                                 </Text>
                                 <Accordion
                                   allowMultiple
-                                  defaultIndex={[1]}
+                                  defaultIndex={[
+                                    finding.actionPlans.length - 1,
+                                  ]}
                                   border="none"
                                 >
                                   {[...finding.actionPlans]
                                     .slice()
-                                    .reverse()
-                                    .map((actionPlanItem, reversedIndex) => {
-                                      const originalIndex =
-                                        finding.actionPlans.length -
-                                        reversedIndex -
-                                        1;
-                                      const isLatest = reversedIndex === 0;
-                                      const isLast = 0;
+                                    .map((actionPlanItem, actionPlanIndex) => {
+                                      const isLatest =
+                                        finding.actionPlans.length - 1 ===
+                                        actionPlanIndex;
 
                                       return (
                                         <AccordionItem
                                           key={
-                                            actionPlanItem.id || originalIndex
+                                            actionPlanItem.id || actionPlanIndex
                                           }
-                                          index={originalIndex}
                                           border="none"
                                         >
                                           {({ isExpanded }) => {
                                             return (
                                               <Box position="relative" pl={10}>
-                                                {originalIndex !== 0 && (
+                                                {!isLatest && (
                                                   <Box
                                                     position="absolute"
                                                     left={4}
@@ -710,7 +707,7 @@ const FindingCard = ({
                                                         fontSize="xs"
                                                       >
                                                         Action Plan #
-                                                        {originalIndex + 1}
+                                                        {actionPlanIndex + 1}
                                                       </Badge>
                                                       {actionPlanItem.corrected ===
                                                         1 ||
@@ -1036,18 +1033,17 @@ const FindingCard = ({
                               finding.actionPlans.length > 0 && (
                                 <Accordion
                                   allowMultiple
-                                  defaultIndex={[0]}
+                                  defaultIndex={[
+                                    finding.actionPlans.length - 1,
+                                  ]}
                                   border="none"
                                 >
                                   {[...finding.actionPlans]
                                     .slice()
-                                    .reverse()
-                                    .map((actionPlanItem, reversedIndex) => {
-                                      const originalIndex =
-                                        finding.actionPlans.length -
-                                        reversedIndex -
-                                        1;
-                                      const isLatest = reversedIndex === 0;
+                                    .map((actionPlanItem, actionPlanIndex) => {
+                                      const isLatest =
+                                        finding.actionPlans.length - 1 ===
+                                        actionPlanIndex;
                                       const canVerifyThisPlan =
                                         (actionPlanItem.corrected ===
                                           undefined ||
@@ -1057,12 +1053,12 @@ const FindingCard = ({
                                       return (
                                         <AccordionItem
                                           key={
-                                            actionPlanItem.id || originalIndex
+                                            actionPlanItem.id || actionPlanIndex
                                           }
                                           border="none"
                                         >
                                           <Box position="relative" pl={10}>
-                                            {originalIndex !== 0 && (
+                                            {!isLatest && (
                                               <Box
                                                 position="absolute"
                                                 left={4}
@@ -1107,7 +1103,7 @@ const FindingCard = ({
                                                     fontSize="xs"
                                                   >
                                                     Action Plan Verification #
-                                                    {originalIndex + 1}
+                                                    {actionPlanIndex + 1}
                                                   </Badge>
                                                 </HStack>
                                                 <HStack spacing={2}>
@@ -1132,7 +1128,7 @@ const FindingCard = ({
                                               >
                                                 {canVerifyThisPlan &&
                                                   isEditingVerification !==
-                                                    originalIndex && (
+                                                    actionPlanIndex && (
                                                     <>
                                                       <Button
                                                         size="sm"
@@ -1141,7 +1137,7 @@ const FindingCard = ({
                                                         variant="outline"
                                                         onClick={() => {
                                                           setIsEditingVerification(
-                                                            originalIndex,
+                                                            actionPlanIndex,
                                                           );
                                                         }}
                                                       >
@@ -1150,7 +1146,7 @@ const FindingCard = ({
                                                     </>
                                                   )}
                                                 {isEditingVerification ===
-                                                  originalIndex && (
+                                                  actionPlanIndex && (
                                                   <VerificationForm
                                                     initialData={{
                                                       corrected: -1,
