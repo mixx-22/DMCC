@@ -309,7 +309,7 @@ const DocumentDrawer = ({ document, isOpen, onClose }) => {
                     More Options
                   </MenuButton>
                   <MenuList>
-                    <Can to="documents.d">
+                    <Can to="document.d">
                       <MenuItem
                         icon={<FiTrash2 />}
                         color="red.500"
