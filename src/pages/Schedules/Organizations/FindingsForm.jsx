@@ -127,15 +127,6 @@ const FindingsForm = ({
         compliance: initialData.compliance || "",
         currentCompliance:
           initialData.currentCompliance || initialData.compliance || "",
-        corrected: (() => {
-          // Handle backward compatibility: convert old corrected value (1) to new system (2)
-          if (initialData.corrected === 1) return 2; // Old "corrected" becomes new "corrected"
-          if (initialData.corrected !== undefined) return initialData.corrected;
-          return -1; // Default for new findings
-        })(),
-        correctionDate: initialData.correctionDate
-          ? new Date(initialData.correctionDate)
-          : null,
         remarks: initialData.remarks || "",
         report: initialData.report
           ? {
@@ -162,7 +153,6 @@ const FindingsForm = ({
               auditee: [],
               auditor: [],
             },
-        actionPlan: initialData.actionPlan || undefined, // Preserve action plan
       };
     }
     return {
@@ -171,8 +161,6 @@ const FindingsForm = ({
       clauses: [], // NEW: Array instead of objectives
       compliance: "",
       currentCompliance: "",
-      corrected: -1,
-      correctionDate: null,
       remarks: "",
       report: {
         reportNo: suggestedReportNo,
@@ -194,11 +182,7 @@ const FindingsForm = ({
   // If user context loads after initial render, apply the suggested report number
   // once, only in add mode and only if the field is still untouched
   useEffect(() => {
-    if (
-      mode === "add" &&
-      suggestedReportNo &&
-      !hasAppliedSuggestion.current
-    ) {
+    if (mode === "add" && suggestedReportNo && !hasAppliedSuggestion.current) {
       hasAppliedSuggestion.current = true;
       setFormData((prev) => ({
         ...prev,
@@ -280,18 +264,14 @@ const FindingsForm = ({
 
   const handleSubmit = async () => {
     if (validateForm()) {
-      // Calculate currentCompliance based on corrected status
-      const calculatedCurrentCompliance =
-        formData.corrected === 2 ? "COMPLIANT" : formData.compliance;
+      // Calculate currentCompliance based on compliance (action plans will update this later)
+      const calculatedCurrentCompliance = formData.compliance;
 
       const findingData = {
         _id: formData._id || generateFindingId(), // Use existing ID in edit mode or generate new for add mode
         id: formData.id || generateFindingId(), // Backup ID field
         ...formData,
         currentCompliance: calculatedCurrentCompliance,
-        correctionDate: formData.correctionDate
-          ? formData.correctionDate.toISOString().split("T")[0]
-          : null,
         createdAt: formData.createdAt || new Date().toISOString(), // Preserve existing or add new timestamp
         report: isNonConformity(formData.compliance)
           ? {
@@ -301,7 +281,6 @@ const FindingsForm = ({
               auditor: formData.report.auditor || [],
             }
           : undefined,
-        actionPlan: formData.actionPlan || undefined, // Preserve action plan if it exists
       };
 
       try {

@@ -1188,7 +1188,11 @@ const OrganizationCard = ({
 
     const allResolved = findings.every((f) => {
       const isMajorOrMinor = ["MAJOR_NC", "MINOR_NC"].includes(f.compliance);
-      return !isMajorOrMinor || Boolean(f.correctionDate);
+      if (!isMajorOrMinor) return true;
+
+      // Check if the latest action plan has a correction date
+      const latestActionPlan = f.actionPlans?.[f.actionPlans.length - 1];
+      return latestActionPlan && latestActionPlan.correctionDate;
     });
 
     if (!allResolved) {

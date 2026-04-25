@@ -81,19 +81,33 @@ const ReportCard = ({ finding, organization, onSave, isScheduleOngoing }) => {
   // Check if finding should have action plan (MINOR_NC or MAJOR_NC with report)
   const shouldShowActionPlan = isNonConformityWithReport(finding);
 
-  // Check if action plan is missing
-  const needsActionPlan = shouldShowActionPlan && !finding.actionPlan;
+  // Check if action plan is missing (no action plans at all)
+  const needsActionPlan =
+    shouldShowActionPlan &&
+    (!finding.actionPlans || finding.actionPlans.length === 0);
 
-  // Check if verification is needed (has action plan but not verified)
+  // Check if verification is needed (has action plans but latest one not verified)
   const needsVerification =
-    shouldShowActionPlan && finding.actionPlan && finding.corrected === -1;
+    shouldShowActionPlan &&
+    finding.actionPlans &&
+    finding.actionPlans.length > 0 &&
+    (!finding.actionPlans[finding.actionPlans.length - 1].corrected ||
+      finding.actionPlans[finding.actionPlans.length - 1].corrected === -1);
 
   const handleSaveActionPlan = async (actionPlanData) => {
-    // Save action plan as part of the finding
+    // Add new action plan to the actionPlans array
     const { visitIndex, organizationId, ...findingData } = finding;
+    const newActionPlan = {
+      id: `action-plan-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+      actionPlan: actionPlanData,
+      corrected: -1, // Not verified yet
+      correctionDate: null,
+      createdAt: new Date().toISOString(),
+    };
+
     const updatedFinding = {
       ...findingData,
-      actionPlan: actionPlanData,
+      actionPlans: [...(findingData.actionPlans || []), newActionPlan],
     };
 
     if (onSave) {
@@ -107,17 +121,33 @@ const ReportCard = ({ finding, organization, onSave, isScheduleOngoing }) => {
   };
 
   const handleSaveVerification = async (verificationData) => {
-    // Calculate currentCompliance based on corrected status
-    const currentCompliance =
-      verificationData.corrected === 2 ? "COMPLIANT" : finding.compliance;
+    // If no specific action plan index, use the last one
+    const index = finding.actionPlans?.length
+      ? finding.actionPlans.length - 1
+      : 0;
 
-    // Save verification data at finding level
+    // Update the specific action plan with verification data
     const { visitIndex, organizationId, ...findingData } = finding;
+    const updatedActionPlans = (findingData.actionPlans || []).map((ap, i) =>
+      i === index
+        ? {
+            ...ap,
+            corrected: verificationData.corrected,
+            correctionDate: verificationData.correctionDate,
+            remarks: verificationData.remarks,
+          }
+        : ap,
+    );
+
+    // Calculate currentCompliance based on the latest action plan's corrected status
+    const latestActionPlan = updatedActionPlans[updatedActionPlans.length - 1];
+    const currentCompliance =
+      latestActionPlan.corrected === 2 ? "COMPLIANT" : finding.compliance;
+
+    // Save updated action plans at finding level
     const updatedFinding = {
       ...findingData,
-      corrected: verificationData.corrected,
-      correctionDate: verificationData.correctionDate,
-      remarks: verificationData.remarks,
+      actionPlans: updatedActionPlans,
       currentCompliance: currentCompliance,
     };
 
