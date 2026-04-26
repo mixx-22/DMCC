@@ -34,6 +34,7 @@ import DocumentsListSkeleton from "../../components/Document/DocumentsListSkelet
 import OngoingAuditsWidget from "../../components/OngoingAuditsWidget";
 import OngoingReportsWidget from "../../components/OngoingReportsWidget";
 import PendingReportsWidget from "../../components/PendingReportsWidget";
+import Can from "../../components/Can";
 
 const MotionBox = motion(Box);
 
@@ -442,16 +443,21 @@ const Layout = () => {
             )}
           </Box>
         )}
-
-        <Box mb={8} w="full" mx="auto">
-          <OngoingAuditsWidget />
-        </Box>
-        <Box mb={8} w="full" mx="auto">
-          <OngoingReportsWidget />
-        </Box>
-        <Box mb={8} w="full" mx="auto">
-          <PendingReportsWidget />
-        </Box>
+        <Can to="audit.r">
+          <Box mb={8} w="full" mx="auto" marginTop={8}>
+            <OngoingAuditsWidget />
+          </Box>
+        </Can>
+        <Can to="audit.response.r">
+          <Box mb={8} w="full" mx="auto" marginTop={8}>
+            <OngoingReportsWidget />
+          </Box>
+        </Can>
+        <Can to="audit.r">
+          <Box mb={8} w="full" mx="auto" marginTop={8}>
+            <PendingReportsWidget />
+          </Box>
+        </Can>
       </MotionBox>
 
       <DocumentDrawer
