@@ -3,7 +3,6 @@ import {
   Text,
   useColorModeValue,
   VStack,
-  Heading,
 } from "@chakra-ui/react";
 import {
   PieChart,
@@ -27,7 +26,6 @@ const NcContributionBarChart = ({
   data = [],
   loading = false,
 }) => {
-  const textColor = useColorModeValue("gray.700", "gray.200");
   const tooltipBg = useColorModeValue("white", "gray.700");
   const tooltipBorder = useColorModeValue("gray.200", "gray.600");
   const subtitleColor = useColorModeValue("gray.600", "gray.400");

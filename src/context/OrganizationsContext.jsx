@@ -368,7 +368,7 @@ export const OrganizationsProvider = ({ children, scheduleId }) => {
         body: JSON.stringify(organizationData),
       });
 
-      const { success = false, organization: data } = response;
+      const { organization: data } = response;
       // Handle different response formats
       const orgData = data || (response._id ? response : null);
       if (orgData) {

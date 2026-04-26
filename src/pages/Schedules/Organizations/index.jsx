@@ -7,7 +7,7 @@ import {
   Text,
   Button,
 } from "@chakra-ui/react";
-import { useState, useCallback, useMemo, useEffect } from "react";
+import { useState, useCallback, useMemo, useEffect, useRef } from "react";
 import { FiPlus } from "react-icons/fi";
 import OrganizationCard from "./OrganizationCard";
 import {
@@ -35,7 +35,7 @@ const Organizations = ({ schedule = {}, setFormData = () => {} }) => {
 
   // State for storing fetched standard clauses
   const [standardClauses, setStandardClauses] = useState([]);
-  const [loadingClauses, setLoadingClauses] = useState(false);
+  const loadingClausesRef = useRef(false);
 
   // Toggle expanded state for an organization
   const toggleExpanded = useCallback((orgId) => {
@@ -118,9 +118,8 @@ const Organizations = ({ schedule = {}, setFormData = () => {} }) => {
       }
 
       // Don't fetch if already loading (guard against concurrent fetches)
-      if (loadingClauses) return;
-
-      setLoadingClauses(true);
+      if (loadingClausesRef.current) return;
+      loadingClausesRef.current = true;
 
       try {
         const USE_API = import.meta.env.VITE_USE_API !== "false";
@@ -304,7 +303,7 @@ const Organizations = ({ schedule = {}, setFormData = () => {} }) => {
           // Simulate API delay
           await new Promise((resolve) => setTimeout(resolve, 300));
           setStandardClauses(MOCK_CLAUSES);
-          setLoadingClauses(false);
+          loadingClausesRef.current = false;
           return;
         }
 
@@ -323,14 +322,12 @@ const Organizations = ({ schedule = {}, setFormData = () => {} }) => {
         console.error("Failed to fetch standard clauses:", error);
         setStandardClauses([]);
       } finally {
-        setLoadingClauses(false);
+        loadingClausesRef.current = false;
       }
     };
 
     fetchStandardClauses();
   }, [schedule?.standard]);
-
-  if (!schedule?._id) return "";
 
   // Show form if no organizations exist or if user clicked "Add Organization"
   const shouldShowForm = organizations?.length === 0 || showOrgForm;
@@ -369,6 +366,8 @@ const Organizations = ({ schedule = {}, setFormData = () => {} }) => {
       });
     });
   }, [organizations, isInternalAuditor, currentUserId]);
+
+  if (!schedule?._id) return "";
 
   return (
     <VStack align="stretch" spacing={4}>

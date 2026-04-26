@@ -48,7 +48,7 @@ const ResponsiveTabsDemo = () => {
               <ResponsiveTabPanels>
                 <ResponsiveTabPanel>
                   <Text>
-                    This is the overview tab content. On mobile, you'll see a dropdown
+                    This is the overview tab content. On mobile, you&apos;ll see a dropdown
                     button above this content to switch between tabs.
                   </Text>
                 </ResponsiveTabPanel>

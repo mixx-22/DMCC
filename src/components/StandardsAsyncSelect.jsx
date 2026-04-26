@@ -1,4 +1,4 @@
-import { Box, FormControl, FormLabel, VStack, Text } from "@chakra-ui/react";
+import { FormControl, FormLabel, Text } from "@chakra-ui/react";
 import { AsyncSelect } from "chakra-react-select";
 import { useCallback, useRef, useEffect } from "react";
 import apiService from "../services/api";

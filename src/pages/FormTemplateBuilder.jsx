@@ -287,11 +287,7 @@ const FormTemplateBuilder = () => {
       if (id) {
         setLoadingForm(true);
         try {
-          if (import.meta.env.DEV) {
-          }
           const document = await fetchDocumentById(id);
-          if (import.meta.env.DEV) {
-          }
 
           if (document && document.type === "formTemplate") {
             setFormData({
