@@ -68,10 +68,10 @@ const PendingReportsWidget = ({ limit = 3, showAllButton = true }) => {
 
   const itemBg = useColorModeValue("gray.50", "gray.900");
   const itemHoverBg = useColorModeValue("gray.100", "gray.700");
-  const titleColor = useColorModeValue("purple.700", "purple.200");
-  const folderBg = useColorModeValue("pink.300", "pink.600");
+  const titleColor = useColorModeValue("blue.700", "blue.200");
+  const folderBg = useColorModeValue("blue.300", "blue.600");
   const folderText = useColorModeValue("gray.700", "gray.700");
-  const folderBorder = useColorModeValue("pink.400", "pink.700");
+  const folderBorder = useColorModeValue("blue.400", "blue.700");
   const minimalistBg = useColorModeValue("white", "gray.800");
 
   useEffect(() => {
@@ -221,7 +221,7 @@ const PendingReportsWidget = ({ limit = 3, showAllButton = true }) => {
                     as={RouterLink}
                     to={`/audit-schedule/${audit._id || audit.id}`}
                     size="sm"
-                    colorScheme="purple"
+                    colorScheme="brandPrimary"
                     variant="ghost"
                   >
                     View Audit
