@@ -97,7 +97,16 @@ const FindingCard = ({
   // Check if action plan is missing (no action plans at all)
   const needsActionPlan =
     shouldShowActionPlan &&
-    (!finding.actionPlans || finding.actionPlans.length === 0);
+    (!finding.actionPlans ||
+      finding.actionPlans.length === 0 ||
+      (() => {
+        const latestActionPlan =
+          finding.actionPlans[finding.actionPlans.length - 1];
+        return (
+          latestActionPlan.corrected === undefined ||
+          latestActionPlan.corrected === -1
+        );
+      })());
 
   // Check if verification is needed (latest action plan not verified)
   const needsVerification =
