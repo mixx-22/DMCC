@@ -298,9 +298,7 @@ const ActionPlanForm = ({
               </SimpleGrid>
             </VStack>
           </Box>
-
           <Divider />
-
           {/* Corrective Action Section */}
           <Box>
             <Text fontSize="sm" fontWeight="semibold" color="info.700" mb={2}>
@@ -371,53 +369,56 @@ const ActionPlanForm = ({
                   </Box>
                 )}
               </SimpleGrid>
-              {(formData.attachments?.length > 0 || formData.attachment) && (
-                <Box>
-                  <Text fontSize="xs" color={labelColor} mb={1}>
-                    Attached Document(s):
-                  </Text>
-                  <VStack align="stretch" spacing={2}>
-                    {(formData.attachments?.length > 0
-                      ? formData.attachments
-                      : [formData.attachment]
-                    ).map((attachment, index) => (
-                      <HStack
-                        key={`${attachment?.key || attachment?.fileName}-${index}`}
-                        borderWidth="1px"
-                        borderRadius="md"
-                        p={2}
-                        justify="space-between"
-                      >
-                        <HStack spacing={2}>
-                          <FiFile />
-                          <Box>
-                            <Text fontSize="sm" noOfLines={1}>
-                              {attachment.fileName}
-                            </Text>
-                            <Text fontSize="xs" color={labelColor}>
-                              {formatFileSize(attachment.size)}
-                            </Text>
-                            {attachment.uploadedBy?.name && (
-                              <Text fontSize="xs" color={labelColor}>
-                                Uploaded by {attachment.uploadedBy.name}
-                              </Text>
-                            )}
-                          </Box>
-                        </HStack>
-                        <IconButton
-                          size="sm"
-                          icon={<FiDownload />}
-                          aria-label={`Download attachment ${index + 1}`}
-                          onClick={() => handleDownloadAttachment(attachment)}
-                          isLoading={downloadingAttachment}
-                        />
-                      </HStack>
-                    ))}
-                  </VStack>
-                </Box>
-              )}
             </VStack>
           </Box>
+
+          <Divider />
+
+          {(formData.attachments?.length > 0 || formData.attachment) && (
+            <Box>
+              <Text fontSize="sm" fontWeight="semibold" color="info.700" mb={2}>
+                Attached Document(s):
+              </Text>
+              <VStack align="stretch" spacing={2}>
+                {(formData.attachments?.length > 0
+                  ? formData.attachments
+                  : [formData.attachment]
+                ).map((attachment, index) => (
+                  <HStack
+                    key={`${attachment?.key || attachment?.fileName}-${index}`}
+                    borderWidth="1px"
+                    borderRadius="md"
+                    p={2}
+                    justify="space-between"
+                  >
+                    <HStack spacing={2}>
+                      <FiFile />
+                      <Box>
+                        <Text fontSize="sm" noOfLines={1}>
+                          {attachment.fileName}
+                        </Text>
+                        <Text fontSize="xs" color={labelColor}>
+                          {formatFileSize(attachment.size)}
+                        </Text>
+                        {attachment.uploadedBy?.name && (
+                          <Text fontSize="xs" color={labelColor}>
+                            Uploaded by {attachment.uploadedBy.name}
+                          </Text>
+                        )}
+                      </Box>
+                    </HStack>
+                    <IconButton
+                      size="sm"
+                      icon={<FiDownload />}
+                      aria-label={`Download attachment ${index + 1}`}
+                      onClick={() => handleDownloadAttachment(attachment)}
+                      isLoading={downloadingAttachment}
+                    />
+                  </HStack>
+                ))}
+              </VStack>
+            </Box>
+          )}
         </VStack>
       </Box>
     );
