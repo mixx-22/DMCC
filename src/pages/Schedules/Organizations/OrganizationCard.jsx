@@ -48,7 +48,7 @@ import {
   FiX,
   FiSave,
 } from "react-icons/fi";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Link as RouterLink } from "react-router-dom";
 import Swal from "sweetalert2";
 import { toast } from "sonner";
@@ -168,7 +168,7 @@ const OrganizationCard = ({
 
   // State to store loaded standard clauses
   const [standardClauses, setStandardClauses] = useState([]);
-  const [loadingClauses, setLoadingClauses] = useState(false);
+  const loadingClausesRef = useRef(false);
 
   // State to track which visit's finding form is shown (visitIndex -> boolean)
   const [showFindingFormFor, setShowFindingFormFor] = useState(new Set());
@@ -300,9 +300,8 @@ const OrganizationCard = ({
       }
 
       // Don't fetch if already loading
-      if (loadingClauses) return;
-
-      setLoadingClauses(true);
+      if (loadingClausesRef.current) return;
+      loadingClausesRef.current = true;
 
       try {
         const USE_API = import.meta.env.VITE_USE_API !== "false";
@@ -486,7 +485,7 @@ const OrganizationCard = ({
           // Simulate API delay
           await new Promise((resolve) => setTimeout(resolve, 300));
           setStandardClauses(MOCK_CLAUSES);
-          setLoadingClauses(false);
+          loadingClausesRef.current = false;
           return;
         }
 
@@ -505,7 +504,7 @@ const OrganizationCard = ({
         console.error("Failed to fetch standard clauses:", error);
         setStandardClauses([]);
       } finally {
-        setLoadingClauses(false);
+        loadingClausesRef.current = false;
       }
     };
 
@@ -1757,7 +1756,7 @@ const OrganizationCard = ({
                                                       color="gray.500"
                                                       opacity={0.8}
                                                     >
-                                                      You don't have permission
+                                                      You don&apos;t have permission
                                                       to update visit
                                                       compliance.
                                                     </Text>
