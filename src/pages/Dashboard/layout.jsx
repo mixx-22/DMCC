@@ -33,6 +33,7 @@ import DocumentsGridSkeleton from "../../components/Document/DocumentsGridSkelet
 import DocumentsListSkeleton from "../../components/Document/DocumentsListSkeleton";
 import OngoingAuditsWidget from "../../components/OngoingAuditsWidget";
 import OngoingReportsWidget from "../../components/OngoingReportsWidget";
+import PendingReportsWidget from "../../components/PendingReportsWidget";
 
 const MotionBox = motion(Box);
 
@@ -447,6 +448,9 @@ const Layout = () => {
         </Box>
         <Box mb={8} w="full" mx="auto">
           <OngoingReportsWidget />
+        </Box>
+        <Box mb={8} w="full" mx="auto">
+          <PendingReportsWidget />
         </Box>
       </MotionBox>
 

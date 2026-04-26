@@ -92,7 +92,7 @@ const OngoingAuditsWidget = ({
             <Button
               as={RouterLink}
               to="/audit-schedules"
-              size="sm"
+              size="xs"
               colorScheme="blackAlpha"
               variant="ghost"
             >
@@ -115,7 +115,7 @@ const OngoingAuditsWidget = ({
             No ongoing audits found.
           </Text>
         ) : (
-          <VStack align="stretch" spacing={1} mb={showButton ? 2 : 0}>
+          <VStack align="stretch" spacing={1} mb={showButton ? 4 : 0}>
             {audits.map((audit) => (
               <HStack
                 key={audit._id || audit.id}

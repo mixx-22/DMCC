@@ -187,11 +187,10 @@ const OngoingReportsWidget = ({ limit = 3, showAllButton = true }) => {
             No ongoing reports found.
           </Text>
         ) : (
-          <VStack align="stretch" spacing={4} mb={showAllButton ? 2 : 0}>
+          <VStack align="stretch" spacing={4} mb={showAllButton ? 4 : 0}>
             {auditsToShow.map((audit) => (
               <Box
                 key={audit._id || audit.id}
-                borderRadius="lg"
                 bg={itemBg}
                 _hover={{ bg: itemHoverBg }}
                 p={4}
