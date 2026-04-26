@@ -145,8 +145,8 @@ const ReportCard = ({ finding, organization, onSave, isScheduleOngoing }) => {
   return (
     <>
       <Card size="sm" variant="outline" borderColor={borderColor} bg={cardBg}>
-        <CardBody>
-          <VStack align="stretch" spacing={3}>
+        <CardBody h="100%" display="flex" flexDirection="column">
+          <VStack align="stretch" spacing={3} flex={1}>
             <HStack justify="space-between">
               <VStack align="flex-start" flex={1}>
                 <HStack spacing={1}>
@@ -212,7 +212,7 @@ const ReportCard = ({ finding, organization, onSave, isScheduleOngoing }) => {
 
             <Can to="audit.response.u">
               {shouldHaveActionPlan && isScheduleOngoing && (
-                <HStack>
+                <HStack mt="auto">
                   <Tooltip label="View History">
                     <IconButton
                       size="sm"
