@@ -76,6 +76,7 @@ const ActionPlanForm = ({
   onSave,
   onCancel,
   readOnly = false,
+  bare: isBare = false,
 }) => {
   const bg = useColorModeValue("info.50", "info.900");
   const borderColor = useColorModeValue("info.200", "info.700");
@@ -449,34 +450,37 @@ const ActionPlanForm = ({
     );
   }
 
-  // Edit mode
   return (
     <Box
-      p={4}
-      bg={bg}
-      borderWidth={2}
+      p={isBare ? 0 : 4}
+      bg={isBare ? "transparent" : bg}
+      borderWidth={isBare ? 0 : 2}
       borderRadius="md"
-      borderStyle="dashed"
-      borderColor={borderColor}
+      borderStyle={isBare ? undefined : "dashed"}
+      borderColor={isBare ? "transparent" : borderColor}
     >
       <VStack align="stretch" spacing={4}>
-        <HStack justify="space-between">
-          <Heading size="sm" color="info.600">
-            {initialData ? "Edit Action Plan" : "Add Action Plan"}
-          </Heading>
-          {onCancel && (
-            <Button
-              size="sm"
-              variant="ghost"
-              leftIcon={<FiX />}
-              onClick={onCancel}
-            >
-              Cancel
-            </Button>
-          )}
-        </HStack>
+        {!isBare && (
+          <>
+            <HStack justify="space-between">
+              <Heading size="sm" color="info.600">
+                {initialData ? "Edit Action Plan" : "Add Action Plan"}
+              </Heading>
+              {onCancel && (
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  leftIcon={<FiX />}
+                  onClick={onCancel}
+                >
+                  Cancel
+                </Button>
+              )}
+            </HStack>
 
-        <Divider />
+            <Divider />
+          </>
+        )}
 
         {/* Phase 1: Root Cause Analysis */}
         <Box p={3} bg={sectionBg} borderRadius="md">

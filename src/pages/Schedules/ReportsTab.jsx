@@ -80,7 +80,7 @@ const getFindingStatus = (f) => {
 const ReportCard = ({ finding, organization, onSave, isScheduleOngoing }) => {
   const cardBg = useColorModeValue("white", "gray.700");
   const borderColor = useColorModeValue("gray.200", "gray.600");
-
+  const formBg = useColorModeValue("info.50", "info.900");
   const remarksBg = useColorModeValue("orange.50", "orange.900");
   const remarksBorder = useColorModeValue("orange.200", "orange.700");
 
@@ -254,10 +254,13 @@ const ReportCard = ({ finding, organization, onSave, isScheduleOngoing }) => {
       >
         <ModalOverlay />
         <ModalContent>
-          <ModalHeader>Add Action Plan</ModalHeader>
+          <ModalHeader borderTopRadius="md" bg={formBg}>
+            Add Action Plan
+          </ModalHeader>
           <ModalCloseButton />
-          <ModalBody>
+          <ModalBody borderBottomRadius="md" bg={formBg} px={3} pt={0} pb={3}>
             <ActionPlanForm
+              bare
               mode="add"
               onSave={handleSaveActionPlan}
               onCancel={actionModal.onClose}
