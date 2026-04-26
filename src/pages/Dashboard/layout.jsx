@@ -19,11 +19,7 @@ import { Link as RouterLink, useNavigate } from "react-router-dom";
 import { useState, useEffect, useMemo, useRef } from "react";
 import { format } from "date-fns";
 import { FiGrid, FiList } from "react-icons/fi";
-import {
-  useApp,
-  useUser,
-  useLayout,
-} from "../../context/_useContext";
+import { useApp, useUser, useLayout } from "../../context/_useContext";
 import { motion } from "framer-motion";
 import SearchInput from "../../components/SearchInput";
 import apiService from "../../services/api";
@@ -384,63 +380,65 @@ const Layout = () => {
           )}
         </Box>
 
-        <Box>
-          <HStack alignItems="center" mb={4}>
-            <Text fontSize="xl" fontWeight="500" color={headingColor}>
-              Recent Documents
-            </Text>
-            <Spacer />
-            <IconButton
-              icon={viewMode === "grid" ? <FiList /> : <FiGrid />}
-              onClick={toggleViewMode}
-              aria-label="Toggle view"
-              variant="ghost"
-            />
-          </HStack>
-          {filesLoading ? (
-            viewMode === "grid" ? (
-              <DocumentsGridSkeleton count={fileLimit || 12} />
+        {recentFiles.length > 0 && (
+          <Box>
+            <HStack alignItems="center" mb={4}>
+              <Text fontSize="xl" fontWeight="500" color={headingColor}>
+                Recent Documents
+              </Text>
+              <Spacer />
+              <IconButton
+                icon={viewMode === "grid" ? <FiList /> : <FiGrid />}
+                onClick={toggleViewMode}
+                aria-label="Toggle view"
+                variant="ghost"
+              />
+            </HStack>
+            {filesLoading ? (
+              viewMode === "grid" ? (
+                <DocumentsGridSkeleton count={fileLimit || 12} />
+              ) : (
+                <DocumentsListSkeleton rows={Math.min(fileLimit || 12, 5)} />
+              )
+            ) : viewMode === "grid" ? (
+              <GridView
+                filesOnly
+                documents={recentFiles}
+                selectedDocument={selectedDocument}
+                onDocumentClick={(doc) => {
+                  const result = handleDocumentClick(doc);
+                  if (result.isDoubleClick) {
+                    // Navigate to document on double-click
+                    if (doc.type === "file" || doc.type === "formTemplate") {
+                      navigate(`/document/${doc.id}`, {
+                        state: { from: { path: "/", label: "Dashboard" } },
+                      });
+                    }
+                  }
+                }}
+                sourcePage={{ path: "/", label: "Dashboard" }}
+              />
             ) : (
-              <DocumentsListSkeleton rows={Math.min(fileLimit || 12, 5)} />
-            )
-          ) : viewMode === "grid" ? (
-            <GridView
-              filesOnly
-              documents={recentFiles}
-              selectedDocument={selectedDocument}
-              onDocumentClick={(doc) => {
-                const result = handleDocumentClick(doc);
-                if (result.isDoubleClick) {
-                  // Navigate to document on double-click
-                  if (doc.type === "file" || doc.type === "formTemplate") {
-                    navigate(`/document/${doc.id}`, {
-                      state: { from: { path: "/", label: "Dashboard" } },
-                    });
+              <ListView
+                filesOnly
+                documents={recentFiles}
+                selectedDocument={selectedDocument}
+                onDocumentClick={(doc) => {
+                  const result = handleDocumentClick(doc);
+                  if (result.isDoubleClick) {
+                    // Navigate to document on double-click
+                    if (doc.type === "file" || doc.type === "formTemplate") {
+                      navigate(`/document/${doc.id}`, {
+                        state: { from: { path: "/", label: "Dashboard" } },
+                      });
+                    }
                   }
-                }
-              }}
-              sourcePage={{ path: "/", label: "Dashboard" }}
-            />
-          ) : (
-            <ListView
-              filesOnly
-              documents={recentFiles}
-              selectedDocument={selectedDocument}
-              onDocumentClick={(doc) => {
-                const result = handleDocumentClick(doc);
-                if (result.isDoubleClick) {
-                  // Navigate to document on double-click
-                  if (doc.type === "file" || doc.type === "formTemplate") {
-                    navigate(`/document/${doc.id}`, {
-                      state: { from: { path: "/", label: "Dashboard" } },
-                    });
-                  }
-                }
-              }}
-              sourcePage={{ path: "/", label: "Dashboard" }}
-            />
-          )}
-        </Box>
+                }}
+                sourcePage={{ path: "/", label: "Dashboard" }}
+              />
+            )}
+          </Box>
+        )}
       </MotionBox>
 
       <DocumentDrawer
