@@ -18,13 +18,18 @@ import {
   Wrap,
   WrapItem,
   SimpleGrid,
+  Input,
+  FormErrorMessage,
+  IconButton,
 } from "@chakra-ui/react";
 import { useState } from "react";
-import { FiSave, FiX } from "react-icons/fi";
+import { FiSave, FiX, FiUploadCloud, FiDownload, FiFile } from "react-icons/fi";
 import { SingleDatepicker } from "chakra-dayzed-datepicker";
 import TeamLeadersSelect from "../../../components/TeamLeadersSelect";
 import { useLayout, useUser } from "../../../context/_useContext";
 import Timestamp from "../../../components/Timestamp";
+import apiService from "../../../services/api";
+import { uploadFileToServer, formatFileSize } from "../../../utils/fileUpload";
 
 // Helper function to get user's full name from either format
 const getUserFullName = (user) => {
@@ -86,6 +91,12 @@ const ActionPlanForm = ({
           : initialData.auditor
             ? [initialData.auditor]
             : defaultAuditor,
+        attachments: Array.isArray(initialData.attachments)
+          ? initialData.attachments
+          : initialData.attachment
+            ? [initialData.attachment]
+            : [],
+        attachment: initialData.attachment || null,
       };
     }
     return {
@@ -95,11 +106,16 @@ const ActionPlanForm = ({
       correctiveAction: "",
       takenBy: [],
       auditor: defaultAuditor,
+      attachments: [],
+      attachment: null,
     };
   };
 
   const [formData, setFormData] = useState(getInitialFormData());
   const [errors, setErrors] = useState({});
+  const [selectedFiles, setSelectedFiles] = useState([]);
+  const [isUploadingFile, setIsUploadingFile] = useState(false);
+  const [downloadingAttachment, setDownloadingAttachment] = useState(false);
 
   const handleChange = (field, value) => {
     setFormData((prev) => ({
@@ -135,11 +151,86 @@ const ActionPlanForm = ({
     return Object.keys(newErrors).length === 0;
   };
 
+  const handleFileChange = (event) => {
+    const files = Array.from(event.target.files || []);
+    setSelectedFiles(files);
+    setErrors((prev) => ({ ...prev, attachment: null }));
+  };
+
+  const handleDownloadAttachment = async (attachment) => {
+    if (!attachment?.key || !attachment?.fileName) return;
+
+    try {
+      setDownloadingAttachment(true);
+      const blob = await apiService.downloadDocument(
+        attachment.fileName,
+        attachment.key,
+      );
+      const url = window.URL.createObjectURL(blob);
+      const anchor = document.createElement("a");
+      anchor.href = url;
+      anchor.download = attachment.fileName;
+      document.body.appendChild(anchor);
+      anchor.click();
+      anchor.remove();
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error("Failed to download action plan attachment:", error);
+      setErrors((prev) => ({
+        ...prev,
+        attachment: error.message || "Failed to download attachment",
+      }));
+    } finally {
+      setDownloadingAttachment(false);
+    }
+  };
+
   const handleSubmit = async () => {
     if (validateForm()) {
+      let attachments = Array.isArray(formData.attachments)
+        ? formData.attachments
+        : formData.attachment
+          ? [formData.attachment]
+          : [];
+
+      if (selectedFiles.length > 0) {
+        try {
+          setIsUploadingFile(true);
+          const uploadedAttachments = [];
+          for (const file of selectedFiles) {
+            const uploaded = await uploadFileToServer(file, apiService);
+            uploadedAttachments.push({
+              fileName: uploaded.filename || file.name,
+              key: uploaded.key,
+              size: uploaded.size ?? file.size,
+              uploadedAt: new Date().toISOString(),
+              uploadedBy: currentUser
+                ? {
+                    id: currentUser._id || currentUser.id,
+                    name: getUserFullName(currentUser),
+                  }
+                : null,
+            });
+          }
+          attachments = [...attachments, ...uploadedAttachments];
+        } catch (error) {
+          setErrors((prev) => ({
+            ...prev,
+            attachment: error.message || "Failed to upload attachment",
+          }));
+          setIsUploadingFile(false);
+          return;
+        } finally {
+          setIsUploadingFile(false);
+        }
+      }
+
       const actionPlanData = {
         ...formData,
         proposedDate: formData.proposedDate.toISOString().split("T")[0],
+        attachments,
+        // Backward compatibility for existing readers
+        attachment: attachments[0] || null,
       };
 
       if (onSave) {
@@ -280,6 +371,51 @@ const ActionPlanForm = ({
                   </Box>
                 )}
               </SimpleGrid>
+              {(formData.attachments?.length > 0 || formData.attachment) && (
+                <Box>
+                  <Text fontSize="xs" color={labelColor} mb={1}>
+                    Attached Document(s):
+                  </Text>
+                  <VStack align="stretch" spacing={2}>
+                    {(formData.attachments?.length > 0
+                      ? formData.attachments
+                      : [formData.attachment]
+                    ).map((attachment, index) => (
+                      <HStack
+                        key={`${attachment?.key || attachment?.fileName}-${index}`}
+                        borderWidth="1px"
+                        borderRadius="md"
+                        p={2}
+                        justify="space-between"
+                      >
+                        <HStack spacing={2}>
+                          <FiFile />
+                          <Box>
+                            <Text fontSize="sm" noOfLines={1}>
+                              {attachment.fileName}
+                            </Text>
+                            <Text fontSize="xs" color={labelColor}>
+                              {formatFileSize(attachment.size)}
+                            </Text>
+                            {attachment.uploadedBy?.name && (
+                              <Text fontSize="xs" color={labelColor}>
+                                Uploaded by {attachment.uploadedBy.name}
+                              </Text>
+                            )}
+                          </Box>
+                        </HStack>
+                        <IconButton
+                          size="sm"
+                          icon={<FiDownload />}
+                          aria-label={`Download attachment ${index + 1}`}
+                          onClick={() => handleDownloadAttachment(attachment)}
+                          isLoading={downloadingAttachment}
+                        />
+                      </HStack>
+                    ))}
+                  </VStack>
+                </Box>
+              )}
             </VStack>
           </Box>
         </VStack>
@@ -407,6 +543,66 @@ const ActionPlanForm = ({
               )}
             </FormControl>
 
+            <FormControl isInvalid={Boolean(errors.attachment)}>
+              <FormLabel fontSize="sm">Attachment (optional)</FormLabel>
+              <Input
+                type="file"
+                size="sm"
+                onChange={handleFileChange}
+                multiple
+                accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.jpg,.jpeg,.png,.txt"
+              />
+              <FormHelperText>
+                Attach one or more supporting documents for this action plan.
+              </FormHelperText>
+              {selectedFiles.length > 0 && (
+                <VStack mt={2} align="stretch" spacing={2}>
+                  {selectedFiles.map((file, index) => (
+                    <HStack key={`${file.name}-${index}`} spacing={2}>
+                      <FiUploadCloud />
+                      <Text fontSize="sm" noOfLines={1}>
+                        {file.name} ({formatFileSize(file.size)})
+                      </Text>
+                    </HStack>
+                  ))}
+                </VStack>
+              )}
+              {selectedFiles.length === 0 &&
+                (formData.attachments?.length > 0 || formData.attachment) && (
+                  <VStack mt={2} align="stretch" spacing={2}>
+                    {(formData.attachments?.length > 0
+                      ? formData.attachments
+                      : [formData.attachment]
+                    ).map((attachment, index) => (
+                      <HStack
+                        key={`${attachment?.key || attachment?.fileName}-${index}`}
+                        p={2}
+                        borderWidth="1px"
+                        borderRadius="md"
+                        justify="space-between"
+                      >
+                        <HStack spacing={2}>
+                          <FiFile />
+                          <Text fontSize="sm" noOfLines={1}>
+                            {attachment.fileName}
+                          </Text>
+                        </HStack>
+                        <IconButton
+                          size="sm"
+                          icon={<FiDownload />}
+                          aria-label={`Download current attachment ${index + 1}`}
+                          onClick={() => handleDownloadAttachment(attachment)}
+                          isLoading={downloadingAttachment}
+                        />
+                      </HStack>
+                    ))}
+                  </VStack>
+                )}
+              {errors.attachment && (
+                <FormErrorMessage>{errors.attachment}</FormErrorMessage>
+              )}
+            </FormControl>
+
             {/* Taken By */}
             <FormControl isInvalid={errors.takenBy}>
               <FormLabel fontSize="sm">Taken By *</FormLabel>
@@ -469,6 +665,8 @@ const ActionPlanForm = ({
             colorScheme="info"
             size="sm"
             onClick={handleSubmit}
+            isLoading={isUploadingFile}
+            loadingText="Uploading..."
           >
             Save Action Plan
           </Button>
