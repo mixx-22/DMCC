@@ -43,7 +43,6 @@ const getUserFullName = (user) => {
 
 // Helper to map attachments to ListView document format
 const mapAttachmentsToDocuments = (attachments, owner) => {
-  console.log(attachments, owner);
   if (!attachments || attachments.length === 0) return [];
   return attachments.map((att, idx) => ({
     id: att._id || att.key || idx,
