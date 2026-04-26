@@ -647,6 +647,8 @@ const SchedulePageContent = () => {
       MAJOR_NC: 0,
       MINOR_NC: 0,
       OBSERVATIONS: 0,
+      COMPLIANT: 0,
+      OPPORTUNITIES_FOR_IMPROVEMENT: 0,
       total: 0,
     };
 
@@ -663,10 +665,21 @@ const SchedulePageContent = () => {
         const observations = allFindings.filter(
           (f) => f.compliance === "OBSERVATIONS",
         ).length;
+        const compliant = allFindings.filter(
+          (f) => f.compliance === "COMPLIANT",
+        ).length;
+        const opportunitiesForImprovement = allFindings.filter(
+          (f) =>
+            f.compliance === "OPPORTUNITIES_FOR_IMPROVEMENT" ||
+            f.compliance === "OPPORTUNITIES_FOR_IMPROVEMENTS",
+        ).length;
 
         findingsCount.MAJOR_NC += majorNC;
         findingsCount.MINOR_NC += minorNC;
         findingsCount.OBSERVATIONS += observations;
+        findingsCount.COMPLIANT += compliant;
+        findingsCount.OPPORTUNITIES_FOR_IMPROVEMENT +=
+          opportunitiesForImprovement;
         findingsCount.total += allFindings.length;
 
         return {
@@ -676,6 +689,8 @@ const SchedulePageContent = () => {
           majorNC,
           minorNC,
           observations,
+          compliant,
+          opportunitiesForImprovement,
           total: allFindings.length,
           verdict: org.verdict || "Pending",
         };
@@ -785,6 +800,7 @@ const SchedulePageContent = () => {
             .badge-red { background-color: #f8d7da; color: #721c24; }
             .badge-yellow { background-color: #fff3cd; color: #856404; }
             .badge-blue { background-color: #d1ecf1; color: #0c5460; }
+            .badge-purple { background-color: #e2e3f1; color: #383d41; }
             .footer-bar {
               background: ${brandSecondaryColor};
               height: 25px;
@@ -866,6 +882,14 @@ const SchedulePageContent = () => {
               <div class="stat-label">Observations</div>
             </div>
             <div class="stat-item">
+              <div class="stat-value">${findingsCount.COMPLIANT}</div>
+              <div class="stat-label">Compliant</div>
+            </div>
+            <div class="stat-item">
+              <div class="stat-value">${findingsCount.OPPORTUNITIES_FOR_IMPROVEMENT}</div>
+              <div class="stat-label">Opportunities</div>
+            </div>
+            <div class="stat-item">
               <div class="stat-value">${findingsCount.total}</div>
               <div class="stat-label">Total Findings</div>
             </div>
@@ -875,13 +899,15 @@ const SchedulePageContent = () => {
             <thead>
               <tr>
                 <th style="width: 40px;">#</th>
-                <th style="width: 25%;">Organization</th>
-                <th style="width: 25%;">Location</th>
-                <th style="width: 10%;">Major NC</th>
-                <th style="width: 10%;">Minor NC</th>
-                <th style="width: 10%;">Observations</th>
-                <th style="width: 10%;">Total Findings</th>
-                <th style="width: 10%;">Status</th>
+                <th style="width: 20%;">Organization</th>
+                <th style="width: 20%;">Location</th>
+                <th style="width: 8%;">Major NC</th>
+                <th style="width: 8%;">Minor NC</th>
+                <th style="width: 8%;">Observations</th>
+                <th style="width: 8%;">Compliant</th>
+                <th style="width: 8%;">Opportunities</th>
+                <th style="width: 8%;">Total Findings</th>
+                <th style="width: 8%;">Status</th>
               </tr>
             </thead>
             <tbody>
@@ -895,6 +921,8 @@ const SchedulePageContent = () => {
                   <td>${org.majorNC > 0 ? `<span class="badge badge-red">${org.majorNC}</span>` : "-"}</td>
                   <td>${org.minorNC > 0 ? `<span class="badge badge-yellow">${org.minorNC}</span>` : "-"}</td>
                   <td>${org.observations > 0 ? org.observations : "-"}</td>
+                  <td>${org.compliant > 0 ? org.compliant : "-"}</td>
+                  <td>${org.opportunitiesForImprovement > 0 ? org.opportunitiesForImprovement : "-"}</td>
                   <td><strong>${org.total}</strong></td>
                   <td>${org.verdict !== "Pending" ? `<span class="badge badge-green">Completed</span>` : `<span class="badge badge-yellow">Pending</span>`}</td>
                 </tr>
@@ -974,7 +1002,14 @@ const SchedulePageContent = () => {
                               ? "badge-yellow"
                               : finding.compliance === "OBSERVATIONS"
                                 ? "badge-blue"
-                                : "";
+                                : finding.compliance === "COMPLIANT"
+                                  ? "badge-green"
+                                  : finding.compliance ===
+                                        "OPPORTUNITIES_FOR_IMPROVEMENT" ||
+                                      finding.compliance ===
+                                        "OPPORTUNITIES_FOR_IMPROVEMENTS"
+                                    ? "badge-purple"
+                                    : "";
 
                         const statusLabel =
                           finding.compliance === "MAJOR_NC"
@@ -983,7 +1018,14 @@ const SchedulePageContent = () => {
                               ? "Minor NC"
                               : finding.compliance === "OBSERVATIONS"
                                 ? "Observation"
-                                : finding.compliance || "-";
+                                : finding.compliance === "COMPLIANT"
+                                  ? "Compliant"
+                                  : finding.compliance ===
+                                        "OPPORTUNITIES_FOR_IMPROVEMENT" ||
+                                      finding.compliance ===
+                                        "OPPORTUNITIES_FOR_IMPROVEMENTS"
+                                    ? "Opportunities"
+                                    : finding.compliance || "-";
 
                         return `
                         <tr>

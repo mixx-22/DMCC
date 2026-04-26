@@ -611,6 +611,9 @@ const AuditKpiDashboard = () => {
             MAJOR_NC: findingsKpis?.majorVsMinorCount?.major || 0,
             MINOR_NC: findingsKpis?.majorVsMinorCount?.minor || 0,
             OBSERVATIONS: findingsKpis?.majorVsMinorCount?.observations || 0,
+            COMPLIANT: findingsKpis?.majorVsMinorCount?.compliant || 0,
+            OPPORTUNITIES_FOR_IMPROVEMENT:
+              findingsKpis?.majorVsMinorCount?.opportunitiesForImprovement || 0,
           },
 
           correctiveActionClosureRate:
@@ -1040,6 +1043,18 @@ const AuditKpiDashboard = () => {
                 </tr>
                 <tr>
                   <td>
+                    <div class="metric-name">Compliant</div>
+                  </td>
+                  <td>${kpiData.majorVsMinorCount?.COMPLIANT || 0}</td>
+                </tr>
+                <tr>
+                  <td>
+                    <div class="metric-name">Opportunities for Improvement</div>
+                  </td>
+                  <td>${kpiData.majorVsMinorCount?.OPPORTUNITIES_FOR_IMPROVEMENT || 0}</td>
+                </tr>
+                <tr>
+                  <td>
                     <div class="metric-name">Corrective Action Closure Rate</div>
                     <div class="metric-formula">(Closed Corrective Actions / Total Corrective Actions) × 100</div>
                   </td>
@@ -1397,7 +1412,7 @@ const AuditKpiDashboard = () => {
                   </HStack>
                 </CardHeader>
                 <CardBody pt={2}>
-                  <HStack spacing={6} justify="space-around">
+                  <SimpleGrid columns={{ base: 2, md: 3, lg: 5 }} spacing={4}>
                     <VStack spacing={2}>
                       <Text
                         fontSize="xs"
@@ -1410,18 +1425,16 @@ const AuditKpiDashboard = () => {
                       <Box
                         bgGradient="linear(to-br, error.500, error.600)"
                         color="white"
-                        fontSize="3xl"
+                        fontSize="2xl"
                         fontWeight="bold"
-                        px={6}
-                        py={3}
+                        px={4}
+                        py={2}
                         borderRadius="xl"
                         boxShadow="md"
                       >
                         {kpiData.majorVsMinorCount?.MAJOR_NC || 0}
                       </Box>
                     </VStack>
-
-                    <Divider orientation="vertical" h="80px" />
 
                     <VStack spacing={2}>
                       <Text
@@ -1435,18 +1448,16 @@ const AuditKpiDashboard = () => {
                       <Box
                         bgGradient="linear(to-br, warning.500, warning.600)"
                         color="white"
-                        fontSize="3xl"
+                        fontSize="2xl"
                         fontWeight="bold"
-                        px={6}
-                        py={3}
+                        px={4}
+                        py={2}
                         borderRadius="xl"
                         boxShadow="md"
                       >
                         {kpiData.majorVsMinorCount?.MINOR_NC || 0}
                       </Box>
                     </VStack>
-
-                    <Divider orientation="vertical" h="80px" />
 
                     <VStack spacing={2}>
                       <Text
@@ -1460,17 +1471,64 @@ const AuditKpiDashboard = () => {
                       <Box
                         bgGradient="linear(to-br, info.500, info.600)"
                         color="white"
-                        fontSize="3xl"
+                        fontSize="2xl"
                         fontWeight="bold"
-                        px={6}
-                        py={3}
+                        px={4}
+                        py={2}
                         borderRadius="xl"
                         boxShadow="md"
                       >
                         {kpiData.majorVsMinorCount?.OBSERVATIONS || 0}
                       </Box>
                     </VStack>
-                  </HStack>
+
+                    <VStack spacing={2}>
+                      <Text
+                        fontSize="xs"
+                        color={textTertiaryColor}
+                        fontWeight="600"
+                        textTransform="uppercase"
+                      >
+                        Compliant
+                      </Text>
+                      <Box
+                        bgGradient="linear(to-br, green.500, green.600)"
+                        color="white"
+                        fontSize="2xl"
+                        fontWeight="bold"
+                        px={4}
+                        py={2}
+                        borderRadius="xl"
+                        boxShadow="md"
+                      >
+                        {kpiData.majorVsMinorCount?.COMPLIANT || 0}
+                      </Box>
+                    </VStack>
+
+                    <VStack spacing={2}>
+                      <Text
+                        fontSize="xs"
+                        color={textTertiaryColor}
+                        fontWeight="600"
+                        textTransform="uppercase"
+                      >
+                        Opportunities
+                      </Text>
+                      <Box
+                        bgGradient="linear(to-br, purple.500, purple.600)"
+                        color="white"
+                        fontSize="2xl"
+                        fontWeight="bold"
+                        px={4}
+                        py={2}
+                        borderRadius="xl"
+                        boxShadow="md"
+                      >
+                        {kpiData.majorVsMinorCount
+                          ?.OPPORTUNITIES_FOR_IMPROVEMENT || 0}
+                      </Box>
+                    </VStack>
+                  </SimpleGrid>
                 </CardBody>
               </MotionCard>
             </MotionGridItem>
