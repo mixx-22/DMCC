@@ -333,7 +333,7 @@ const OngoingReportsWidget = ({ limit = 3, showAllButton = true }) => {
                           colorScheme="purple"
                           variant="ghost"
                           color={titleColor}
-                          mt={1}
+                          mt={2}
                         >
                           View {moreOrgsCount} More Organization
                           {moreOrgsCount > 1 ? "s" : ""}
