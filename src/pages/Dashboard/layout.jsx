@@ -31,6 +31,7 @@ import DocumentDrawer from "../../components/Document/DocumentDrawer";
 import DocumentsFolderSkeleton from "../../components/Document/DocumentsFolderSkeleton";
 import DocumentsGridSkeleton from "../../components/Document/DocumentsGridSkeleton";
 import DocumentsListSkeleton from "../../components/Document/DocumentsListSkeleton";
+import OngoingAuditsWidget from "../../components/OngoingAuditsWidget";
 
 const MotionBox = motion(Box);
 
@@ -439,6 +440,10 @@ const Layout = () => {
             )}
           </Box>
         )}
+
+        <Box mb={8} w="full" mx="auto">
+          <OngoingAuditsWidget />
+        </Box>
       </MotionBox>
 
       <DocumentDrawer
