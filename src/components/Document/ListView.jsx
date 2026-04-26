@@ -42,6 +42,8 @@ export const ListView = ({
   isRequestView = false,
   onDiscardRequest,
   showRequestStatus = false,
+  actions = null,
+  onRowClick = null,
 }) => {
   const navigate = useNavigate();
   const [isFoldersOpen, setIsFoldersOpen] = useState(true);
@@ -85,7 +87,9 @@ export const ListView = ({
         _hover={{ bg: rowHoverBg }}
         bg={isSelected ? selectedBg : "transparent"}
         opacity={isValid ? 1 : 0.6}
-        onClick={handleNavigate}
+        onClick={
+          onRowClick !== null ? (e) => onRowClick(e, doc) : handleNavigate
+        }
       >
         <Td w="full">
           <HStack>
@@ -328,7 +332,9 @@ export const ListView = ({
           )}
         </Td>
         <Td w={22}>
-          {isRequestView && onDiscardRequest ? (
+          {typeof actions === "function" ? (
+            actions(doc)
+          ) : isRequestView && onDiscardRequest ? (
             <IconButton
               icon={<FiX />}
               size="sm"

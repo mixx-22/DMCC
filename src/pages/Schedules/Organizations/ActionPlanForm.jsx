@@ -23,13 +23,14 @@ import {
   IconButton,
 } from "@chakra-ui/react";
 import { useState } from "react";
-import { FiSave, FiX, FiUploadCloud, FiDownload, FiFile } from "react-icons/fi";
+import { FiSave, FiX, FiUploadCloud } from "react-icons/fi";
 import { SingleDatepicker } from "chakra-dayzed-datepicker";
 import TeamLeadersSelect from "../../../components/TeamLeadersSelect";
 import { useLayout, useUser } from "../../../context/_useContext";
 import Timestamp from "../../../components/Timestamp";
 import apiService from "../../../services/api";
 import { uploadFileToServer, formatFileSize } from "../../../utils/fileUpload";
+import { ListView } from "../../../components/Document/ListView";
 
 // Helper function to get user's full name from either format
 const getUserFullName = (user) => {
@@ -38,6 +39,33 @@ const getUserFullName = (user) => {
   if (user.name) return user.name;
   // Handle separate firstName/lastName fields (legacy format)
   return `${user.firstName || ""} ${user.lastName || ""}`.trim();
+};
+
+// Helper to map attachments to ListView document format
+const mapAttachmentsToDocuments = (attachments, owner) => {
+  console.log(attachments, owner);
+  if (!attachments || attachments.length === 0) return [];
+  return attachments.map((att, idx) => ({
+    id: att._id || att.key || idx,
+    _id: att._id || att.key || idx,
+    title: att.fileName || att.filename || "Untitled",
+    type: "file",
+    owner: {
+      ...owner,
+      firstName: owner?.name.split(" ")[0],
+      lastName: owner?.name.split(" ").pop(),
+    },
+    metadata: {
+      filename: att.fileName || att.filename,
+      size: att.size,
+      key: att.key,
+      version: att.version || "1.0",
+      fileType: att.fileType || undefined,
+    },
+    createdAt: att.uploadedAt || att.createdAt,
+    updatedAt: att.uploadedAt || att.updatedAt,
+    ...att,
+  }));
 };
 
 const ActionPlanForm = ({
@@ -96,7 +124,6 @@ const ActionPlanForm = ({
           : initialData.attachment
             ? [initialData.attachment]
             : [],
-        attachment: initialData.attachment || null,
       };
     }
     return {
@@ -107,7 +134,6 @@ const ActionPlanForm = ({
       takenBy: [],
       auditor: defaultAuditor,
       attachments: [],
-      attachment: null,
     };
   };
 
@@ -380,42 +406,45 @@ const ActionPlanForm = ({
                 Attached Document(s):
               </Text>
               <VStack align="stretch" spacing={2}>
-                {(formData.attachments?.length > 0
-                  ? formData.attachments
-                  : [formData.attachment]
-                ).map((attachment, index) => (
-                  <HStack
-                    key={`${attachment?.key || attachment?.fileName}-${index}`}
-                    borderWidth="1px"
-                    borderRadius="md"
-                    p={2}
-                    justify="space-between"
-                  >
-                    <HStack spacing={2}>
-                      <FiFile />
-                      <Box>
-                        <Text fontSize="sm" noOfLines={1}>
-                          {attachment.fileName}
-                        </Text>
-                        <Text fontSize="xs" color={labelColor}>
-                          {formatFileSize(attachment.size)}
-                        </Text>
-                        {attachment.uploadedBy?.name && (
-                          <Text fontSize="xs" color={labelColor}>
-                            Uploaded by {attachment.uploadedBy.name}
-                          </Text>
-                        )}
-                      </Box>
-                    </HStack>
-                    <IconButton
-                      size="sm"
-                      icon={<FiDownload />}
-                      aria-label={`Download attachment ${index + 1}`}
-                      onClick={() => handleDownloadAttachment(attachment)}
-                      isLoading={downloadingAttachment}
-                    />
-                  </HStack>
-                ))}
+                <ListView
+                  documents={mapAttachmentsToDocuments(
+                    formData.attachments?.length > 0
+                      ? formData.attachments
+                      : [formData.attachment].filter(Boolean),
+                    formData.owner?.[0] || null,
+                  )}
+                  selectedDocument={null}
+                  onDocumentClick={() => {}}
+                  onRowClick={(e, doc) => {
+                    e.stopPropagation();
+                    e.preventDefault();
+                    handleDownloadAttachment(doc);
+                  }}
+                  filesOnly
+                  sourcePage={{
+                    path: window.location.pathname,
+                    label: "Action Plan Attachments",
+                  }}
+                  actions={(doc) => (
+                    <Tooltip label="Download attachment">
+                      <span>
+                        <IconButton
+                          icon={<FiUploadCloud />}
+                          size="sm"
+                          variant="ghost"
+                          aria-label="Download attachment"
+                          colorScheme="info"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            e.preventDefault();
+                            handleDownloadAttachment(doc);
+                          }}
+                          isLoading={downloadingAttachment}
+                        />
+                      </span>
+                    </Tooltip>
+                  )}
+                />
               </VStack>
             </Box>
           )}
@@ -570,34 +599,38 @@ const ActionPlanForm = ({
               )}
               {selectedFiles.length === 0 &&
                 (formData.attachments?.length > 0 || formData.attachment) && (
-                  <VStack mt={2} align="stretch" spacing={2}>
-                    {(formData.attachments?.length > 0
-                      ? formData.attachments
-                      : [formData.attachment]
-                    ).map((attachment, index) => (
-                      <HStack
-                        key={`${attachment?.key || attachment?.fileName}-${index}`}
-                        p={2}
-                        borderWidth="1px"
-                        borderRadius="md"
-                        justify="space-between"
-                      >
-                        <HStack spacing={2}>
-                          <FiFile />
-                          <Text fontSize="sm" noOfLines={1}>
-                            {attachment.fileName}
-                          </Text>
-                        </HStack>
-                        <IconButton
-                          size="sm"
-                          icon={<FiDownload />}
-                          aria-label={`Download current attachment ${index + 1}`}
-                          onClick={() => handleDownloadAttachment(attachment)}
-                          isLoading={downloadingAttachment}
-                        />
-                      </HStack>
-                    ))}
-                  </VStack>
+                  <Box>
+                    <ListView
+                      documents={mapAttachmentsToDocuments(
+                        formData.attachments?.length > 0
+                          ? formData.attachments
+                          : [formData.attachment].filter(Boolean),
+                        formData.owner?.[0] || null,
+                      )}
+                      selectedDocument={null}
+                      onDocumentClick={() => {}}
+                      filesOnly
+                      sourcePage={{
+                        path: window.location.pathname,
+                        label: "Action Plan Attachments",
+                      }}
+                      actions={(doc) => (
+                        <Tooltip label="Download attachment">
+                          <span>
+                            <IconButton
+                              icon={<FiUploadCloud />}
+                              size="sm"
+                              variant="ghost"
+                              aria-label="Download attachment"
+                              colorScheme="info"
+                              onClick={() => handleDownloadAttachment(doc)}
+                              isLoading={downloadingAttachment}
+                            />
+                          </span>
+                        </Tooltip>
+                      )}
+                    />
+                  </Box>
                 )}
               {errors.attachment && (
                 <FormErrorMessage>{errors.attachment}</FormErrorMessage>
