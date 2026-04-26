@@ -20,6 +20,7 @@ import {
 import { Link as RouterLink } from "react-router-dom";
 import { FiArrowRight } from "react-icons/fi";
 import apiService from "../services/api";
+import { useUser } from "../context/_useContext";
 
 // Compliance badge display (copied from ReportsTab)
 const COMPLIANCE_DISPLAY = {
@@ -44,7 +45,76 @@ const filterPendingNCFindings = (findings) =>
     return !latest || status === 0 || status === -1;
   });
 
+const normalizeRoles = (user) => {
+  const roles = [].concat(user?.role || user?.roles || []);
+  return roles.filter(Boolean);
+};
+
+const isTeamLeader = (user) =>
+  normalizeRoles(user).some((role) => {
+    if (!role) return false;
+    const roleTypes = []
+      .concat(role?.roleTypes || role?.type || [])
+      .map((value) => String(value).toLowerCase());
+    if (roleTypes.includes("teamleader")) return true;
+
+    const title =
+      typeof role === "string" ? role : role?.title || role?.name || role?.role;
+    const normalizedTitle = String(title || "").toLowerCase();
+    return (
+      normalizedTitle.includes("team leader") ||
+      normalizedTitle.includes("teamlead")
+    );
+  }) ||
+  String(user?.position || "").toLowerCase().includes("team leader");
+
+const pickUserDepartmentCandidates = (user) => {
+  const teams = []
+    .concat(user?.team || user?.teams || [])
+    .filter(Boolean)
+    .flatMap((team) => {
+      if (typeof team === "object") {
+        return [
+          team?.teamId,
+          team?.id,
+          team?._id,
+          team?.name,
+          team?.department,
+        ].filter(Boolean);
+      }
+      return [team];
+    });
+
+  return [...teams, user?.department, user?.teamId]
+    .filter(Boolean)
+    .map((value) => String(value).trim().toLowerCase());
+};
+
+const organizationMatchesDepartment = (org, departmentCandidates) => {
+  if (!departmentCandidates.length) return true;
+  const team =
+    typeof org?.team === "object"
+      ? org.team
+      : { id: org?.team, teamId: org?.teamId, name: org?.teamName };
+  const orgCandidates = [
+    team?.id,
+    team?._id,
+    team?.name,
+    team?.teamId,
+    org?.teamId,
+    org?.teamName,
+    org?.department,
+  ]
+    .filter(Boolean)
+    .map((value) => String(value).trim().toLowerCase());
+
+  return orgCandidates.some((candidate) =>
+    departmentCandidates.includes(candidate),
+  );
+};
+
 const OngoingReportsWidget = ({ limit = 3, showAllButton = true }) => {
+  const { user } = useUser();
   const [audits, setAudits] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -84,6 +154,8 @@ const OngoingReportsWidget = ({ limit = 3, showAllButton = true }) => {
       .then(async (res) => {
         if (!mounted) return;
         const data = res.data || res.schedules || [];
+        const userIsTeamLeader = isTeamLeader(user);
+        const departmentCandidates = pickUserDepartmentCandidates(user);
         // For each audit, fetch organizations and filter for pending MINOR_NC/MAJOR_NC reports
         const auditsWithReports = await Promise.all(
           data.map(async (audit) => {
@@ -93,8 +165,13 @@ const OngoingReportsWidget = ({ limit = 3, showAllButton = true }) => {
                 params: { auditScheduleId: audit._id || audit.id },
               });
               const orgs = orgRes.data || orgRes.organizations || [];
+              const scopedOrgs = userIsTeamLeader
+                ? orgs.filter((org) =>
+                    organizationMatchesDepartment(org, departmentCandidates),
+                  )
+                : orgs;
               // Collect all findings for all organizations
-              const findings = orgs.flatMap((org) =>
+              const findings = scopedOrgs.flatMap((org) =>
                 (org.visits || []).flatMap((v, vi) =>
                   (v.findings || []).map((f) => ({
                     ...f,
@@ -107,7 +184,11 @@ const OngoingReportsWidget = ({ limit = 3, showAllButton = true }) => {
               // Only keep audits with pending MINOR_NC/MAJOR_NC findings
               const pendingFindings = filterPendingNCFindings(findings);
               return pendingFindings.length
-                ? { ...audit, findings: pendingFindings, organizations: orgs }
+                ? {
+                    ...audit,
+                    findings: pendingFindings,
+                    organizations: scopedOrgs,
+                  }
                 : null;
             } catch {
               return null;
@@ -126,7 +207,7 @@ const OngoingReportsWidget = ({ limit = 3, showAllButton = true }) => {
     return () => {
       mounted = false;
     };
-  }, []);
+  }, [user]);
 
   const auditsToShow = showAll ? audits : audits.slice(0, limit);
 

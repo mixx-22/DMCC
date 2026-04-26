@@ -17,13 +17,48 @@ import { Link as RouterLink } from "react-router-dom";
 import apiService from "../services/api";
 import TooltipAvatar from "./TooltipAvatar";
 import moment from "moment";
+import { useUser } from "../context/_useContext";
 // import FindingsList from "../pages/Schedules/Organizations/FindingsList";
 
 // Utility: filter organizations (teams) with no verdict
 const filterOrganizationsWithNoVerdict = (orgs) =>
   orgs.filter((org) => !org.verdict || org.verdict === "");
 
+const normalizeRoles = (user) => {
+  const roles = [].concat(user?.role || user?.roles || []);
+  return roles.filter(Boolean);
+};
+
+const isAuditor = (user) =>
+  normalizeRoles(user).some((role) => {
+    if (!role) return false;
+    const roleTypes = []
+      .concat(role?.roleTypes || role?.type || [])
+      .map((value) => String(value).toLowerCase());
+    if (roleTypes.includes("auditor")) return true;
+
+    const title =
+      typeof role === "string" ? role : role?.title || role?.name || role?.role;
+    return String(title || "").toLowerCase().includes("auditor");
+  });
+
+const getUserId = (user) =>
+  user?.id || user?._id || user?.userId || user?.employeeId || null;
+
+const isAuditorAssignedToOrg = (org, userId) => {
+  if (!userId) return false;
+  const orgAuditors = org?.auditors || [];
+  return orgAuditors.some((auditor) => {
+    const auditorId =
+      typeof auditor === "object"
+        ? auditor?._id || auditor?.id || auditor?.userId || auditor?.employeeId
+        : auditor;
+    return String(auditorId) === String(userId);
+  });
+};
+
 const PendingReportsWidget = ({ limit = 3, showAllButton = true }) => {
+  const { user } = useUser();
   const [audits, setAudits] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -50,6 +85,8 @@ const PendingReportsWidget = ({ limit = 3, showAllButton = true }) => {
       .then(async (res) => {
         if (!mounted) return;
         const data = res.data || res.schedules || [];
+        const userIsAuditor = isAuditor(user);
+        const currentUserId = getUserId(user);
         // For each audit, fetch organizations and filter for those with no verdict
         const auditsWithOrgs = await Promise.all(
           data.map(async (audit) => {
@@ -59,7 +96,10 @@ const PendingReportsWidget = ({ limit = 3, showAllButton = true }) => {
                 params: { auditScheduleId: audit._id || audit.id },
               });
               const orgs = orgRes.data || orgRes.organizations || [];
-              const orgsNoVerdict = filterOrganizationsWithNoVerdict(orgs);
+              const scopedOrgs = userIsAuditor
+                ? orgs.filter((org) => isAuditorAssignedToOrg(org, currentUserId))
+                : orgs;
+              const orgsNoVerdict = filterOrganizationsWithNoVerdict(scopedOrgs);
               return orgsNoVerdict.length
                 ? {
                     ...audit,
@@ -83,7 +123,7 @@ const PendingReportsWidget = ({ limit = 3, showAllButton = true }) => {
     return () => {
       mounted = false;
     };
-  }, []);
+  }, [user]);
 
   const auditsToShow = showAll ? audits : audits.slice(0, limit);
 
