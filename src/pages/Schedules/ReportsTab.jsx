@@ -292,7 +292,7 @@ const ReportCard = ({ finding, organization, onSave, isScheduleOngoing }) => {
 
       {/* History Modal */}
       <Modal
-        size="lg"
+        size="xl"
         isOpen={historyModal.isOpen}
         onClose={historyModal.onClose}
       >
