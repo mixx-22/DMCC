@@ -18,12 +18,14 @@ import {
   Wrap,
   WrapItem,
   SimpleGrid,
-  Input,
   FormErrorMessage,
   IconButton,
+  Center,
+  Icon,
 } from "@chakra-ui/react";
-import { useState } from "react";
-import { FiSave, FiX, FiUploadCloud } from "react-icons/fi";
+import { useState, useCallback } from "react";
+import { useDropzone } from "react-dropzone";
+import { FiSave, FiX, FiUploadCloud, FiFile } from "react-icons/fi";
 import { SingleDatepicker } from "chakra-dayzed-datepicker";
 import TeamLeadersSelect from "../../../components/TeamLeadersSelect";
 import { useLayout, useUser } from "../../../context/_useContext";
@@ -31,6 +33,7 @@ import Timestamp from "../../../components/Timestamp";
 import apiService from "../../../services/api";
 import { uploadFileToServer, formatFileSize } from "../../../utils/fileUpload";
 import { ListView } from "../../../components/Document/ListView";
+import { ACCEPTED_MIME } from "../../../constants";
 
 // Helper function to get user's full name from either format
 const getUserFullName = (user) => {
@@ -174,12 +177,6 @@ const ActionPlanForm = ({
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
-  };
-
-  const handleFileChange = (event) => {
-    const files = Array.from(event.target.files || []);
-    setSelectedFiles(files);
-    setErrors((prev) => ({ ...prev, attachment: null }));
   };
 
   const handleDownloadAttachment = async (attachment) => {
@@ -574,29 +571,24 @@ const ActionPlanForm = ({
 
             <FormControl isInvalid={Boolean(errors.attachment)}>
               <FormLabel fontSize="sm">Attachment (optional)</FormLabel>
-              <Input
-                type="file"
-                size="sm"
-                onChange={handleFileChange}
+              {/* Dropzone area for file upload */}
+              <DropzoneArea
+                onFilesAdded={(files) => {
+                  setSelectedFiles(files);
+                  setErrors((prev) => ({ ...prev, attachment: null }));
+                }}
+                accept={ACCEPTED_MIME}
                 multiple
-                accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.jpg,.jpeg,.png,.txt"
+                isDisabled={isUploadingFile}
+                selectedFiles={selectedFiles}
+                onRemoveFile={(idx) => {
+                  setSelectedFiles((prev) => prev.filter((_, i) => i !== idx));
+                }}
               />
               <FormHelperText>
                 Attach one or more supporting documents for this action plan.
               </FormHelperText>
-              {selectedFiles.length > 0 && (
-                <VStack mt={2} align="stretch" spacing={2}>
-                  {selectedFiles.map((file, index) => (
-                    <HStack key={`${file.name}-${index}`} spacing={2}>
-                      <FiUploadCloud />
-                      <Text fontSize="sm" noOfLines={1}>
-                        {file.name} ({formatFileSize(file.size)})
-                      </Text>
-                    </HStack>
-                  ))}
-                </VStack>
-              )}
-              {selectedFiles.length === 0 &&
+              {selectedFiles.length > 0 &&
                 (formData.attachments?.length > 0 || formData.attachment) && (
                   <Box>
                     <ListView
@@ -710,3 +702,115 @@ const ActionPlanForm = ({
 };
 
 export default ActionPlanForm;
+
+// DropzoneArea component for drag-and-drop file upload, styled like UploadFileModal
+function DropzoneArea({
+  onFilesAdded,
+  accept,
+  multiple = true,
+  isDisabled = false,
+  selectedFiles = [],
+  onRemoveFile,
+}) {
+  const onDrop = useCallback(
+    (acceptedFiles) => {
+      if (onFilesAdded) onFilesAdded(acceptedFiles);
+    },
+    [onFilesAdded],
+  );
+
+  const { getRootProps, getInputProps, isDragActive } = useDropzone({
+    onDrop,
+    multiple,
+    accept,
+    disabled: isDisabled,
+  });
+
+  // Show Dropzone if no files selected
+  if (!selectedFiles || selectedFiles.length === 0) {
+    return (
+      <Box
+        {...getRootProps()}
+        border="2px dashed"
+        borderColor={isDragActive ? "info.400" : "gray.300"}
+        borderRadius="lg"
+        p={8}
+        textAlign="center"
+        cursor={isDisabled ? "not-allowed" : "pointer"}
+        bg={isDragActive ? "info.50" : "gray.50"}
+        transition="all 0.2s"
+        _hover={{
+          borderColor: isDisabled ? "gray.300" : "info.400",
+          bg: isDisabled ? "gray.50" : "info.50",
+        }}
+        opacity={isDisabled ? 0.6 : 1}
+        mb={2}
+      >
+        <input {...getInputProps()} />
+        <Center>
+          <Icon
+            as={FiUploadCloud}
+            w={12}
+            h={12}
+            color={isDragActive ? "info.500" : "gray.400"}
+            mb={3}
+          />
+        </Center>
+        <Text fontSize="md" fontWeight="medium" mb={1}>
+          {isDragActive ? "Drop your file(s) here" : "Drag & drop file(s) here"}
+        </Text>
+        <Text fontSize="sm" color="gray.500">
+          or click to browse
+        </Text>
+      </Box>
+    );
+  }
+
+  // Show file preview(s) with remove button
+  return (
+    <VStack align="stretch" spacing={2} mb={2}>
+      {selectedFiles.map((file, idx) => (
+        <Box
+          key={`${file.name}-${idx}`}
+          p={4}
+          bg="gray.50"
+          borderRadius="lg"
+          border="1px solid"
+          borderColor="gray.200"
+        >
+          <Box
+            display="flex"
+            alignItems="center"
+            justifyContent="space-between"
+          >
+            <Box display="flex" alignItems="center" flex="1">
+              <Icon as={FiFile} w={5} h={5} color="info.500" mr={3} />
+              <Box flex="1">
+                <Text fontSize="sm" fontWeight="medium" noOfLines={1}>
+                  {file.name}
+                </Text>
+                <Text fontSize="xs" color="gray.600">
+                  {typeof file.size === "number"
+                    ? formatFileSize(file.size)
+                    : ""}
+                </Text>
+              </Box>
+            </Box>
+            {onRemoveFile && (
+              <Button
+                size="sm"
+                variant="ghost"
+                colorScheme="red"
+                onClick={() => onRemoveFile(idx)}
+                leftIcon={<FiX />}
+                ml={2}
+              >
+                Remove
+              </Button>
+            )}
+          </Box>
+        </Box>
+      ))}
+    </VStack>
+  );
+}
