@@ -158,7 +158,7 @@ const OngoingAuditsWidget = ({
                 </HStack>
                 <IconButton
                   as={RouterLink}
-                  to={`/audits/${audit._id || audit.id}`}
+                  to={`/audit-schedule/${audit._id || audit.id}`}
                   aria-label="Go to Audit"
                   icon={<FiArrowRight />}
                   size="sm"
