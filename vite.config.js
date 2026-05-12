@@ -9,7 +9,7 @@ export default defineConfig({
     host: true, // Expose to network
     proxy: {
       "/api": {
-        target: "http://192.168.0.13:4000", // Your backend port
+        target: "http://192.168.0.12:4000", // Your backend port
         changeOrigin: true,
       },
     },
